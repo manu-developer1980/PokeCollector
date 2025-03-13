@@ -1,35 +1,48 @@
-import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { tempo } from "tempo-devtools/dist/vite";
+import path from "path";
+import https from "https";
 
-const conditionalPlugins: [string, Record<string, any>][] = [];
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
 
-// @ts-ignore
-if (process.env.TEMPO === "true") {
-  conditionalPlugins.push(["tempo-devtools/swc", {}]);
-}
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  base: process.env.NODE_ENV === "development" ? "/" : process.env.VITE_BASE_PATH || "/",
-  optimizeDeps: {
-    entries: ["src/main.tsx", "src/tempobook/**/*"],
-  },
-  plugins: [
-    react({
-      plugins: conditionalPlugins,
-    }),
-    tempo(),
-  ],
-  resolve: {
-    preserveSymlinks: true,
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+  return {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
-  server: {
-    // @ts-ignore
-    allowedHosts: true,
-  }
+    server: {
+      proxy: {
+        "/api/pokemon": {
+          target: "https://api.pokemontcg.io/v2",
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api\/pokemon/, ""),
+          agent: new https.Agent({ rejectUnauthorized: false }),
+          configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.error("Proxy error:", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              console.log(
+                `Proxying request to: ${req.method} ${proxyReq.path}`
+              );
+
+              if (
+                !proxyReq.getHeader("X-Api-Key") &&
+                env.VITE_POKEMON_TCG_API_KEY
+              ) {
+                proxyReq.setHeader("X-Api-Key", env.VITE_POKEMON_TCG_API_KEY);
+              }
+            });
+            proxy.on("proxyRes", (_proxyRes, req, _res) => {
+              console.log(`Received response for: ${req.method} ${req.url}`);
+            });
+          },
+        },
+      },
+    },
+  };
 });

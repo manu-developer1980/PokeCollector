@@ -19,20 +19,16 @@ interface SearchFiltersProps {
   currentPage?: number;
   pageSize?: number;
   children?: React.ReactNode;
-  onAddToCollection?: (card: PokemonCard) => void;
-  onAddToWishlist?: (card: PokemonCard) => void;
 }
 
-const SearchFilters = ({
+const SearchFilters: React.FC<SearchFiltersProps> = ({
   onSearch,
   isLoading = false,
   totalCount = 0,
   currentPage = 1,
   pageSize = 20,
   children,
-  onAddToCollection,
-  onAddToWishlist,
-}: SearchFiltersProps) => {
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState("all");
   const [sortBy, setSortBy] = useState("name_asc");
@@ -178,27 +174,13 @@ const SearchFilters = ({
         </Button>
       </div>
 
-      <div className="space-y-6">
-        {React.Children.map(children, (child) => {
-          if (React.isValidElement(child)) {
-            // Pass onAddToCollection and onAddToWishlist to CardGrid
-            return React.cloneElement(child, {
-              onAddToCollection,
-              onAddToWishlist,
-              ...child.props,
-            });
-          }
-          return child;
-        })}
-      </div>
+      <div className="space-y-6">{children}</div>
 
       {shouldShowPagination && (
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={pageSize}
-          onPageChange={handleSearch}
+          onPageChange={(page) => handleSearch(page)}
         />
       )}
     </div>

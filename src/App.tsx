@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { Navigate, Route, Routes, useRoutes } from "react-router-dom";
-import routes from "tempo-routes";
+import { Navigate, Route, Routes } from "react-router-dom";
 import LoginForm from "./components/auth/LoginForm";
 import SignUpForm from "./components/auth/SignUpForm";
 import Success from "./components/pages/success";
@@ -27,26 +26,44 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/signup" element={<SignUpForm />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <PokemonDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route path="/success" element={<Success />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
-      </Routes>
-      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-    </>
+    <Routes>
+      <Route
+        path="/"
+        element={<LandingPage />}
+      />
+      <Route
+        path="/login"
+        element={<LoginForm />}
+      />
+      <Route
+        path="/signup"
+        element={<SignUpForm />}
+      />
+      <Route
+        path="/pricing"
+        element={<PricingPage />}
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <PokemonDashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/success"
+        element={<Success />}
+      />
+      <Route
+        path="/checkout"
+        element={<CheckoutPage />}
+      />
+      <Route
+        path="/checkout/success"
+        element={<CheckoutSuccessPage />}
+      />
+    </Routes>
   );
 }
 

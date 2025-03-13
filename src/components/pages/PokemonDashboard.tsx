@@ -75,19 +75,29 @@ const PokemonDashboard = () => {
     const loadFilterData = async () => {
       try {
         const [setsData, typesData, raritiesData] = await Promise.all([
-          getSets(),
-          getTypes(),
-          getRarities(),
+          getSets().catch((error) => {
+            console.error("Error fetching sets:", error);
+            return [];
+          }),
+          getTypes().catch((error) => {
+            console.error("Error fetching types:", error);
+            return [];
+          }),
+          getRarities().catch((error) => {
+            console.error("Error fetching rarities:", error);
+            return [];
+          }),
         ]);
 
-        setSets(setsData.map((set) => ({ id: set.id, name: set.name })));
-        setTypes(typesData);
-        setRarities(raritiesData);
+        setSets(setsData?.map((set) => ({ id: set.id, name: set.name })) || []);
+        setTypes(typesData || []);
+        setRarities(raritiesData || []);
       } catch (error) {
         console.error("Error loading filter data:", error);
         toast({
           title: "Error",
-          description: "Failed to load filter data. Please try again.",
+          description:
+            "Failed to load some filter data. Some features may be limited.",
           variant: "destructive",
         });
       }
@@ -197,13 +207,25 @@ const PokemonDashboard = () => {
   const handleSearch = async (params: PokemonCardSearchParams) => {
     setIsSearching(true);
     try {
-      const response = await fetch(
-        `/api/pokemon/cards?${new URLSearchParams(params as any)}`
-      );
-      const data = await response.json();
-      setSearchResults(data.data);
-      setTotalCount(data.totalCount);
-      setCurrentPage(params.page || 1);
+      const response = await searchCards({
+        ...params,
+        page: params.page || 1,
+        pageSize: params.pageSize || 20,
+      });
+
+      if (response.data) {
+        setSearchResults(response.data);
+        setTotalCount(response.totalCount || 0);
+        setCurrentPage(response.page || 1);
+      } else {
+        setSearchResults([]);
+        setTotalCount(0);
+        setCurrentPage(1);
+        toast({
+          title: "No Results",
+          description: "No cards found matching your search criteria.",
+        });
+      }
     } catch (error) {
       console.error("Error searching cards:", error);
       toast({
@@ -211,6 +233,9 @@ const PokemonDashboard = () => {
         description: "Failed to search cards. Please try again.",
         variant: "destructive",
       });
+      setSearchResults([]);
+      setTotalCount(0);
+      setCurrentPage(1);
     } finally {
       setIsSearching(false);
     }
@@ -479,6 +504,12 @@ const PokemonDashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const calculateRange = () => {
+    const start = (currentPage - 1) * pageSize + 1;
+    const end = Math.min(currentPage * pageSize, totalCount);
+    return `${start} - ${end} of ${totalCount} results`;
   };
 
   return (
