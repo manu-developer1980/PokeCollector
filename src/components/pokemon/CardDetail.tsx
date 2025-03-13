@@ -31,13 +31,19 @@ const CardDetail = ({
   if (!card) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {card.name}
             {card.rarity && (
-              <Badge variant="outline" className="ml-2">
+              <Badge
+                variant="outline"
+                className="ml-2"
+              >
                 {card.rarity}
               </Badge>
             )}
@@ -81,7 +87,7 @@ const CardDetail = ({
                           <div key={key}>
                             {key}: ${value?.market?.toFixed(2) || "N/A"}
                           </div>
-                        ),
+                        )
                       )}
                     </div>
                   </>
@@ -94,7 +100,10 @@ const CardDetail = ({
                 <h3 className="text-sm font-medium mb-1">Attacks</h3>
                 <div className="space-y-2">
                   {card.attacks.map((attack, index) => (
-                    <div key={index} className="text-sm">
+                    <div
+                      key={index}
+                      className="text-sm"
+                    >
                       <div className="font-medium">{attack.name}</div>
                       <div className="text-gray-500">{attack.text}</div>
                       <div className="text-gray-500">

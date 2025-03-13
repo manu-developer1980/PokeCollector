@@ -23,13 +23,20 @@ import {
   Loader2,
   Twitter,
   Instagram,
-  X
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabase/supabase";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
@@ -97,7 +104,9 @@ export default function LandingPage() {
   const fetchPlans = async () => {
     try {
       // Use the Supabase client to call the Edge Function
-      const { data, error } = await supabase.functions.invoke('supabase-functions-get-plans');
+      const { data, error } = await supabase.functions.invoke(
+        "supabase-functions-get-plans"
+      );
 
       if (error) {
         throw error;
@@ -132,19 +141,22 @@ export default function LandingPage() {
     setError("");
 
     try {
-      const { data, error } = await supabase.functions.invoke('supabase-functions-create-checkout', {
-        body: {
-          productPriceId: priceId,
-          successUrl: `${window.location.origin}/dashboard`,
-          customerEmail: user.email || '',
-          metadata: {
-            user_id: user.id,
-          }
-        },
-        headers: {
-          'X-Customer-Email': user.email || '',
+      const { data, error } = await supabase.functions.invoke(
+        "supabase-functions-create-checkout",
+        {
+          body: {
+            productPriceId: priceId,
+            successUrl: `${window.location.origin}/dashboard`,
+            customerEmail: user.email || "",
+            metadata: {
+              user_id: user.id,
+            },
+          },
+          headers: {
+            "X-Customer-Email": user.email || "",
+          },
         }
-      });
+      );
 
       if (error) {
         throw error;
@@ -154,19 +166,21 @@ export default function LandingPage() {
       if (data?.url) {
         toast({
           title: "Redirecting to checkout",
-          description: "You'll be redirected to Stripe to complete your purchase.",
+          description:
+            "You'll be redirected to Stripe to complete your purchase.",
           variant: "default",
         });
         window.location.href = data.url;
       } else {
-        throw new Error('No checkout URL returned');
+        throw new Error("No checkout URL returned");
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
-      setError('Failed to create checkout session. Please try again.');
+      console.error("Error creating checkout session:", error);
+      setError("Failed to create checkout session. Please try again.");
       toast({
         title: "Checkout failed",
-        description: "There was an error creating your checkout session. Please try again.",
+        description:
+          "There was an error creating your checkout session. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -177,10 +191,10 @@ export default function LandingPage() {
 
   // Format currency
   const formatCurrency = (amount: number, currency: string) => {
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    const formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currency.toUpperCase(),
-      minimumFractionDigits: 2
+      minimumFractionDigits: 2,
     });
 
     // The new data structure provides the amount directly, not in cents
@@ -190,25 +204,29 @@ export default function LandingPage() {
   // Sample features data
   const features: Feature[] = [
     {
-      title: "Lightning Fast Performance",
-      description: "Built with React and SWC for optimal speed and efficiency in development and production.",
-      icon: <Zap className="h-10 w-10 text-black" />
+      title: "Rendimiento Ultra Rápido",
+      description:
+        "Construido con React y SWC para una velocidad y eficiencia óptimas en desarrollo y producción.",
+      icon: <Zap className="h-10 w-10 text-black" />,
     },
     {
-      title: "Secure Authentication",
-      description: "Powered by Supabase for robust, scalable authentication and user management.",
-      icon: <Shield className="h-10 w-10 text-black" />
+      title: "Autenticación Segura",
+      description:
+        "Impulsado por Supabase para una autenticación robusta y gestión de usuarios escalable.",
+      icon: <Shield className="h-10 w-10 text-black" />,
     },
     {
-      title: "Powerful Database",
-      description: "Leverage Supabase's PostgreSQL database for reliable data storage and retrieval.",
-      icon: <Database className="h-10 w-10 text-black" />
+      title: "Base de Datos Potente",
+      description:
+        "Aprovecha la base de datos PostgreSQL de Supabase para un almacenamiento y recuperación de datos confiable.",
+      icon: <Database className="h-10 w-10 text-black" />,
     },
     {
-      title: "Modern Tooling",
-      description: "Includes TypeScript, Tailwind CSS, and other modern tools for productive development.",
-      icon: <Code className="h-10 w-10 text-black" />
-    }
+      title: "Herramientas Modernas",
+      description:
+        "Incluye TypeScript, Tailwind CSS y otras herramientas modernas para un desarrollo productivo.",
+      icon: <Code className="h-10 w-10 text-black" />,
+    },
   ];
 
   // Sample testimonials data
@@ -218,25 +236,28 @@ export default function LandingPage() {
       name: "Sarah Johnson",
       role: "CTO",
       company: "TechFlow",
-      content: "Tempo Starter Kit has dramatically reduced our development time. The integration with Supabase is seamless and the UI components are beautiful.",
-      avatar: "sarah"
+      content:
+        "El Kit de Inicio Tempo ha reducido drásticamente nuestro tiempo de desarrollo. La integración con Supabase es perfecta y los componentes de UI son hermosos.",
+      avatar: "sarah",
     },
     {
       id: 2,
       name: "Michael Chen",
-      role: "Lead Developer",
+      role: "Desarrollador Principal",
       company: "InnovateCorp",
-      content: "I've tried many starter kits, but Tempo stands out with its performance and developer experience. Highly recommended for any modern web project.",
-      avatar: "michael"
+      content:
+        "He probado muchos kits de inicio, pero Tempo destaca por su rendimiento y experiencia de desarrollo. Muy recomendado para cualquier proyecto web moderno.",
+      avatar: "michael",
     },
     {
       id: 3,
       name: "Aisha Patel",
-      role: "Product Manager",
+      role: "Gerente de Producto",
       company: "DigitalWave",
-      content: "Our team was able to launch our MVP in record time thanks to Tempo. The authentication and database features saved us weeks of development.",
-      avatar: "aisha"
-    }
+      content:
+        "Our team was able to launch our MVP in record time thanks to Tempo. The authentication and database features saved us weeks of development.",
+      avatar: "aisha",
+    },
   ];
 
   return (
@@ -245,7 +266,10 @@ export default function LandingPage() {
       <header className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="font-bold text-xl flex items-center text-black">
+            <Link
+              to="/"
+              className="font-bold text-xl flex items-center text-black"
+            >
               <Zap className="h-6 w-6 mr-2 text-black" />
               Tempo Starter Kit
             </Link>
@@ -254,11 +278,19 @@ export default function LandingPage() {
             {user ? (
               <div className="flex items-center gap-4">
                 <Link to="/dashboard">
-                  <Button variant="ghost" className="text-gray-700 hover:text-black">Dashboard</Button>
+                  <Button
+                    variant="ghost"
+                    className="text-gray-700 hover:text-black"
+                  >
+                    Dashboard
+                  </Button>
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-2 text-gray-700 hover:text-black">
+                    <Button
+                      variant="ghost"
+                      className="gap-2 text-gray-700 hover:text-black"
+                    >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
                           src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
@@ -273,8 +305,13 @@ export default function LandingPage() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-white border-gray-200">
-                    <DropdownMenuLabel className="text-black">My Account</DropdownMenuLabel>
+                  <DropdownMenuContent
+                    align="end"
+                    className="bg-white border-gray-200"
+                  >
+                    <DropdownMenuLabel className="text-black">
+                      My Account
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-gray-200" />
                     <DropdownMenuItem className="text-gray-700 hover:text-black focus:text-black">
                       <User className="mr-2 h-4 w-4" />
@@ -285,7 +322,10 @@ export default function LandingPage() {
                       Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-gray-200" />
-                    <DropdownMenuItem onSelect={() => signOut()} className="text-gray-700 hover:text-black focus:text-black">
+                    <DropdownMenuItem
+                      onSelect={() => signOut()}
+                      className="text-gray-700 hover:text-black focus:text-black"
+                    >
                       Log out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -294,10 +334,17 @@ export default function LandingPage() {
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-black">Sign In</Button>
+                  <Button
+                    variant="ghost"
+                    className="text-gray-700 hover:text-black"
+                  >
+                    Sign In
+                  </Button>
                 </Link>
                 <Link to="/signup">
-                  <Button className="bg-black text-white hover:bg-gray-800">Get Started</Button>
+                  <Button className="bg-black text-white hover:bg-gray-800">
+                    Get Started
+                  </Button>
                 </Link>
               </>
             )}
@@ -320,16 +367,25 @@ export default function LandingPage() {
                   </h1>
                 </div>
                 <p className="text-lg md:text-xl text-gray-600">
-                  A modern full-stack starter kit with React, Supabase, and everything you need to build production-ready applications in record time.
+                  A modern full-stack starter kit with React, Supabase, and
+                  everything you need to build production-ready applications in
+                  record time.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/signup">
-                    <Button size="lg" className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto"
+                    >
                       Get Started Free
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button variant="outline" size="lg" className="border-gray-300 text-gray-700 hover:border-gray-500 hover:text-black w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-gray-300 text-gray-700 hover:border-gray-500 hover:text-black w-full sm:w-auto"
+                  >
                     <Github className="mr-2 h-4 w-4" />
                     View on GitHub
                   </Button>
@@ -337,10 +393,16 @@ export default function LandingPage() {
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <CheckCircle2 className="h-4 w-4 text-black" />
                   <span>No credit card required</span>
-                  <Separator orientation="vertical" className="h-4 mx-2 bg-gray-300" />
+                  <Separator
+                    orientation="vertical"
+                    className="h-4 mx-2 bg-gray-300"
+                  />
                   <CheckCircle2 className="h-4 w-4 text-black" />
                   <span>Free tier available</span>
-                  <Separator orientation="vertical" className="h-4 mx-2 bg-gray-300" />
+                  <Separator
+                    orientation="vertical"
+                    className="h-4 mx-2 bg-gray-300"
+                  />
                   <CheckCircle2 className="h-4 w-4 text-black" />
                   <span>Open source</span>
                 </div>
@@ -353,7 +415,9 @@ export default function LandingPage() {
                       <div className="h-3 w-3 rounded-full bg-red-500" />
                       <div className="h-3 w-3 rounded-full bg-yellow-500" />
                       <div className="h-3 w-3 rounded-full bg-green-500" />
-                      <div className="ml-2 text-xs text-black font-medium">Tempo App</div>
+                      <div className="ml-2 text-xs text-black font-medium">
+                        Tempo App
+                      </div>
                     </div>
                   </div>
                   <div className="p-6">
@@ -389,22 +453,29 @@ const { data, error } = await supabase.auth.signUp({
         <section className="py-16 md:py-24 bg-gray-50">
           <div className="container px-4 mx-auto">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-gray-200 text-gray-800 hover:bg-gray-300 border-none">Features</Badge>
+              <Badge className="mb-4 bg-gray-200 text-gray-800 hover:bg-gray-300 border-none">
+                Features
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-black">
                 Everything You Need to Build Modern Apps
               </h2>
               <p className="text-gray-600 max-w-[700px] mx-auto">
-                Tempo Starter Kit combines the best tools and practices to help you build
-                production-ready applications with minimal setup.
+                Tempo Starter Kit combines the best tools and practices to help
+                you build production-ready applications with minimal setup.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {features.map((feature, index) => (
-                <Card key={index} className="border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-md hover:shadow-lg transition-shadow">
+                <Card
+                  key={index}
+                  className="border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-md hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
                     <div className="mb-4">{feature.icon}</div>
-                    <CardTitle className="text-black">{feature.title}</CardTitle>
+                    <CardTitle className="text-black">
+                      {feature.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600">{feature.description}</p>
@@ -419,18 +490,23 @@ const { data, error } = await supabase.auth.signUp({
         <section className="py-16 md:py-24 bg-white">
           <div className="container px-4 mx-auto">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-gray-200 text-gray-800 hover:bg-gray-300 border-none">Pricing</Badge>
+              <Badge className="mb-4 bg-gray-200 text-gray-800 hover:bg-gray-300 border-none">
+                Pricing
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-black">
                 Simple, Transparent Pricing
               </h2>
               <p className="text-gray-600 max-w-[700px] mx-auto">
-                Choose the perfect plan for your needs. All plans include access to our core features.
-                No hidden fees or surprises.
+                Choose the perfect plan for your needs. All plans include access
+                to our core features. No hidden fees or surprises.
               </p>
             </div>
 
             {error && (
-              <div className="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded relative mb-6" role="alert">
+              <div
+                className="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded relative mb-6"
+                role="alert"
+              >
                 <span className="block sm:inline">{error}</span>
                 <button
                   className="absolute top-0 bottom-0 right-0 px-4 py-3"
@@ -442,29 +518,42 @@ const { data, error } = await supabase.auth.signUp({
               </div>
             )}
 
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {plans?.map((plan) => (
-                <Card key={plan.id} className="flex flex-col h-full border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg hover:shadow-xl transition-all">
+                <Card
+                  key={plan.id}
+                  className="flex flex-col h-full border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-lg hover:shadow-xl transition-all"
+                >
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-center">
                       <CardTitle className="text-xl font-bold text-black">
-                        {plan.name || 'Basic'}
+                        {plan.name || "Basic"}
                       </CardTitle>
-                      {!plan.isArchived &&
-                        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
+                      {!plan.isArchived && (
+                        <Badge
+                          variant="outline"
+                          className="bg-gray-100 text-gray-800 border-gray-300"
+                        >
                           Popular
                         </Badge>
-                      }
+                      )}
                     </div>
                     <CardDescription className="text-sm text-gray-600">
-                      {plan.isRecurring ? `${plan.recurringInterval.charAt(0).toUpperCase() + plan.recurringInterval.slice(1)}ly` : 'One-time'}
+                      {plan.isRecurring
+                        ? `${
+                            plan.recurringInterval.charAt(0).toUpperCase() +
+                            plan.recurringInterval.slice(1)
+                          }ly`
+                        : "One-time"}
                     </CardDescription>
                     <div className="mt-4">
                       {plan.prices && plan.prices.length > 0 && (
                         <>
                           <span className="text-4xl font-bold text-black">
-                            {formatCurrency(plan.prices[0].priceAmount, plan.prices[0].priceCurrency)}
+                            {formatCurrency(
+                              plan.prices[0].priceAmount,
+                              plan.prices[0].priceCurrency
+                            )}
                           </span>
                           <span className="text-gray-600">
                             /{plan.prices[0].recurringInterval}
@@ -476,21 +565,35 @@ const { data, error } = await supabase.auth.signUp({
                   <CardContent className="flex-grow">
                     <Separator className="my-4 bg-gray-200" />
                     <ul className="space-y-3">
-                      {plan.description && plan.description.split('\n').map((feature, index) => (
-                        <li key={index} className="flex items-start text-gray-700">
-                          <CheckCircle2 className="h-5 w-5 text-black mr-2 flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
+                      {plan.description &&
+                        plan.description.split("\n").map((feature, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start text-gray-700"
+                          >
+                            <CheckCircle2 className="h-5 w-5 text-black mr-2 flex-shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
                     </ul>
                   </CardContent>
                   <CardFooter>
                     <Button
                       className="w-full bg-black text-white hover:bg-gray-800"
-                      onClick={() => plan.prices && plan.prices.length > 0 && handleCheckout(plan.prices[0].id)}
-                      disabled={isLoading || !plan.prices || plan.prices.length === 0}
+                      onClick={() =>
+                        plan.prices &&
+                        plan.prices.length > 0 &&
+                        handleCheckout(plan.prices[0].id)
+                      }
+                      disabled={
+                        isLoading || !plan.prices || plan.prices.length === 0
+                      }
                     >
-                      {isLoading && processingPlanId === (plan.prices && plan.prices.length > 0 ? plan.prices[0].id : '') ? (
+                      {isLoading &&
+                      processingPlanId ===
+                        (plan.prices && plan.prices.length > 0
+                          ? plan.prices[0].id
+                          : "") ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Processing...
@@ -513,7 +616,9 @@ const { data, error } = await supabase.auth.signUp({
         <section className="py-16 md:py-24 bg-gray-50">
           <div className="container px-4 mx-auto">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-gray-200 text-gray-800 hover:bg-gray-300 border-none">Testimonials</Badge>
+              <Badge className="mb-4 bg-gray-200 text-gray-800 hover:bg-gray-300 border-none">
+                Testimonials
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-black">
                 Loved by Developers
               </h2>
@@ -524,7 +629,10 @@ const { data, error } = await supabase.auth.signUp({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {testimonials.map((testimonial) => (
-                <Card key={testimonial.id} className="border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-md">
+                <Card
+                  key={testimonial.id}
+                  className="border-gray-200 bg-gradient-to-b from-white to-gray-50 shadow-md"
+                >
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-4">
                       <Avatar>
@@ -535,7 +643,9 @@ const { data, error } = await supabase.auth.signUp({
                         <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <CardTitle className="text-base text-black">{testimonial.name}</CardTitle>
+                        <CardTitle className="text-base text-black">
+                          {testimonial.name}
+                        </CardTitle>
                         <CardDescription className="text-gray-600">
                           {testimonial.role} at {testimonial.company}
                         </CardDescription>
@@ -545,7 +655,10 @@ const { data, error } = await supabase.auth.signUp({
                   <CardContent>
                     <div className="flex mb-2">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-black text-black" />
+                        <Star
+                          key={i}
+                          className="h-4 w-4 fill-black text-black"
+                        />
                       ))}
                     </div>
                     <p className="text-gray-600">{testimonial.content}</p>
@@ -565,15 +678,23 @@ const { data, error } = await supabase.auth.signUp({
                   Ready to Start Building?
                 </h2>
                 <p className="text-lg md:text-xl mb-8 text-gray-600">
-                  Join thousands of developers who are already building amazing products with Tempo Starter Kit.
+                  Join thousands of developers who are already building amazing
+                  products with Tempo Starter Kit.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Link to="/signup">
-                    <Button size="lg" className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto"
+                    >
                       Get Started Free
                     </Button>
                   </Link>
-                  <Button variant="outline" size="lg" className="border-gray-300 text-gray-700 hover:border-gray-500 hover:text-black w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-gray-300 text-gray-700 hover:border-gray-500 hover:text-black w-full sm:w-auto"
+                  >
                     View Documentation
                   </Button>
                 </div>
@@ -588,21 +709,37 @@ const { data, error } = await supabase.auth.signUp({
         <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <Link to="/" className="font-bold text-xl flex items-center mb-4 text-black">
+              <Link
+                to="/"
+                className="font-bold text-xl flex items-center mb-4 text-black"
+              >
                 <Zap className="h-5 w-5 mr-2 text-black" />
                 Tempo
               </Link>
               <p className="text-gray-600 mb-4">
-                A modern full-stack starter kit for building web applications quickly and efficiently.
+                A modern full-stack starter kit for building web applications
+                quickly and efficiently.
               </p>
               <div className="flex space-x-4">
-                <Button variant="ghost" size="icon" className="rounded-full text-gray-600 hover:text-black">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-gray-600 hover:text-black"
+                >
                   <Github className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="rounded-full text-gray-600 hover:text-black">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-gray-600 hover:text-black"
+                >
                   <X className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="rounded-full text-gray-600 hover:text-black">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-gray-600 hover:text-black"
+                >
                   <Instagram className="h-5 w-5" />
                 </Button>
               </div>
@@ -611,30 +748,114 @@ const { data, error } = await supabase.auth.signUp({
             <div>
               <h3 className="font-medium text-lg mb-4 text-black">Product</h3>
               <ul className="space-y-3">
-                <li><Link to="#" className="text-gray-600 hover:text-black">Features</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Pricing</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Changelog</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Roadmap</Link></li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Changelog
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Roadmap
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-medium text-lg mb-4 text-black">Resources</h3>
               <ul className="space-y-3">
-                <li><Link to="#" className="text-gray-600 hover:text-black">Documentation</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Tutorials</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Blog</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Support</Link></li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Tutorials
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Support
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-medium text-lg mb-4 text-black">Company</h3>
               <ul className="space-y-3">
-                <li><Link to="#" className="text-gray-600 hover:text-black">About</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Careers</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Privacy Policy</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-black">Terms of Service</Link></li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Careers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-black"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -643,12 +864,28 @@ const { data, error } = await supabase.auth.signUp({
 
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-gray-600">
-              © {new Date().getFullYear()} Tempo Starter Kit. All rights reserved.
+              © {new Date().getFullYear()} Tempo Starter Kit. All rights
+              reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <Link to="#" className="text-sm text-gray-600 hover:text-black">Privacy</Link>
-              <Link to="#" className="text-sm text-gray-600 hover:text-black">Terms</Link>
-              <Link to="#" className="text-sm text-gray-600 hover:text-black">Cookies</Link>
+              <Link
+                to="#"
+                className="text-sm text-gray-600 hover:text-black"
+              >
+                Privacy
+              </Link>
+              <Link
+                to="#"
+                className="text-sm text-gray-600 hover:text-black"
+              >
+                Terms
+              </Link>
+              <Link
+                to="#"
+                className="text-sm text-gray-600 hover:text-black"
+              >
+                Cookies
+              </Link>
             </div>
           </div>
         </div>

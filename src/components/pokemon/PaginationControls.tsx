@@ -33,29 +33,29 @@ const PaginationControls = ({
       }
     } else {
       pages.push(1);
-      
+
       let start = Math.max(currentPage - 1, 2);
       let end = Math.min(start + 2, totalPages - 1);
-      
+
       if (end === totalPages - 1) {
         start = end - 2;
       }
-      
+
       if (start > 2) {
         pages.push("...");
       }
-      
+
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
-      
+
       if (end < totalPages - 1) {
         pages.push("...");
       }
-      
+
       pages.push(totalPages);
     }
-    
+
     return pages;
   };
 
@@ -74,14 +74,19 @@ const PaginationControls = ({
                 e.preventDefault();
                 if (currentPage > 1) onPageChange(currentPage - 1);
               }}
-              className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+              className={
+                currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+              }
             />
           </PaginationItem>
 
           {getPageNumbers().map((pageNumber, index) => (
             <PaginationItem key={index}>
               {pageNumber === "..." ? (
-                <PaginationLink href="#" onClick={(e) => e.preventDefault()}>
+                <PaginationLink
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                >
                   ...
                 </PaginationLink>
               ) : (
@@ -107,7 +112,9 @@ const PaginationControls = ({
                 if (currentPage < totalPages) onPageChange(currentPage + 1);
               }}
               className={
-                currentPage >= totalPages ? "pointer-events-none opacity-50" : ""
+                currentPage >= totalPages
+                  ? "pointer-events-none opacity-50"
+                  : ""
               }
             />
           </PaginationItem>
