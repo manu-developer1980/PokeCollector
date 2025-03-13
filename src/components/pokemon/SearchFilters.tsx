@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,162 +6,201 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Search, Filter, X, SlidersHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { PokemonCardSearchParams } from "@/types/pokemon";
+import PaginationControls from "./PaginationControls";
 
 interface SearchFiltersProps {
   onSearch: (params: PokemonCardSearchParams) => void;
-  sets?: { id: string; name: string }[];
-  types?: string[];
-  rarities?: string[];
   isLoading?: boolean;
+  totalCount?: number;
+  currentPage?: number;
+  pageSize?: number;
+  children?: React.ReactNode;
+  onAddToCollection?: (card: PokemonCard) => void;
+  onAddToWishlist?: (card: PokemonCard) => void;
 }
 
 const SearchFilters = ({
   onSearch,
-  sets = [],
-  types = [],
-  rarities = [],
   isLoading = false,
+  totalCount = 0,
+  currentPage = 1,
+  pageSize = 20,
+  children,
+  onAddToCollection,
+  onAddToWishlist,
 }: SearchFiltersProps) => {
-  const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
-    q: "",
-    page: 1,
-    pageSize: 20,
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [type, setType] = useState("all");
+  const [sortBy, setSortBy] = useState("name_asc");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchParams({ ...searchParams, q: e.target.value });
-  };
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const shouldShowPagination = totalCount > 0 && totalPages > 1;
 
-  const handleSelectChange = (value: string, field: string) => {
-    setSearchParams({ ...searchParams, [field]: value });
-  };
+  const handleSearch = (page: number = 1) => {
+    const params: PokemonCardSearchParams = {
+      pageSize,
+      page,
+    };
 
-  const handleSearch = () => {
-    onSearch(searchParams);
-  };
+    // Build the query string
+    let queryParts = [];
 
-  // Handle Enter key press in search input
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
+    if (searchTerm) {
+      queryParts.push(`name:"${searchTerm}*"`);
     }
-  };
 
-  const clearFilters = () => {
-    setSearchParams({ q: "", page: 1, pageSize: 20 });
+    if (type !== "all") {
+      queryParts.push(`types:"${type}"`);
+    }
+
+    if (queryParts.length > 0) {
+      params.q = queryParts.join(" ");
+    }
+
+    // Handle sorting
+    switch (sortBy) {
+      case "name_asc":
+        params.orderBy = "name";
+        break;
+      case "name_desc":
+        params.orderBy = "-name";
+        break;
+      case "number_asc":
+        params.orderBy = "number";
+        break;
+      case "number_desc":
+        params.orderBy = "-number";
+        break;
+    }
+
+    onSearch(params);
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
-        <div className="flex-1 relative">
+    <div className="space-y-6">
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="Search cards by name, text, or number"
+            placeholder="Search by name..."
             className="pl-9"
-            value={searchParams.q}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch(1);
+            }}
           />
         </div>
+        <Select
+          value={type}
+          onValueChange={setType}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="normal">Normal</SelectItem>
+            <SelectItem value="fire">Fire</SelectItem>
+            <SelectItem value="water">Water</SelectItem>
+            <SelectItem value="electric">Electric</SelectItem>
+            <SelectItem value="grass">Grass</SelectItem>
+            <SelectItem value="ice">Ice</SelectItem>
+            <SelectItem value="fighting">Fighting</SelectItem>
+            <SelectItem value="poison">Poison</SelectItem>
+            <SelectItem value="ground">Ground</SelectItem>
+            <SelectItem value="flying">Flying</SelectItem>
+            <SelectItem value="psychic">Psychic</SelectItem>
+            <SelectItem value="bug">Bug</SelectItem>
+            <SelectItem value="rock">Rock</SelectItem>
+            <SelectItem value="ghost">Ghost</SelectItem>
+            <SelectItem value="dragon">Dragon</SelectItem>
+            <SelectItem value="dark">Dark</SelectItem>
+            <SelectItem value="steel">Steel</SelectItem>
+            <SelectItem value="fairy">Fairy</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortBy}
+          onValueChange={setSortBy}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+            <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+            <SelectItem value="number_asc">Number (Low-High)</SelectItem>
+            <SelectItem value="number_desc">Number (High-Low)</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Button
-          onClick={handleSearch}
-          className="bg-red-600 hover:bg-red-700"
+          onClick={() => handleSearch(1)}
           disabled={isLoading}
+          className="bg-red-600 hover:bg-red-700 text-white"
         >
           {isLoading ? (
-            <>
-              <span className="animate-spin mr-2">⏳</span>
+            <span className="flex items-center">
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
               Searching...
-            </>
+            </span>
           ) : (
-            <>Search</>
+            <span className="flex items-center">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </span>
           )}
         </Button>
       </div>
 
-      <Separator className="my-4" />
-
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <label className="text-sm font-medium mb-1 block">Set</label>
-          <Select
-            value={searchParams.set || ""}
-            onValueChange={(value) => handleSelectChange(value, "set")}
-            disabled={isLoading || sets.length === 0}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All sets" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All sets</SelectItem>
-              {sets.map((set) => (
-                <SelectItem key={set.id} value={set.id}>
-                  {set.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex-1">
-          <label className="text-sm font-medium mb-1 block">Type</label>
-          <Select
-            value={searchParams.types || ""}
-            onValueChange={(value) => handleSelectChange(value, "types")}
-            disabled={isLoading || types.length === 0}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All types</SelectItem>
-              {types.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex-1">
-          <label className="text-sm font-medium mb-1 block">Rarity</label>
-          <Select
-            value={searchParams.rarity || ""}
-            onValueChange={(value) => handleSelectChange(value, "rarity")}
-            disabled={isLoading || rarities.length === 0}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All rarities" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All rarities</SelectItem>
-              {rarities.map((rarity) => (
-                <SelectItem key={rarity} value={rarity}>
-                  {rarity}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-end">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={clearFilters}
-            disabled={isLoading}
-            className="h-10 w-10"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="space-y-6">
+        {React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            // Pass onAddToCollection and onAddToWishlist to CardGrid
+            return React.cloneElement(child, {
+              onAddToCollection,
+              onAddToWishlist,
+              ...child.props,
+            });
+          }
+          return child;
+        })}
       </div>
+
+      {shouldShowPagination && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={handleSearch}
+        />
+      )}
     </div>
   );
 };

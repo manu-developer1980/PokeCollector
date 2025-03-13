@@ -54,7 +54,7 @@ const PokemonDashboard = () => {
     useState<Collection | null>(null);
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
-    null,
+    null
   );
   const [selectedCollectionCard, setSelectedCollectionCard] =
     useState<CollectionCard | null>(null);
@@ -64,6 +64,11 @@ const PokemonDashboard = () => {
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [rarities, setRarities] = useState<string[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 20;
 
   // Load filter data on mount
   useEffect(() => {
@@ -145,7 +150,7 @@ const PokemonDashboard = () => {
             ...collection,
             cards: cardsData || [],
           };
-        }),
+        })
       );
 
       setCollections(collectionsWithCards);
@@ -192,12 +197,17 @@ const PokemonDashboard = () => {
   const handleSearch = async (params: PokemonCardSearchParams) => {
     setIsSearching(true);
     try {
-      const response = await searchCards(params);
-      setSearchResults(response.data);
+      const response = await fetch(
+        `/api/pokemon/cards?${new URLSearchParams(params as any)}`
+      );
+      const data = await response.json();
+      setSearchResults(data.data);
+      setTotalCount(data.totalCount);
+      setCurrentPage(params.page || 1);
     } catch (error) {
       console.error("Error searching cards:", error);
       toast({
-        title: "Search Error",
+        title: "Error",
         description: "Failed to search cards. Please try again.",
         variant: "destructive",
       });
@@ -434,6 +444,43 @@ const PokemonDashboard = () => {
     }
   };
 
+  const handleQuickAddToCollection = async (card: PokemonCard) => {
+    const defaultCollection = collections.find((c) => c.isDefault);
+    if (!defaultCollection) {
+      toast({
+        title: "Error",
+        description:
+          "Default collection not found. Please create a collection first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await handleSaveToCollection({
+        card,
+        collectionId: defaultCollection.id,
+        quantity: 1,
+        condition: "Near Mint",
+        isFoil: false,
+        isFirstEdition: false,
+        notes: "",
+      });
+
+      toast({
+        title: "Card Added",
+        description: `${card.name} has been added to your default collection.`,
+      });
+    } catch (error) {
+      console.error("Error adding card to collection:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add card to collection. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavigation />
@@ -466,19 +513,29 @@ const PokemonDashboard = () => {
             <div className="space-y-6">
               <SearchFilters
                 onSearch={handleSearch}
-                sets={sets}
-                types={types}
-                rarities={rarities}
                 isLoading={isSearching}
-              />
-
-              {isSearching ? (
-                <div className="flex justify-center items-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-red-600" />
-                </div>
-              ) : (
-                <CardGrid cards={searchResults} onCardClick={handleCardClick} />
-              )}
+                totalCount={totalCount}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                onAddToCollection={handleQuickAddToCollection}
+                onAddToWishlist={handleAddToWishlist}
+              >
+                {isSearching ? (
+                  <div className="flex justify-center items-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+                  </div>
+                ) : (
+                  <CardGrid
+                    cards={searchResults}
+                    onCardClick={(card) => {
+                      setSelectedCard(card);
+                      setIsCardDetailOpen(true);
+                    }}
+                    onAddToCollection={handleQuickAddToCollection}
+                    onAddToWishlist={handleAddToWishlist}
+                  />
+                )}
+              </SearchFilters>
             </div>
           )}
 
