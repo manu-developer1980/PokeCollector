@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -27,18 +27,18 @@ const CardItem = ({ card, onQuickAdd, onClick }: CardItemProps) => {
   };
 
   return (
-    <Card 
-      className="group relative cursor-pointer hover:shadow-lg transition-shadow"
+    <Card
+      className="group relative cursor-pointer hover:shadow-lg transition-shadow w-full max-w-[287px]"
       onClick={() => onClick?.(card)}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-2 sm:p-4">
         {/* Image */}
         <div className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg mb-2">
           {!imageError ? (
             <img
               src={card.images?.small || card.images?.large}
               alt={card.name}
-              className="object-cover w-full h-full transform transition-transform group-hover:scale-105"
+              className="object-contain w-full h-full transform transition-transform group-hover:scale-105"
               onError={handleImageError}
             />
           ) : (
@@ -46,7 +46,7 @@ const CardItem = ({ card, onQuickAdd, onClick }: CardItemProps) => {
               Image not available
             </div>
           )}
-          
+
           {/* Quick add button */}
           {onQuickAdd && (
             <Button
@@ -64,7 +64,9 @@ const CardItem = ({ card, onQuickAdd, onClick }: CardItemProps) => {
           <h3 className="font-medium text-sm truncate">{card.name}</h3>
           <div className="flex justify-between items-center text-sm text-gray-500">
             <span>{card.set?.name}</span>
-            <span>{card.number}/{card.set?.printedTotal}</span>
+            <span>
+              {card.number}/{card.set?.printedTotal}
+            </span>
           </div>
           {card.cardmarket?.prices?.averageSellPrice && (
             <div className="text-sm font-medium text-green-600">

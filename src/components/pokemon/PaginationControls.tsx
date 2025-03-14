@@ -60,13 +60,13 @@ const PaginationControls = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <p className="text-sm text-gray-600">
+    <div className="flex flex-col items-center gap-2 px-2 sm:px-4 w-full max-w-full overflow-x-auto">
+      <p className="text-sm text-gray-600 text-center">
         Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)} -{" "}
         {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
       </p>
-      <Pagination>
-        <PaginationContent>
+      <Pagination className="max-w-full">
+        <PaginationContent className="flex-wrap justify-center">
           <PaginationItem>
             <PaginationPrevious
               href="#"
@@ -74,9 +74,9 @@ const PaginationControls = ({
                 e.preventDefault();
                 if (currentPage > 1) onPageChange(currentPage - 1);
               }}
-              className={
+              className={`whitespace-nowrap ${
                 currentPage <= 1 ? "pointer-events-none opacity-50" : ""
-              }
+              }`}
             />
           </PaginationItem>
 
@@ -86,6 +86,7 @@ const PaginationControls = ({
                 <PaginationLink
                   href="#"
                   onClick={(e) => e.preventDefault()}
+                  className="px-2"
                 >
                   ...
                 </PaginationLink>
@@ -97,6 +98,7 @@ const PaginationControls = ({
                     onPageChange(pageNumber as number);
                   }}
                   isActive={currentPage === pageNumber}
+                  className="px-2"
                 >
                   {pageNumber}
                 </PaginationLink>
@@ -111,11 +113,11 @@ const PaginationControls = ({
                 e.preventDefault();
                 if (currentPage < totalPages) onPageChange(currentPage + 1);
               }}
-              className={
+              className={`whitespace-nowrap ${
                 currentPage >= totalPages
                   ? "pointer-events-none opacity-50"
                   : ""
-              }
+              }`}
             />
           </PaginationItem>
         </PaginationContent>

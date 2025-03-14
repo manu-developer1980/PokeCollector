@@ -932,7 +932,7 @@ const PokemonDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <TopNavigation />
 
-      <div className="flex pt-16">
+      <div className="flex">
         <Sidebar
           items={defaultNavItems}
           activeItem={activeSection}
@@ -942,7 +942,7 @@ const PokemonDashboard = () => {
           }
         />
 
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 md:ml-64 p-6 pt-16">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
               {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}

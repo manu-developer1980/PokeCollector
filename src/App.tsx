@@ -1,5 +1,11 @@
 import { Suspense } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import LoginForm from "./components/auth/LoginForm";
 import SignUpForm from "./components/auth/SignUpForm";
 import ConfirmSignup from "./components/auth/ConfirmSignup";
@@ -37,138 +43,142 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <MainLayout>
-            <LandingPage />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/login"
-        element={
-          <MainLayout>
-            <LoginForm />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <MainLayout>
-            <SignUpForm />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/confirm-signup"
-        element={
-          <MainLayout>
-            <ConfirmSignup />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/pricing"
-        element={
-          <MainLayout>
-            <PricingPage />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/search"
-        element={
-          <MainLayout>
-            <SearchPage />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute>
-            <PokemonDashboard />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/collection"
-        element={
-          <Navigate
-            to="/dashboard"
-            replace
-          />
-        }
-      />
-      <Route
-        path="/checkout"
-        element={
-          <MainLayout>
-            <CheckoutPage />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/success"
-        element={
-          <MainLayout>
-            <Success />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/checkout-success"
-        element={
-          <MainLayout>
-            <CheckoutSuccessPage />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/auth/confirm-signup"
-        element={
-          <MainLayout>
-            <ConfirmSignup />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/auth/callback"
-        element={
-          <MainLayout>
-            <AuthCallback />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <MainLayout>
-            <ForgotPassword />
-          </MainLayout>
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={
-          <MainLayout>
-            <ResetPassword />
-          </MainLayout>
-        }
-      />
-    </Routes>
+    <div className="min-h-screen w-full bg-background overflow-x-hidden">
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <MainLayout>
+              <LandingPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <MainLayout>
+              <LoginForm />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <MainLayout>
+              <SignUpForm />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/confirm-signup"
+          element={
+            <MainLayout>
+              <ConfirmSignup />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <MainLayout>
+              <PricingPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <MainLayout>
+              <SearchPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <PokemonDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/collection"
+          element={
+            <Navigate
+              to="/dashboard"
+              replace
+            />
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <MainLayout>
+              <CheckoutPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/success"
+          element={
+            <MainLayout>
+              <Success />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/checkout-success"
+          element={
+            <MainLayout>
+              <CheckoutSuccessPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/auth/confirm-signup"
+          element={
+            <MainLayout>
+              <ConfirmSignup />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/auth/callback"
+          element={
+            <MainLayout>
+              <AuthCallback />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <MainLayout>
+              <ForgotPassword />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <MainLayout>
+              <ResetPassword />
+            </MainLayout>
+          }
+        />
+      </Routes>
+    </div>
   );
 }
 
 export default function App() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
     </Suspense>
   );
 }

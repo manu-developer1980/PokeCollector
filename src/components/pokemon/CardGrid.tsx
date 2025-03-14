@@ -59,15 +59,17 @@ const CardGrid = ({
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {cards.map((card) => (
-          <CardItem
-            key={card.id}
-            card={card}
-            onClick={onCardClick}
-            onQuickAdd={onQuickAdd}
-          />
-        ))}
+      <div className="px-2 sm:px-4">
+        <div className="grid grid-cols-1 min-[460px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+          {cards.map((card) => (
+            <CardItem
+              key={card.id}
+              card={card}
+              onClick={onCardClick}
+              onQuickAdd={onQuickAdd}
+            />
+          ))}
+        </div>
       </div>
     </ErrorBoundary>
   );

@@ -265,17 +265,17 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <TopNavigation />
 
-      <div className="flex pt-16">
+      <div className="flex min-h-screen">
         <Sidebar
           items={defaultNavItems}
           activeItem="My Collection"
           onItemClick={() => {}}
         />
 
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 w-full p-6 pt-16 bg-background">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
               Mi Colección de Pokémon
