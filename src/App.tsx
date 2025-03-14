@@ -13,6 +13,8 @@ import SearchPage from "./components/pages/SearchPage";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/auth/AuthCallback";
+import ForgotPassword from "./components/auth/ForgotPassword";
+import ResetPassword from "./components/auth/ResetPassword";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -138,6 +140,22 @@ function AppRoutes() {
         element={
           <MainLayout>
             <AuthCallback />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <MainLayout>
+            <ForgotPassword />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <MainLayout>
+            <ResetPassword />
           </MainLayout>
         }
       />

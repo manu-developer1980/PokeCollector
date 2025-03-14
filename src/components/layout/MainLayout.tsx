@@ -1,10 +1,14 @@
 import MainHeader from "./MainHeader";
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <>
+    <div className="min-h-screen">
       <MainHeader />
-      <div className="pt-16">{children}</div>
-    </>
+      <main>{children}</main>
+    </div>
   );
 }

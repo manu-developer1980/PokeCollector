@@ -38,7 +38,7 @@ export default function MainHeader() {
                   Iniciar Sesión
                 </Button>
               </Link>
-              <Link to="/signup">
+              <Link to="/pricing">
                 <Button className="bg-red-600 hover:bg-red-700">
                   Comenzar
                 </Button>
