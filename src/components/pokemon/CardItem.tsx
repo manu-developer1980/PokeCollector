@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash, Heart } from "lucide-react";
 import { PokemonCard } from "@/types/pokemon";
 import { Badge } from "@/components/ui/badge";
+import { POKEMON_TYPES_MAP, RARITY_MAP, CONDITION_MAP } from "@/lib/constants";
 
 interface CardItemProps {
   card: PokemonCard & {
@@ -39,6 +40,24 @@ const CardItem = ({
   const handleAction = (e: React.MouseEvent, action: () => void) => {
     e.stopPropagation();
     action();
+  };
+
+  const renderTypes = () => {
+    if (!card.types) return null;
+
+    return (
+      <div className="flex gap-1 flex-wrap">
+        {card.types.map((type) => (
+          <Badge
+            key={type}
+            variant="outline"
+            className="text-xs"
+          >
+            {POKEMON_TYPES_MAP[type.toLowerCase() as PokemonType] || type}
+          </Badge>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -120,7 +139,7 @@ const CardItem = ({
                 variant="outline"
                 className="bg-indigo-50 text-indigo-700"
               >
-                {card.rarity}
+                {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
               </Badge>
             )}
             {actions === "collection" && (
@@ -138,7 +157,7 @@ const CardItem = ({
                     variant="outline"
                     className="bg-purple-50 text-purple-700"
                   >
-                    1st Ed
+                    1ª Ed
                   </Badge>
                 )}
                 {card.condition && (
@@ -146,7 +165,8 @@ const CardItem = ({
                     variant="outline"
                     className="bg-green-50 text-green-700"
                   >
-                    {card.condition}
+                    {CONDITION_MAP[card.condition as CardCondition] ||
+                      card.condition}
                   </Badge>
                 )}
                 {card.quantity && card.quantity > 1 && (

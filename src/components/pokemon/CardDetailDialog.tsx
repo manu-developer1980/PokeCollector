@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CollectionCard, PokemonCard } from "@/types/pokemon";
 import { Trash } from "lucide-react";
+import { CONDITION_MAP, type CardCondition } from "@/lib/constants";
 
 interface CardDetailDialogProps {
   card: CollectionCard | null;
@@ -214,13 +215,14 @@ const CardDetailDialog = ({
                     <SelectValue placeholder="Seleccionar estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Mint">Perfecta</SelectItem>
-                    <SelectItem value="Near Mint">Casi Perfecta</SelectItem>
-                    <SelectItem value="Excellent">Excelente</SelectItem>
-                    <SelectItem value="Good">Buena</SelectItem>
-                    <SelectItem value="Light Played">Poco Usada</SelectItem>
-                    <SelectItem value="Played">Usada</SelectItem>
-                    <SelectItem value="Poor">Deteriorada</SelectItem>
+                    {Object.entries(CONDITION_MAP).map(([value, label]) => (
+                      <SelectItem
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

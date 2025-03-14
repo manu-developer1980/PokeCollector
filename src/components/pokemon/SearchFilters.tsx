@@ -8,9 +8,17 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { PokemonCardSearchParams } from "@/types/pokemon";
 import PaginationControls from "./PaginationControls";
+import {
+  POKEMON_TYPES_MAP,
+  SUPERTYPE_MAP,
+  SUBTYPE_MAP,
+  type PokemonType,
+  type CardSupertype,
+  type CardSubtype,
+} from "@/lib/constants";
 
 interface SearchFiltersProps {
   onSearch: (params: PokemonCardSearchParams) => void;
@@ -30,7 +38,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   children,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [type, setType] = useState("all");
+  const [type, setType] = useState<PokemonType>("all");
+  const [supertype, setSupertype] = useState<CardSupertype | "all">("all");
+  const [subtype, setSubtype] = useState<CardSubtype | "all">("all");
   const [sortBy, setSortBy] = useState("name_asc");
 
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -51,6 +61,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
     if (type !== "all") {
       queryParts.push(`types:"${type}"`);
+    }
+
+    if (supertype !== "all") {
+      queryParts.push(`supertype:"${supertype}"`);
+    }
+
+    if (subtype !== "all") {
+      queryParts.push(`subtype:"${subtype}"`);
     }
 
     if (queryParts.length > 0) {
@@ -86,7 +104,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search by name..."
+                placeholder="Buscar por nombre..."
                 className="pl-9 w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,35 +117,72 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             </div>
           </div>
 
-          {/* Filtro de tipo */}
+          {/* Filtro de tipos */}
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Select
               value={type}
-              onValueChange={setType}
+              onValueChange={(value: PokemonType) => setType(value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="fire">Fire</SelectItem>
-                <SelectItem value="water">Water</SelectItem>
-                <SelectItem value="electric">Electric</SelectItem>
-                <SelectItem value="grass">Grass</SelectItem>
-                <SelectItem value="ice">Ice</SelectItem>
-                <SelectItem value="fighting">Fighting</SelectItem>
-                <SelectItem value="poison">Poison</SelectItem>
-                <SelectItem value="ground">Ground</SelectItem>
-                <SelectItem value="flying">Flying</SelectItem>
-                <SelectItem value="psychic">Psychic</SelectItem>
-                <SelectItem value="bug">Bug</SelectItem>
-                <SelectItem value="rock">Rock</SelectItem>
-                <SelectItem value="ghost">Ghost</SelectItem>
-                <SelectItem value="dragon">Dragon</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="steel">Steel</SelectItem>
-                <SelectItem value="fairy">Fairy</SelectItem>
+                {Object.entries(POKEMON_TYPES_MAP).map(([value, label]) => (
+                  <SelectItem
+                    key={value}
+                    value={value}
+                  >
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtro de Supertipo */}
+          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+            <Select
+              value={supertype}
+              onValueChange={(value: CardSupertype | "all") =>
+                setSupertype(value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por supertipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los supertipos</SelectItem>
+                {Object.entries(SUPERTYPE_MAP).map(([value, label]) => (
+                  <SelectItem
+                    key={value}
+                    value={value}
+                  >
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtro de Subtipo */}
+          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+            <Select
+              value={subtype}
+              onValueChange={(value: CardSubtype | "all") => setSubtype(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por subtipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los subtipos</SelectItem>
+                {Object.entries(SUBTYPE_MAP).map(([value, label]) => (
+                  <SelectItem
+                    key={value}
+                    value={value}
+                  >
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -139,13 +194,15 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onValueChange={setSortBy}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-                <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-                <SelectItem value="number_asc">Number (Low-High)</SelectItem>
-                <SelectItem value="number_desc">Number (High-Low)</SelectItem>
+                <SelectItem value="name_asc">Nombre (A-Z)</SelectItem>
+                <SelectItem value="name_desc">Nombre (Z-A)</SelectItem>
+                <SelectItem value="number_asc">Número (Menor-Mayor)</SelectItem>
+                <SelectItem value="number_desc">
+                  Número (Mayor-Menor)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -158,14 +215,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               disabled={isLoading}
             >
               {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  <span>Searching...</span>
+                <span className="flex items-center justify-center gap-2">
+                  <div className="pokeball" />
+                  <span>Buscando...</span>
                 </span>
               ) : (
-                <span className="flex items-center justify-center">
-                  <Search className="h-4 w-4 mr-2" />
-                  <span>Search</span>
+                <span className="flex items-center justify-center gap-2">
+                  <Search className="h-4 w-4" />
+                  <span>Buscar</span>
                 </span>
               )}
             </Button>
@@ -173,19 +230,30 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         </div>
       </div>
 
-      {/* Resultados y paginación */}
-      <div className="mt-8 space-y-6 w-full">{children}</div>
-
-      {shouldShowPagination && (
-        <div className="w-full overflow-x-auto">
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            pageSize={pageSize}
-            onPageChange={(page) => handleSearch(page)}
-          />
+      {/* Mostrar el loader de Pokéball cuando se está buscando */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="pokeball mb-4" />
+          <p className="text-sm text-muted-foreground animate-pulse">
+            ¡Buscando cartas Pokémon!
+          </p>
         </div>
+      )}
+
+      {/* Resultados y paginación */}
+      {!isLoading && (
+        <>
+          <div className="mt-8 space-y-6 w-full">{children}</div>
+          {shouldShowPagination && (
+            <div className="w-full overflow-x-auto">
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handleSearch}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

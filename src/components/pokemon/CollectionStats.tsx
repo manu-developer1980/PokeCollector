@@ -1,3 +1,5 @@
+import { RARITY_MAP } from "@/lib/constants";
+
 const CollectionStats = ({ collection }) => {
   const stats = useMemo(() => {
     return {
@@ -49,7 +51,7 @@ const CollectionStats = ({ collection }) => {
                 key={rarity}
                 className="flex justify-between"
               >
-                <span>{rarity}</span>
+                <span>{RARITY_MAP[rarity as CardRarity] || rarity}</span>
                 <span>{count}</span>
               </li>
             ))}

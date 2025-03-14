@@ -62,8 +62,8 @@ const PaginationControls = ({
   return (
     <div className="flex flex-col items-center gap-2 px-2 sm:px-4 w-full max-w-full overflow-x-auto">
       <p className="text-sm text-gray-600 text-center">
-        Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)} -{" "}
-        {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
+        Mostrando {Math.min((currentPage - 1) * pageSize + 1, totalCount)} -{" "}
+        {Math.min(currentPage * pageSize, totalCount)} de {totalCount} resultados
       </p>
       <Pagination className="max-w-full">
         <PaginationContent className="flex-wrap justify-center">
@@ -77,32 +77,23 @@ const PaginationControls = ({
               className={`whitespace-nowrap ${
                 currentPage <= 1 ? "pointer-events-none opacity-50" : ""
               }`}
-            />
+            >
+              Anterior
+            </PaginationPrevious>
           </PaginationItem>
 
           {getPageNumbers().map((pageNumber, index) => (
             <PaginationItem key={index}>
-              {pageNumber === "..." ? (
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  className="px-2"
-                >
-                  ...
-                </PaginationLink>
-              ) : (
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onPageChange(pageNumber as number);
-                  }}
-                  isActive={currentPage === pageNumber}
-                  className="px-2"
-                >
-                  {pageNumber}
-                </PaginationLink>
-              )}
+              <PaginationLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onPageChange(pageNumber);
+                }}
+                isActive={currentPage === pageNumber}
+              >
+                {pageNumber}
+              </PaginationLink>
             </PaginationItem>
           ))}
 
@@ -114,11 +105,11 @@ const PaginationControls = ({
                 if (currentPage < totalPages) onPageChange(currentPage + 1);
               }}
               className={`whitespace-nowrap ${
-                currentPage >= totalPages
-                  ? "pointer-events-none opacity-50"
-                  : ""
+                currentPage >= totalPages ? "pointer-events-none opacity-50" : ""
               }`}
-            />
+            >
+              Siguiente
+            </PaginationNext>
           </PaginationItem>
         </PaginationContent>
       </Pagination>

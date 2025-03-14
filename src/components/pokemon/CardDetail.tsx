@@ -12,6 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PokemonCard } from "@/types/pokemon";
 import { PlusCircle, Heart } from "lucide-react";
+import {
+  SUPERTYPE_MAP,
+  SUBTYPE_MAP,
+  type CardSupertype,
+  type CardSubtype,
+} from "@/lib/constants";
 
 interface CardDetailProps {
   card: PokemonCard | null;
