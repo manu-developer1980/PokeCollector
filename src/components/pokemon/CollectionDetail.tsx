@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Collection, CollectionCard } from "@/types/pokemon";
-import { Search, ArrowLeft, Edit, Trash } from "lucide-react";
+import { Search, ArrowLeft, Edit } from "lucide-react";
+import CardItem from "./CardItem";
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -86,85 +87,18 @@ const CollectionDetail = ({
 
       <Separator />
 
-      <div>
-        <h3 className="font-medium mb-4">Cards in Collection</h3>
-        {filteredCards.length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">
-              {searchTerm
-                ? "No cards match your search"
-                : "No cards in this collection yet"}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {filteredCards.map((card) => (
-              <div
-                key={card.id}
-                className="relative"
-              >
-                <Card
-                  className="overflow-hidden cursor-pointer group hover:shadow-lg transition-all duration-200"
-                  onClick={() => onCardClick(card)}
-                >
-                  <div className="aspect-[0.716] relative">
-                    {card.images?.small && (
-                      <img
-                        src={card.images.small}
-                        alt={card.name || "Pokemon Card"}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200" />
-                  </div>
-                  <CardContent className="p-3">
-                    <h4 className="font-medium text-sm truncate">
-                      {card.name || "Unnamed Card"}
-                    </h4>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {card.set && <p className="truncate">{card.set}</p>}
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        <Badge
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          Qty: {card.quantity || 1}
-                        </Badge>
-                        {card.is_foil && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            Foil
-                          </Badge>
-                        )}
-                        {card.is_first_edition && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            1st Ed
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute bottom-2 right-2 w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveCard(card.id);
-                  }}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="px-2 sm:px-4">
+        <div className="flex flex-wrap gap-4 justify-center">
+          {filteredCards.map((card) => (
+            <CardItem
+              key={card.id}
+              card={card}
+              onClick={() => onCardClick(card)}
+              onRemove={() => onRemoveCard(card.id)}
+              actions="collection"
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
