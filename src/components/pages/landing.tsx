@@ -37,7 +37,7 @@ export default function LandingPage() {
             {user ? (
               <Link to="/dashboard">
                 <Button className="bg-red-600 hover:bg-red-700">
-                  My Collection
+                  Mi Colección
                 </Button>
               </Link>
             ) : (
@@ -47,12 +47,12 @@ export default function LandingPage() {
                     variant="ghost"
                     className="text-gray-700 hover:text-red-600"
                   >
-                    Sign In
+                    Iniciar Sesión
                   </Button>
                 </Link>
                 <Link to="/signup">
                   <Button className="bg-red-600 hover:bg-red-700">
-                    Get Started
+                    Comenzar
                   </Button>
                 </Link>
               </>
@@ -68,15 +68,15 @@ export default function LandingPage() {
             <div className="lg:w-1/2 space-y-8">
               <div>
                 <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-                  Gotta Collect 'Em All
+                  ¡Hazte con todos!
                 </Badge>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900">
-                  Manage Your Pokémon Card Collection
+                  Gestiona tu Colección de Cartas Pokémon
                 </h1>
               </div>
               <p className="text-lg md:text-xl text-gray-600">
-                Track, organize, and showcase your Pokémon TCG collection with
-                our powerful collection management tools.
+                Rastrea, organiza y muestra tu colección de Pokémon TCG con
+                nuestras potentes herramientas de gestión.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/pricing">
@@ -84,7 +84,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
                   >
-                    Start Your Collection
+                    Inicia tu Colección
                   </Button>
                 </Link>
                 <Link to="/search">
@@ -94,7 +94,7 @@ export default function LandingPage() {
                     className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 w-full sm:w-auto"
                   >
                     <Search className="mr-2 h-4 w-4" />
-                    Browse Cards
+                    Explorar Cartas
                   </Button>
                 </Link>
               </div>
@@ -132,14 +132,14 @@ export default function LandingPage() {
         <div className="container px-4 mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-              Features
+              Características
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
-              Everything You Need for Your Collection
+              Todo lo que Necesitas para tu Colección
             </h2>
             <p className="text-gray-600 max-w-[700px] mx-auto">
-              PokéCollector provides all the tools you need to manage your
-              Pokémon card collection.
+              PokéCollector te proporciona todas las herramientas necesarias
+              para gestionar tu colección de cartas Pokémon.
             </p>
           </div>
 
@@ -150,11 +150,11 @@ export default function LandingPage() {
                   <Search className="h-6 w-6 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Card Search
+                  Búsqueda de Cartas
                 </h3>
                 <p className="text-gray-600">
-                  Search and filter through thousands of Pokémon cards by set,
-                  type, rarity, and more.
+                  Busca y filtra entre miles de cartas Pokémon por set, tipo,
+                  rareza y más.
                 </p>
               </CardContent>
             </Card>
@@ -165,11 +165,11 @@ export default function LandingPage() {
                   <Database className="h-6 w-6 text-green-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Collection Management
+                  Gestión de Colección
                 </h3>
                 <p className="text-gray-600">
-                  Add cards to your collection, track quantities, and organize
-                  them however you want.
+                  Añade cartas a tu colección, controla cantidades y organízalas
+                  como prefieras.
                 </p>
               </CardContent>
             </Card>
@@ -180,11 +180,11 @@ export default function LandingPage() {
                   <Heart className="h-6 w-6 text-purple-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Wishlist
+                  Lista de Deseos
                 </h3>
                 <p className="text-gray-600">
-                  Keep track of cards you want to acquire with a dedicated
-                  wishlist feature.
+                  Mantén un registro de las cartas que deseas adquirir con
+                  nuestra función de lista de deseos.
                 </p>
               </CardContent>
             </Card>
@@ -195,11 +195,11 @@ export default function LandingPage() {
                   <FolderPlus className="h-6 w-6 text-yellow-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Custom Collections
+                  Colecciones Personalizadas
                 </h3>
                 <p className="text-gray-600">
-                  Create and manage multiple custom collections for different
-                  sets or themes.
+                  Crea y gestiona múltiples colecciones personalizadas para
+                  diferentes sets o temas.
                 </p>
               </CardContent>
             </Card>
@@ -210,11 +210,11 @@ export default function LandingPage() {
                   <ListFilter className="h-6 w-6 text-red-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Advanced Filtering
+                  Filtrado Avanzado
                 </h3>
                 <p className="text-gray-600">
-                  Filter your collection by set, type, rarity, and more to find
-                  exactly what you're looking for.
+                  Filtra tu colección por set, tipo, rareza y más para encontrar
+                  exactamente lo que buscas.
                 </p>
               </CardContent>
             </Card>
@@ -225,11 +225,11 @@ export default function LandingPage() {
                   <Zap className="h-6 w-6 text-indigo-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Real-time Updates
+                  Actualizaciones en Tiempo Real
                 </h3>
                 <p className="text-gray-600">
-                  Your collection stays in sync across all your devices with
-                  real-time updates.
+                  Tu colección se sincroniza en todos tus dispositivos con
+                  actualizaciones en tiempo real.
                 </p>
               </CardContent>
             </Card>
@@ -243,11 +243,11 @@ export default function LandingPage() {
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-200 max-w-4xl mx-auto">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-                Ready to Start Your Collection?
+                ¿Listo para Iniciar tu Colección?
               </h2>
               <p className="text-lg md:text-xl mb-8 text-gray-600">
-                Join thousands of Pokémon card collectors who are already using
-                PokéCollector to manage their collections.
+                Únete a miles de coleccionistas de cartas Pokémon que ya están
+                utilizando PokéCollector para gestionar sus colecciones.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link to="/pricing">
@@ -255,7 +255,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
                   >
-                    See Pricing Plans
+                    Ver Planes de Precio
                   </Button>
                 </Link>
                 <Link to="/search">
@@ -264,7 +264,7 @@ export default function LandingPage() {
                     size="lg"
                     className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 w-full sm:w-auto"
                   >
-                    Browse Cards
+                    Explorar Cartas
                   </Button>
                 </Link>
               </div>
@@ -290,34 +290,38 @@ export default function LandingPage() {
                 PokéCollector
               </Link>
               <p className="text-gray-600 mb-4">
-                The ultimate Pokémon TCG collection management tool for
-                collectors of all levels.
+                La herramienta definitiva para gestionar tu colección de cartas
+                Pokémon TCG, para coleccionistas de todos los niveles.
               </p>
             </div>
 
             <div>
               <h3 className="font-medium text-lg mb-4 text-gray-900">
-                Features
+                Características
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Card Search
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Búsqueda de Cartas
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Collection Management
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Gestión de Colección
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Wishlist
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Custom Collections
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Lista de Deseos
                   </Link>
                 </li>
               </ul>
@@ -325,27 +329,31 @@ export default function LandingPage() {
 
             <div>
               <h3 className="font-medium text-lg mb-4 text-gray-900">
-                Resources
+                Recursos
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Help Center
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Guías
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    API Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Community
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Tutoriales
                   </Link>
                 </li>
               </ul>
@@ -353,27 +361,39 @@ export default function LandingPage() {
 
             <div>
               <h3 className="font-medium text-lg mb-4 text-gray-900">
-                Company
+                Compañía
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    About
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Acerca de
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Privacy Policy
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Contacto
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Terms of Service
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Política de Privacidad
                   </Link>
                 </li>
                 <li>
-                  <Link to="#" className="text-gray-600 hover:text-red-600">
-                    Contact
+                  <Link
+                    to="#"
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Términos de Servicio
                   </Link>
                 </li>
               </ul>
@@ -382,11 +402,13 @@ export default function LandingPage() {
 
           <div className="mt-12 pt-8 border-t border-gray-200 text-center text-gray-600">
             <p>
-              © {new Date().getFullYear()} PokéCollector. All rights reserved.
+              © {new Date().getFullYear()} PokéCollector. Todos los derechos
+              reservados.
             </p>
             <p className="mt-2 text-sm">
-              Pokémon and Pokémon character names are trademarks of Nintendo.
-              This site is not affiliated with Nintendo or The Pokémon Company.
+              Pokémon y los nombres de los personajes Pokémon son marcas
+              registradas de Nintendo. Este sitio no está afiliado con Nintendo
+              ni con The Pokémon Company.
             </p>
           </div>
         </div>

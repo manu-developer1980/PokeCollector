@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
+import { getPokemonCard } from "@/lib/pokemon-api";
 import TopNavigation from "../dashboard/layout/TopNavigation";
 import Sidebar from "../dashboard/layout/Sidebar";
 import SearchFilters from "../pokemon/SearchFilters";
@@ -16,6 +18,7 @@ import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
 import CardDetailDialog from "../pokemon/CardDetailDialog";
 import OnboardingModal from "../onboarding/OnboardingModal";
+import WishlistGrid from "../pokemon/WishlistGrid";
 import {
   Collection,
   CollectionCard,
@@ -24,19 +27,37 @@ import {
 } from "@/types/pokemon";
 import { searchCards, getSets, getTypes, getRarities } from "@/lib/api";
 import { Database, Heart, Search, Grid3X3, Plus, Loader2 } from "lucide-react";
+import { RealtimeChannel } from "@supabase/supabase-js";
+import SubscriptionPage from "../subscription/SubscriptionPage";
+
+interface PolarSubscription {
+  status: string;
+  polar_price_id: string;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+}
 
 const defaultNavItems = [
-  { icon: <Search size={18} />, label: "Search Cards" },
-  { icon: <Database size={18} />, label: "My Collection", isActive: true },
-  { icon: <Heart size={18} />, label: "Wishlist" },
+  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
+  { icon: <Database size={18} />, label: "Mi Colección", id: "My Collection" },
+  { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
 ];
 
 const PokemonDashboard = () => {
+  const location = useLocation();
+  const initialSection = location.state?.activeSection || "My Collection";
   const { user } = useAuth();
   const { toast } = useToast();
 
   // State for active tab/section
-  const [activeSection, setActiveSection] = useState("My Collection");
+  const [activeSection, setActiveSection] = useState(initialSection);
+
+  // Actualizar la sección activa cuando cambie el estado de la ubicación
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      setActiveSection(location.state.activeSection);
+    }
+  }, [location.state]);
 
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -70,21 +91,28 @@ const PokemonDashboard = () => {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 20;
 
+  // Realtime channel state
+  const [realtimeChannel, setRealtimeChannel] =
+    useState<RealtimeChannel | null>(null);
+
+  // Añadir nuevo estado para la lista de deseos
+  const [wishlistCards, setWishlistCards] = useState<WishlistCardType[]>([]);
+
   // Load filter data on mount
   useEffect(() => {
     const loadFilterData = async () => {
       try {
         const [setsData, typesData, raritiesData] = await Promise.all([
           getSets().catch((error) => {
-            console.error("Error fetching sets:", error);
+            console.error("Error al cargar sets:", error);
             return [];
           }),
           getTypes().catch((error) => {
-            console.error("Error fetching types:", error);
+            console.error("Error al cargar tipos:", error);
             return [];
           }),
           getRarities().catch((error) => {
-            console.error("Error fetching rarities:", error);
+            console.error("Error al cargar rarezas:", error);
             return [];
           }),
         ]);
@@ -93,11 +121,11 @@ const PokemonDashboard = () => {
         setTypes(typesData || []);
         setRarities(raritiesData || []);
       } catch (error) {
-        console.error("Error loading filter data:", error);
+        console.error("Error al cargar datos de filtros:", error);
         toast({
           title: "Error",
           description:
-            "Failed to load some filter data. Some features may be limited.",
+            "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
           variant: "destructive",
         });
       }
@@ -124,14 +152,12 @@ const PokemonDashboard = () => {
 
       if (error) throw error;
 
-      // If user has not seen onboarding or the field doesn't exist, show onboarding
-      if (!data || data.has_seen_onboarding !== true) {
+      // Solo mostramos el onboarding si el usuario no lo ha visto antes
+      if (!data?.has_seen_onboarding) {
         setShowOnboarding(true);
       }
     } catch (error) {
       console.error("Error checking onboarding status:", error);
-      // Default to showing onboarding if there's an error
-      setShowOnboarding(true);
     }
   };
 
@@ -144,28 +170,58 @@ const PokemonDashboard = () => {
 
       if (error) throw error;
 
-      // For each collection, fetch its cards
+      // Para cada colección, obtener sus cartas y la información de la API de Pokemon
       const collectionsWithCards = await Promise.all(
         data.map(async (collection) => {
           const { data: cardsData, error: cardsError } = await supabase
             .from("collection_cards")
-            .select("*")
+            .select(
+              `
+              id,
+              card_id,
+              quantity,
+              condition,
+              is_foil,
+              is_first_edition,
+              notes,
+              date_added
+            `
+            )
             .eq("collection_id", collection.id);
 
           if (cardsError) throw cardsError;
 
-          // This is a simplified version - in a real app, you'd fetch the actual card data
-          // from your database or the Pokemon TCG API
+          // Aquí deberías hacer una llamada a la API de Pokemon TCG para obtener los detalles de cada carta
+          const cardsWithDetails = await Promise.all(
+            (cardsData || []).map(async (card) => {
+              try {
+                // Asume que tienes una función para obtener los detalles de la carta de la API de Pokemon
+                const pokemonCard = await getPokemonCard(card.card_id);
+                return {
+                  ...card,
+                  name: pokemonCard.name,
+                  images: pokemonCard.images,
+                  set: pokemonCard.set?.name,
+                };
+              } catch (error) {
+                console.error(
+                  `Error fetching card details for ${card.card_id}:`,
+                  error
+                );
+                return card;
+              }
+            })
+          );
+
           return {
             ...collection,
-            cards: cardsData || [],
+            cards: cardsWithDetails,
           };
         })
       );
 
       setCollections(collectionsWithCards);
 
-      // If no collections exist, create a default one
       if (collectionsWithCards.length === 0) {
         createDefaultCollection();
       }
@@ -184,8 +240,8 @@ const PokemonDashboard = () => {
       const { data, error } = await supabase
         .from("collections")
         .insert({
-          name: "My Collection",
-          description: "My default Pokemon card collection",
+          name: "Mi Colección",
+          description: "Mi colección de cartas Pokémon",
           user_id: user?.id,
           is_default: true,
         })
@@ -195,10 +251,11 @@ const PokemonDashboard = () => {
 
       setCollections([{ ...data[0], cards: [] }]);
     } catch (error) {
-      console.error("Error creating default collection:", error);
+      console.error("Error al crear colección por defecto:", error);
       toast({
         title: "Error",
-        description: "Failed to create default collection. Please try again.",
+        description:
+          "No se pudo crear la colección por defecto. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -251,12 +308,57 @@ const PokemonDashboard = () => {
     setIsAddToCollectionOpen(true);
   };
 
-  const handleAddToWishlist = (card: PokemonCard) => {
-    // Implement wishlist functionality
-    toast({
-      title: "Added to Wishlist",
-      description: `${card.name} has been added to your wishlist.`,
-    });
+  const handleAddToWishlist = async (card: PokemonCard) => {
+    try {
+      // Primero verificamos si la carta ya existe en la lista de deseos
+      const { data: existingCard } = await supabase
+        .from("wishlist_cards")
+        .select("*")
+        .eq("user_id", user?.id)
+        .eq("card_id", card.id)
+        .single();
+
+      if (existingCard) {
+        toast({
+          title: "Ya en Lista de Deseos",
+          description: "Esta carta ya está en tu lista de deseos.",
+        });
+        return;
+      }
+
+      // Si no existe, la insertamos
+      const { data, error } = await supabase
+        .from("wishlist_cards")
+        .insert({
+          user_id: user?.id,
+          card_id: card.id,
+          date_added: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const cardWithDetails = {
+        ...card,
+        wishlist_id: data.id,
+        date_added: data.date_added,
+      };
+
+      setWishlistCards((prev) => [...prev, cardWithDetails]);
+
+      toast({
+        title: "Añadido a Lista de Deseos",
+        description: `${card.name} ha sido añadido a tu lista de deseos.`,
+      });
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo añadir la carta a la lista de deseos.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveToCollection = async (cardData: {
@@ -269,6 +371,7 @@ const PokemonDashboard = () => {
     notes?: string;
   }) => {
     try {
+      // Primero insertamos la carta en la colección
       const { data, error } = await supabase.from("collection_cards").insert({
         card_id: cardData.card.id,
         collection_id: cardData.collectionId,
@@ -282,18 +385,54 @@ const PokemonDashboard = () => {
 
       if (error) throw error;
 
+      // Actualizamos la colección en el estado local
+      const updatedCollections = await Promise.all(
+        collections.map(async (collection) => {
+          if (collection.id === cardData.collectionId) {
+            // Obtenemos los detalles de la carta de la API de Pokemon
+            const pokemonCard = await getPokemonCard(cardData.card.id);
+
+            // Creamos la nueva carta con todos los detalles
+            const newCard = {
+              id: data[0].id,
+              card_id: cardData.card.id,
+              collection_id: cardData.collectionId,
+              quantity: cardData.quantity,
+              condition: cardData.condition,
+              is_foil: cardData.isFoil,
+              is_first_edition: cardData.isFirstEdition,
+              notes: cardData.notes,
+              date_added: new Date().toISOString(),
+              name: pokemonCard.name,
+              images: pokemonCard.images,
+              set: pokemonCard.set?.name,
+            };
+
+            // Añadimos la nueva carta a la colección
+            return {
+              ...collection,
+              cards: [...(collection.cards || []), newCard],
+            };
+          }
+          return collection;
+        })
+      );
+
+      setCollections(updatedCollections);
+
       toast({
-        title: "Card Added",
-        description: `${cardData.card.name} has been added to your collection.`,
+        title: "Carta Añadida",
+        description: "La carta ha sido añadida a tu colección.",
       });
 
-      // Refresh collections
-      fetchCollections();
+      // Cerramos el diálogo
+      setIsAddToCollectionOpen(false);
     } catch (error) {
-      console.error("Error adding card to collection:", error);
+      console.error("Error al añadir carta a la colección:", error);
       toast({
         title: "Error",
-        description: "Failed to add card to collection. Please try again.",
+        description:
+          "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -403,19 +542,39 @@ const PokemonDashboard = () => {
       const { error } = await supabase
         .from("collection_cards")
         .delete()
-        .eq("card_id", cardId)
+        .eq("id", cardId)
         .eq("collection_id", selectedCollection.id);
 
       if (error) throw error;
+
+      // Actualizar el estado local inmediatamente
+      setCollections((prevCollections) =>
+        prevCollections.map((collection) => {
+          if (collection.id === selectedCollection.id) {
+            return {
+              ...collection,
+              cards: collection.cards.filter((card) => card.id !== cardId),
+            };
+          }
+          return collection;
+        })
+      );
+
+      // Actualizar selectedCollection también
+      setSelectedCollection((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          cards: prev.cards.filter((card) => card.id !== cardId),
+        };
+      });
+
+      setIsCardDetailDialogOpen(false);
 
       toast({
         title: "Card Removed",
         description: "The card has been removed from your collection.",
       });
-
-      // Refresh collections
-      fetchCollections();
-      setIsCardDetailDialogOpen(false);
     } catch (error) {
       console.error("Error removing card:", error);
       toast({
@@ -437,33 +596,82 @@ const PokemonDashboard = () => {
     if (!selectedCollection) return;
 
     try {
-      const { error } = await supabase
+      console.log("Received card data for update:", cardData);
+
+      // 1. Actualizar en Supabase
+      const updateData = {
+        quantity: cardData.quantity,
+        condition: cardData.condition,
+        is_foil: cardData.isFoil,
+        is_first_edition: cardData.isFirstEdition,
+        notes: cardData.notes,
+      };
+
+      console.log("Sending to Supabase:", updateData);
+
+      const { data: updatedCard, error } = await supabase
         .from("collection_cards")
-        .update({
-          quantity: cardData.quantity,
-          condition: cardData.condition,
-          is_foil: cardData.isFoil,
-          is_first_edition: cardData.isFirstEdition,
-          notes: cardData.notes,
-        })
-        .eq("card_id", cardData.id)
-        .eq("collection_id", selectedCollection.id);
+        .update(updateData)
+        .eq("id", cardData.id)
+        .select("*")
+        .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Card Updated",
-        description: "The card has been updated in your collection.",
+      console.log("Response from Supabase:", updatedCard);
+
+      // 2. Actualizar el estado local con los datos exactos de Supabase
+      const updatedCardData = {
+        ...updatedCard,
+        isFoil: updatedCard.is_foil,
+        isFirstEdition: updatedCard.is_first_edition,
+      };
+
+      // 3. Actualizar collections de manera inmutable
+      setCollections((prevCollections) => {
+        const newCollections = prevCollections.map((collection) => {
+          if (collection.id === selectedCollection.id) {
+            return {
+              ...collection,
+              cards: collection.cards.map((card) =>
+                card.id === cardData.id ? { ...card, ...updatedCardData } : card
+              ),
+            };
+          }
+          return collection;
+        });
+        console.log("Updated collections:", newCollections);
+        return newCollections;
       });
 
-      // Refresh collections
-      fetchCollections();
-      setIsCardDetailDialogOpen(false);
+      // 4. Actualizar selectedCollection si es necesario
+      if (selectedCollection) {
+        setSelectedCollection((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            cards: prev.cards.map((card) =>
+              card.id === cardData.id ? { ...card, ...updatedCardData } : card
+            ),
+          };
+        });
+      }
+
+      // 5. Actualizar selectedCollectionCard
+      setSelectedCollectionCard((prev) =>
+        prev?.id === cardData.id ? { ...prev, ...updatedCardData } : prev
+      );
+
+      toast({
+        title: "Carta Actualizada",
+        description: "La carta ha sido actualizada correctamente.",
+      });
     } catch (error) {
       console.error("Error updating card:", error);
       toast({
         title: "Error",
-        description: "Failed to update card. Please try again.",
+        description:
+          "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -491,11 +699,6 @@ const PokemonDashboard = () => {
         isFirstEdition: false,
         notes: "",
       });
-
-      toast({
-        title: "Card Added",
-        description: `${card.name} has been added to your default collection.`,
-      });
     } catch (error) {
       console.error("Error adding card to collection:", error);
       toast({
@@ -509,7 +712,215 @@ const PokemonDashboard = () => {
   const calculateRange = () => {
     const start = (currentPage - 1) * pageSize + 1;
     const end = Math.min(currentPage * pageSize, totalCount);
-    return `${start} - ${end} of ${totalCount} results`;
+    return `${start} - ${end} de ${totalCount} resultados`;
+  };
+
+  // Función para obtener las cartas de una colección específica
+  const fetchCollectionCards = async (collectionId: string) => {
+    const { data: cardsData, error: cardsError } = await supabase
+      .from("collection_cards")
+      .select(
+        `
+        id,
+        card_id,
+        quantity,
+        condition,
+        is_foil,
+        is_first_edition,
+        notes,
+        date_added
+      `
+      )
+      .eq("collection_id", collectionId);
+
+    if (cardsError) {
+      console.error("Error fetching cards:", cardsError);
+      return [];
+    }
+
+    // Obtener detalles de las cartas
+    const cardsWithDetails = await Promise.all(
+      (cardsData || []).map(async (card) => {
+        try {
+          const pokemonCard = await getPokemonCard(card.card_id);
+          return {
+            ...card,
+            name: pokemonCard.name,
+            images: pokemonCard.images,
+            set: pokemonCard.set?.name,
+          };
+        } catch (error) {
+          console.error(
+            `Error fetching card details for ${card.card_id}:`,
+            error
+          );
+          return card;
+        }
+      })
+    );
+
+    return cardsWithDetails;
+  };
+
+  // Configurar suscripciones en tiempo real
+  useEffect(() => {
+    if (!user || !selectedCollection) return;
+
+    const channel = supabase
+      .channel(`collection-${selectedCollection.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "collection_cards",
+          filter: `collection_id=eq.${selectedCollection.id}`,
+        },
+        async (payload) => {
+          if (payload.eventType === "UPDATE") {
+            const updatedCard = payload.new as any;
+
+            // Obtener los detalles actualizados de la carta
+            try {
+              const pokemonCard = await getPokemonCard(updatedCard.card_id);
+              const fullUpdatedCard = {
+                ...updatedCard,
+                name: pokemonCard.name,
+                images: pokemonCard.images,
+                set: pokemonCard.set?.name,
+              };
+
+              setCollections((prevCollections) =>
+                prevCollections.map((collection) => {
+                  if (collection.id === selectedCollection.id) {
+                    return {
+                      ...collection,
+                      cards: collection.cards.map((card) =>
+                        card.id === updatedCard.id ? fullUpdatedCard : card
+                      ),
+                    };
+                  }
+                  return collection;
+                })
+              );
+            } catch (error) {
+              console.error("Error fetching updated card details:", error);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [user, selectedCollection?.id]); // Dependencias actualizadas
+
+  // Añadir función para cargar la lista de deseos
+  const fetchWishlist = async () => {
+    try {
+      // Obtener las cartas de la lista de deseos
+      const { data: wishlistData, error } = await supabase
+        .from("wishlist_cards")
+        .select("*")
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+
+      console.log("Wishlist data from DB:", wishlistData); // Para debugging
+
+      // Obtener detalles de las cartas
+      const cardsWithDetails = await Promise.all(
+        (wishlistData || []).map(async (item) => {
+          try {
+            const cardDetails = await getPokemonCard(item.card_id);
+            return {
+              ...cardDetails,
+              wishlist_id: item.id,
+              date_added: item.date_added,
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching details for card ${item.card_id}:`,
+              error
+            );
+            return null;
+          }
+        })
+      );
+
+      // Filtrar cualquier carta null (en caso de error) y actualizar el estado
+      const validCards = cardsWithDetails.filter((card) => card !== null);
+      console.log("Cards with details:", validCards); // Para debugging
+
+      setWishlistCards(validCards);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de deseos.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Asegurarnos de que fetchWishlist se llama cuando se cambia a la pestaña de Lista de Deseos
+  useEffect(() => {
+    if (activeSection === "Wishlist" && user) {
+      fetchWishlist();
+    }
+  }, [activeSection, user]);
+
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+
+  useEffect(() => {
+    const fetchSubscriptionInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("subscriptions")
+          .select(
+            "status, polar_price_id, current_period_end, cancel_at_period_end"
+          )
+          .eq("user_id", user?.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        // Si no hay datos o la suscripción no está activa, el usuario es free
+        if (!data || data.status !== "active") {
+          setSubscriptionStatus("free");
+          return;
+        }
+
+        // Verificar si la suscripción ha expirado
+        const hasExpired =
+          data.current_period_end && Date.now() > data.current_period_end;
+
+        setSubscriptionStatus(hasExpired ? "free" : "premium");
+      } catch (error) {
+        console.error("Error fetching subscription:", error);
+        setSubscriptionStatus("free");
+      }
+    };
+
+    if (user) {
+      fetchSubscriptionInfo();
+    }
+  }, [user]);
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "Search Cards":
+        return <SearchSection /* ... props ... */ />;
+      case "My Collection":
+        return <CollectionSection /* ... props ... */ />;
+      case "Wishlist":
+        return <WishlistSection /* ... props ... */ />;
+      case "subscription":
+        return <SubscriptionPage />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -520,23 +931,26 @@ const PokemonDashboard = () => {
         <Sidebar
           items={defaultNavItems}
           activeItem={activeSection}
-          onItemClick={setActiveSection}
+          onItemClick={(item) => setActiveSection(item)}
+          subscriptionTier={
+            subscriptionStatus === "premium" ? "Premium" : "Free"
+          }
         />
 
         <main className="flex-1 overflow-auto p-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
-              {activeSection === "Search Cards" && "Search Pokémon Cards"}
-              {activeSection === "My Collection" && "My Pokémon Collection"}
-              {activeSection === "Wishlist" && "My Wishlist"}
+              {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
+              {activeSection === "My Collection" && "Mi Colección de Pokémon"}
+              {activeSection === "Wishlist" && "Mi Lista de Deseos"}
             </h1>
             <p className="text-gray-600">
               {activeSection === "Search Cards" &&
-                "Search and browse through thousands of Pokémon cards"}
+                "Busca y explora miles de cartas Pokémon"}
               {activeSection === "My Collection" &&
-                "Manage your Pokémon card collection"}
+                "Gestiona tu colección de cartas Pokémon"}
               {activeSection === "Wishlist" &&
-                "Cards you want to add to your collection"}
+                "Cartas que deseas añadir a tu colección"}
             </p>
           </div>
 
@@ -596,22 +1010,62 @@ const PokemonDashboard = () => {
           )}
 
           {activeSection === "Wishlist" && (
-            <div className="flex flex-col items-center justify-center py-12 bg-white rounded-lg border border-gray-200">
-              <Heart className="h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="text-xl font-medium text-gray-700 mb-2">
-                Wishlist Coming Soon
-              </h3>
-              <p className="text-gray-500 mb-6 text-center max-w-md">
-                We're working on the wishlist feature. Soon you'll be able to
-                keep track of cards you want to add to your collection.
-              </p>
-              <Button
-                onClick={() => setActiveSection("Search Cards")}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Search Cards
-              </Button>
+            <div>
+              {wishlistCards.length > 0 ? (
+                <WishlistGrid
+                  cards={wishlistCards}
+                  onCardClick={(card) => {
+                    setSelectedCard(card);
+                    setIsCardDetailOpen(true);
+                  }}
+                  onRemoveFromWishlist={async (wishlistId) => {
+                    try {
+                      const { error } = await supabase
+                        .from("wishlist_cards")
+                        .delete()
+                        .eq("id", wishlistId);
+
+                      if (error) throw error;
+
+                      setWishlistCards((prev) =>
+                        prev.filter((card) => card.wishlist_id !== wishlistId)
+                      );
+
+                      toast({
+                        title: "Card Removed",
+                        description:
+                          "The card has been removed from your wishlist.",
+                      });
+                    } catch (error) {
+                      console.error("Error removing from wishlist:", error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to remove card. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  onAddToCollection={(card) => handleAddToCollection(card)}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 bg-white rounded-lg border border-gray-200">
+                  <Heart className="h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-xl font-medium text-gray-700 mb-2">
+                    Tu Lista de Deseos está Vacía
+                  </h3>
+                  <p className="text-gray-500 mb-6 text-center max-w-md">
+                    Añade cartas a tu lista de deseos mientras exploras el
+                    catálogo.
+                  </p>
+                  <Button
+                    onClick={() => setActiveSection("Search Cards")}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Buscar Cartas
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </main>
@@ -624,6 +1078,7 @@ const PokemonDashboard = () => {
         onClose={() => setIsCardDetailOpen(false)}
         onAddToCollection={handleAddToCollection}
         onAddToWishlist={handleAddToWishlist}
+        isInWishlist={activeSection === "Wishlist"}
       />
 
       <AddToCollectionDialog

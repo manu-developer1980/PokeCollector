@@ -13,28 +13,28 @@ interface GetStartedGuideProps {
 const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
   const steps = [
     {
-      title: "Search for Cards",
+      title: "Buscar Cartas",
       description:
-        "Browse through thousands of Pokémon cards using our search and filter tools.",
+        "Explora miles de cartas Pokémon usando nuestras herramientas de búsqueda y filtrado.",
       icon: <Search className="h-6 w-6 text-blue-600" />,
       action: "/dashboard",
-      actionText: "Search Cards",
+      actionText: "Buscar Cartas",
     },
     {
-      title: "Build Your Collection",
+      title: "Construye tu Colección",
       description:
-        "Add cards to your collection with details like quantity, condition, and notes.",
-      icon: <Database className="h-6 w-6 text-green-600" />,
-      action: "/dashboard",
-      actionText: "View Collection",
+        "Añade cartas a tu colección con detalles como cantidad, condición y notas.",
+      icon: <Database className="h-6 w-6 text-blue-600" />,
+      action: "/collection",
+      actionText: "Ir a Mi Colección",
     },
     {
-      title: "Create a Wishlist",
+      title: "Crear una Lista de Deseos",
       description:
-        "Keep track of cards you want to add to your collection in the future.",
+        "Mantén un seguimiento de las cartas que deseas añadir a tu colección en el futuro.",
       icon: <Heart className="h-6 w-6 text-red-600" />,
-      action: "/dashboard",
-      actionText: "Start Wishlist",
+      action: "/wishlist",
+      actionText: "Iniciar Lista de Deseos",
     },
   ];
 
@@ -48,17 +48,17 @@ const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
               alt="Pokeball"
               className="h-6 w-6"
             />
-            Get Started with PokéCollector
+            Comienza con PokéCollector
           </CardTitle>
           <Badge className="bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-            New User Guide
+            Guía de Nuevo Usuario
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
         <p className="text-gray-600 mb-6">
-          Welcome to PokéCollector! Follow these simple steps to start managing
-          your Pokémon card collection.
+          ¡Bienvenido a PokéCollector! Sigue estos sencillos pasos para comenzar
+          a gestionar tu colección de cartas Pokémon.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -96,7 +96,7 @@ const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
             onClick={onClose}
             className="bg-red-600 hover:bg-red-700 px-8"
           >
-            Start Collecting
+            Comenzar a Coleccionar
           </Button>
         </div>
       </CardContent>

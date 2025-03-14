@@ -1,119 +1,16 @@
 export interface PokemonCard {
   id: string;
   name: string;
-  supertype: string;
-  subtypes: string[];
-  hp?: string;
-  types?: string[];
-  evolvesFrom?: string;
-  evolvesTo?: string[];
-  rules?: string[];
-  attacks?: {
-    name: string;
-    cost: string[];
-    convertedEnergyCost: number;
-    damage: string;
-    text: string;
-  }[];
-  weaknesses?: {
-    type: string;
-    value: string;
-  }[];
-  resistances?: {
-    type: string;
-    value: string;
-  }[];
-  retreatCost?: string[];
-  convertedRetreatCost?: number;
-  set: {
-    id: string;
-    name: string;
-    series: string;
-    printedTotal: number;
-    total: number;
-    legalities: {
-      unlimited?: string;
-      standard?: string;
-      expanded?: string;
-    };
-    ptcgoCode?: string;
-    releaseDate: string;
-    updatedAt: string;
-    images: {
-      symbol: string;
-      logo: string;
-    };
-  };
-  number: string;
-  artist?: string;
-  rarity?: string;
-  flavorText?: string;
-  nationalPokedexNumbers?: number[];
-  legalities: {
-    unlimited?: string;
-    standard?: string;
-    expanded?: string;
-  };
   images: {
     small: string;
     large: string;
   };
-  tcgplayer?: {
-    url: string;
-    updatedAt: string;
-    prices: {
-      holofoil?: {
-        low: number;
-        mid: number;
-        high: number;
-        market: number;
-        directLow: number;
-      };
-      reverseHolofoil?: {
-        low: number;
-        mid: number;
-        high: number;
-        market: number;
-        directLow: number;
-      };
-      normal?: {
-        low: number;
-        mid: number;
-        high: number;
-        market: number;
-        directLow: number;
-      };
-      [key: string]:
-        | {
-            low: number;
-            mid: number;
-            high: number;
-            market: number;
-            directLow: number;
-          }
-        | undefined;
-    };
-  };
-  cardmarket?: {
-    url: string;
-    updatedAt: string;
-    prices: {
-      averageSellPrice: number;
-      lowPrice: number;
-      trendPrice: number;
-      germanProLow: number;
-      suggestedPrice: number;
-      reverseHoloSell: number;
-      reverseHoloLow: number;
-      reverseHoloTrend: number;
-      lowPriceExPlus: number;
-      avg1: number;
-      avg7: number;
-      avg30: number;
-      reverseHoloAvg1: number;
-      reverseHoloAvg7: number;
-      reverseHoloAvg30: number;
-    };
+  set: {
+    name: string;
+    series: string;
+    printedTotal: number;
+    total: number;
+    releaseDate: string;
   };
 }
 
@@ -159,23 +56,26 @@ export interface PokemonCardSearchResponse {
 }
 
 export interface CollectionCard extends PokemonCard {
+  id: string; // Este es el ID de la tabla collection_cards
+  card_id: string; // Este es el ID de la carta de Pokémon
+  collection_id: string;
   quantity: number;
-  dateAdded: string;
   condition?: string;
+  is_foil?: boolean;
+  is_first_edition?: boolean;
   notes?: string;
-  isFoil?: boolean;
-  isFirstEdition?: boolean;
+  date_added?: string;
 }
 
 export interface Collection {
   id: string;
   name: string;
   description?: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  cards: CollectionCard[];
-  isDefault?: boolean;
+  user_id: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+  cards?: CollectionCard[];
 }
 
 export interface Wishlist {

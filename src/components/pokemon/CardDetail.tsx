@@ -19,6 +19,7 @@ interface CardDetailProps {
   onClose: () => void;
   onAddToCollection: (card: PokemonCard) => void;
   onAddToWishlist: (card: PokemonCard) => void;
+  isInWishlist?: boolean;
 }
 
 const CardDetail = ({
@@ -27,6 +28,7 @@ const CardDetail = ({
   onClose,
   onAddToCollection,
   onAddToWishlist,
+  isInWishlist = false,
 }: CardDetailProps) => {
   if (!card) return null;
 
@@ -64,23 +66,23 @@ const CardDetail = ({
 
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium mb-1">Card Details</h3>
+              <h3 className="text-sm font-medium mb-1">Detalles de la Carta</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="text-gray-500">Type</div>
+                <div className="text-gray-500">Tipo</div>
                 <div>{card.types?.join(", ") || "N/A"}</div>
 
-                <div className="text-gray-500">HP</div>
+                <div className="text-gray-500">PS</div>
                 <div>{card.hp || "N/A"}</div>
 
-                <div className="text-gray-500">Supertype</div>
+                <div className="text-gray-500">Supertipo</div>
                 <div>{card.supertype}</div>
 
-                <div className="text-gray-500">Subtypes</div>
+                <div className="text-gray-500">Subtipos</div>
                 <div>{card.subtypes?.join(", ") || "N/A"}</div>
 
                 {card.tcgplayer?.prices && (
                   <>
-                    <div className="text-gray-500">Market Price</div>
+                    <div className="text-gray-500">Precio de Mercado</div>
                     <div>
                       {Object.entries(card.tcgplayer.prices).map(
                         ([key, value]) => (
@@ -97,7 +99,7 @@ const CardDetail = ({
 
             {card.attacks && card.attacks.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium mb-1">Attacks</h3>
+                <h3 className="text-sm font-medium mb-1">Ataques</h3>
                 <div className="space-y-2">
                   {card.attacks.map((attack, index) => (
                     <div
@@ -107,7 +109,7 @@ const CardDetail = ({
                       <div className="font-medium">{attack.name}</div>
                       <div className="text-gray-500">{attack.text}</div>
                       <div className="text-gray-500">
-                        Damage: {attack.damage || "N/A"} · Cost:{" "}
+                        Daño: {attack.damage || "N/A"} · Coste:{" "}
                         {attack.convertedEnergyCost}
                       </div>
                     </div>
@@ -118,7 +120,7 @@ const CardDetail = ({
 
             {card.rules && card.rules.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium mb-1">Rules</h3>
+                <h3 className="text-sm font-medium mb-1">Reglas</h3>
                 <div className="text-sm text-gray-700">
                   {card.rules.map((rule, index) => (
                     <p key={index}>{rule}</p>
@@ -129,7 +131,7 @@ const CardDetail = ({
 
             {card.flavorText && (
               <div>
-                <h3 className="text-sm font-medium mb-1">Flavor Text</h3>
+                <h3 className="text-sm font-medium mb-1">Texto de Ambiente</h3>
                 <div className="text-sm italic text-gray-600">
                   {card.flavorText}
                 </div>
@@ -141,20 +143,22 @@ const CardDetail = ({
         <Separator className="my-4" />
 
         <DialogFooter className="flex justify-between sm:justify-between">
-          <Button
-            variant="outline"
-            onClick={() => onAddToWishlist(card)}
-            className="gap-2"
-          >
-            <Heart className="h-4 w-4" />
-            Add to Wishlist
-          </Button>
+          {!isInWishlist && (
+            <Button
+              variant="outline"
+              onClick={() => onAddToWishlist(card)}
+              className="gap-2"
+            >
+              <Heart className="h-4 w-4" />
+              Añadir a Lista de Deseos
+            </Button>
+          )}
           <Button
             onClick={() => onAddToCollection(card)}
             className="gap-2 bg-red-600 hover:bg-red-700"
           >
             <PlusCircle className="h-4 w-4" />
-            Add to Collection
+            Añadir a Colección
           </Button>
         </DialogFooter>
       </DialogContent>

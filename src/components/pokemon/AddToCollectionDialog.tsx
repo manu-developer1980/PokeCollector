@@ -44,7 +44,7 @@ const AddToCollectionDialog = ({
   onAddToCollection,
 }: AddToCollectionDialogProps) => {
   const [collectionId, setCollectionId] = useState<string>(
-    collections[0]?.id || "",
+    collections[0]?.id || ""
   );
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState("Near Mint");
@@ -65,7 +65,7 @@ const AddToCollectionDialog = ({
       notes,
     });
 
-    // Reset form
+    // Resetear formulario
     setQuantity(1);
     setCondition("Near Mint");
     setIsFoil(false);
@@ -77,10 +77,13 @@ const AddToCollectionDialog = ({
   if (!card) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add to Collection</DialogTitle>
+          <DialogTitle>Añadir a Colección</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -100,14 +103,20 @@ const AddToCollectionDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="collection">Collection</Label>
-              <Select value={collectionId} onValueChange={setCollectionId}>
+              <Label htmlFor="collection">Colección</Label>
+              <Select
+                value={collectionId}
+                onValueChange={setCollectionId}
+              >
                 <SelectTrigger id="collection">
-                  <SelectValue placeholder="Select collection" />
+                  <SelectValue placeholder="Seleccionar colección" />
                 </SelectTrigger>
                 <SelectContent>
                   {collections.map((collection) => (
-                    <SelectItem key={collection.id} value={collection.id}>
+                    <SelectItem
+                      key={collection.id}
+                      value={collection.id}
+                    >
                       {collection.name}
                     </SelectItem>
                   ))}
@@ -116,7 +125,7 @@ const AddToCollectionDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
+              <Label htmlFor="quantity">Cantidad</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -128,19 +137,22 @@ const AddToCollectionDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="condition">Condition</Label>
-            <Select value={condition} onValueChange={setCondition}>
+            <Label htmlFor="condition">Estado</Label>
+            <Select
+              value={condition}
+              onValueChange={setCondition}
+            >
               <SelectTrigger id="condition">
-                <SelectValue placeholder="Select condition" />
+                <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Mint">Mint</SelectItem>
-                <SelectItem value="Near Mint">Near Mint</SelectItem>
-                <SelectItem value="Excellent">Excellent</SelectItem>
-                <SelectItem value="Good">Good</SelectItem>
-                <SelectItem value="Light Played">Light Played</SelectItem>
-                <SelectItem value="Played">Played</SelectItem>
-                <SelectItem value="Poor">Poor</SelectItem>
+                <SelectItem value="Mint">Perfecta</SelectItem>
+                <SelectItem value="Near Mint">Casi Perfecta</SelectItem>
+                <SelectItem value="Excellent">Excelente</SelectItem>
+                <SelectItem value="Good">Buena</SelectItem>
+                <SelectItem value="Light Played">Poco Usada</SelectItem>
+                <SelectItem value="Played">Usada</SelectItem>
+                <SelectItem value="Poor">Deteriorada</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -152,7 +164,10 @@ const AddToCollectionDialog = ({
                 checked={isFoil}
                 onCheckedChange={(checked) => setIsFoil(checked as boolean)}
               />
-              <Label htmlFor="foil" className="text-sm cursor-pointer">
+              <Label
+                htmlFor="foil"
+                className="text-sm cursor-pointer"
+              >
                 Foil/Holo
               </Label>
             </div>
@@ -165,17 +180,20 @@ const AddToCollectionDialog = ({
                   setIsFirstEdition(checked as boolean)
                 }
               />
-              <Label htmlFor="firstEdition" className="text-sm cursor-pointer">
-                First Edition
+              <Label
+                htmlFor="firstEdition"
+                className="text-sm cursor-pointer"
+              >
+                Primera Edición
               </Label>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">Notas</Label>
             <Textarea
               id="notes"
-              placeholder="Add any notes about this card..."
+              placeholder="Añade notas sobre esta carta..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="resize-none"
@@ -185,14 +203,17 @@ const AddToCollectionDialog = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
             className="bg-red-600 hover:bg-red-700"
           >
-            Add to Collection
+            Añadir a Colección
           </Button>
         </DialogFooter>
       </DialogContent>

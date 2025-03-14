@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getPokemonCard } from "@/lib/pokemon-api";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CollectionCard } from "@/types/pokemon";
+import { CollectionCard, PokemonCard } from "@/types/pokemon";
 import { Trash } from "lucide-react";
 
 interface CardDetailDialogProps {
@@ -45,13 +46,34 @@ const CardDetailDialog = ({
   onUpdate,
   onRemove,
 }: CardDetailDialogProps) => {
-  const [quantity, setQuantity] = useState(card?.quantity || 1);
-  const [condition, setCondition] = useState(card?.condition || "Near Mint");
-  const [isFoil, setIsFoil] = useState(card?.isFoil || false);
-  const [isFirstEdition, setIsFirstEdition] = useState(
-    card?.isFirstEdition || false,
-  );
-  const [notes, setNotes] = useState(card?.notes || "");
+  const [quantity, setQuantity] = useState(1);
+  const [condition, setCondition] = useState("Near Mint");
+  const [isFoil, setIsFoil] = useState(false);
+  const [isFirstEdition, setIsFirstEdition] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [cardDetails, setCardDetails] = useState<PokemonCard | null>(null);
+
+  useEffect(() => {
+    const loadCardDetails = async () => {
+      if (card) {
+        try {
+          const details = await getPokemonCard(card.card_id);
+          setCardDetails(details);
+        } catch (error) {
+          console.error("Error loading card details:", error);
+        }
+      }
+    };
+
+    if (isOpen && card) {
+      loadCardDetails();
+      setQuantity(card.quantity);
+      setCondition(card.condition || "Near Mint");
+      setIsFoil(card.is_foil || false);
+      setIsFirstEdition(card.is_first_edition || false);
+      setNotes(card.notes || "");
+    }
+  }, [card, isOpen]);
 
   const handleSubmit = () => {
     if (!card) return;
@@ -68,125 +90,200 @@ const CardDetailDialog = ({
     onClose();
   };
 
-  if (!card) return null;
+  if (!card || !cardDetails) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Card Details</DialogTitle>
+          <DialogTitle>Detalles de la Carta</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="flex items-center gap-4">
-            <img
-              src={card.images.small}
-              alt={card.name}
-              className="w-24 rounded-md"
-            />
+        <div className="grid grid-cols-2 gap-6">
+          {/* Columna izquierda - Imagen y botón eliminar */}
+          <div className="flex flex-col">
+            <div className="flex justify-center flex-grow">
+              <img
+                src={cardDetails.images.large || cardDetails.images.small}
+                alt={cardDetails.name}
+                className="rounded-lg h-[500px] object-contain"
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => onRemove(card.id)}
+              className="mt-4 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash className="h-4 w-4 mr-2" /> Eliminar
+            </Button>
+          </div>
+
+          {/* Columna derecha - Información y formulario */}
+          <div className="space-y-4">
+            {/* Información básica */}
             <div>
-              <h3 className="font-medium">{card.name}</h3>
+              <h3 className="font-medium text-lg">{cardDetails.name}</h3>
               <p className="text-sm text-gray-500">
-                {card.set.name} · {card.number}/{card.set.printedTotal}
+                {cardDetails.set.name} · {cardDetails.number}/
+                {cardDetails.set.printedTotal}
               </p>
-              {card.rarity && (
-                <Badge variant="outline" className="mt-1 text-xs">
-                  {card.rarity}
+              {cardDetails.rarity && (
+                <Badge
+                  variant="outline"
+                  className="mt-1"
+                >
+                  {cardDetails.rarity}
                 </Badge>
               )}
             </div>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity</Label>
-            <Input
-              id="quantity"
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-            />
-          </div>
+            {/* Detalles de la carta en formato grid compacto */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div className="text-gray-500">Tipo:</div>
+              <div>{cardDetails.types?.join(", ") || "N/A"}</div>
 
-          <div className="space-y-2">
-            <Label htmlFor="condition">Condition</Label>
-            <Select value={condition} onValueChange={setCondition}>
-              <SelectTrigger id="condition">
-                <SelectValue placeholder="Select condition" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Mint">Mint</SelectItem>
-                <SelectItem value="Near Mint">Near Mint</SelectItem>
-                <SelectItem value="Excellent">Excellent</SelectItem>
-                <SelectItem value="Good">Good</SelectItem>
-                <SelectItem value="Light Played">Light Played</SelectItem>
-                <SelectItem value="Played">Played</SelectItem>
-                <SelectItem value="Poor">Poor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="text-gray-500">PS:</div>
+              <div>{cardDetails.hp || "N/A"}</div>
 
-          <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="foil"
-                checked={isFoil}
-                onCheckedChange={(checked) => setIsFoil(checked as boolean)}
-              />
-              <Label htmlFor="foil" className="text-sm cursor-pointer">
-                Foil/Holo
-              </Label>
+              <div className="text-gray-500">Supertipo:</div>
+              <div>{cardDetails.supertype}</div>
+
+              <div className="text-gray-500">Subtipos:</div>
+              <div>{cardDetails.subtypes?.join(", ") || "N/A"}</div>
+
+              {cardDetails.tcgplayer?.prices && (
+                <>
+                  <div className="text-gray-500">Precio:</div>
+                  <div>
+                    {Object.entries(cardDetails.tcgplayer.prices).map(
+                      ([key, value]) => (
+                        <div key={key}>
+                          {key}: ${value?.market?.toFixed(2) || "N/A"}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="firstEdition"
-                checked={isFirstEdition}
-                onCheckedChange={(checked) =>
-                  setIsFirstEdition(checked as boolean)
-                }
-              />
-              <Label htmlFor="firstEdition" className="text-sm cursor-pointer">
-                First Edition
-              </Label>
-            </div>
-          </div>
+            {cardDetails.rules && cardDetails.rules.length > 0 && (
+              <div className="text-sm">
+                <h4 className="font-medium mb-1">Reglas</h4>
+                <div className="text-gray-700">
+                  {cardDetails.rules.map((rule, index) => (
+                    <p
+                      key={index}
+                      className="mb-1"
+                    >
+                      {rule}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Add any notes about this card..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="resize-none"
-              rows={3}
-            />
+            <Separator />
+
+            {/* Formulario en formato más compacto */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="quantity">Cantidad</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="condition">Estado</Label>
+                <Select
+                  value={condition}
+                  onValueChange={setCondition}
+                >
+                  <SelectTrigger id="condition">
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Mint">Perfecta</SelectItem>
+                    <SelectItem value="Near Mint">Casi Perfecta</SelectItem>
+                    <SelectItem value="Excellent">Excelente</SelectItem>
+                    <SelectItem value="Good">Buena</SelectItem>
+                    <SelectItem value="Light Played">Poco Usada</SelectItem>
+                    <SelectItem value="Played">Usada</SelectItem>
+                    <SelectItem value="Poor">Deteriorada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="foil"
+                  checked={isFoil}
+                  onCheckedChange={(checked) => setIsFoil(checked as boolean)}
+                />
+                <Label
+                  htmlFor="foil"
+                  className="text-sm"
+                >
+                  Foil/Holo
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="firstEdition"
+                  checked={isFirstEdition}
+                  onCheckedChange={(checked) =>
+                    setIsFirstEdition(checked as boolean)
+                  }
+                />
+                <Label
+                  htmlFor="firstEdition"
+                  className="text-sm"
+                >
+                  Primera Edición
+                </Label>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="notes">Notas</Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="h-20"
+              />
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex justify-end pt-4 space-x-2">
+              <Button
+                variant="outline"
+                onClick={onClose}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Guardar Cambios
+              </Button>
+            </div>
           </div>
         </div>
-
-        <DialogFooter className="flex justify-between sm:justify-between">
-          <Button
-            variant="outline"
-            onClick={() => onRemove(card.id)}
-            className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash className="h-4 w-4" /> Remove
-          </Button>
-          <div className="space-x-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Save Changes
-            </Button>
-          </div>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

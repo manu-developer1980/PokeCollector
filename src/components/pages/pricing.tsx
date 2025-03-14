@@ -28,51 +28,51 @@ interface Plan {
 const defaultPlans: Plan[] = [
   {
     id: "free",
-    name: "Free",
-    description: "Basic collection tracking",
+    name: "Gratis",
+    description: "Seguimiento básico de colección",
     price: 0,
     interval: "month",
     features: [
-      "Up to 100 cards in collection",
-      "Basic search functionality",
-      "Single collection",
-      "Community access",
+      "Hasta 100 cartas en colección",
+      "Funcionalidad básica de búsqueda",
+      "Una colección",
+      "Acceso a la comunidad",
     ],
-    buttonText: "Get Started",
+    buttonText: "Comenzar",
   },
   {
     id: "trainer",
-    name: "Trainer",
-    description: "For serious collectors",
+    name: "Entrenador",
+    description: "Para coleccionistas serios",
     price: 9.99,
     interval: "month",
     features: [
-      "Unlimited cards in collection",
-      "Advanced search filters",
-      "Up to 5 custom collections",
-      "Card condition tracking",
-      "Collection value estimates",
-      "Priority support",
+      "Cartas ilimitadas en colección",
+      "Filtros de búsqueda avanzados",
+      "Hasta 5 colecciones personalizadas",
+      "Seguimiento del estado de las cartas",
+      "Estimaciones de valor de colección",
+      "Soporte prioritario",
     ],
     isPopular: true,
-    buttonText: "Start Free Trial",
+    buttonText: "Comenzar Prueba Gratuita",
   },
   {
     id: "master",
-    name: "Master",
-    description: "For professional collectors",
+    name: "Maestro",
+    description: "Para coleccionistas profesionales",
     price: 19.99,
     interval: "month",
     features: [
-      "Everything in Trainer",
-      "Unlimited custom collections",
-      "Price trend analytics",
-      "Collection export",
-      "API access",
-      "Dedicated support",
-      "Early access to new features",
+      "Todo lo incluido en Entrenador",
+      "Colecciones personalizadas ilimitadas",
+      "Análisis de tendencias de precios",
+      "Exportación de colección",
+      "Acceso a API",
+      "Soporte dedicado",
+      "Acceso anticipado a nuevas funciones",
     ],
-    buttonText: "Start Free Trial",
+    buttonText: "Comenzar Prueba Gratuita",
   },
 ];
 
@@ -83,7 +83,7 @@ export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [billingInterval, setBillingInterval] = useState<"month" | "year">(
-    "month",
+    "month"
   );
 
   useEffect(() => {
@@ -127,21 +127,25 @@ export default function PricingPage() {
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-            Choose Your Plan
+            Elige tu Plan
           </Badge>
           <h1 className="text-4xl font-bold mb-4 text-gray-900">
-            Start Your Pokémon Collection Journey
+            Comienza tu Viaje de Colección Pokémon
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Select the plan that best fits your collection needs. All plans
-            include our core features.
+            Selecciona el plan que mejor se adapte a tus necesidades de
+            colección. Todos los planes incluyen nuestras funciones principales.
           </p>
 
           <div className="flex items-center justify-center mt-8 space-x-4">
             <span
-              className={`text-sm ${billingInterval === "month" ? "text-gray-900 font-medium" : "text-gray-500"}`}
+              className={`text-sm ${
+                billingInterval === "month"
+                  ? "text-gray-900 font-medium"
+                  : "text-gray-500"
+              }`}
             >
-              Monthly
+              Mensual
             </span>
             <button
               type="button"
@@ -150,20 +154,26 @@ export default function PricingPage() {
               aria-checked={billingInterval === "year"}
               onClick={() =>
                 setBillingInterval(
-                  billingInterval === "month" ? "year" : "month",
+                  billingInterval === "month" ? "year" : "month"
                 )
               }
             >
               <span
                 aria-hidden="true"
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${billingInterval === "year" ? "translate-x-5" : "translate-x-0"}`}
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  billingInterval === "year" ? "translate-x-5" : "translate-x-0"
+                }`}
               />
             </button>
             <span
-              className={`text-sm ${billingInterval === "year" ? "text-gray-900 font-medium" : "text-gray-500"}`}
+              className={`text-sm ${
+                billingInterval === "year"
+                  ? "text-gray-900 font-medium"
+                  : "text-gray-500"
+              }`}
             >
-              Yearly{" "}
-              <span className="text-green-500 font-medium">Save 20%</span>
+              Anual{" "}
+              <span className="text-green-500 font-medium">Ahorra 20%</span>
             </span>
           </div>
         </div>
@@ -179,17 +189,21 @@ export default function PricingPage() {
             return (
               <Card
                 key={plan.id}
-                className={`border ${plan.isPopular ? "border-red-200 shadow-lg ring-2 ring-red-500" : "border-gray-200 shadow-md"} hover:shadow-xl transition-shadow`}
+                className={`border relative ${
+                  plan.isPopular
+                    ? "border-red-200 shadow-lg ring-2 ring-red-500"
+                    : "border-gray-200 shadow-md"
+                } hover:shadow-xl transition-shadow`}
               >
                 <CardHeader className="pb-2">
                   {plan.isPopular && (
-                    <div className="absolute -top-4 left-0 right-0 flex justify-center">
+                    <div className="absolute -top-3 left-0 right-0 flex justify-center">
                       <Badge className="bg-red-500 text-white hover:bg-red-600 border-none">
-                        Most Popular
+                        Más Popular
                       </Badge>
                     </div>
                   )}
-                  <CardTitle className="text-xl font-bold text-gray-900">
+                  <CardTitle className="text-xl font-bold text-gray-900 mt-2">
                     {plan.name}
                   </CardTitle>
                   <p className="text-sm text-gray-600">{plan.description}</p>
@@ -210,7 +224,10 @@ export default function PricingPage() {
 
                   <ul className="space-y-3 mb-6">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
+                      <li
+                        key={index}
+                        className="flex items-start"
+                      >
                         <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                         <span className="text-gray-700">{feature}</span>
                       </li>
@@ -219,14 +236,18 @@ export default function PricingPage() {
                 </CardContent>
                 <CardFooter>
                   <Button
-                    className={`w-full ${plan.isPopular ? "bg-red-600 hover:bg-red-700" : "bg-gray-900 hover:bg-gray-800"}`}
+                    className={`w-full ${
+                      plan.isPopular
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-gray-900 hover:bg-gray-800"
+                    }`}
                     onClick={() => handlePlanSelect(plan)}
                     disabled={isLoading && processingPlanId === plan.id}
                   >
                     {isLoading && processingPlanId === plan.id ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
+                        Procesando...
                       </>
                     ) : (
                       <>
@@ -243,34 +264,35 @@ export default function PricingPage() {
 
         <div className="mt-16 text-center">
           <h2 className="text-2xl font-bold mb-6 text-gray-900">
-            Frequently Asked Questions
+            Preguntas Frecuentes
           </h2>
           <div className="max-w-3xl mx-auto grid gap-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="font-bold text-lg mb-2 text-gray-900">
-                Can I cancel my subscription?
+                ¿Puedo cancelar mi suscripción?
               </h3>
               <p className="text-gray-600">
-                Yes, you can cancel your subscription at any time. You'll
-                continue to have access until the end of your billing period.
+                Sí, puedes cancelar tu suscripción en cualquier momento.
+                Seguirás teniendo acceso hasta el final de tu período de
+                facturación.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="font-bold text-lg mb-2 text-gray-900">
-                Is there a free trial?
+                ¿Hay una prueba gratuita?
               </h3>
               <p className="text-gray-600">
-                Yes, both Trainer and Master plans come with a 14-day free
-                trial. No credit card required to start.
+                Sí, los planes Entrenador y Maestro incluyen una prueba gratuita
+                de 14 días. No se requiere tarjeta de crédito para comenzar.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="font-bold text-lg mb-2 text-gray-900">
-                What payment methods do you accept?
+                ¿Qué métodos de pago aceptan?
               </h3>
               <p className="text-gray-600">
-                We accept all major credit cards, including Visa, Mastercard,
-                American Express, and Discover.
+                Aceptamos todas las tarjetas de crédito principales, incluyendo
+                Visa, Mastercard, y American Express.
               </p>
             </div>
           </div>

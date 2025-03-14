@@ -10,43 +10,81 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { UserPlus } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [error, setError] = useState("");
-  const { signUp } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  // Obtener la URL de redirección de los query params
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
-      await signUp(email, password, fullName);
-      navigate("/login");
-    } catch (error) {
-      setError("Error creating account");
+      if (password.length < 6) {
+        throw new Error("La contraseña debe tener al menos 6 caracteres");
+      }
+
+      if (!email.includes("@")) {
+        throw new Error("Por favor ingresa un email válido");
+      }
+
+      const { error } = await signUp(email, password, fullName);
+      if (error) throw error;
+
+      toast({
+        title: "¡Cuenta creada!",
+        description: "Tu cuenta ha sido creada exitosamente.",
+      });
+
+      // Login automático
+      await signIn(email, password);
+      navigate(redirectTo);
+    } catch (error: any) {
+      console.error("Error during signup:", error);
+      toast({
+        title: "Error al crear la cuenta",
+        description:
+          error.message || "Ha ocurrido un error. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <AuthLayout>
-      <Card className="w-full">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
-            <UserPlus className="h-5 w-5" /> Create an account
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            Crear una cuenta
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName">Nombre completo</Label>
               <Input
                 id="fullName"
-                placeholder="John Doe"
+                type="text"
+                placeholder="Tu nombre"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -57,36 +95,52 @@ export default function SignUpForm() {
               <Input
                 id="email"
                 type="email"
-                placeholder="name@example.com"
+                placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
               />
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button type="submit" className="w-full">
-              Create account
+            <Button
+              type="submit"
+              className="w-full bg-red-600 hover:bg-red-700"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4 animate-spin" />
+                  Creando cuenta...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Crear cuenta
+                </>
+              )}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-center text-slate-600">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline">
-              Sign in
+        <CardFooter className="flex flex-col space-y-2">
+          <p className="text-sm text-gray-600 text-center">
+            ¿Ya tienes una cuenta?{" "}
+            <Link
+              to="/login"
+              className="text-red-600 hover:text-red-700 font-medium"
+            >
+              Inicia sesión
             </Link>
-          </div>
+          </p>
         </CardFooter>
       </Card>
     </AuthLayout>
