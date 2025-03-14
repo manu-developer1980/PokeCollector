@@ -20,14 +20,23 @@ export default function SignUpForm() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const { signUp } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const selectedPlan = params.get("plan");
+  const interval = params.get("interval");
 
-  // Obtener la URL de redirección de los query params
-  const searchParams = new URLSearchParams(location.search);
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const handleSignUpSuccess = async (user) => {
+    if (selectedPlan && selectedPlan !== "free") {
+      navigate(
+        `/checkout?plan=${selectedPlan}&interval=${interval || "month"}`
+      );
+    } else {
+      navigate("/dashboard");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,19 +51,22 @@ export default function SignUpForm() {
         throw new Error("Por favor ingresa un email válido");
       }
 
+      console.log("Starting signup process...");
       const { error } = await signUp(email, password, fullName);
-      if (error) throw error;
 
-      toast({
-        title: "¡Cuenta creada!",
-        description: "Tu cuenta ha sido creada exitosamente.",
+      if (error) {
+        console.error("Signup error received:", error);
+        throw error;
+      }
+
+      // En lugar de intentar el inicio de sesión automático,
+      // redirigimos al usuario a la página de confirmación
+      navigate("/confirm-signup", {
+        state: { email },
+        replace: true,
       });
-
-      // Login automático
-      await signIn(email, password);
-      navigate(redirectTo);
     } catch (error: any) {
-      console.error("Error during signup:", error);
+      console.error("Error during signup process:", error);
       toast({
         title: "Error al crear la cuenta",
         description:

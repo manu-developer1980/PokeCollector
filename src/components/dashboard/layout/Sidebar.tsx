@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Home, Search, Settings, HelpCircle, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -41,13 +42,28 @@ const Sidebar = ({
     },
   ];
 
+  const navigate = useNavigate();
+
+  const handleNavigation = (section: string) => {
+    if (section === "My Collection") {
+      navigate("/dashboard");
+    }
+    // ... otras navegaciones ...
+  };
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-4">
       <nav className="space-y-2">
         {allItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onItemClick(item.id)}
+            onClick={() => {
+              if (item.id === "collection") {
+                handleNavigation("My Collection");
+              } else {
+                onItemClick(item.id);
+              }
+            }}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
               activeItem === item.id
                 ? "bg-red-50 text-red-600"

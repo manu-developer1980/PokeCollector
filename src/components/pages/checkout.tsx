@@ -98,9 +98,8 @@ const CheckoutPage = () => {
   }, [location.search, navigate]);
 
   useEffect(() => {
-    // Redirect to login if not authenticated
     if (!loading && !user && !isLoading) {
-      navigate("/login?redirect=checkout" + location.search);
+      navigate("/pricing"); // Cambiado de /login a /pricing
     }
   }, [user, loading, navigate, location.search, isLoading]);
 
@@ -122,7 +121,10 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-yellow-50 py-20">
-      <CheckoutFlow plan={selectedPlan} onCancel={handleCancel} />
+      <CheckoutFlow
+        plan={selectedPlan}
+        onCancel={handleCancel}
+      />
     </div>
   );
 };

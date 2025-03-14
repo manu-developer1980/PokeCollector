@@ -84,7 +84,7 @@ export default function LandingPage() {
                     size="lg"
                     className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
                   >
-                    Inicia tu Colección
+                    Comenzar Ahora
                   </Button>
                 </Link>
                 <Link to="/search">

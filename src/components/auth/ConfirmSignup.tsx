@@ -1,12 +1,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Navigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
 export default function ConfirmSignup() {
   const location = useLocation();
-  const email = location.state?.email || "tu correo";
+  const email = location.state?.email;
+
+  // Si no hay email en el state, redirigir a signup
+  if (!email) {
+    return (
+      <Navigate
+        to="/signup"
+        replace
+      />
+    );
+  }
 
   return (
     <AuthLayout>

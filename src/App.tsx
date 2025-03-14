@@ -12,7 +12,7 @@ import CheckoutSuccessPage from "./components/pages/checkout-success";
 import SearchPage from "./components/pages/SearchPage";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
-import MigrateToPolar from "./admin/MigrateToPolar";
+import AuthCallback from "./components/auth/AuthCallback";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -61,6 +61,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/confirm-signup"
+        element={
+          <MainLayout>
+            <ConfirmSignup />
+          </MainLayout>
+        }
+      />
+      <Route
         path="/pricing"
         element={
           <MainLayout>
@@ -82,6 +90,15 @@ function AppRoutes() {
           <PrivateRoute>
             <PokemonDashboard />
           </PrivateRoute>
+        }
+      />
+      <Route
+        path="/collection"
+        element={
+          <Navigate
+            to="/dashboard"
+            replace
+          />
         }
       />
       <Route
@@ -113,6 +130,14 @@ function AppRoutes() {
         element={
           <MainLayout>
             <ConfirmSignup />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/auth/callback"
+        element={
+          <MainLayout>
+            <AuthCallback />
           </MainLayout>
         }
       />

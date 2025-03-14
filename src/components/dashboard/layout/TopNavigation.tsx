@@ -57,6 +57,10 @@ const TopNavigation = ({ onSearch = () => {} }: TopNavigationProps) => {
     }
   };
 
+  const handleCollectionClick = () => {
+    navigate("/dashboard");
+  };
+
   if (!user) return null;
 
   return (

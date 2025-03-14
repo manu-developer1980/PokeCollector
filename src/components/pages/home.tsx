@@ -126,13 +126,12 @@ export default function LandingPage() {
   // Handle checkout process
   const handleCheckout = async (priceId: string) => {
     if (!user) {
-      // Redirect to login if user is not authenticated
       toast({
-        title: "Authentication required",
-        description: "Please sign in to subscribe to a plan.",
+        title: "Selecciona un plan",
+        description: "Por favor, selecciona un plan para comenzar.",
         variant: "default",
       });
-      window.location.href = "/login?redirect=pricing";
+      navigate("/pricing");
       return;
     }
 

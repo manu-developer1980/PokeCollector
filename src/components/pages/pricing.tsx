@@ -92,27 +92,17 @@ export default function PricingPage() {
   }, []);
 
   const handlePlanSelect = async (plan: Plan) => {
-    if (plan.id === "free") {
-      // For free plan, just redirect to dashboard
-      if (user) {
-        navigate("/dashboard");
-      } else {
-        navigate("/signup");
-      }
-      return;
-    }
-
     setIsLoading(true);
     setProcessingPlanId(plan.id);
 
     try {
       if (!user) {
-        // If not logged in, redirect to signup with plan info
+        // Redirigir a signup con información del plan
         navigate(`/signup?plan=${plan.id}&interval=${billingInterval}`);
         return;
       }
 
-      // For logged in users, redirect to checkout page
+      // Para usuarios logueados, redirigir a checkout
       navigate(`/checkout?plan=${plan.id}&interval=${billingInterval}`);
     } catch (error) {
       console.error("Error navigating to checkout:", error);

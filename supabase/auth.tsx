@@ -37,33 +37,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
+      // 1. Crear el usuario en auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
         password,
         options: {
           data: {
             full_name: fullName,
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
-      if (error) throw error;
-      return { data, error: null };
+      if (authError) {
+        console.error("Auth signup error:", authError);
+        return { error: authError };
+      }
+
+      if (!authData.user) {
+        return { error: new Error("No user data returned") };
+      }
+
+      // 2. Esperar un momento para asegurar que el usuario esté creado
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // 3. Crear el perfil en la tabla users
+      const { error: profileError } = await supabase
+        .from("users")
+        .insert([
+          {
+            id: authData.user.id,
+            email: authData.user.email,
+            full_name: fullName,
+            has_seen_onboarding: false,
+          },
+        ])
+        .single();
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        return { error: profileError };
+      }
+
+      return { data: authData, error: null };
     } catch (error) {
-      console.error("SignUp error:", error);
-      return { data: null, error };
+      console.error("Unexpected error:", error);
+      return {
+        error: {
+          message: "Error inesperado durante el registro",
+        },
+      };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
-      return { data, error };
+
+      if (error) {
+        console.error("Error de inicio de sesión:", error);
+        return { error };
+      }
+
+      return { data, error: null };
     } catch (error) {
-      console.error("SignIn error:", error);
+      console.error("Error en la autenticación:", error);
       return { error };
     }
   };

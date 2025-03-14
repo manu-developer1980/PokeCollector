@@ -372,18 +372,23 @@ const PokemonDashboard = () => {
   }) => {
     try {
       // Primero insertamos la carta en la colección
-      const { data, error } = await supabase.from("collection_cards").insert({
-        card_id: cardData.card.id,
-        collection_id: cardData.collectionId,
-        quantity: cardData.quantity,
-        condition: cardData.condition,
-        is_foil: cardData.isFoil,
-        is_first_edition: cardData.isFirstEdition,
-        notes: cardData.notes,
-        date_added: new Date().toISOString(),
-      });
+      const { data, error } = await supabase
+        .from("collection_cards")
+        .insert({
+          card_id: cardData.card.id,
+          collection_id: cardData.collectionId,
+          quantity: cardData.quantity,
+          condition: cardData.condition,
+          is_foil: cardData.isFoil,
+          is_first_edition: cardData.isFirstEdition,
+          notes: cardData.notes,
+          date_added: new Date().toISOString(),
+        })
+        .select(); // Aseguramos que devuelva los datos insertados
 
       if (error) throw error;
+      if (!data || data.length === 0)
+        throw new Error("No se pudo insertar la carta");
 
       // Actualizamos la colección en el estado local
       const updatedCollections = await Promise.all(

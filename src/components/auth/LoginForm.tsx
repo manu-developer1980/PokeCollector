@@ -32,23 +32,36 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const result = await signIn(email, password);
+      const result = await signIn(email.trim().toLowerCase(), password);
 
       if (result.error) {
-        throw result.error;
+        let mensajeError = "Email o contraseña incorrectos";
+
+        if (result.error.message.includes("Database error")) {
+          mensajeError =
+            "Error de conexión con la base de datos. Por favor, intente más tarde.";
+        }
+
+        toast({
+          title: "Error de inicio de sesión",
+          description: mensajeError,
+          variant: "destructive",
+        });
+        return;
       }
 
       toast({
-        title: "¡Bienvenido de nuevo!",
+        title: "¡Bienvenido!",
         description: "Has iniciado sesión correctamente.",
       });
 
       navigate(redirectTo);
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error durante el inicio de sesión:", error);
       toast({
-        title: "Error al iniciar sesión",
-        description: "Email o contraseña incorrectos",
+        title: "Error de inicio de sesión",
+        description:
+          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
         variant: "destructive",
       });
     } finally {
