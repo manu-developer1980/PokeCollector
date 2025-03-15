@@ -5,12 +5,11 @@ import CardItem from "./CardItem";
 
 interface CardGridProps {
   cards: PokemonCard[];
+  onCardClick?: (card: PokemonCard) => void;
+  onAddToCollection?: (card: PokemonCard) => void;
+  onAddToWishlist?: (card: PokemonCard) => void;
   loading?: boolean;
   error?: string;
-  onCardClick?: (card: PokemonCard) => void;
-  onQuickAdd?: (card: PokemonCard) => void;
-  onAddToWishlist?: (card: PokemonCard) => void;
-  actions?: "search" | "collection" | "wishlist";
 }
 
 const ErrorFallback = ({ error }: { error: Error }) => {
@@ -22,15 +21,14 @@ const ErrorFallback = ({ error }: { error: Error }) => {
   );
 };
 
-const CardGrid = ({
+const CardGrid: React.FC<CardGridProps> = ({
   cards,
+  onCardClick,
+  onAddToCollection,
+  onAddToWishlist,
   loading,
   error,
-  onCardClick,
-  onQuickAdd,
-  onAddToWishlist,
-  actions = "search",
-}: CardGridProps) => {
+}) => {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-64">
@@ -62,20 +60,18 @@ const CardGrid = ({
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <div className="px-2 sm:px-4">
-        <div className="flex flex-wrap gap-4 justify-center">
-          {cards.map((card) => (
-            <CardItem
-              key={card.id}
-              card={card}
-              onClick={() => onCardClick?.(card)}
-              onQuickAdd={() => onQuickAdd?.(card)}
-              onAddToWishlist={() => onAddToWishlist?.(card)}
-              actions={actions}
-              showPrice={actions === "search"}
-            />
-          ))}
-        </div>
+      <div className="flex flex-wrap gap-4 justify-center">
+        {" "}
+        {cards.map((card) => (
+          <CardItem
+            key={card.id}
+            card={card}
+            onClick={onCardClick}
+            onQuickAdd={onAddToCollection}
+            onAddToWishlist={onAddToWishlist}
+            actions="search"
+          />
+        ))}
       </div>
     </ErrorBoundary>
   );

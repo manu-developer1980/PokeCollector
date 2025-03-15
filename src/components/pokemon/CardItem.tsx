@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash, Heart } from "lucide-react";
+import { Plus, Trash2, Heart } from "lucide-react";
 import { PokemonCard } from "@/types/pokemon";
 import { Badge } from "@/components/ui/badge";
 import { POKEMON_TYPES_MAP, RARITY_MAP, CONDITION_MAP } from "@/lib/constants";
@@ -62,10 +62,10 @@ const CardItem = ({
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md hover:scale-105 transition-transform duration-300"
+      className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200"
       onClick={() => onClick?.(card)}
     >
-      <CardContent className="p-2 sm:p-4">
+      <CardContent className="p-4">
         {/* Image container */}
         <div className="relative aspect-[2.5/3.5] rounded-lg mb-2">
           {!imageError ? (
@@ -85,35 +85,64 @@ const CardItem = ({
           )}
 
           {/* Action buttons */}
-          <div className="absolute top-2 right-2 opacity-0 flex gap-2">
-            {actions === "search" && onQuickAdd && (
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity duration-200">
+            {actions === "search" && (
+              <>
+                {onQuickAdd && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+                    onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+                {onAddToWishlist && (
+                  <Button
+                    size="sm"
+                    className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg"
+                    onClick={(e) =>
+                      handleAction(e, () => onAddToWishlist(card))
+                    }
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                )}
+              </>
+            )}
+
+            {actions === "wishlist" && (
+              <>
+                {onQuickAdd && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+                    onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+                {onRemove && (
+                  <Button
+                    size="sm"
+                    className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
+                    onClick={(e) => handleAction(e, () => onRemove(card))}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </>
+            )}
+
+            {actions === "collection" && onRemove && (
               <Button
                 size="sm"
-                className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
-                onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
+                onClick={(e) => handleAction(e, () => onRemove(card))}
               >
-                <Plus className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
-            {actions === "search" && onAddToWishlist && (
-              <Button
-                size="sm"
-                className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg"
-                onClick={(e) => handleAction(e, () => onAddToWishlist(card))}
-              >
-                <Heart className="h-4 w-4" />
-              </Button>
-            )}
-            {(actions === "collection" || actions === "wishlist") &&
-              onRemove && (
-                <Button
-                  size="sm"
-                  className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
-                  onClick={(e) => handleAction(e, () => onRemove(card))}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              )}
           </div>
         </div>
 

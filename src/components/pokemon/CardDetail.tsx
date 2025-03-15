@@ -24,16 +24,20 @@ interface CardDetailProps {
   mode?: "search" | "wishlist" | "collection";
 }
 
-const CardDetail = ({
-  card,
+const CardDetail: React.FC<CardDetailProps> = ({
   isOpen,
   onClose,
+  card,
+  mode,
   onAddToCollection,
-  onAddToWishlist,
   onRemoveFromWishlist,
-  isInWishlist = false,
-  mode = "search",
-}: CardDetailProps) => {
+  onAddToWishlist,
+}) => {
+  const handleAction = (action: () => void) => {
+    action();
+    onClose();
+  };
+
   if (!card) return null;
 
   const renderFooterButtons = () => {
@@ -43,17 +47,16 @@ const CardDetail = ({
           <>
             <Button
               variant="outline"
-              onClick={() => {
-                onRemoveFromWishlist?.(card.id);
-                onClose();
-              }}
+              onClick={() =>
+                handleAction(() => onRemoveFromWishlist?.(card.id))
+              }
               className="gap-2 text-red-600 hover:text-red-700"
             >
               <Trash2 className="h-4 w-4" />
               Eliminar de Lista de Deseos
             </Button>
             <Button
-              onClick={() => onAddToCollection(card)}
+              onClick={() => handleAction(() => onAddToCollection?.(card))}
               className="gap-2 bg-red-600 hover:bg-red-700"
             >
               <PlusCircle className="h-4 w-4" />
@@ -62,25 +65,29 @@ const CardDetail = ({
           </>
         );
       case "collection":
-        return null; // La colección maneja sus propias acciones
+        return (
+          <Button
+            variant="outline"
+            onClick={() => handleAction(() => onRemove?.(card.id))}
+            className="gap-2 text-red-600 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+            Eliminar
+          </Button>
+        );
       default: // caso 'search'
         return (
           <>
-            {!isInWishlist && onAddToWishlist && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onAddToWishlist(card);
-                  onClose();
-                }}
-                className="gap-2"
-              >
-                <Heart className="h-4 w-4" />
-                Añadir a Lista de Deseos
-              </Button>
-            )}
             <Button
-              onClick={() => onAddToCollection(card)}
+              variant="outline"
+              onClick={() => handleAction(() => onAddToWishlist?.(card))}
+              className="gap-2"
+            >
+              <Heart className="h-4 w-4" />
+              Añadir a Lista de Deseos
+            </Button>
+            <Button
+              onClick={() => handleAction(() => onAddToCollection?.(card))}
               className="gap-2 bg-red-600 hover:bg-red-700"
             >
               <PlusCircle className="h-4 w-4" />
@@ -96,7 +103,7 @@ const CardDetail = ({
       open={isOpen}
       onOpenChange={onClose}
     >
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {card.name}
@@ -114,12 +121,12 @@ const CardDetail = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex gap-6">
           <div>
             <img
               src={card.images.large}
               alt={card.name}
-              className="rounded-lg w-full"
+              className="rounded-lg max-w-[300px]"
             />
           </div>
 

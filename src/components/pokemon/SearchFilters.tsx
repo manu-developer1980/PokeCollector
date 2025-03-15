@@ -27,6 +27,8 @@ interface SearchFiltersProps {
   currentPage?: number;
   pageSize?: number;
   children?: React.ReactNode;
+  onAddToCollection?: (card: PokemonCard) => void;
+  onAddToWishlist?: (card: PokemonCard) => void;
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
@@ -36,6 +38,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   currentPage = 1,
   pageSize = 20,
   children,
+  onAddToCollection,
+  onAddToWishlist,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState<PokemonType>("all");
