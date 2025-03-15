@@ -216,7 +216,6 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="pokeball" />
                   <span>Buscando...</span>
                 </span>
               ) : (
