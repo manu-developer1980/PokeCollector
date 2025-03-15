@@ -11,21 +11,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PokemonCard } from "@/types/pokemon";
-import { PlusCircle, Heart } from "lucide-react";
-import {
-  SUPERTYPE_MAP,
-  SUBTYPE_MAP,
-  type CardSupertype,
-  type CardSubtype,
-} from "@/lib/constants";
+import { PlusCircle, Heart, Trash2 } from "lucide-react";
 
 interface CardDetailProps {
   card: PokemonCard | null;
   isOpen: boolean;
   onClose: () => void;
   onAddToCollection: (card: PokemonCard) => void;
-  onAddToWishlist: (card: PokemonCard) => void;
+  onAddToWishlist?: (card: PokemonCard) => void;
+  onRemoveFromWishlist?: (cardId: string) => void;
   isInWishlist?: boolean;
+  mode?: "search" | "wishlist" | "collection";
 }
 
 const CardDetail = ({
@@ -34,9 +30,66 @@ const CardDetail = ({
   onClose,
   onAddToCollection,
   onAddToWishlist,
+  onRemoveFromWishlist,
   isInWishlist = false,
+  mode = "search",
 }: CardDetailProps) => {
   if (!card) return null;
+
+  const renderFooterButtons = () => {
+    switch (mode) {
+      case "wishlist":
+        return (
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                onRemoveFromWishlist?.(card.id);
+                onClose();
+              }}
+              className="gap-2 text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+              Eliminar de Lista de Deseos
+            </Button>
+            <Button
+              onClick={() => onAddToCollection(card)}
+              className="gap-2 bg-red-600 hover:bg-red-700"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Añadir a Colección
+            </Button>
+          </>
+        );
+      case "collection":
+        return null; // La colección maneja sus propias acciones
+      default: // caso 'search'
+        return (
+          <>
+            {!isInWishlist && onAddToWishlist && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  onAddToWishlist(card);
+                  onClose();
+                }}
+                className="gap-2"
+              >
+                <Heart className="h-4 w-4" />
+                Añadir a Lista de Deseos
+              </Button>
+            )}
+            <Button
+              onClick={() => onAddToCollection(card)}
+              className="gap-2 bg-red-600 hover:bg-red-700"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Añadir a Colección
+            </Button>
+          </>
+        );
+    }
+  };
 
   return (
     <Dialog
@@ -62,11 +115,11 @@ const CardDetail = ({
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex justify-center">
+          <div>
             <img
               src={card.images.large}
               alt={card.name}
-              className="rounded-lg max-h-[400px] object-contain"
+              className="rounded-lg w-full"
             />
           </div>
 
@@ -149,23 +202,7 @@ const CardDetail = ({
         <Separator className="my-4" />
 
         <DialogFooter className="flex justify-between sm:justify-between">
-          {!isInWishlist && (
-            <Button
-              variant="outline"
-              onClick={() => onAddToWishlist(card)}
-              className="gap-2"
-            >
-              <Heart className="h-4 w-4" />
-              Añadir a Lista de Deseos
-            </Button>
-          )}
-          <Button
-            onClick={() => onAddToCollection(card)}
-            className="gap-2 bg-red-600 hover:bg-red-700"
-          >
-            <PlusCircle className="h-4 w-4" />
-            Añadir a Colección
-          </Button>
+          {renderFooterButtons()}
         </DialogFooter>
       </DialogContent>
     </Dialog>

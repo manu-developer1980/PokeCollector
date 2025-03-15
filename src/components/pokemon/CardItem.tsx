@@ -62,12 +62,12 @@ const CardItem = ({
 
   return (
     <Card
-      className="group relative cursor-pointer w-[235px] transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:-translate-y-1"
+      className="cursor-pointer hover:shadow-md hover:scale-105 transition-transform duration-300"
       onClick={() => onClick?.(card)}
     >
       <CardContent className="p-2 sm:p-4">
         {/* Image container */}
-        <div className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg mb-2 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="relative aspect-[2.5/3.5] rounded-lg mb-2">
           {!imageError ? (
             <img
               src={card.images?.small || card.images?.large}
@@ -85,7 +85,7 @@ const CardItem = ({
           )}
 
           {/* Action buttons */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2">
+          <div className="absolute top-2 right-2 opacity-0 flex gap-2">
             {actions === "search" && onQuickAdd && (
               <Button
                 size="sm"
