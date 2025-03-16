@@ -15,12 +15,16 @@ import { Edit2 } from "lucide-react";
 import EditCardModal from "./EditCardModal";
 import { Trash } from "lucide-react";
 import {
+  POKEMON_TYPES_MAP,
+  RARITY_MAP,
   CONDITION_MAP,
   SUPERTYPE_MAP,
   SUBTYPE_MAP,
-  CardCondition,
-  CardSupertype,
-  CardSubtype,
+  type PokemonType,
+  type CardRarity,
+  type CardCondition,
+  type CardSupertype,
+  type CardSubtype,
 } from "@/lib/constants";
 
 interface CardDetailDialogProps {
@@ -84,7 +88,8 @@ const CardDetailDialog = ({
                   variant="outline"
                   className="ml-2"
                 >
-                  {cardDetails.rarity}
+                  {RARITY_MAP[cardDetails.rarity as CardRarity] ||
+                    cardDetails.rarity}
                 </Badge>
               )}
             </DialogTitle>
@@ -153,7 +158,16 @@ const CardDetailDialog = ({
                   {cardDetails.types?.length > 0 && (
                     <>
                       <div className="text-gray-500">Tipo</div>
-                      <div>{cardDetails.types.join(", ")}</div>
+                      <div>
+                        {cardDetails.types
+                          .map(
+                            (type) =>
+                              POKEMON_TYPES_MAP[
+                                type.toLowerCase() as PokemonType
+                              ] || type
+                          )
+                          .join(", ")}
+                      </div>
                     </>
                   )}
 
@@ -168,7 +182,9 @@ const CardDetailDialog = ({
                     <>
                       <div className="text-gray-500">Supertipo</div>
                       <div>
-                        {SUPERTYPE_MAP[cardDetails.supertype as CardSupertype]}
+                        {SUPERTYPE_MAP[
+                          cardDetails.supertype as CardSupertype
+                        ] || cardDetails.supertype}
                       </div>
                     </>
                   )}
@@ -178,7 +194,10 @@ const CardDetailDialog = ({
                       <div className="text-gray-500">Subtipos</div>
                       <div>
                         {cardDetails.subtypes
-                          .map((subtype) => SUBTYPE_MAP[subtype as CardSubtype])
+                          .map(
+                            (subtype) =>
+                              SUBTYPE_MAP[subtype as CardSubtype] || subtype
+                          )
                           .join(", ")}
                       </div>
                     </>
@@ -236,17 +255,6 @@ const CardDetailDialog = ({
                     {cardDetails.rules.map((rule, index) => (
                       <p key={index}>{rule}</p>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {cardDetails.flavorText && (
-                <div>
-                  <h3 className="text-sm font-medium mb-1">
-                    Texto de Ambiente
-                  </h3>
-                  <div className="text-sm italic text-gray-600">
-                    {cardDetails.flavorText}
                   </div>
                 </div>
               )}

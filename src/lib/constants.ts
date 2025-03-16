@@ -1,23 +1,15 @@
 export const POKEMON_TYPES_MAP = {
-  all: "Todos los tipos",
-  fire: "Fuego",
-  water: "Agua",
-  electric: "Eléctrico",
-  grass: "Planta",
-  ice: "Hielo",
-  fighting: "Lucha",
-  poison: "Veneno",
-  ground: "Tierra",
-  flying: "Volador",
-  psychic: "Psíquico",
-  bug: "Bicho",
-  rock: "Roca",
-  ghost: "Fantasma",
+  colorless: "Incoloro",
+  darkness: "Oscuridad",
   dragon: "Dragón",
-  dark: "Siniestro",
-  steel: "Acero",
   fairy: "Hada",
-  normal: "Normal",
+  fighting: "Lucha",
+  fire: "Fuego",
+  grass: "Planta",
+  lightning: "Eléctrico",
+  metal: "Metal",
+  psychic: "Psíquico",
+  water: "Agua",
 } as const;
 
 export const RARITY_MAP = {
@@ -81,6 +73,17 @@ export const SUBTYPE_MAP = {
   Special: "Especial",
   "Basic Energy": "Energía Básica",
   "Special Energy": "Energía Especial",
+} as const;
+
+export const FINISH_MAP = {
+  foil: "Foil",
+  holo: "Holo",
+  "non-foil": "Normal",
+} as const;
+
+export const EDITION_MAP = {
+  first: "1ª Edición",
+  unlimited: "Ilimitada",
 } as const;
 
 export type PokemonType = keyof typeof POKEMON_TYPES_MAP;

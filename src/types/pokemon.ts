@@ -1,17 +1,26 @@
 export interface PokemonCard {
   id: string;
   name: string;
+  number: string;
+  rarity?: string;
   images: {
     small: string;
     large: string;
   };
   set: {
     name: string;
-    series: string;
     printedTotal: number;
-    total: number;
-    releaseDate: string;
   };
+  cardmarket?: {
+    prices?: {
+      averageSellPrice?: number;
+    };
+  };
+  // Propiedades específicas de la colección
+  quantity?: number;
+  isFirstEdition?: boolean;
+  isFoil?: boolean;
+  condition?: string;
 }
 
 export interface PokemonCardSet {

@@ -4,33 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Heart } from "lucide-react";
 import { PokemonCard } from "@/types/pokemon";
 import { Badge } from "@/components/ui/badge";
-import { POKEMON_TYPES_MAP, RARITY_MAP, CONDITION_MAP } from "@/lib/constants";
+import {
+  POKEMON_TYPES_MAP,
+  RARITY_MAP,
+  CONDITION_MAP,
+  FINISH_MAP,
+  EDITION_MAP,
+  type PokemonType,
+  type CardRarity,
+  type CardCondition,
+} from "@/lib/constants";
 
 interface CardItemProps {
-  card: PokemonCard & {
-    is_foil?: boolean;
-    is_first_edition?: boolean;
-    condition?: string;
-    quantity?: number;
-  };
+  card: PokemonCard;
+  onClick: (card: PokemonCard) => void;
   onQuickAdd?: (card: PokemonCard) => void;
   onRemove?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
-  onClick?: (card: PokemonCard) => void;
-  fallbackImage?: string;
-  showPrice?: boolean;
   actions?: "collection" | "wishlist" | "search";
+  showPrice?: boolean; // Añadimos esta prop
 }
 
 const CardItem = ({
   card,
+  onClick,
   onQuickAdd,
   onRemove,
   onAddToWishlist,
-  onClick,
-  fallbackImage = "/placeholder-card.png",
-  showPrice = true,
   actions = "search",
+  showPrice = false, // Valor por defecto
 }: CardItemProps) => {
   const [imageError, setImageError] = useState(false);
 
@@ -40,6 +42,11 @@ const CardItem = ({
   const handleAction = (e: React.MouseEvent, action: () => void) => {
     e.stopPropagation();
     action();
+  };
+
+  const translateType = (type: string) => {
+    const normalizedType = type.toLowerCase() as PokemonType;
+    return POKEMON_TYPES_MAP[normalizedType] || type;
   };
 
   const renderTypes = () => {
@@ -53,7 +60,7 @@ const CardItem = ({
             variant="outline"
             className="text-xs"
           >
-            {POKEMON_TYPES_MAP[type.toLowerCase() as PokemonType] || type}
+            {translateType(type)}
           </Badge>
         ))}
       </div>
@@ -118,6 +125,7 @@ const CardItem = ({
                     size="sm"
                     className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
                     onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                    title="Añadir a Colección"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -127,6 +135,7 @@ const CardItem = ({
                     size="sm"
                     className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
                     onClick={(e) => handleAction(e, () => onRemove(card))}
+                    title="Eliminar de Lista de Deseos"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -161,57 +170,70 @@ const CardItem = ({
             </span>
           </div>
 
-          {/* Badges para atributos de colección */}
-          <div className="flex flex-wrap gap-1">
+          {/* Contenedor de badges */}
+          <div className="mt-2 flex flex-wrap gap-1">
+            {/* Badge de Rareza */}
             {card.rarity && (
               <Badge
                 variant="outline"
-                className="bg-indigo-50 text-indigo-700"
+                className="bg-indigo-50 text-indigo-700 text-xs"
               >
                 {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
               </Badge>
             )}
+
+            {/* Badges específicos de la colección */}
             {actions === "collection" && (
               <>
-                {card.is_foil && (
-                  <Badge
-                    variant="outline"
-                    className="bg-yellow-50 text-yellow-700"
-                  >
-                    Foil
-                  </Badge>
-                )}
-                {card.is_first_edition && (
-                  <Badge
-                    variant="outline"
-                    className="bg-purple-50 text-purple-700"
-                  >
-                    1ª Ed
-                  </Badge>
-                )}
-                {card.condition && (
-                  <Badge
-                    variant="outline"
-                    className="bg-green-50 text-green-700"
-                  >
-                    {CONDITION_MAP[card.condition as CardCondition] ||
-                      card.condition}
-                  </Badge>
-                )}
+                {/* Badge de Cantidad */}
                 {card.quantity && card.quantity > 1 && (
                   <Badge
                     variant="outline"
-                    className="bg-blue-50 text-blue-700"
+                    className="bg-blue-50 text-blue-700 text-xs"
                   >
                     x{card.quantity}
+                  </Badge>
+                )}
+
+                {/* Badge de Primera Edición */}
+                {card.isFirstEdition && (
+                  <Badge
+                    variant="outline"
+                    className="bg-purple-50 text-purple-700 text-xs"
+                    tooltip="1ª Edición"
+                  >
+                    1st
+                  </Badge>
+                )}
+
+                {/* Badge de Foil */}
+                {card.isFoil && (
+                  <Badge
+                    variant="outline"
+                    className="bg-yellow-50 text-yellow-700 text-xs"
+                    tooltip="Foil"
+                  >
+                    ✨
+                  </Badge>
+                )}
+
+                {/* Badge de Condición */}
+                {card.condition && (
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 text-xs"
+                  >
+                    {CONDITION_MAP[card.condition as CardCondition] ||
+                      card.condition}
                   </Badge>
                 )}
               </>
             )}
           </div>
 
+          {/* Precio si está habilitado */}
           {showPrice && card.cardmarket?.prices?.averageSellPrice && (
-            <div className="text-sm font-bold text-emerald-600">
+            <div className="text-sm font-bold text-emerald-600 mt-2">
               ${card.cardmarket.prices.averageSellPrice.toFixed(2)}
             </div>
           )}

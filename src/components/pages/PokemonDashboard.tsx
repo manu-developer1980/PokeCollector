@@ -310,13 +310,27 @@ const PokemonDashboard = () => {
 
   const handleAddToWishlist = async (card: PokemonCard) => {
     try {
-      // Primero verificamos si la carta ya existe en la lista de deseos
-      const { data: existingCard } = await supabase
+      if (!user?.id) {
+        toast({
+          title: "Error",
+          description:
+            "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verificar duplicados usando single() con comillas
+      const { data: existingCard, error: checkError } = await supabase
         .from("wishlist_cards")
         .select("*")
-        .eq("user_id", user?.id)
+        .eq("user_id", user.id)
         .eq("card_id", card.id)
-        .single();
+        .maybeSingle();
+
+      if (checkError) {
+        throw checkError;
+      }
 
       if (existingCard) {
         toast({
@@ -326,13 +340,12 @@ const PokemonDashboard = () => {
         return;
       }
 
-      // Si no existe, la insertamos
+      // Insertar nueva carta
       const { data, error } = await supabase
         .from("wishlist_cards")
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           card_id: card.id,
-          date_added: new Date().toISOString(),
         })
         .select()
         .single();
@@ -372,7 +385,7 @@ const PokemonDashboard = () => {
   }) => {
     try {
       // Primero insertamos la carta en la colección
-      const { data, error } = await supabase
+      const { data: insertedCard, error } = await supabase
         .from("collection_cards")
         .insert({
           card_id: cardData.card.id,
@@ -384,53 +397,66 @@ const PokemonDashboard = () => {
           notes: cardData.notes,
           date_added: new Date().toISOString(),
         })
-        .select();
+        .select()
+        .single();
 
       if (error) throw error;
 
-      // Verificar si la carta está en la lista de deseos usando encodeURIComponent
+      // Crear el objeto de carta completo con los detalles de Pokemon
+      const newCard = {
+        ...insertedCard,
+        name: cardData.card.name,
+        images: cardData.card.images,
+        set: cardData.card.set,
+      };
+
+      // Actualizar el estado local de collections
+      setCollections((prevCollections) =>
+        prevCollections.map((collection) => {
+          if (collection.id === cardData.collectionId) {
+            return {
+              ...collection,
+              cards: [...collection.cards, newCard],
+            };
+          }
+          return collection;
+        })
+      );
+
+      // Actualizar selectedCollection si es la colección actual
+      if (selectedCollection?.id === cardData.collectionId) {
+        setSelectedCollection((prev) => ({
+          ...prev!,
+          cards: [...prev!.cards, newCard],
+        }));
+      }
+
+      // Verificar y eliminar de la lista de deseos si es necesario
       const { data: wishlistCard, error: wishlistError } = await supabase
         .from("wishlist_cards")
         .select("id")
         .eq("user_id", user?.id)
-        .eq("card_id", encodeURIComponent(cardData.card.id))
+        .eq("card_id", cardData.card.id)
         .maybeSingle();
 
       if (wishlistError) {
         console.error("Error checking wishlist:", wishlistError);
-        return;
-      }
-
-      // Si está en la lista de deseos, la eliminamos
-      if (wishlistCard) {
-        const { error: deleteError } = await supabase
+      } else if (wishlistCard) {
+        await supabase
           .from("wishlist_cards")
           .delete()
           .eq("id", wishlistCard.id);
 
-        if (deleteError) {
-          console.error("Error removing from wishlist:", deleteError);
-          return;
-        }
-
-        // Actualizar el estado local de la lista de deseos
         setWishlistCards((prev) =>
           prev.filter((card) => card.id !== cardData.card.id)
         );
-
-        toast({
-          title: "Carta movida a la colección",
-          description:
-            "La carta ha sido eliminada de tu lista de deseos y añadida a tu colección.",
-        });
-      } else {
-        toast({
-          title: "Carta Añadida",
-          description: "La carta ha sido añadida a tu colección.",
-        });
       }
 
       setIsAddToCollectionOpen(false);
+      toast({
+        title: "Carta Añadida",
+        description: "La carta ha sido añadida a tu colección.",
+      });
     } catch (error) {
       console.error("Error al añadir carta a la colección:", error);
       toast({
@@ -522,8 +548,8 @@ const PokemonDashboard = () => {
       if (error) throw error;
 
       toast({
-        title: "Collection Deleted",
-        description: "The collection has been deleted.",
+        title: "Colección Eliminada",
+        description: "La colección ha sido eliminada correctamente.",
       });
 
       // Refresh collections
@@ -533,7 +559,8 @@ const PokemonDashboard = () => {
       console.error("Error deleting collection:", error);
       toast({
         title: "Error",
-        description: "Failed to delete collection. Please try again.",
+        description:
+          "No se pudo eliminar la colección. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -576,14 +603,15 @@ const PokemonDashboard = () => {
       setIsCardDetailDialogOpen(false);
 
       toast({
-        title: "Card Removed",
-        description: "The card has been removed from your collection.",
+        title: "Carta Eliminada",
+        description: "La carta ha sido eliminada de tu colección.",
       });
     } catch (error) {
       console.error("Error removing card:", error);
       toast({
         title: "Error",
-        description: "Failed to remove card. Please try again.",
+        description:
+          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -783,50 +811,97 @@ const PokemonDashboard = () => {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "*", // Escuchar todos los eventos
           schema: "public",
           table: "collection_cards",
           filter: `collection_id=eq.${selectedCollection.id}`,
         },
         async (payload) => {
-          if (payload.eventType === "UPDATE") {
-            const updatedCard = payload.new as any;
+          console.log("Realtime event received:", payload);
 
-            // Obtener los detalles actualizados de la carta
-            try {
-              const pokemonCard = await getPokemonCard(updatedCard.card_id);
-              const fullUpdatedCard = {
-                ...updatedCard,
-                name: pokemonCard.name,
-                images: pokemonCard.images,
-                set: pokemonCard.set?.name,
-              };
+          try {
+            switch (payload.eventType) {
+              case "INSERT": {
+                const newCard = payload.new as any;
+                const pokemonCard = await getPokemonCard(newCard.card_id);
+                const fullNewCard = {
+                  ...newCard,
+                  name: pokemonCard.name,
+                  images: pokemonCard.images,
+                  set: pokemonCard.set?.name,
+                };
 
-              setCollections((prevCollections) =>
-                prevCollections.map((collection) => {
-                  if (collection.id === selectedCollection.id) {
-                    return {
-                      ...collection,
-                      cards: collection.cards.map((card) =>
-                        card.id === updatedCard.id ? fullUpdatedCard : card
-                      ),
-                    };
-                  }
-                  return collection;
-                })
-              );
-            } catch (error) {
-              console.error("Error fetching updated card details:", error);
+                setCollections((prevCollections) =>
+                  prevCollections.map((collection) => {
+                    if (collection.id === selectedCollection.id) {
+                      return {
+                        ...collection,
+                        cards: [...collection.cards, fullNewCard],
+                      };
+                    }
+                    return collection;
+                  })
+                );
+                break;
+              }
+
+              case "UPDATE": {
+                const updatedCard = payload.new as any;
+                const pokemonCard = await getPokemonCard(updatedCard.card_id);
+                const fullUpdatedCard = {
+                  ...updatedCard,
+                  name: pokemonCard.name,
+                  images: pokemonCard.images,
+                  set: pokemonCard.set?.name,
+                };
+
+                setCollections((prevCollections) =>
+                  prevCollections.map((collection) => {
+                    if (collection.id === selectedCollection.id) {
+                      return {
+                        ...collection,
+                        cards: collection.cards.map((card) =>
+                          card.id === updatedCard.id ? fullUpdatedCard : card
+                        ),
+                      };
+                    }
+                    return collection;
+                  })
+                );
+                break;
+              }
+
+              case "DELETE": {
+                const deletedCard = payload.old as any;
+                setCollections((prevCollections) =>
+                  prevCollections.map((collection) => {
+                    if (collection.id === selectedCollection.id) {
+                      return {
+                        ...collection,
+                        cards: collection.cards.filter(
+                          (card) => card.id !== deletedCard.id
+                        ),
+                      };
+                    }
+                    return collection;
+                  })
+                );
+                break;
+              }
             }
+          } catch (error) {
+            console.error("Error handling realtime update:", error);
           }
         }
       )
       .subscribe();
 
+    // Cleanup subscription on unmount or when selectedCollection changes
     return () => {
-      channel.unsubscribe();
+      console.log("Unsubscribing from realtime channel");
+      supabase.removeChannel(channel);
     };
-  }, [user, selectedCollection?.id]); // Dependencias actualizadas
+  }, [user?.id, selectedCollection?.id]); // Dependencias actualizadas
 
   // Añadir función para cargar la lista de deseos
   const fetchWishlist = async () => {
@@ -1002,7 +1077,7 @@ const PokemonDashboard = () => {
                 totalCount={totalCount}
                 currentPage={currentPage}
                 pageSize={pageSize}
-                onAddToCollection={handleAddToCollection}
+                onQuickAdd={handleQuickAddToCollection}
                 onAddToWishlist={handleAddToWishlist}
               >
                 {isSearching ? (
@@ -1016,8 +1091,9 @@ const PokemonDashboard = () => {
                       setSelectedCard(card);
                       setIsCardDetailOpen(true);
                     }}
-                    onAddToCollection={handleAddToCollection}
+                    onQuickAdd={handleQuickAddToCollection}
                     onAddToWishlist={handleAddToWishlist}
+                    actions="search"
                   />
                 )}
               </SearchFilters>
@@ -1058,34 +1134,12 @@ const PokemonDashboard = () => {
                     setSelectedCard(card);
                     setIsCardDetailOpen(true);
                   }}
-                  onRemoveFromWishlist={async (wishlistId) => {
-                    try {
-                      const { error } = await supabase
-                        .from("wishlist_cards")
-                        .delete()
-                        .eq("id", wishlistId);
-
-                      if (error) throw error;
-
-                      setWishlistCards((prev) =>
-                        prev.filter((card) => card.wishlist_id !== wishlistId)
-                      );
-
-                      toast({
-                        title: "Card Removed",
-                        description:
-                          "The card has been removed from your wishlist.",
-                      });
-                    } catch (error) {
-                      console.error("Error removing from wishlist:", error);
-                      toast({
-                        title: "Error",
-                        description: "Failed to remove card. Please try again.",
-                        variant: "destructive",
-                      });
+                  onRemoveFromWishlist={(card) => {
+                    if (card.wishlist_id) {
+                      handleRemoveFromWishlist(card.wishlist_id);
                     }
                   }}
-                  onAddToCollection={(card) => handleAddToCollection(card)}
+                  onAddToCollection={handleAddToCollection}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 bg-white rounded-lg border border-gray-200">

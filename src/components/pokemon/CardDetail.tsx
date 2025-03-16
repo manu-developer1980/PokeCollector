@@ -5,13 +5,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PokemonCard } from "@/types/pokemon";
 import { PlusCircle, Heart, Trash2 } from "lucide-react";
+import {
+  POKEMON_TYPES_MAP,
+  RARITY_MAP,
+  SUPERTYPE_MAP,
+  SUBTYPE_MAP,
+  type PokemonType,
+  type CardRarity,
+  type CardSupertype,
+  type CardSubtype,
+} from "@/lib/constants";
 
 interface CardDetailProps {
   card: PokemonCard | null;
@@ -25,78 +34,16 @@ interface CardDetailProps {
 }
 
 const CardDetail: React.FC<CardDetailProps> = ({
+  card,
   isOpen,
   onClose,
-  card,
-  mode,
   onAddToCollection,
-  onRemoveFromWishlist,
   onAddToWishlist,
+  onRemoveFromWishlist,
+  isInWishlist,
+  mode = "search",
 }) => {
-  const handleAction = (action: () => void) => {
-    action();
-    onClose();
-  };
-
   if (!card) return null;
-
-  const renderFooterButtons = () => {
-    switch (mode) {
-      case "wishlist":
-        return (
-          <>
-            <Button
-              variant="outline"
-              onClick={() =>
-                handleAction(() => onRemoveFromWishlist?.(card.id))
-              }
-              className="gap-2 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-              Eliminar de Lista de Deseos
-            </Button>
-            <Button
-              onClick={() => handleAction(() => onAddToCollection?.(card))}
-              className="gap-2 bg-red-600 hover:bg-red-700"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Añadir a Colección
-            </Button>
-          </>
-        );
-      case "collection":
-        return (
-          <Button
-            variant="outline"
-            onClick={() => handleAction(() => onRemove?.(card.id))}
-            className="gap-2 text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-            Eliminar
-          </Button>
-        );
-      default: // caso 'search'
-        return (
-          <>
-            <Button
-              variant="outline"
-              onClick={() => handleAction(() => onAddToWishlist?.(card))}
-              className="gap-2"
-            >
-              <Heart className="h-4 w-4" />
-              Añadir a Lista de Deseos
-            </Button>
-            <Button
-              onClick={() => handleAction(() => onAddToCollection?.(card))}
-              className="gap-2 bg-red-600 hover:bg-red-700"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Añadir a Colección
-            </Button>
-          </>
-        );
-    }
-  };
 
   return (
     <Dialog
@@ -105,16 +52,42 @@ const CardDetail: React.FC<CardDetailProps> = ({
     >
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 flex-wrap">
             {card.name}
-            {card.rarity && (
-              <Badge
-                variant="outline"
-                className="ml-2"
-              >
-                {card.rarity}
-              </Badge>
-            )}
+            <div className="flex gap-2 flex-wrap">
+              {card.rarity && (
+                <Badge
+                  variant="outline"
+                  className="bg-indigo-50 text-indigo-700"
+                >
+                  {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
+                </Badge>
+              )}
+              {card.quantity && card.quantity > 1 && (
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700"
+                >
+                  x{card.quantity}
+                </Badge>
+              )}
+              {card.isFirstEdition && (
+                <Badge
+                  variant="outline"
+                  className="bg-purple-50 text-purple-700"
+                >
+                  1ª Edición
+                </Badge>
+              )}
+              {card.isFoil && (
+                <Badge
+                  variant="outline"
+                  className="bg-yellow-50 text-yellow-700"
+                >
+                  ✨ Foil
+                </Badge>
+              )}
+            </div>
           </DialogTitle>
           <DialogDescription>
             {card.set.name} · {card.number}/{card.set.printedTotal}
@@ -135,16 +108,31 @@ const CardDetail: React.FC<CardDetailProps> = ({
               <h3 className="text-sm font-medium mb-1">Detalles de la Carta</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-gray-500">Tipo</div>
-                <div>{card.types?.join(", ") || "N/A"}</div>
+                <div>
+                  {card.types
+                    ? card.types.map(translateType).join(", ")
+                    : "N/A"}
+                </div>
 
                 <div className="text-gray-500">PS</div>
                 <div>{card.hp || "N/A"}</div>
 
                 <div className="text-gray-500">Supertipo</div>
-                <div>{card.supertype}</div>
+                <div>
+                  {SUPERTYPE_MAP[card.supertype as CardSupertype] ||
+                    card.supertype ||
+                    "N/A"}
+                </div>
 
                 <div className="text-gray-500">Subtipos</div>
-                <div>{card.subtypes?.join(", ") || "N/A"}</div>
+                <div>
+                  {card.subtypes
+                    ?.map(
+                      (subtype) =>
+                        SUBTYPE_MAP[subtype as CardSubtype] || subtype
+                    )
+                    .join(", ") || "N/A"}
+                </div>
 
                 {card.tcgplayer?.prices && (
                   <>
@@ -158,6 +146,29 @@ const CardDetail: React.FC<CardDetailProps> = ({
                         )
                       )}
                     </div>
+                  </>
+                )}
+
+                {card.quantity && (
+                  <>
+                    <div className="text-gray-500">Cantidad</div>
+                    <div>{card.quantity}</div>
+                  </>
+                )}
+
+                {card.isFirstEdition !== undefined && (
+                  <>
+                    <div className="text-gray-500">Edición</div>
+                    <div>
+                      {card.isFirstEdition ? "Primera Edición" : "Ilimitada"}
+                    </div>
+                  </>
+                )}
+
+                {card.isFoil !== undefined && (
+                  <>
+                    <div className="text-gray-500">Acabado</div>
+                    <div>{card.isFoil ? "Foil" : "Normal"}</div>
                   </>
                 )}
               </div>
@@ -191,15 +202,6 @@ const CardDetail: React.FC<CardDetailProps> = ({
                   {card.rules.map((rule, index) => (
                     <p key={index}>{rule}</p>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {card.flavorText && (
-              <div>
-                <h3 className="text-sm font-medium mb-1">Texto de Ambiente</h3>
-                <div className="text-sm italic text-gray-600">
-                  {card.flavorText}
                 </div>
               </div>
             )}
