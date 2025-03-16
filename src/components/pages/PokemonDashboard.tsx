@@ -788,7 +788,7 @@ const PokemonDashboard = () => {
     const cardsWithDetails = await Promise.all(
       (cardsData || []).map(async (card) => {
         try {
-          const pokemonCard = await getPokemonCard(card.card_id);
+          const pokemonCard = await getCardById(card.card_id);
           return {
             ...card,
             name: pokemonCard.name,
@@ -931,7 +931,7 @@ const PokemonDashboard = () => {
       const cardsWithDetails = await Promise.all(
         (wishlistData || []).map(async (item) => {
           try {
-            const cardDetails = await getPokemonCard(item.card_id);
+            const cardDetails = await getCardById(item.card_id);
             return {
               ...cardDetails,
               wishlist_id: item.id,
@@ -1213,12 +1213,13 @@ const PokemonDashboard = () => {
         isDefault={collections.length === 0}
       />
 
-      <CardDetailDialog
+      <CardDetail
         card={selectedCollectionCard}
         isOpen={isCardDetailDialogOpen}
         onClose={() => setIsCardDetailDialogOpen(false)}
         onUpdate={handleUpdateCard}
         onRemove={handleRemoveCard}
+        mode="collection"
       />
 
       <OnboardingModal

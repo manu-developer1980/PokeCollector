@@ -5,13 +5,11 @@ import {
   PokemonCardSet,
 } from "@/types/pokemon";
 
-// Asegúrate de que API_BASE apunte a tu backend en Render
-const https: //pokecollect-backend.onrender.com/api/health
-
-API_BASE =
+const API_BASE =
   import.meta.env.VITE_API_BASE ||
   "https://pokecollect-backend.onrender.com/api";
-console.log("API Base URL:", API_BASE); // Esto mostrará la URL que se está utilizando
+console.log("API Base URL:", API_BASE);
+
 const headers = {
   "Content-Type": "application/json",
 };

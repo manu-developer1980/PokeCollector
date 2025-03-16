@@ -7,7 +7,7 @@ import Sidebar from "../dashboard/layout/Sidebar";
 import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
-import CardDetailDialog from "../pokemon/CardDetailDialog";
+import CardDetail from "../pokemon/CardDetail";
 import { Collection, CollectionCard } from "@/types/pokemon";
 import { Database, Heart, Search } from "lucide-react";
 import MainHeader from "../layout/MainHeader";
@@ -318,12 +318,13 @@ const Dashboard = () => {
         isDefault={collections.length === 0}
       />
 
-      <CardDetailDialog
+      <CardDetail
         card={selectedCollectionCard}
         isOpen={isCardDetailDialogOpen}
         onClose={() => setIsCardDetailDialogOpen(false)}
         onUpdate={handleUpdateCard}
         onRemove={handleRemoveCard}
+        mode="collection"
       />
 
       <Toaster />
