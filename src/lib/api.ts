@@ -5,8 +5,12 @@ import {
   PokemonCardSet,
 } from "@/types/pokemon";
 
-// Asegúrate de que esta línea esté correcta
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000/api";
+// Asegúrate de que API_BASE apunte a tu backend en Render
+const https: //pokecollect-backend.onrender.com/api/health
+
+API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  "https://pokecollect-backend.onrender.com/api";
 console.log("API Base URL:", API_BASE); // Esto mostrará la URL que se está utilizando
 const headers = {
   "Content-Type": "application/json",
@@ -61,13 +65,31 @@ export async function searchCards(
 }
 
 export async function getCardById(id: string): Promise<PokemonCard> {
-  const data = await fetchApi(`${API_BASE}/pokemon/cards/${id}`, {
-    method: "GET",
-    headers,
-  });
-  return data.data;
-}
+  try {
+    const response = await fetch(`${API_BASE}/pokemon/cards/${id}`, {
+      method: "GET",
+      headers,
+    });
 
+    if (!response.ok) {
+      throw new Error(`Error fetching card: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error(`Failed to fetch card details for ${id}:`, error);
+    // Devolver un objeto de carta mínimo con el ID para prevenir fallos completos
+    return {
+      id,
+      name: "Card Unavailable",
+      images: {
+        small: "/placeholder-card.png",
+        large: "/placeholder-card.png",
+      },
+    };
+  }
+}
 export async function getSets(): Promise<PokemonCardSet[]> {
   const data = await fetchApi(`${API_BASE}/pokemon/sets`, {
     method: "GET",
