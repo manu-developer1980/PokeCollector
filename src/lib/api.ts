@@ -5,11 +5,32 @@ import {
   PokemonCardSet,
 } from "@/types/pokemon";
 
+// Asegúrate de que esta línea esté correcta
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000/api";
-
+console.log("API Base URL:", API_BASE); // Esto mostrará la URL que se está utilizando
 const headers = {
   "Content-Type": "application/json",
 };
+
+// Función de utilidad para manejar errores de fetch
+async function fetchApi(url: string, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`API request failed for ${url}:`, error);
+    throw error;
+  }
+}
+
+// Función para obtener el token de autenticación
+async function getAuthToken() {
+  // Implementa tu lógica para obtener el token
+  return localStorage.getItem("authToken");
+}
 
 export async function searchCards(
   params: PokemonCardSearchParams
@@ -23,21 +44,12 @@ export async function searchCards(
   if (params.orderBy) queryParams.append("orderBy", params.orderBy);
 
   try {
-    const response = await fetch(
+    return await fetchApi(
       `${API_BASE}/pokemon/cards?${queryParams.toString()}`,
-      {
-        method: "GET",
-        headers,
-      }
+      { method: "GET", headers }
     );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
   } catch (error) {
-    console.error("API request failed:", error);
+    console.error("Search cards failed:", error);
     return {
       data: [],
       page: 1,
@@ -49,96 +61,57 @@ export async function searchCards(
 }
 
 export async function getCardById(id: string): Promise<PokemonCard> {
-  const response = await fetch(`${API_BASE}/pokemon/cards/${id}`, {
+  const data = await fetchApi(`${API_BASE}/pokemon/cards/${id}`, {
     method: "GET",
     headers,
   });
-
-  if (!response.ok) {
-    throw new Error(`Error fetching card: ${response.statusText}`);
-  }
-
-  const data = await response.json();
   return data.data;
 }
 
 export async function getSets(): Promise<PokemonCardSet[]> {
-  const response = await fetch(`${API_BASE}/pokemon/sets`, {
+  const data = await fetchApi(`${API_BASE}/pokemon/sets`, {
     method: "GET",
     headers,
   });
-
-  if (!response.ok) {
-    throw new Error(`Error fetching sets: ${response.statusText}`);
-  }
-
-  const data = await response.json();
   return data.data;
 }
 
 export async function getTypes(): Promise<string[]> {
-  const response = await fetch(`${API_BASE}/pokemon/types`, {
+  const data = await fetchApi(`${API_BASE}/pokemon/types`, {
     method: "GET",
     headers,
   });
-
-  if (!response.ok) {
-    throw new Error(`Error fetching types: ${response.statusText}`);
-  }
-
-  const data = await response.json();
   return data.data;
 }
 
 export async function getRarities(): Promise<string[]> {
-  const response = await fetch(`${API_BASE}/pokemon/rarities`, {
+  const data = await fetchApi(`${API_BASE}/pokemon/rarities`, {
     method: "GET",
     headers,
   });
-
-  if (!response.ok) {
-    throw new Error(`Error fetching rarities: ${response.statusText}`);
-  }
-
-  const data = await response.json();
   return data.data;
 }
 
 export async function getCollections() {
-  const response = await fetch(`${API_BASE}/collections`, {
+  const data = await fetchApi(`${API_BASE}/collections`, {
     headers: {
       ...headers,
       Authorization: `Bearer ${await getAuthToken()}`,
     },
   });
-
-  if (!response.ok) {
-    throw new Error(`Error fetching collections: ${response.statusText}`);
-  }
-
-  const data = await response.json();
   return data.data;
 }
 
 export async function addCardToCollection(collectionId: string, cardData: any) {
-  const response = await fetch(
-    `${API_BASE}/collections/${collectionId}/cards`,
-    {
-      method: "POST",
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${await getAuthToken()}`,
-      },
-      body: JSON.stringify(cardData),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Error adding card to collection: ${response.statusText}`);
-  }
-
-  const data = await response.json();
+  const data = await fetchApi(`${API_BASE}/collections/${collectionId}/cards`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      Authorization: `Bearer ${await getAuthToken()}`,
+    },
+    body: JSON.stringify(cardData),
+  });
   return data.data;
 }
 
-// Añade funciones similares para el resto de operaciones de colección y wishlist
+// Puedes añadir el resto de funciones para operaciones de colección y wishlist
