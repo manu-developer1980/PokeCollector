@@ -32,26 +32,29 @@ const CollectionDetail = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center space-x-4 flex-wrap">
           <Button
             variant="ghost"
             onClick={onBack}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Volver
           </Button>
           <h2 className="text-2xl font-bold">{collection.name}</h2>
           {collection.is_default && (
-            <Badge variant="secondary">Default Collection</Badge>
+            <Badge variant="secondary">Predeterminada</Badge>
           )}
+          <Badge variant="collection">
+            {collection.cards?.length || 0} cartas
+          </Badge>
         </div>
         <Button
           variant="outline"
           onClick={() => onEditCollection(collection)}
         >
           <Edit className="h-4 w-4 mr-2" />
-          Edit Collection
+          Editar Colección
         </Button>
       </div>
 
@@ -62,27 +65,11 @@ const CollectionDetail = ({
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
         <Input
-          placeholder="Search cards in this collection"
+          placeholder="Buscar cartas en esta colección"
           className="pl-9"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-      </div>
-
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-medium">Collection Stats</h3>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-500">Total Cards</div>
-              <div className="text-2xl font-bold">
-                {collection.cards?.length || 0}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       <Separator />

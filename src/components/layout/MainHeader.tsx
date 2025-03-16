@@ -2,7 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
 
-export default function MainHeader() {
+interface MainHeaderProps {
+  showNavigation?: boolean;
+}
+
+export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const { user } = useAuth();
 
   return (
@@ -21,31 +25,33 @@ export default function MainHeader() {
             PokéCollector
           </Link>
         </div>
-        <nav className="flex items-center space-x-4">
-          {user ? (
-            <Link to="/dashboard">
-              <Button className="bg-red-600 hover:bg-red-700">
-                Mi Colección
-              </Button>
-            </Link>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button
-                  variant="ghost"
-                  className="text-gray-700 hover:text-red-600"
-                >
-                  Iniciar Sesión
-                </Button>
-              </Link>
-              <Link to="/pricing">
+        {showNavigation && (
+          <nav className="flex items-center space-x-4">
+            {user ? (
+              <Link to="/dashboard">
                 <Button className="bg-red-600 hover:bg-red-700">
-                  Comenzar
+                  Mi Colección
                 </Button>
               </Link>
-            </>
-          )}
-        </nav>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-700 hover:text-red-600"
+                  >
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+                <Link to="/pricing">
+                  <Button className="bg-red-600 hover:bg-red-700">
+                    Comenzar
+                  </Button>
+                </Link>
+              </>
+            )}
+          </nav>
+        )}
       </div>
     </header>
   );

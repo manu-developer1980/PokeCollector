@@ -29,6 +29,7 @@ import { searchCards, getSets, getTypes, getRarities } from "@/lib/api";
 import { Database, Heart, Search, Grid3X3, Plus, Loader2 } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import SubscriptionPage from "../subscription/SubscriptionPage";
+import MainHeader from "../layout/MainHeader";
 
 interface PolarSubscription {
   status: string;
@@ -1040,8 +1041,7 @@ const PokemonDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <TopNavigation />
-
+      <MainHeader showNavigation={false} />
       <div className="flex">
         <Sidebar
           items={defaultNavItems}

@@ -3,7 +3,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import TopNavigation from "../dashboard/layout/TopNavigation";
 import Sidebar from "../dashboard/layout/Sidebar";
 import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
@@ -11,6 +10,7 @@ import CollectionDialog from "../pokemon/CollectionDialog";
 import CardDetailDialog from "../pokemon/CardDetailDialog";
 import { Collection, CollectionCard } from "@/types/pokemon";
 import { Database, Heart, Search } from "lucide-react";
+import MainHeader from "../layout/MainHeader";
 
 const defaultNavItems = [
   { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
@@ -266,7 +266,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopNavigation />
+      <MainHeader />
 
       <div className="flex min-h-screen">
         <Sidebar
