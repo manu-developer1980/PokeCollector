@@ -6,7 +6,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import { getPokemonCard } from "@/lib/pokemon-api";
+import {
+  searchCards,
+  getSets,
+  getTypes,
+  getRarities,
+  getCardById,
+} from "@/lib/api";
 import TopNavigation from "../dashboard/layout/TopNavigation";
 import Sidebar from "../dashboard/layout/Sidebar";
 import SearchFilters from "../pokemon/SearchFilters";
@@ -25,7 +31,6 @@ import {
   PokemonCard,
   PokemonCardSearchParams,
 } from "@/types/pokemon";
-import { searchCards, getSets, getTypes, getRarities } from "@/lib/api";
 import { Database, Heart, Search, Grid3X3, Plus, Loader2 } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import SubscriptionPage from "../subscription/SubscriptionPage";
@@ -197,7 +202,7 @@ const PokemonDashboard = () => {
             (cardsData || []).map(async (card) => {
               try {
                 // Asume que tienes una función para obtener los detalles de la carta de la API de Pokemon
-                const pokemonCard = await getPokemonCard(card.card_id);
+                const pokemonCard = await getCardById(card.card_id);
                 return {
                   ...card,
                   name: pokemonCard.name,
@@ -824,7 +829,7 @@ const PokemonDashboard = () => {
             switch (payload.eventType) {
               case "INSERT": {
                 const newCard = payload.new as any;
-                const pokemonCard = await getPokemonCard(newCard.card_id);
+                const pokemonCard = await getCardById(newCard.card_id);
                 const fullNewCard = {
                   ...newCard,
                   name: pokemonCard.name,
@@ -848,7 +853,7 @@ const PokemonDashboard = () => {
 
               case "UPDATE": {
                 const updatedCard = payload.new as any;
-                const pokemonCard = await getPokemonCard(updatedCard.card_id);
+                const pokemonCard = await getCardById(updatedCard.card_id);
                 const fullUpdatedCard = {
                   ...updatedCard,
                   name: pokemonCard.name,
@@ -892,6 +897,11 @@ const PokemonDashboard = () => {
             }
           } catch (error) {
             console.error("Error handling realtime update:", error);
+            toast({
+              title: "Error",
+              description: "Error al actualizar la colección en tiempo real.",
+              variant: "destructive",
+            });
           }
         }
       )
@@ -902,7 +912,7 @@ const PokemonDashboard = () => {
       console.log("Unsubscribing from realtime channel");
       supabase.removeChannel(channel);
     };
-  }, [user?.id, selectedCollection?.id]); // Dependencias actualizadas
+  }, [user?.id, selectedCollection?.id, toast]); // Dependencias actualizadas
 
   // Añadir función para cargar la lista de deseos
   const fetchWishlist = async () => {

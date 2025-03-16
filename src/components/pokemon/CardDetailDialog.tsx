@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getPokemonCard } from "@/lib/pokemon-api";
+import { getCardById } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +56,7 @@ const CardDetailDialog = ({
     const loadCardDetails = async () => {
       if (card) {
         try {
-          const details = await getPokemonCard(card.card_id);
+          const details = await getCardById(card.card_id);
           setCardDetails(details);
         } catch (error) {
           console.error("Error loading card details:", error);
