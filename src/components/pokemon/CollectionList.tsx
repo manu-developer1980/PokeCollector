@@ -42,18 +42,6 @@ const CollectionList = ({
         )}
       </div>
 
-      {/* Loading overlay */}
-      {isLoading && (
-        <div className="fixed top-[4rem] left-[calc(256px+24px)] right-6 bottom-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-50">
-          <div className="flex flex-col items-center justify-center">
-            <div className="pokeball mb-4" />
-            <p className="text-sm text-muted-foreground animate-pulse">
-              Cargando colecciones...
-            </p>
-          </div>
-        </div>
-      )}
-
       {!isLoading && collections.length === 0 ? (
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
