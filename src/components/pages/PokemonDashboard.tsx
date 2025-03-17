@@ -59,7 +59,6 @@ const defaultNavItems = [
   { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
   { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
-  { icon: <User size={18} />, label: "Mi Cuenta", id: "Account" },
 ];
 
 const PokemonDashboard = () => {
@@ -69,6 +68,7 @@ const PokemonDashboard = () => {
   const { toast } = useToast();
 
   // Agrupa todos los estados relacionados al inicio del componente
+  const [isLoading, setIsLoading] = useState(true);  // Añadido estado de loading
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
   const [activeSection, setActiveSection] = useState(initialSection);
@@ -181,11 +181,24 @@ const PokemonDashboard = () => {
     loadFilterData();
   }, [toast]);
 
-  // Load collections on mount
+  // Manejar la inicialización principal
   useEffect(() => {
-    if (user) {
-      getCollections();
-    }
+    const initializeData = async () => {
+      try {
+        if (user) {
+          await Promise.all([
+            getCollections(),
+            checkOnboardingStatus(),
+          ]);
+        }
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
   }, [user]);
 
   const getCollections = async () => {
@@ -1079,6 +1092,19 @@ const PokemonDashboard = () => {
   };
 
   const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="fixed inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm">
+          <div className="flex flex-col items-center justify-center">
+            <div className="pokeball mb-4" />
+            <p className="text-lg font-bold text-muted-foreground animate-pulse">
+              Cargando...
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeSection) {
       case "Search Cards":
         return (
@@ -1095,14 +1121,25 @@ const PokemonDashboard = () => {
               currentPage={currentPage}
               pageSize={searchParams.pageSize}
             />
-            <CardGrid
-              cards={searchResults}
-              onCardClick={handleCardClick}
-              onQuickAdd={handleQuickAddToCollection}
-              onAddToWishlist={handleAddToWishlist}
-              isLoading={isSearching}
-              actions="search"
-            />
+            {isSearching ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="flex flex-col items-center">
+                  <div className="pokeball mb-4" />
+                  <p className="text-sm text-muted-foreground animate-pulse">
+                    Buscando cartas...
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <CardGrid
+                cards={searchResults}
+                onCardClick={handleCardClick}
+                onQuickAdd={handleQuickAddToCollection}
+                onAddToWishlist={handleAddToWishlist}
+                isLoading={isSearching}
+                actions="search"
+              />
+            )}
           </>
         );
       case "My Collection":
@@ -1159,110 +1196,111 @@ const PokemonDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
-        <div className="container mx-auto">
-          <div className="flex relative min-h-[calc(100vh-4rem)]">
-            <Sidebar
-              items={defaultNavItems}
-              activeItem={activeSection}
-              onItemClick={(item) => setActiveSection(item)}
-              subscriptionTier={
-                subscriptionStatus === "premium" ? "Premium" : "Free"
-              }
-            />
-
-            <main className="flex-1 md:pl-[calc(256px+24px)] p-6 pt-20 relative">
+        <div className="flex-1 flex relative pt-16">
+          {" "}
+          {/* Añadido pt-16 para el espacio del header */}
+          <Sidebar
+            items={defaultNavItems}
+            activeItem={activeSection}
+            onItemClick={(item) => setActiveSection(item)}
+          />
+          <main className="flex-1 min-h-0">
+            {" "}
+            {/* Cambiado a ml-64 fijo */}
+            <div className="container mx-auto p-6">
               <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                   {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
                   {activeSection === "My Collection" &&
                     "Mi Colección de Pokémon"}
                   {activeSection === "Wishlist" && "Mi Lista de Deseos"}
-                  {activeSection === "Account" && "Mi Cuenta"}
                 </h1>
               </div>
 
-              <div className="relative h-[calc(100vh-16rem)]">
+              <div className="mb-6">
+                {" "}
+                {/* Añadido margin bottom */}
                 {renderContent()}
               </div>
-            </main>
-          </div>
+            </div>
+          </main>
         </div>
-
-        {/* Dialogs */}
-        <CardDetail
-          card={selectedCard}
-          isOpen={isCardDetailOpen}
-          onClose={() => setIsCardDetailOpen(false)}
-          onAddToCollection={handleAddToCollection}
-          onAddToWishlist={handleAddToWishlist}
-          onRemoveFromWishlist={(card) => {
-            // Pasamos la carta completa en lugar de solo el ID
-            if (card) {
-              handleRemoveFromWishlist(card);
-            }
-          }}
-          mode={
-            activeSection === "Wishlist"
-              ? "wishlist"
-              : activeSection === "My Collection"
-              ? "collection"
-              : "search"
-          }
-        />
-
-        <AddToCollectionDialog
-          card={selectedCard}
-          collections={collections}
-          isOpen={isAddToCollectionOpen}
-          onClose={() => setIsAddToCollectionOpen(false)}
-          onAddToCollection={handleSaveToCollection}
-        />
-
-        <CollectionDialog
-          collection={editingCollection}
-          isOpen={isCollectionDialogOpen}
-          onClose={() => setIsCollectionDialogOpen(false)}
-          onSave={handleSaveCollection}
-          isDefault={collections.length === 0}
-        />
-
-        <CardDetail
-          card={selectedCollectionCard}
-          isOpen={isCardDetailDialogOpen}
-          onClose={() => setIsCardDetailDialogOpen(false)}
-          onUpdate={handleUpdateCard}
-          onRemove={handleRemoveCard}
-          mode="collection"
-        />
-
-        <OnboardingModal
-          isOpen={showOnboarding}
-          onClose={() => setShowOnboarding(false)}
-        />
-        <Toaster />
-        <DeleteConfirmationDialog
-          isOpen={deleteConfirmationState.isOpen}
-          onClose={() =>
-            setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }))
-          }
-          onConfirm={handleConfirmDelete}
-          title="Eliminar Colección"
-          description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
-        />
-        <NoDefaultCollectionDialog
-          isOpen={isNoDefaultCollectionDialogOpen}
-          onClose={() => {
-            setIsNoDefaultCollectionDialogOpen(false);
-            setPendingQuickAddCard(null);
-          }}
-          onCreateNew={handleCreateNewFromNoDefault}
-          onSetDefault={handleSetDefaultCollection}
-          existingCollections={collections.filter((c) => !c.is_default)}
-        />
+        <Footer />
       </div>
-      <Footer />
+
+      {/* Dialogs */}
+      <CardDetail
+        card={selectedCard}
+        isOpen={isCardDetailOpen}
+        onClose={() => setIsCardDetailOpen(false)}
+        onAddToCollection={handleAddToCollection}
+        onAddToWishlist={handleAddToWishlist}
+        onRemoveFromWishlist={(card) => {
+          // Pasamos la carta completa en lugar de solo el ID
+          if (card) {
+            handleRemoveFromWishlist(card);
+          }
+        }}
+        mode={
+          activeSection === "Wishlist"
+            ? "wishlist"
+            : activeSection === "My Collection"
+            ? "collection"
+            : "search"
+        }
+      />
+
+      <AddToCollectionDialog
+        card={selectedCard}
+        collections={collections}
+        isOpen={isAddToCollectionOpen}
+        onClose={() => setIsAddToCollectionOpen(false)}
+        onAddToCollection={handleSaveToCollection}
+      />
+
+      <CollectionDialog
+        collection={editingCollection}
+        isOpen={isCollectionDialogOpen}
+        onClose={() => setIsCollectionDialogOpen(false)}
+        onSave={handleSaveCollection}
+        isDefault={collections.length === 0}
+      />
+
+      <CardDetail
+        card={selectedCollectionCard}
+        isOpen={isCardDetailDialogOpen}
+        onClose={() => setIsCardDetailDialogOpen(false)}
+        onUpdate={handleUpdateCard}
+        onRemove={handleRemoveCard}
+        mode="collection"
+      />
+
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
+      <Toaster />
+      <DeleteConfirmationDialog
+        isOpen={deleteConfirmationState.isOpen}
+        onClose={() =>
+          setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Colección"
+        description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
+      />
+      <NoDefaultCollectionDialog
+        isOpen={isNoDefaultCollectionDialogOpen}
+        onClose={() => {
+          setIsNoDefaultCollectionDialogOpen(false);
+          setPendingQuickAddCard(null);
+        }}
+        onCreateNew={handleCreateNewFromNoDefault}
+        onSetDefault={handleSetDefaultCollection}
+        existingCollections={collections.filter((c) => !c.is_default)}
+      />
     </>
   );
 };

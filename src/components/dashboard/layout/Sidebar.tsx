@@ -35,7 +35,6 @@ interface SidebarProps {
   items: NavItem[];
   activeItem: string;
   onItemClick: (id: string) => void;
-  subscriptionTier?: string;
 }
 
 const defaultNavItems: NavItem[] = [
@@ -48,90 +47,17 @@ const Sidebar = ({
   items,
   activeItem,
   onItemClick,
-  subscriptionTier = "Free",
 }: SidebarProps) => {
-  const { signOut } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/", { replace: true });
-      toast({
-        title: "Sesión cerrada",
-        description: "Has cerrado sesión correctamente.",
-      });
-    } catch (error) {
-      console.error("Error during sign out:", error);
-      navigate("/", { replace: true });
-      toast({
-        title: "Error",
-        description: "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const allItems = [
-    ...items,
-    {
-      icon: <CreditCard size={18} />,
-      label: "Suscripción",
-      id: "subscription",
-      badge: subscriptionTier,
-    },
-  ];
-
-  const handleNavigation = (section: string) => {
-    if (section === "My Collection") {
-      navigate("/dashboard");
-    }
-  };
-
-  const handleItemClick = (item: NavItem) => {
-    if (item.id === "collection") {
-      handleNavigation("My Collection");
-    } else {
-      onItemClick(item.id);
-    }
-  };
-
   const renderNavItems = (isMobile: boolean = false) => (
-    <>
-      <nav className="space-y-2">
-        {allItems.map((item) =>
-          isMobile ? (
-            <SheetClose
-              key={item.id}
-              asChild
-            >
-              <button
-                onClick={() => handleItemClick(item)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                  activeItem === item.id
-                    ? "bg-red-50 text-red-600"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <Badge
-                    variant="outline"
-                    className="ml-2"
-                  >
-                    {item.badge}
-                  </Badge>
-                )}
-              </button>
-            </SheetClose>
-          ) : (
+    <nav className="space-y-2">
+      {items.map((item) =>
+        isMobile ? (
+          <SheetClose
+            key={item.id}
+            asChild
+          >
             <button
-              key={item.id}
-              onClick={() => handleItemClick(item)}
+              onClick={() => onItemClick(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
                 activeItem === item.id
                   ? "bg-red-50 text-red-600"
@@ -142,39 +68,35 @@ const Sidebar = ({
                 {item.icon}
                 <span>{item.label}</span>
               </div>
-              {item.badge && (
-                <Badge
-                  variant="outline"
-                  className="ml-2"
-                >
-                  {item.badge}
-                </Badge>
-              )}
             </button>
-          )
-        )}
-      </nav>
-    </>
+          </SheetClose>
+        ) : (
+          <button
+            key={item.id}
+            onClick={() => onItemClick(item.id)}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+              activeItem === item.id
+                ? "bg-red-50 text-red-600"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              {item.icon}
+              <span>{item.label}</span>
+            </div>
+          </button>
+        )
+      )}
+    </nav>
   );
 
   return (
     <>
       {/* Versión Desktop */}
-      <aside className="hidden md:flex flex-col fixed top-16 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 z-30 ">
-        <div className="flex flex-col flex-1 p-4">
-          <ScrollArea className="flex-1">{renderNavItems(false)}</ScrollArea>
-          {/* Botón de cerrar sesión */}
-          <div className="pt-4 border-t border-gray-200">
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <LogOut
-                size={18}
-                className="mr-3"
-              />
-              <span>Cerrar Sesión</span>
-            </button>
+      <aside className="hidden md:block w-64 bg-white border-r border-gray-200 shrink-0">
+        <div className="sticky top-16 h-[calc(100vh-4rem)]">
+          <div className="flex flex-col flex-1 p-4">
+            <ScrollArea className="flex-1">{renderNavItems(false)}</ScrollArea>
           </div>
         </div>
       </aside>
@@ -182,33 +104,16 @@ const Sidebar = ({
       {/* Versión Mobile */}
       <Sheet>
         <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden fixed left-4 top-3 z-50"
-          >
-            <Menu size={20} />
-          </Button>
+          <button className="md:hidden">
+            {/* Botón del menú móvil si lo necesitas */}
+          </button>
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-64 p-0 pt-16"
+          className="w-64 p-0 pt-16 block md:hidden"
         >
           <div className="flex flex-col h-full p-4">
             <ScrollArea className="flex-1">{renderNavItems(true)}</ScrollArea>
-            {/* Botón de cerrar sesión */}
-            <div className="pt-4 border-t border-gray-200">
-              <button
-                onClick={handleSignOut}
-                className="w-full flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <LogOut
-                  size={18}
-                  className="mr-3"
-                />
-                <span>Cerrar Sesión</span>
-              </button>
-            </div>
           </div>
         </SheetContent>
       </Sheet>
