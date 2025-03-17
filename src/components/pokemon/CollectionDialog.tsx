@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,12 @@ const CollectionDialog = ({
           <DialogTitle>
             {collection ? "Editar Colección" : "Crear Colección"}
           </DialogTitle>
+          <DialogDescription>
+            {collection 
+              ? "Modifica los detalles de tu colección"
+              : "Crea una nueva colección para organizar tus cartas"
+            }
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">

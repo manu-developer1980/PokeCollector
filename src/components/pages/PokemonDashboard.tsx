@@ -45,6 +45,7 @@ import SubscriptionPage from "../subscription/SubscriptionPage";
 import MainHeader from "../layout/MainHeader";
 import AccountPage from "./AccountPage";
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
+import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog";
 
 interface PolarSubscription {
   status: string;
@@ -65,35 +66,26 @@ const PokemonDashboard = () => {
   const initialSection = location.state?.activeSection || "My Collection";
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Agrupa todos los estados relacionados al inicio del componente
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
-
-  // State for active tab/section
   const [activeSection, setActiveSection] = useState(initialSection);
-
-  // Actualizar la sección activa cuando cambie el estado de la ubicación
-  useEffect(() => {
-    if (location.state?.activeSection) {
-      setActiveSection(location.state.activeSection);
-    }
-  }, [location.state]);
-
-  // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // Search state
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
   const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
-
-  // Collection state
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [selectedCollectionCard, setSelectedCollectionCard] = useState<CollectionCard | null>(null);
   const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
+  
+  // Agrega estos dos estados que faltaban
+  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] = useState(false);
+  const [pendingQuickAddCard, setPendingQuickAddCard] = useState<PokemonCard | null>(null);
 
   // Filter data
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
@@ -794,12 +786,8 @@ const PokemonDashboard = () => {
     const defaultCollection = collections.find((c) => c.is_default);
 
     if (!defaultCollection) {
-      toast({
-        title: "Error",
-        description:
-          "No se encontró la colección por defecto. Por favor, crea una colección primero.",
-        variant: "destructive",
-      });
+      setPendingQuickAddCard(card);
+      setIsNoDefaultCollectionDialogOpen(true);
       return;
     }
 
@@ -822,11 +810,42 @@ const PokemonDashboard = () => {
       console.error("Error al añadir carta a la colección:", error);
       toast({
         title: "Error",
-        description:
-          "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
+        description: "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
+  };
+
+  const handleSetDefaultCollection = async (collection: Collection) => {
+    try {
+      // Primero actualizamos la colección actual como predeterminada
+      await handleSaveCollection({
+        id: collection.id,
+        name: collection.name,
+        description: collection.description,
+        isDefault: true
+      });
+
+      // Si hay una carta pendiente, la añadimos
+      if (pendingQuickAddCard) {
+        await handleQuickAddToCollection(pendingQuickAddCard);
+      }
+
+      setIsNoDefaultCollectionDialogOpen(false);
+      setPendingQuickAddCard(null);
+    } catch (error) {
+      console.error("Error al establecer colección predeterminada:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo establecer la colección predeterminada.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateNewFromNoDefault = () => {
+    setIsNoDefaultCollectionDialogOpen(false);
+    setIsCollectionDialogOpen(true);
   };
 
   const calculateRange = () => {
@@ -1209,6 +1228,16 @@ const PokemonDashboard = () => {
         onConfirm={handleConfirmDelete}
         title="Eliminar Colección"
         description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
+      />
+      <NoDefaultCollectionDialog
+        isOpen={isNoDefaultCollectionDialogOpen}
+        onClose={() => {
+          setIsNoDefaultCollectionDialogOpen(false);
+          setPendingQuickAddCard(null);
+        }}
+        onCreateNew={handleCreateNewFromNoDefault}
+        onSetDefault={handleSetDefaultCollection}
+        existingCollections={collections.filter(c => !c.is_default)}
       />
     </div>
   );
