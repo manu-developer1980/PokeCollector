@@ -116,8 +116,8 @@
 }
 
 .pokeball {
-  width: 40px;
-  height: 40px;
+  width: 60px; /* Cambiado de 40px */
+  height: 60px; /* Cambiado de 40px */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23FF1F1F' stroke='%23333' stroke-width='4'/%3E%3Cpath d='M50 2A48 48 0 0 1 98 50H2A48 48 0 0 1 50 2Z' fill='%23FF1F1F'/%3E%3Cpath d='M50 98A48 48 0 0 1 2 50H98A48 48 0 0 1 50 98Z' fill='%23FFF'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%23FFF' stroke='%23333' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='6' fill='%23333'/%3E%3C/svg%3E");
   background-size: contain;
   animation: spin 1s linear infinite;
