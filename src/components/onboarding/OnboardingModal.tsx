@@ -17,7 +17,7 @@ interface OnboardingModalProps {
 
 const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
   const { user } = useAuth();
-  const [shouldShowModal, setShouldShowModal] = useState(false);
+  const [shouldShowModal, setShouldShowModal] = useState(isOpen);
 
   useEffect(() => {
     if (user && isOpen) {
@@ -38,54 +38,37 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
         .single();
 
       if (error) {
-        // Si no existe el registro, lo creamos
         if (error.code === "PGRST116") {
           const { error: insertError } = await supabase
             .from("users")
-            .insert({ id: user.id, has_seen_onboarding: false })
-            .single();
+            .insert([{ id: user.id, has_seen_onboarding: false }]);
 
           if (insertError) throw insertError;
-          data = { has_seen_onboarding: false };
+          setShouldShowModal(true);
         } else {
           throw error;
         }
+      } else {
+        setShouldShowModal(!data?.has_seen_onboarding);
       }
-
-      console.log("Onboarding data:", data);
-      setShouldShowModal(!data?.has_seen_onboarding);
     } catch (error) {
       console.error("Error checking onboarding status:", error);
-      setShouldShowModal(false);
     }
   };
 
   const handleClose = async () => {
-    console.log("handleClose called");
     if (!user?.id) {
-      console.log("No user found");
       onClose();
       return;
     }
 
     try {
-      console.log("Updating onboarding status for user:", user.id);
-
-      // Primero intentamos actualizar
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from("users")
-        .update({
-          has_seen_onboarding: true,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ has_seen_onboarding: true })
         .eq("id", user.id);
 
-      if (updateError) {
-        console.error("Error updating:", updateError);
-        throw updateError;
-      }
-
-      console.log("Onboarding status updated successfully");
+      if (error) throw error;
     } catch (error) {
       console.error("Error updating onboarding status:", error);
     } finally {
@@ -95,21 +78,12 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
   };
 
   return (
-    <Dialog
-      open={shouldShowModal}
-      onOpenChange={(open) => {
-        console.log("Dialog onOpenChange:", open);
-        if (!open) handleClose();
-      }}
-    >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 bg-transparent border-none shadow-none">
+    <Dialog open={shouldShowModal} onOpenChange={() => handleClose()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Guía de inicio - PokéCollector
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Guía interactiva para comenzar a usar PokéCollector y gestionar tu
-            colección de cartas Pokémon
+          <DialogTitle>Guía de inicio - PokéCollector</DialogTitle>
+          <DialogDescription>
+            Guía interactiva para comenzar a usar PokéCollector y gestionar tu colección de cartas Pokémon
           </DialogDescription>
         </DialogHeader>
         <GetStartedGuide onClose={handleClose} />

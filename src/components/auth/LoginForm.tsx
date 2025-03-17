@@ -149,7 +149,9 @@ export default function LoginForm() {
       if (result.data?.user) {
         const needsOnboarding = await checkOnboardingStatus(result.data.user.id);
         if (needsOnboarding) {
+          console.log("Usuario necesita ver onboarding");
           setShowOnboarding(true);
+          setIsLoading(false);
           return;
         }
       }
@@ -173,6 +175,7 @@ export default function LoginForm() {
   };
 
   const handleOnboardingClose = () => {
+    console.log("Cerrando onboarding");
     setShowOnboarding(false);
     navigate(redirectTo);
   };
