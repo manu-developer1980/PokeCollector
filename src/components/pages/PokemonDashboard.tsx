@@ -25,6 +25,7 @@ import CollectionDialog from "../pokemon/CollectionDialog";
 import CardDetailDialog from "../pokemon/CardDetailDialog";
 import OnboardingModal from "../onboarding/OnboardingModal";
 import WishlistGrid from "../pokemon/WishlistGrid";
+import Footer from "../pages/Footer";
 import {
   Collection,
   CollectionCard,
@@ -77,15 +78,21 @@ const PokemonDashboard = () => {
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
   const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] =
+    useState<Collection | null>(null);
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
-  const [selectedCollectionCard, setSelectedCollectionCard] = useState<CollectionCard | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(
+    null
+  );
+  const [selectedCollectionCard, setSelectedCollectionCard] =
+    useState<CollectionCard | null>(null);
   const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
-  
+
   // Agrega estos dos estados que faltaban
-  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] = useState(false);
-  const [pendingQuickAddCard, setPendingQuickAddCard] = useState<PokemonCard | null>(null);
+  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
+    useState(false);
+  const [pendingQuickAddCard, setPendingQuickAddCard] =
+    useState<PokemonCard | null>(null);
 
   // Filter data
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
@@ -98,7 +105,8 @@ const PokemonDashboard = () => {
   const pageSize = 20;
 
   // Realtime channel state
-  const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
+  const [realtimeChannel, setRealtimeChannel] =
+    useState<RealtimeChannel | null>(null);
 
   // Añadir nuevo estado cerca de los otros estados de loading
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
@@ -211,7 +219,8 @@ const PokemonDashboard = () => {
       console.error("Error fetching collections:", error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
+        description:
+          "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -223,7 +232,8 @@ const PokemonDashboard = () => {
     try {
       const { data: cardsData, error: cardsError } = await supabase
         .from("collection_cards")
-        .select(`
+        .select(
+          `
           id,
           card_id,
           quantity,
@@ -232,7 +242,8 @@ const PokemonDashboard = () => {
           is_first_edition,
           notes,
           date_added
-        `)
+        `
+        )
         .eq("collection_id", collectionId);
 
       if (cardsError) throw cardsError;
@@ -810,7 +821,8 @@ const PokemonDashboard = () => {
       console.error("Error al añadir carta a la colección:", error);
       toast({
         title: "Error",
-        description: "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
+        description:
+          "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -823,7 +835,7 @@ const PokemonDashboard = () => {
         id: collection.id,
         name: collection.name,
         description: collection.description,
-        isDefault: true
+        isDefault: true,
       });
 
       // Si hay una carta pendiente, la añadimos
@@ -860,20 +872,20 @@ const PokemonDashboard = () => {
 
     // Suscripción para cambios en las colecciones
     const collectionsChannel = supabase
-      .channel('collections-changes')
+      .channel("collections-changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'collections',
+          event: "*",
+          schema: "public",
+          table: "collections",
           filter: `user_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log('Collections realtime event received:', payload);
+          console.log("Collections realtime event received:", payload);
 
           switch (payload.eventType) {
-            case 'UPDATE': {
+            case "UPDATE": {
               const updatedCollection = payload.new as Collection;
               setCollections((prevCollections) =>
                 prevCollections.map((collection) =>
@@ -891,15 +903,20 @@ const PokemonDashboard = () => {
               }
               break;
             }
-            case 'INSERT': {
+            case "INSERT": {
               const newCollection = payload.new as Collection;
-              setCollections((prev) => [...prev, { ...newCollection, cards: [] }]);
+              setCollections((prev) => [
+                ...prev,
+                { ...newCollection, cards: [] },
+              ]);
               break;
             }
-            case 'DELETE': {
+            case "DELETE": {
               const deletedCollection = payload.old as Collection;
               setCollections((prev) =>
-                prev.filter((collection) => collection.id !== deletedCollection.id)
+                prev.filter(
+                  (collection) => collection.id !== deletedCollection.id
+                )
               );
               if (selectedCollection?.id === deletedCollection.id) {
                 setSelectedCollection(null);
@@ -916,11 +933,11 @@ const PokemonDashboard = () => {
       ? supabase
           .channel(`collection-${selectedCollection.id}`)
           .on(
-            'postgres_changes',
+            "postgres_changes",
             {
-              event: '*',
-              schema: 'public',
-              table: 'collection_cards',
+              event: "*",
+              schema: "public",
+              table: "collection_cards",
               filter: `collection_id=eq.${selectedCollection.id}`,
             },
             async (payload) => {
@@ -1001,7 +1018,7 @@ const PokemonDashboard = () => {
             "status, polar_price_id, current_period_end, cancel_at_period_end"
           )
           .eq("user_id", user?.id)
-          .order('created_at', { ascending: false })
+          .order("created_at", { ascending: false })
           .limit(1)
           .single();
 
@@ -1054,7 +1071,8 @@ const PokemonDashboard = () => {
       console.error("Error removing from wishlist:", error);
       toast({
         title: "Error",
-        description: "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+        description:
+          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -1140,106 +1158,112 @@ const PokemonDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <MainHeader showNavigation={false} />
-      <div className="container mx-auto">
-        <div className="flex relative min-h-[calc(100vh-4rem)]">
-          <Sidebar
-            items={defaultNavItems}
-            activeItem={activeSection}
-            onItemClick={(item) => setActiveSection(item)}
-            subscriptionTier={subscriptionStatus === "premium" ? "Premium" : "Free"}
-          />
+    <>
+      <div className="min-h-screen bg-background">
+        <MainHeader showNavigation={false} />
+        <div className="container mx-auto">
+          <div className="flex relative min-h-[calc(100vh-4rem)]">
+            <Sidebar
+              items={defaultNavItems}
+              activeItem={activeSection}
+              onItemClick={(item) => setActiveSection(item)}
+              subscriptionTier={
+                subscriptionStatus === "premium" ? "Premium" : "Free"
+              }
+            />
 
-          <main className="flex-1 md:pl-[calc(256px+24px)] p-6 pt-20 relative">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
-                {activeSection === "My Collection" && "Mi Colección de Pokémon"}
-                {activeSection === "Wishlist" && "Mi Lista de Deseos"}
-                {activeSection === "Account" && "Mi Cuenta"}
-              </h1>
-            </div>
+            <main className="flex-1 md:pl-[calc(256px+24px)] p-6 pt-20 relative">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
+                  {activeSection === "My Collection" &&
+                    "Mi Colección de Pokémon"}
+                  {activeSection === "Wishlist" && "Mi Lista de Deseos"}
+                  {activeSection === "Account" && "Mi Cuenta"}
+                </h1>
+              </div>
 
-            <div className="relative h-[calc(100vh-16rem)]">
-              {renderContent()}
-            </div>
-          </main>
+              <div className="relative h-[calc(100vh-16rem)]">
+                {renderContent()}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
 
-      {/* Dialogs */}
-      <CardDetail
-        card={selectedCard}
-        isOpen={isCardDetailOpen}
-        onClose={() => setIsCardDetailOpen(false)}
-        onAddToCollection={handleAddToCollection}
-        onAddToWishlist={handleAddToWishlist}
-        onRemoveFromWishlist={(card) => {
-          // Pasamos la carta completa en lugar de solo el ID
-          if (card) {
-            handleRemoveFromWishlist(card);
+        {/* Dialogs */}
+        <CardDetail
+          card={selectedCard}
+          isOpen={isCardDetailOpen}
+          onClose={() => setIsCardDetailOpen(false)}
+          onAddToCollection={handleAddToCollection}
+          onAddToWishlist={handleAddToWishlist}
+          onRemoveFromWishlist={(card) => {
+            // Pasamos la carta completa en lugar de solo el ID
+            if (card) {
+              handleRemoveFromWishlist(card);
+            }
+          }}
+          mode={
+            activeSection === "Wishlist"
+              ? "wishlist"
+              : activeSection === "My Collection"
+              ? "collection"
+              : "search"
           }
-        }}
-        mode={
-          activeSection === "Wishlist"
-            ? "wishlist"
-            : activeSection === "My Collection"
-            ? "collection"
-            : "search"
-        }
-      />
+        />
 
-      <AddToCollectionDialog
-        card={selectedCard}
-        collections={collections}
-        isOpen={isAddToCollectionOpen}
-        onClose={() => setIsAddToCollectionOpen(false)}
-        onAddToCollection={handleSaveToCollection}
-      />
+        <AddToCollectionDialog
+          card={selectedCard}
+          collections={collections}
+          isOpen={isAddToCollectionOpen}
+          onClose={() => setIsAddToCollectionOpen(false)}
+          onAddToCollection={handleSaveToCollection}
+        />
 
-      <CollectionDialog
-        collection={editingCollection}
-        isOpen={isCollectionDialogOpen}
-        onClose={() => setIsCollectionDialogOpen(false)}
-        onSave={handleSaveCollection}
-        isDefault={collections.length === 0}
-      />
+        <CollectionDialog
+          collection={editingCollection}
+          isOpen={isCollectionDialogOpen}
+          onClose={() => setIsCollectionDialogOpen(false)}
+          onSave={handleSaveCollection}
+          isDefault={collections.length === 0}
+        />
 
-      <CardDetail
-        card={selectedCollectionCard}
-        isOpen={isCardDetailDialogOpen}
-        onClose={() => setIsCardDetailDialogOpen(false)}
-        onUpdate={handleUpdateCard}
-        onRemove={handleRemoveCard}
-        mode="collection"
-      />
+        <CardDetail
+          card={selectedCollectionCard}
+          isOpen={isCardDetailDialogOpen}
+          onClose={() => setIsCardDetailDialogOpen(false)}
+          onUpdate={handleUpdateCard}
+          onRemove={handleRemoveCard}
+          mode="collection"
+        />
 
-      <OnboardingModal
-        isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
-      />
-      <Toaster />
-      <DeleteConfirmationDialog
-        isOpen={deleteConfirmationState.isOpen}
-        onClose={() =>
-          setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }))
-        }
-        onConfirm={handleConfirmDelete}
-        title="Eliminar Colección"
-        description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
-      />
-      <NoDefaultCollectionDialog
-        isOpen={isNoDefaultCollectionDialogOpen}
-        onClose={() => {
-          setIsNoDefaultCollectionDialogOpen(false);
-          setPendingQuickAddCard(null);
-        }}
-        onCreateNew={handleCreateNewFromNoDefault}
-        onSetDefault={handleSetDefaultCollection}
-        existingCollections={collections.filter(c => !c.is_default)}
-      />
-    </div>
+        <OnboardingModal
+          isOpen={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+        />
+        <Toaster />
+        <DeleteConfirmationDialog
+          isOpen={deleteConfirmationState.isOpen}
+          onClose={() =>
+            setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }))
+          }
+          onConfirm={handleConfirmDelete}
+          title="Eliminar Colección"
+          description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
+        />
+        <NoDefaultCollectionDialog
+          isOpen={isNoDefaultCollectionDialogOpen}
+          onClose={() => {
+            setIsNoDefaultCollectionDialogOpen(false);
+            setPendingQuickAddCard(null);
+          }}
+          onCreateNew={handleCreateNewFromNoDefault}
+          onSetDefault={handleSetDefaultCollection}
+          existingCollections={collections.filter((c) => !c.is_default)}
+        />
+      </div>
+      <Footer />
+    </>
   );
 };
 

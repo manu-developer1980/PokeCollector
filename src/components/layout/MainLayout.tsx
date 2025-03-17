@@ -1,4 +1,5 @@
 import MainHeader from "./MainHeader";
+import Footer from "../pages/Footer";
 
 export default function MainLayout({
   children,
@@ -9,6 +10,7 @@ export default function MainLayout({
     <div className="min-h-screen">
       <MainHeader />
       <main>{children}</main>
+      <Footer />
     </div>
   );
 }
