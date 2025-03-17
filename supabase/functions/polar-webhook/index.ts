@@ -6,61 +6,85 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+const WEBHOOK_SECRET = Deno.env.get('POLAR_WEBHOOK_SECRET')!;
+
 serve(async (req) => {
-  const signature = req.headers.get('x-polar-signature');
-  
-  // Verificar la firma del webhook (implementar la verificación según docs de Polar)
-  
   try {
-    const event = await req.json();
+    const signature = req.headers.get('x-polar-signature');
+    if (!signature) {
+      return new Response('Missing signature', { status: 401 });
+    }
+
+    // Verificar la firma del webhook (implementar la verificación)
     
-    switch (event.type) {
+    const payload = await req.json();
+    const { type, data } = payload;
+
+    switch (type) {
       case 'subscription.created':
+        await handleSubscriptionCreated(data);
+        break;
       case 'subscription.updated':
-        await handleSubscriptionUpdate(event.data);
+        await handleSubscriptionUpdated(data);
         break;
       case 'subscription.deleted':
-        await handleSubscriptionCancellation(event.data);
+        await handleSubscriptionDeleted(data);
         break;
+      default:
+        console.log(`Unhandled event type: ${type}`);
     }
 
     return new Response(JSON.stringify({ received: true }), {
       headers: { 'Content-Type': 'application/json' },
-      status: 200,
     });
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error('Webhook error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400,
       headers: { 'Content-Type': 'application/json' },
-      status: 500,
     });
   }
 });
 
-async function handleSubscriptionUpdate(data) {
+async function handleSubscriptionCreated(data: any) {
+  const { user_id, subscription_id, plan_id, status } = data;
+  
   const { error } = await supabase
     .from('subscriptions')
     .upsert({
-      user_id: data.metadata.user_id,
-      status: 'active',
-      plan_type: data.metadata.plan_name,
+      user_id,
+      subscription_id,
+      plan_id,
+      status,
       current_period_end: data.current_period_end,
       cancel_at_period_end: data.cancel_at_period_end,
-      polar_subscription_id: data.id,
-      polar_price_id: data.price_id
     });
 
   if (error) throw error;
 }
 
-async function handleSubscriptionCancellation(data) {
+async function handleSubscriptionUpdated(data: any) {
+  const { subscription_id, status } = data;
+  
   const { error } = await supabase
     .from('subscriptions')
     .update({
-      status: 'cancelled',
-      cancel_at_period_end: true
+      status,
+      current_period_end: data.current_period_end,
+      cancel_at_period_end: data.cancel_at_period_end,
     })
-    .eq('polar_subscription_id', data.id);
+    .eq('subscription_id', subscription_id);
+
+  if (error) throw error;
+}
+
+async function handleSubscriptionDeleted(data: any) {
+  const { subscription_id } = data;
+  
+  const { error } = await supabase
+    .from('subscriptions')
+    .update({ status: 'cancelled' })
+    .eq('subscription_id', subscription_id);
 
   if (error) throw error;
 }
