@@ -18,7 +18,7 @@ interface CollectionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (collection: Partial<Collection>) => void;
-  isDefault?: boolean;
+  collections: Collection[];
 }
 
 const CollectionDialog = ({
@@ -26,7 +26,7 @@ const CollectionDialog = ({
   isOpen,
   onClose,
   onSave,
-  isDefault = false,
+  collections,
 }: CollectionDialogProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -36,13 +36,18 @@ const CollectionDialog = ({
     if (collection) {
       setName(collection.name);
       setDescription(collection.description || "");
-      setMakeDefault(collection.isDefault || false);
+      setMakeDefault(collection.is_default || false);
     } else {
       setName("");
       setDescription("");
-      setMakeDefault(isDefault);
+      setMakeDefault(false);
     }
-  }, [collection, isDefault]);
+  }, [collection]);
+
+  // Verificar si ya existe una colección predeterminada
+  const hasDefaultCollection = collections?.some(
+    (c) => c.is_default && c.id !== collection?.id
+  );
 
   const handleSubmit = () => {
     if (!name.trim()) return;
@@ -54,13 +59,16 @@ const CollectionDialog = ({
       isDefault: makeDefault,
     });
 
+    // Cerramos el modal después de guardar
     onClose();
   };
 
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={onClose}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -97,15 +105,25 @@ const CollectionDialog = ({
               id="isDefault"
               checked={makeDefault}
               onCheckedChange={(checked) => setMakeDefault(checked as boolean)}
-              disabled={collection?.isDefault}
+              disabled={hasDefaultCollection && !collection?.is_default}
             />
             <Label
               htmlFor="isDefault"
-              className="text-sm cursor-pointer"
+              className={`text-sm cursor-pointer ${
+                hasDefaultCollection && !collection?.is_default
+                  ? "text-gray-400"
+                  : ""
+              }`}
             >
               Establecer como colección predeterminada
             </Label>
           </div>
+          {hasDefaultCollection && !collection?.is_default && (
+            <p className="text-xs text-amber-600">
+              Ya existe una colección predeterminada. Debes desmarcar la
+              colección predeterminada actual antes de establecer otra.
+            </p>
+          )}
         </div>
 
         <DialogFooter>

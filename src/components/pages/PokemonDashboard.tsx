@@ -211,68 +211,49 @@ const PokemonDashboard = () => {
 
   const fetchCollections = async () => {
     try {
+      // Primero obtener las colecciones
       const { data, error } = await supabase
         .from("collections")
         .select("*")
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Para cada colección, obtener sus cartas y la información de la API de Pokemon
+      if (!data || data.length === 0) {
+        // Si no hay colecciones, crear una por defecto
+        await createDefaultCollection();
+        return;
+      }
+
+      // Para cada colección, obtener sus cartas
       const collectionsWithCards = await Promise.all(
         data.map(async (collection) => {
           const { data: cardsData, error: cardsError } = await supabase
             .from("collection_cards")
-            .select(
-              `
-              id,
-              card_id,
-              quantity,
-              condition,
-              is_foil,
-              is_first_edition,
-              notes,
-              date_added
-            `
-            )
+            .select("*")
             .eq("collection_id", collection.id);
 
-          if (cardsError) throw cardsError;
-
-          // Aquí deberías hacer una llamada a la API de Pokemon TCG para obtener los detalles de cada carta
-          const cardsWithDetails = await Promise.all(
-            (cardsData || []).map(async (card) => {
-              try {
-                const pokemonCard = await getCardById(card.card_id);
-                return {
-                  ...card,
-                  name: pokemonCard.name,
-                  images: pokemonCard.images,
-                  set: pokemonCard.set?.name,
-                };
-              } catch (error) {
-                console.error(
-                  `Error fetching card details for ${card.card_id}:`,
-                  error
-                );
-                return card;
-              }
-            })
-          );
+          if (cardsError) {
+            console.error("Error fetching cards for collection:", cardsError);
+            return { ...collection, cards: [] };
+          }
 
           return {
             ...collection,
-            cards: cardsWithDetails,
+            cards: cardsData || [],
           };
         })
       );
 
+      console.log("Colecciones cargadas:", collectionsWithCards); // Debug
       setCollections(collectionsWithCards);
     } catch (error) {
       console.error("Error fetching collections:", error);
       toast({
         title: "Error",
-        description: "Failed to load your collections. Please try again.",
+        description:
+          "No se pudieron cargar tus colecciones. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -526,7 +507,19 @@ const PokemonDashboard = () => {
   const handleSaveCollection = async (collectionData: Partial<Collection>) => {
     try {
       if (collectionData.id) {
-        // Update existing collection
+        // Si estamos marcando como predeterminada, primero desmarcamos la actual
+        if (collectionData.isDefault) {
+          const { error: updateError } = await supabase
+            .from("collections")
+            .update({ is_default: false })
+            .eq("user_id", user?.id)
+            .neq("id", collectionData.id) // No actualizar la colección actual
+            .eq("is_default", true);
+
+          if (updateError) throw updateError;
+        }
+
+        // Actualizar la colección actual
         const { error } = await supabase
           .from("collections")
           .update({
@@ -544,7 +537,19 @@ const PokemonDashboard = () => {
           description: `La colección "${collectionData.name}" ha sido actualizada.`,
         });
       } else {
-        // Create new collection
+        // Para nueva colección
+        if (collectionData.isDefault) {
+          // Primero desmarcamos cualquier colección predeterminada existente
+          const { error: updateError } = await supabase
+            .from("collections")
+            .update({ is_default: false })
+            .eq("user_id", user?.id)
+            .eq("is_default", true);
+
+          if (updateError) throw updateError;
+        }
+
+        // Crear la nueva colección
         const { error } = await supabase.from("collections").insert({
           name: collectionData.name,
           description: collectionData.description,
@@ -562,9 +567,12 @@ const PokemonDashboard = () => {
         });
       }
 
-      // Refresh collections
-      fetchCollections();
-    } catch (error) {
+      // Actualizar el estado local
+      await fetchCollections();
+
+      // Cerrar el diálogo
+      setIsCollectionDialogOpen(false);
+    } catch (error: any) {
       console.error("Error saving collection:", error);
       toast({
         title: "Error",
@@ -1122,19 +1130,7 @@ const PokemonDashboard = () => {
       case "My Collection":
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <Button
-                onClick={() => {
-                  setEditingCollection(null);
-                  setIsCollectionDialogOpen(true);
-                }}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Colección
-              </Button>
-            </div>
-
-            {selectedCollection && (
+            {selectedCollection ? (
               <CollectionDetail
                 collection={selectedCollection}
                 onBack={() => setSelectedCollection(null)}
@@ -1144,6 +1140,18 @@ const PokemonDashboard = () => {
                   setSelectedCollectionCard(card);
                   setIsCardDetailDialogOpen(true);
                 }}
+              />
+            ) : (
+              <CollectionList
+                collections={collections}
+                onSelectCollection={setSelectedCollection}
+                onCreateCollection={() => {
+                  setEditingCollection(null);
+                  setIsCollectionDialogOpen(true);
+                }}
+                onEditCollection={handleEditCollection}
+                onDeleteCollection={handleDeleteCollection}
+                selectedCollectionId={selectedCollection?.id}
               />
             )}
           </div>

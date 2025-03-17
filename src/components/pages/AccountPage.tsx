@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 
 interface UserProfile {
   full_name: string;
@@ -60,6 +61,7 @@ export default function AccountPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -155,50 +157,52 @@ export default function AccountPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (
-      confirm(
-        "¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer."
-      )
-    ) {
-      try {
-        setIsLoading(true);
+  const handleDeleteAccountConfirm = async () => {
+    try {
+      setIsLoading(true);
 
-        // Primero eliminamos el usuario de la base de datos
-        const { error: dbError } = await supabase
-          .from("users")
-          .delete()
-          .eq("id", user?.id);
+      // Primero eliminamos las colecciones del usuario
+      const { error: collectionsError } = await supabase
+        .from("collections")
+        .delete()
+        .eq("user_id", user?.id);
 
-        if (dbError) throw dbError;
+      if (collectionsError) throw collectionsError;
 
-        // Luego eliminamos la cuenta de autenticación
-        const { error: authError } = await supabase.auth.admin.deleteUser(
-          user?.id as string
-        );
+      // Eliminamos el usuario de la base de datos
+      const { error: dbError } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", user?.id);
 
-        if (authError) throw authError;
+      if (dbError) throw dbError;
 
-        // Cerramos la sesión
-        await signOut();
+      // Eliminamos la cuenta de autenticación
+      const { error: authError } = await supabase.auth.admin.deleteUser(
+        user?.id as string
+      );
 
-        toast({
-          title: "Cuenta eliminada",
-          description: "Tu cuenta ha sido eliminada correctamente.",
-        });
+      if (authError) throw authError;
 
-        // Redirigimos al inicio
-        navigate("/");
-      } catch (error) {
-        console.error("Error deleting account:", error);
-        toast({
-          title: "Error",
-          description: "No se pudo eliminar la cuenta.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
+      // Cerramos sesión
+      await supabase.auth.signOut();
+
+      toast({
+        title: "Cuenta eliminada",
+        description: "Tu cuenta ha sido eliminada correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message ||
+          "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirmation(false);
     }
   };
 
@@ -449,14 +453,29 @@ export default function AccountPage() {
             <Button
               variant="destructive"
               className="w-full"
-              onClick={handleDeleteAccount}
+              onClick={() => setShowDeleteConfirmation(true)}
+              disabled={isLoading}
             >
-              Eliminar Cuenta
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando cuenta...
+                </>
+              ) : (
+                "Eliminar Cuenta"
+              )}
             </Button>
           </CardContent>
         </Card>
       </div>
       {ChangePasswordDialog}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDeleteAccountConfirm}
+        title="Eliminar Cuenta"
+        description="¿Estás seguro de que deseas eliminar tu cuenta? Esta acción eliminará permanentemente todos tus datos, incluyendo tus colecciones y configuraciones. Esta acción no se puede deshacer."
+      />
     </div>
   );
 }
