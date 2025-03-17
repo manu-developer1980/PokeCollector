@@ -39,6 +39,36 @@ export default function SearchPage() {
     card: PokemonCard | null;
   }>({ type: "collection", card: null });
 
+  const [sets, setSets] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
+  const [rarities, setRarities] = useState<string[]>([]);
+
+  // Cargar los datos de filtros al montar el componente
+  useEffect(() => {
+    const loadFilterData = async () => {
+      try {
+        const [setsData, typesData, raritiesData] = await Promise.all([
+          getSets().catch(() => []),
+          getTypes().catch(() => []),
+          getRarities().catch(() => []),
+        ]);
+
+        setSets(setsData || []);
+        setTypes(typesData || []);
+        setRarities(raritiesData || []);
+      } catch (error) {
+        console.error("Error loading filter data:", error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadFilterData();
+  }, []);
+
   const handleSearch = async (params: PokemonCardSearchParams) => {
     setIsSearching(true);
     try {
@@ -103,8 +133,11 @@ export default function SearchPage() {
 
         <div className="space-y-6">
           <SearchFilters
+            sets={sets}
+            types={types}
+            rarities={rarities}
             onSearch={handleSearch}
-            isLoading={isSearching}
+            isSearching={isSearching}
             totalCount={totalCount}
             currentPage={currentPage}
             pageSize={pageSize}

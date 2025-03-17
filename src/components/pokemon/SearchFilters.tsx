@@ -31,15 +31,15 @@ interface SearchFiltersProps {
   children?: React.ReactNode;
   onAddToCollection?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
-  sets: string[];
-  types: string[];
-  rarities: string[];
+  sets?: string[];
+  types?: string[];
+  rarities?: string[];
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
-  sets,
-  types,
-  rarities,
+  sets = [],
+  types = [],
+  rarities = [],
   onSearch,
   isLoading = false,
   totalCount = 0,
