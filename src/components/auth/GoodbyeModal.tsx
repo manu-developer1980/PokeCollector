@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,11 +32,11 @@ export default function GoodbyeModal({ isOpen, onClose }: GoodbyeModalProps) {
           <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
             ¡Hasta pronto! <Heart className="h-6 w-6 text-red-500 fill-current" />
           </DialogTitle>
+          <DialogDescription>
+            Tu cuenta ha sido eliminada correctamente. Esperamos volver a verte pronto en PokéCollector.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <p className="text-gray-600">
-            Tu cuenta ha sido eliminada correctamente. Esperamos volver a verte pronto en PokéCollector.
-          </p>
           <p className="text-sm text-gray-500">
             Recuerda que siempre serás bienvenido/a de nuevo en nuestra comunidad de coleccionistas.
           </p>
@@ -50,3 +51,4 @@ export default function GoodbyeModal({ isOpen, onClose }: GoodbyeModalProps) {
     </Dialog>
   );
 }
+

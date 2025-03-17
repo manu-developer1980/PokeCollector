@@ -103,7 +103,7 @@ async function handleSubscriptionCreated(supabaseClient: any, body: any) {
   try {
     const { data, error } = await supabaseClient
       .from("subscriptions")
-      .insert({
+      .upsert({
         polar_id: body.data.id,
         polar_price_id: body.data.price_id,
         currency: body.data.currency,
@@ -126,13 +126,13 @@ async function handleSubscriptionCreated(supabaseClient: any, body: any) {
         metadata: body.data.metadata || {},
         custom_field_data: body.data.custom_field_data || {},
         customer_id: body.data.customer_id
+      }, {
+        onConflict: 'user_id',
+        ignoreDuplicates: false
       })
       .select();
 
-    if (error) {
-      console.error('Error inserting subscription:', error);
-      throw error;
-    }
+    if (error) throw error;
 
     return new Response(
       JSON.stringify({ message: "Subscription created successfully" }),

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../../supabase/auth";
+import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,16 +27,53 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
+import OnboardingModal from "../onboarding/OnboardingModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
+export function ConfirmDialog({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  title, 
+  description 
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={onConfirm}>
+            Confirmar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,6 +89,22 @@ export default function LoginForm() {
       password: "",
     },
   });
+
+  const checkOnboardingStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("has_seen_onboarding")
+        .eq("id", userId)
+        .single();
+
+      if (error) throw error;
+      return !data?.has_seen_onboarding;
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      return false;
+    }
+  };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
@@ -91,6 +145,15 @@ export default function LoginForm() {
         return;
       }
 
+      // Verificar si el usuario necesita ver el onboarding
+      if (result.data?.user) {
+        const needsOnboarding = await checkOnboardingStatus(result.data.user.id);
+        if (needsOnboarding) {
+          setShowOnboarding(true);
+          return;
+        }
+      }
+
       toast({
         title: "¡Bienvenido!",
         description: "Has iniciado sesión correctamente.",
@@ -107,6 +170,11 @@ export default function LoginForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOnboardingClose = () => {
+    setShowOnboarding(false);
+    navigate(redirectTo);
   };
 
   return (
@@ -182,6 +250,10 @@ export default function LoginForm() {
           </div>
         </CardContent>
       </Card>
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onClose={handleOnboardingClose} 
+      />
     </AuthLayout>
   );
 }

@@ -982,7 +982,9 @@ const PokemonDashboard = () => {
             "status, polar_price_id, current_period_end, cancel_at_period_end"
           )
           .eq("user_id", user?.id)
-          .maybeSingle();
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
 
         if (error) throw error;
 
