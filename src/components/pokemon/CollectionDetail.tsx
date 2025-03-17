@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Collection, CollectionCard } from "@/types/pokemon";
-import { Search, ArrowLeft, Edit } from "lucide-react";
+import { Search, ArrowLeft, Edit, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import CardItem from "./CardItem";
 
 interface CollectionDetailProps {
@@ -62,31 +63,52 @@ const CollectionDetail = ({
         <p className="text-gray-600">{collection.description}</p>
       )}
 
-      <div className="relative">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-        <Input
-          placeholder="Buscar cartas en esta colección"
-          className="pl-9"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      <Separator />
-
-      <div className="px-2 sm:px-4">
-        <div className="flex flex-wrap gap-4 justify-center">
-          {filteredCards.map((card) => (
-            <CardItem
-              key={card.id}
-              card={card}
-              onClick={() => onCardClick(card)}
-              onRemove={() => onRemoveCard(card.id)}
-              actions="collection"
+      {filteredCards.length > 0 ? (
+        <>
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Buscar cartas en esta colección"
+              className="pl-9"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-          ))}
-        </div>
-      </div>
+          </div>
+
+          <Separator />
+
+          <div className="px-2 sm:px-4">
+            <div className="flex flex-wrap gap-4 justify-center">
+              {filteredCards.map((card) => (
+                <CardItem
+                  key={card.id}
+                  card={card}
+                  onClick={() => onCardClick(card)}
+                  onRemove={() => onRemoveCard(card.id)}
+                  actions="collection"
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-500 mb-4">
+              Esta colección está vacía. ¡Comienza a añadir cartas desde el
+              buscador!
+            </p>
+            <Link
+              to="/dashboard"
+              state={{ activeSection: "Search Cards" }}
+            >
+              <Button className="bg-red-600 hover:bg-red-700">
+                <Search className="h-4 w-4 mr-1" /> Buscar Cartas
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

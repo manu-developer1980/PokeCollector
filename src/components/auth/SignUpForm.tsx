@@ -41,61 +41,52 @@ const formSchema = z
   });
 
 export default function SignUpForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const selectedPlan = params.get("plan");
-  const interval = params.get("interval");
+  const { toast } = useToast();
 
-  const handleSignUpSuccess = async (user) => {
-    if (selectedPlan && selectedPlan !== "free") {
-      navigate(
-        `/checkout?plan=${selectedPlan}&interval=${interval || "month"}`
-      );
-    } else {
-      navigate("/dashboard");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignUp = async (data: FormData) => {
     setIsLoading(true);
+    const searchParams = new URLSearchParams(location.search);
+    const selectedPlan = searchParams.get("plan");
 
     try {
-      if (password.length < 6) {
-        throw new Error("La contraseña debe tener al menos 6 caracteres");
-      }
-
-      if (!email.includes("@")) {
-        throw new Error("Por favor ingresa un email válido");
-      }
-
-      console.log("Starting signup process...");
-      const { error } = await signUp(email, password, fullName);
-
-      if (error) {
-        console.error("Signup error received:", error);
-        throw error;
-      }
-
-      // En lugar de intentar el inicio de sesión automático,
-      // redirigimos al usuario a la página de confirmación
-      navigate("/confirm-signup", {
-        state: { email },
-        replace: true,
+      // Registrar al usuario
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
       });
-    } catch (error: any) {
-      console.error("Error during signup process:", error);
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Crear entrada en la tabla de suscripciones
+        const { error: subError } = await supabase
+          .from("subscriptions")
+          .insert({
+            user_id: authData.user.id,
+            status: selectedPlan === "free" ? "active" : "pending",
+            plan_type: selectedPlan || "free",
+            current_period_end: null,
+            cancel_at_period_end: false,
+          });
+
+        if (subError) throw subError;
+
+        // Redirigir según el plan seleccionado
+        if (selectedPlan && selectedPlan !== "free") {
+          navigate(`/checkout?plan=${selectedPlan}`);
+        } else {
+          navigate("/dashboard");
+        }
+      }
+    } catch (error) {
+      console.error("Error during signup:", error);
       toast({
-        title: "Error al crear la cuenta",
+        title: "Error",
         description:
-          error.message || "Ha ocurrido un error. Por favor, intenta de nuevo.",
+          "No se pudo completar el registro. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     } finally {

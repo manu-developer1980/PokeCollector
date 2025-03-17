@@ -122,6 +122,30 @@ const PokemonDashboard = () => {
     collectionName: "",
   });
 
+  // Añadir el estado searchParams
+  const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
+    q: "",
+    page: 1,
+    pageSize: 20,
+    orderBy: "name",
+  });
+
+  // Añadir el manejador de cambios de searchParams
+  const handleSearchParamsChange = (
+    newParams: Partial<PokemonCardSearchParams>
+  ) => {
+    setSearchParams((prev) => ({
+      ...prev,
+      ...newParams,
+      page: 1, // Reset page when filters change
+    }));
+    handleSearch({
+      ...searchParams,
+      ...newParams,
+      page: 1,
+    });
+  };
+
   // Load filter data on mount
   useEffect(() => {
     const loadFilterData = async () => {
@@ -325,6 +349,7 @@ const PokemonDashboard = () => {
   const handleAddToCollection = (card: PokemonCard) => {
     setSelectedCard(card);
     setIsAddToCollectionOpen(true);
+    setIsCardDetailOpen(false); // Cerrar el modal de detalle
   };
 
   const handleAddToWishlist = async (card: PokemonCard) => {
@@ -379,6 +404,7 @@ const PokemonDashboard = () => {
 
       setWishlistCards((prev) => [...prev, cardWithDetails]);
 
+      setIsCardDetailOpen(false); // Cerrar el modal de detalle
       toast({
         title: "Añadido a Lista de Deseos",
         description: `${card.name} ha sido añadido a tu lista de deseos.`,
@@ -1078,17 +1104,18 @@ const PokemonDashboard = () => {
               rarities={rarities}
               searchParams={searchParams}
               onSearchParamsChange={handleSearchParamsChange}
+              onSearch={handleSearch}
+              isLoading={isSearching}
+              totalCount={totalCount}
+              currentPage={currentPage}
+              pageSize={searchParams.pageSize}
             />
             <CardGrid
-              cards={cards}
-              isLoading={isLoading}
+              cards={searchResults}
               onCardClick={handleCardClick}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              pageSize={pageSize}
-              totalCount={totalCount}
-              onPageSizeChange={handlePageSizeChange}
+              onAddToCollection={handleAddToCollection}
+              onAddToWishlist={handleAddToWishlist}
+              isLoading={isSearching}
             />
           </>
         );
@@ -1107,32 +1134,16 @@ const PokemonDashboard = () => {
               </Button>
             </div>
 
-            {selectedCollection ? (
+            {selectedCollection && (
               <CollectionDetail
                 collection={selectedCollection}
                 onBack={() => setSelectedCollection(null)}
-                onEditCollection={(collection) => {
-                  setEditingCollection(collection);
-                  setIsCollectionDialogOpen(true);
-                }}
+                onEditCollection={handleEditCollection}
+                onRemoveCard={handleRemoveCard}
                 onCardClick={(card) => {
                   setSelectedCollectionCard(card);
                   setIsCardDetailDialogOpen(true);
                 }}
-              />
-            ) : (
-              <CollectionList
-                collections={collections}
-                onSelectCollection={setSelectedCollection}
-                onCreateCollection={() => {
-                  setEditingCollection(null);
-                  setIsCollectionDialogOpen(true);
-                }}
-                onEditCollection={(collection) => {
-                  setEditingCollection(collection);
-                  setIsCollectionDialogOpen(true);
-                }}
-                onDeleteCollection={handleDeleteCollection}
               />
             )}
           </div>
@@ -1169,7 +1180,7 @@ const PokemonDashboard = () => {
           }
         />
 
-        <main className="flex-1 md:ml-64 p-6 pt-16">
+        <main className="flex-1 md:ml-64 p-6 pt-24">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
               {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}

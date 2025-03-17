@@ -86,7 +86,7 @@ export const EDITION_MAP = {
   unlimited: "Ilimitada",
 } as const;
 
-export type PokemonType = keyof typeof POKEMON_TYPES_MAP;
+export type PokemonType = keyof typeof POKEMON_TYPES_MAP | "all";
 export type CardRarity = keyof typeof RARITY_MAP;
 export type CardCondition = keyof typeof CONDITION_MAP;
 export type CardSupertype = keyof typeof SUPERTYPE_MAP;

@@ -15,12 +15,35 @@ import { Loader2, User, Mail, CreditCard, Shield, Trash2 } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserProfile {
   full_name: string;
   email: string;
   avatar_url?: string;
 }
+
+const validatePassword = (password: string) => {
+  const minLength = password.length >= 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+
+  return {
+    isValid: minLength && hasUpperCase && hasLowerCase && hasNumbers,
+    errors: {
+      minLength,
+      hasUpperCase,
+      hasLowerCase,
+      hasNumbers,
+    },
+  };
+};
 
 export default function AccountPage() {
   const { user, signOut } = useAuth();
@@ -32,6 +55,11 @@ export default function AccountPage() {
   const [editedName, setEditedName] = useState("");
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState("");
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -174,6 +202,57 @@ export default function AccountPage() {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmNewPassword) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas nuevas no coinciden",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const validation = validatePassword(newPassword);
+    if (!validation.isValid) {
+      toast({
+        title: "Contraseña inválida",
+        description:
+          "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Contraseña actualizada",
+        description: "Tu contraseña ha sido actualizada correctamente.",
+      });
+
+      setIsChangePasswordOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar la contraseña.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -182,6 +261,90 @@ export default function AccountPage() {
       </div>
     );
   }
+
+  const SecurityCard = (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center space-x-2">
+          <Shield className="h-5 w-5" />
+          <CardTitle>Seguridad</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setIsChangePasswordOpen(true)}
+        >
+          Cambiar Contraseña
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  const ChangePasswordDialog = (
+    <Dialog
+      open={isChangePasswordOpen}
+      onOpenChange={setIsChangePasswordOpen}
+    >
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Cambiar Contraseña</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">Nueva Contraseña</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={isChangingPassword}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmNewPassword">
+              Confirmar Nueva Contraseña
+            </Label>
+            <Input
+              id="confirmNewPassword"
+              type="password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              disabled={isChangingPassword}
+            />
+          </div>
+          <div className="text-sm text-gray-600">
+            <p>La contraseña debe contener:</p>
+            <ul className="list-disc list-inside">
+              <li>Al menos 8 caracteres</li>
+              <li>Una letra mayúscula</li>
+              <li>Una letra minúscula</li>
+              <li>Un número</li>
+            </ul>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsChangePasswordOpen(false)}
+              disabled={isChangingPassword}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleChangePassword}
+              disabled={isChangingPassword}
+            >
+              {isChangingPassword && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Cambiar Contraseña
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <div className="container max-w-4xl mx-auto p-6">
@@ -267,42 +430,8 @@ export default function AccountPage() {
           </CardFooter>
         </Card>
 
-        {/* Suscripción */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <CreditCard className="h-5 w-5" />
-              <CardTitle>Suscripción</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Button
-              className="w-full"
-              onClick={() => (window.location.href = "/subscription")}
-            >
-              Gestionar Suscripción
-            </Button>
-          </CardContent>
-        </Card>
-
         {/* Seguridad */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5" />
-              <CardTitle>Seguridad</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => (window.location.href = "/change-password")}
-            >
-              Cambiar Contraseña
-            </Button>
-          </CardContent>
-        </Card>
+        {SecurityCard}
 
         {/* Eliminar Cuenta */}
         <Card>
@@ -327,6 +456,7 @@ export default function AccountPage() {
           </CardContent>
         </Card>
       </div>
+      {ChangePasswordDialog}
     </div>
   );
 }
