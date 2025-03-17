@@ -7,6 +7,7 @@ interface CardGridProps {
   onCardClick: (card: PokemonCard) => void;
   onAddToCollection?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
+  onQuickAdd?: (card: PokemonCard) => void;
   onRemove?: (card: PokemonCard) => void;
   isLoading?: boolean;
   actions?: "collection" | "wishlist" | "search";
@@ -17,6 +18,7 @@ const CardGrid = ({
   onCardClick,
   onAddToCollection,
   onAddToWishlist,
+  onQuickAdd,
   onRemove,
   isLoading,
   actions = "search",
@@ -28,7 +30,7 @@ const CardGrid = ({
           key={card.id}
           card={card}
           onClick={onCardClick}
-          onQuickAdd={onAddToCollection}
+          onQuickAdd={onQuickAdd || onAddToCollection}
           onAddToWishlist={onAddToWishlist}
           onRemove={onRemove}
           actions={actions}

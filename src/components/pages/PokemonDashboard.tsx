@@ -1081,9 +1081,10 @@ const PokemonDashboard = () => {
             <CardGrid
               cards={searchResults}
               onCardClick={handleCardClick}
-              onAddToCollection={handleAddToCollection}
+              onQuickAdd={handleQuickAddToCollection}
               onAddToWishlist={handleAddToWishlist}
               isLoading={isSearching}
+              actions="search"
             />
           </>
         );

@@ -128,27 +128,23 @@ const CardItem: React.FC<CardItemProps> = ({
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity duration-200">
             {actions === "search" && (
               <>
-                {onQuickAdd && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="sm"
-                          className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
-                          onClick={(e) =>
-                            handleAction(e, () => onQuickAdd(card))
-                          }
-                          title="Añadir a Colección"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Añadir a colección por defecto</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+                        onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                        title="Añadir a Colección"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Añadir a colección por defecto</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 {onAddToWishlist && (
                   <TooltipProvider>
                     <Tooltip>
