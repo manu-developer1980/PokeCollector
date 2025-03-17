@@ -96,3 +96,8 @@ export interface Wishlist {
   userId: string;
   cards: CollectionCard[];
 }
+
+export interface CachedResponse<T> {
+  data: T;
+  fromCache: boolean;
+}

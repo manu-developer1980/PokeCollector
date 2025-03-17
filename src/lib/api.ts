@@ -5,6 +5,7 @@ import {
   PokemonCard,
   PokemonCardSet,
 } from "@/types/pokemon";
+import { PokemonCache } from "./cache";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
@@ -65,6 +66,13 @@ export async function getRarities(): Promise<string[]> {
 export async function searchCards(
   params: PokemonCardSearchParams
 ): Promise<PokemonCardSearchResponse> {
+  const cacheKey = PokemonCache.getSearchKey(params);
+  const cachedData = PokemonCache.get<PokemonCardSearchResponse>(cacheKey);
+  
+  if (cachedData) {
+    return cachedData;
+  }
+
   try {
     const { data } = await api.get("/pokemon/cards", {
       ...defaultConfig,
@@ -77,13 +85,16 @@ export async function searchCards(
       },
     });
 
-    return {
+    const response = {
       data: data.data || [],
       page: data.page || 1,
       pageSize: data.pageSize || 20,
       count: data.count || 0,
       totalCount: data.totalCount || 0,
     };
+
+    PokemonCache.set(cacheKey, response);
+    return response;
   } catch (error) {
     console.error("Error searching cards:", error);
     return {
@@ -116,19 +127,25 @@ export async function getTypes(): Promise<string[]> {
   }
 }
 
-export async function getCardById(id: string): Promise<PokemonCard> {
+export async function getCardById(id: string): Promise<PokemonCard | null> {
+  const cacheKey = PokemonCache.getCardKey(id);
+  const cachedCard = PokemonCache.get<PokemonCard>(cacheKey);
+  
+  if (cachedCard) {
+    return cachedCard;
+  }
+
   try {
     const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+    PokemonCache.set(cacheKey, data.data);
     return data.data;
   } catch (error) {
     console.error(`Failed to fetch card details for ${id}:`, error);
-    return {
-      id,
-      name: "Card Unavailable",
-      images: {
-        small: "/placeholder-card.png",
-        large: "/placeholder-card.png",
-      },
-    };
+    return null;
   }
 }
+
+// Función para limpiar la caché periódicamente
+setInterval(() => {
+  PokemonCache.clearOldItems();
+}, 60 * 60 * 1000); // Limpiar cada hora
