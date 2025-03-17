@@ -37,13 +37,11 @@ export default function LandingPage() {
                 nuestras potentes herramientas de gestión.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/pricing">
-                  <Button
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
-                  >
-                    Comenzar Ahora
-                  </Button>
+                <Link 
+                  to="/pricing"
+                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                >
+                  Comenzar Ahora
                 </Link>
                 <Link to="/search">
                   <Button
@@ -208,13 +206,11 @@ export default function LandingPage() {
                 utilizando PokéCollector para gestionar sus colecciones.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link to="/pricing">
-                  <Button
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
-                  >
-                    Ver Planes de Precio
-                  </Button>
+                <Link 
+                  to="/pricing"
+                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                >
+                  Ver Planes de Precio
                 </Link>
                 <Link to="/search">
                   <Button

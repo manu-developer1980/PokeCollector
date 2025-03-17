@@ -97,15 +97,15 @@ export default function PricingPage() {
 
     try {
       if (!user) {
-        // Redirigir a signup con información del plan
+        // Siempre redirigir a signup con información del plan
         navigate(`/signup?plan=${plan.id}&interval=${billingInterval}`);
         return;
       }
 
-      // Para usuarios logueados, redirigir a checkout
-      navigate(`/checkout?plan=${plan.id}&interval=${billingInterval}`);
+      // Incluso para usuarios logueados, por ahora redirigimos a signup
+      navigate(`/signup?plan=${plan.id}&interval=${billingInterval}`);
     } catch (error) {
-      console.error("Error navigating to checkout:", error);
+      console.error("Error navigating to signup:", error);
     } finally {
       setIsLoading(false);
       setProcessingPlanId(null);

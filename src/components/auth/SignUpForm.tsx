@@ -48,6 +48,17 @@ export default function SignUpForm() {
   const { toast } = useToast();
   const { signUp } = useAuth();
 
+  // Obtener los parámetros de la URL
+  const searchParams = new URLSearchParams(location.search);
+  const planId = searchParams.get('plan');
+  const interval = searchParams.get('interval');
+  const redirectPath = searchParams.get('redirect');
+
+  const handleSignUpSuccess = () => {
+    // Por ahora, siempre redirigimos al dashboard después del registro
+    navigate('/dashboard');
+  };
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,8 +70,6 @@ export default function SignUpForm() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    const searchParams = new URLSearchParams(location.search);
-    const selectedPlan = searchParams.get("plan");
 
     try {
       const result = await signUp(data.email, data.password, data.fullName);
@@ -76,7 +85,7 @@ export default function SignUpForm() {
       const { error: subError } = await supabase
         .rpc('create_user_subscription', {
           user_id_param: result.data.user.id,
-          plan_type_param: selectedPlan || 'free'
+          plan_type_param: planId || 'free'
         });
 
       if (subError) {
@@ -84,10 +93,7 @@ export default function SignUpForm() {
         throw subError;
       }
 
-      navigate("/confirm-signup", {
-        state: { email: data.email },
-        replace: true
-      });
+      handleSignUpSuccess();
 
     } catch (error: any) {
       console.error("Error durante el registro:", error);
