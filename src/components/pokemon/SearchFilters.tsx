@@ -254,7 +254,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onClick={() => handleSearch(1)}
               className="w-full"
               disabled={isLoading}
-            ></Button>
+            >
+              Buscar Cartas
+            </Button>
           </div>
         </div>
       </div>
