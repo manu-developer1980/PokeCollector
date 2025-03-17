@@ -11,14 +11,29 @@ interface WishlistGridProps {
   onCardClick: (card: PokemonCard) => void;
   onRemove: (card: PokemonCard) => void;
   onQuickAdd: (card: PokemonCard) => void;
+  isLoading?: boolean; // Añadimos esta prop
 }
 
 const WishlistGrid = ({ 
   cards, 
   onCardClick, 
   onRemove,
-  onQuickAdd 
+  onQuickAdd,
+  isLoading = false // Valor por defecto
 }: WishlistGridProps) => {
+  if (isLoading) {
+    return (
+      <div className="fixed top-[4rem] left-[calc(256px+24px)] right-6 bottom-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-50">
+        <div className="flex flex-col items-center justify-center">
+          <div className="pokeball mb-4" />
+          <p className="text-base font-bold text-muted-foreground animate-pulse">
+            Cargando lista de deseos...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (cards.length === 0) {
     return (
       <Card className="border-dashed border-2 border-gray-300 bg-gray-50">

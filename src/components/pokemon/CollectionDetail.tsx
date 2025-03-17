@@ -37,7 +37,7 @@ const CollectionDetail = ({
     <div className="space-y-6 relative">
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-3xl z-50">
+        <div className="fixed top-[4rem] left-[calc(256px+24px)] right-6 bottom-0 flex items-center justify-center bg-white/50 backdrop-blur-3xl z-50">
           <div className="flex flex-col items-center justify-center">
             <div className="pokeball mb-4" />
             <p className="text-lg font-bold text-muted-foreground animate-pulse">

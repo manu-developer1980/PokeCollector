@@ -19,7 +19,7 @@ import {
   type PokemonType,
   type CardSupertype,
   type CardSubtype,
-  type CardRarity
+  type CardRarity,
 } from "@/lib/constants";
 
 interface SearchFiltersProps {
@@ -217,7 +217,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <SelectContent>
                 <SelectItem value="all">Todas las rarezas</SelectItem>
                 {rarities.map((rarity) => (
-                  <SelectItem key={rarity} value={rarity}>
+                  <SelectItem
+                    key={rarity}
+                    value={rarity}
+                  >
                     {RARITY_MAP[rarity as CardRarity] || rarity}
                   </SelectItem>
                 ))}
@@ -269,7 +272,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
       {/* Mostrar el loader de Pokéball cuando se está buscando */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-50">
+        <div className="fixed top-[4rem] left-[calc(256px+24px)] right-6 bottom-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-50">
           <div className="flex flex-col items-center justify-center">
             <div className="pokeball mb-4" />
             <p className="text-base font-bold text-muted-foreground animate-pulse">

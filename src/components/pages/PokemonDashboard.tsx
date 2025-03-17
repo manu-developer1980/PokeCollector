@@ -108,6 +108,9 @@ const PokemonDashboard = () => {
   // Realtime channel state
   const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
 
+  // Añadir nuevo estado cerca de los otros estados de loading
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+
   // Añadir nuevo estado para la lista de deseos
   const [wishlistCards, setWishlistCards] = useState<WishlistCardType[]>([]);
 
@@ -919,8 +922,8 @@ const PokemonDashboard = () => {
 
   // Añadir función para cargar la lista de deseos
   const fetchWishlist = async () => {
+    setIsWishlistLoading(true);
     try {
-      // Obtener las cartas de la lista de deseos
       const { data: wishlistData, error } = await supabase
         .from("wishlist_cards")
         .select("*")
@@ -928,9 +931,6 @@ const PokemonDashboard = () => {
 
       if (error) throw error;
 
-      console.log("Wishlist data from DB:", wishlistData); // Para debugging
-
-      // Obtener detalles de las cartas
       const cardsWithDetails = await Promise.all(
         (wishlistData || []).map(async (item) => {
           try {
@@ -950,10 +950,7 @@ const PokemonDashboard = () => {
         })
       );
 
-      // Filtrar cualquier carta null (en caso de error) y actualizar el estado
       const validCards = cardsWithDetails.filter((card) => card !== null);
-      console.log("Cards with details:", validCards); // Para debugging
-
       setWishlistCards(validCards);
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -962,6 +959,8 @@ const PokemonDashboard = () => {
         description: "No se pudo cargar la lista de deseos.",
         variant: "destructive",
       });
+    } finally {
+      setIsWishlistLoading(false);
     }
   };
 
@@ -1106,6 +1105,7 @@ const PokemonDashboard = () => {
               }}
               onRemove={handleRemoveFromWishlist}
               onQuickAdd={handleQuickAddToCollection}
+              isLoading={isWishlistLoading}
             />
           </div>
         );
@@ -1140,7 +1140,7 @@ const PokemonDashboard = () => {
               </h1>
             </div>
 
-            <div className="relative h-[calc(100vh-12rem)]">
+            <div className="relative h-[calc(100vh-16rem)]">
               {renderContent()}
             </div>
           </main>
