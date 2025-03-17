@@ -1121,38 +1121,30 @@ const PokemonDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <MainHeader showNavigation={false} />
-      <div className="flex">
-        <Sidebar
-          items={defaultNavItems}
-          activeItem={activeSection}
-          onItemClick={(item) => setActiveSection(item)}
-          subscriptionTier={
-            subscriptionStatus === "premium" ? "Premium" : "Free"
-          }
-        />
+      <div className="container mx-auto">
+        <div className="flex relative min-h-[calc(100vh-4rem)]">
+          <Sidebar
+            items={defaultNavItems}
+            activeItem={activeSection}
+            onItemClick={(item) => setActiveSection(item)}
+            subscriptionTier={subscriptionStatus === "premium" ? "Premium" : "Free"}
+          />
 
-        <main className="flex-1 md:ml-64 p-6 pt-24">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">
-              {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
-              {activeSection === "My Collection" && "Mi Colección de Pokémon"}
-              {activeSection === "Wishlist" && "Mi Lista de Deseos"}
-              {activeSection === "Account" && "Mi Cuenta"}
-            </h1>
-            <p className="text-gray-600">
-              {activeSection === "Search Cards" &&
-                "Busca y explora miles de cartas Pokémon"}
-              {activeSection === "My Collection" &&
-                "Gestiona tu colección de cartas Pokémon"}
-              {activeSection === "Wishlist" &&
-                "Cartas que deseas añadir a tu colección"}
-              {activeSection === "Account" &&
-                "Gestiona tu información personal y configuración"}
-            </p>
-          </div>
+          <main className="flex-1 md:pl-[calc(256px+24px)] p-6 pt-20 relative">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">
+                {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
+                {activeSection === "My Collection" && "Mi Colección de Pokémon"}
+                {activeSection === "Wishlist" && "Mi Lista de Deseos"}
+                {activeSection === "Account" && "Mi Cuenta"}
+              </h1>
+            </div>
 
-          {renderContent()}
-        </main>
+            <div className="relative h-[calc(100vh-12rem)]">
+              {renderContent()}
+            </div>
+          </main>
+        </div>
       </div>
 
       {/* Dialogs */}

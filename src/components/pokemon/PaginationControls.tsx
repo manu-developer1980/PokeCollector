@@ -27,7 +27,7 @@ const PaginationControls = ({
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       // Si hay menos páginas que el máximo visible, mostrar todas
       for (let i = 1; i <= totalPages; i++) {
@@ -36,11 +36,11 @@ const PaginationControls = ({
     } else {
       // Siempre mostrar la primera página
       pages.push(1);
-      
+
       // Calcular el rango de páginas alrededor de la página actual
       let start = Math.max(2, currentPage - 1);
       let end = Math.min(totalPages - 1, currentPage + 1);
-      
+
       // Ajustar si estamos cerca del inicio o final
       if (currentPage <= 3) {
         end = 4;
@@ -48,28 +48,28 @@ const PaginationControls = ({
       if (currentPage >= totalPages - 2) {
         start = totalPages - 3;
       }
-      
+
       // Añadir elipsis si es necesario
       if (start > 2) {
         pages.push("ellipsis1");
       }
-      
+
       // Añadir páginas del rango
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
-      
+
       // Añadir elipsis final si es necesario
       if (end < totalPages - 1) {
         pages.push("ellipsis2");
       }
-      
+
       // Siempre mostrar la última página
       if (totalPages > 1) {
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
@@ -77,7 +77,7 @@ const PaginationControls = ({
   const endItem = Math.min(currentPage * pageSize, totalCount);
 
   return (
-    <div className="flex flex-col items-center gap-2 px-2 sm:px-4 w-full max-w-full overflow-x-auto">
+    <div className="flex flex-col items-center gap-2 px-2 sm:px-4 w-full max-w-full overflow-x-auto mb-6">
       <p className="text-sm text-gray-600 text-center">
         Mostrando {startItem} - {endItem} de {totalCount} resultados
       </p>
@@ -129,7 +129,9 @@ const PaginationControls = ({
                 if (currentPage < totalPages) onPageChange(currentPage + 1);
               }}
               className={`whitespace-nowrap ${
-                currentPage >= totalPages ? "pointer-events-none opacity-50" : ""
+                currentPage >= totalPages
+                  ? "pointer-events-none opacity-50"
+                  : ""
               }`}
             >
               Siguiente

@@ -159,8 +159,7 @@ const Sidebar = ({
   return (
     <>
       {/* Versión Desktop */}
-      <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200">
-        <div className="h-16" /> {/* Espacio para el header */}
+      <aside className="hidden md:flex flex-col fixed top-16 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 z-30 ">
         <div className="flex flex-col flex-1 p-4">
           <ScrollArea className="flex-1">{renderNavItems(false)}</ScrollArea>
           {/* Botón de cerrar sesión */}
