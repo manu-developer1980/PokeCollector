@@ -20,13 +20,14 @@ CREATE TABLE IF NOT EXISTS public.users (
 -- Create subscriptions table
 CREATE TABLE IF NOT EXISTS public.subscriptions (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE,  -- Changed to reference public.users
+    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE,
     polar_id text,
     polar_price_id text,
     status text DEFAULT 'inactive',
-    current_period_start bigint,
-    current_period_end bigint,
+    plan_type text DEFAULT 'free',
+    current_period_end timestamptz,
     cancel_at_period_end boolean DEFAULT false,
+    canceled_at timestamptz,
     created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -154,9 +155,21 @@ CREATE POLICY "Users can view their own subscriptions"
     ON subscriptions FOR SELECT
     USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can manage their own subscriptions"
+CREATE POLICY "Users can insert their own subscriptions"
+    ON subscriptions FOR INSERT
+    WITH CHECK (
+        auth.uid() = user_id OR
+        auth.role() = 'service_role'
+    );
+
+CREATE POLICY "Users can update their own subscriptions"
+    ON subscriptions FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Service role full access"
     ON subscriptions FOR ALL
-    USING (auth.uid() = user_id);
+    USING (auth.role() = 'service_role');
 
 -- Create policies for collections
 CREATE POLICY "Users can view their own collections"

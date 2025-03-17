@@ -29,7 +29,7 @@ const defaultPlans: Plan[] = [
     ],
   },
   {
-    id: "trainer",
+    id: "price_trainer_monthly", // ID de Polar para el plan mensual
     name: "Trainer",
     description: "For serious collectors",
     price: 9.99,
@@ -45,7 +45,7 @@ const defaultPlans: Plan[] = [
     isPopular: true,
   },
   {
-    id: "master",
+    id: "price_trainer_yearly", // ID de Polar para el plan anual
     name: "Master",
     description: "For professional collectors",
     price: 19.99,

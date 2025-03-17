@@ -57,27 +57,24 @@ const CheckoutFlow = ({ plan, onCancel }: CheckoutFlowProps) => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "supabase-functions-create-checkout",
-        {
-          body: {
-            productPriceId: plan.id,
-            successUrl: `${window.location.origin}/checkout/success?plan=${plan.id}`,
-            customerEmail: user.email || "",
-            metadata: {
-              user_id: user.id,
-              plan_name: plan.name,
-              plan_interval: plan.interval,
-            },
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          productPriceId: plan.id,
+          successUrl: `${window.location.origin}/checkout/success?plan=${plan.id}`,
+          customerEmail: user.email || "",
+          metadata: {
+            user_id: user.id,
+            plan_name: plan.name,
+            plan_interval: plan.interval,
           },
         },
-      );
+      });
 
       if (error) throw error;
 
       if (data?.url) {
-        setCheckoutUrl(data.url);
-        setCurrentStep(2);
+        // Redirigir directamente a la URL de checkout de Polar
+        window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned");
       }
@@ -85,30 +82,12 @@ const CheckoutFlow = ({ plan, onCancel }: CheckoutFlowProps) => {
       console.error("Error creating checkout session:", error);
       toast({
         title: "Checkout failed",
-        description:
-          "There was an error creating your checkout session. Please try again.",
+        description: "There was an error creating your checkout session. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCompletePayment = () => {
-    // In a real implementation, this would redirect to the Polar checkout URL
-    // For demo purposes, we'll simulate a successful payment
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsCompleted(true);
-      setCurrentStep(3);
-    }, 2000);
-
-    // In production, use this instead:
-    // if (checkoutUrl) {
-    //   window.location.href = checkoutUrl;
-    // }
   };
 
   const handleFinish = () => {

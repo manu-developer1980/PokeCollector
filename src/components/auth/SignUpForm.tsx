@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../../supabase/auth";
+import { createClient } from '@supabase/supabase-js';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +28,12 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
+// Cliente de Supabase con clave de servicio para operaciones administrativas
+const supabaseAdmin = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_SERVICE_KEY
+);
+
 const formSchema = z
   .object({
     email: z.string().email("Email inválido"),
@@ -45,48 +52,60 @@ export default function SignUpForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { signUp } = useAuth();
 
-  const handleSignUp = async (data: FormData) => {
+  // Definir el formulario usando useForm
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Función para manejar el envío del formulario
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     const searchParams = new URLSearchParams(location.search);
     const selectedPlan = searchParams.get("plan");
 
     try {
-      // Registrar al usuario
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
+      // 1. Registrar al usuario
+      const result = await signUp(data.email, data.password, data.fullName);
+      if (result.error) throw result.error;
+
+      if (!result.data?.user) {
+        throw new Error("No user data returned after signup");
+      }
+
+      // 2. Crear la suscripción usando el cliente admin
+      const { error: subError } = await supabaseAdmin
+        .from("subscriptions")
+        .insert([{
+          user_id: result.data.user.id,
+          status: selectedPlan === "free" ? "active" : "pending",
+          plan_type: selectedPlan || "free",
+          current_period_end: null,
+          cancel_at_period_end: false
+        }]);
+
+      if (subError) {
+        console.error("Subscription error:", subError);
+        throw subError;
+      }
+
+      // 3. Redirigir a la página de confirmación de email
+      navigate("/confirm-signup", {
+        state: { email: data.email },
+        replace: true
       });
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Crear entrada en la tabla de suscripciones
-        const { error: subError } = await supabase
-          .from("subscriptions")
-          .insert({
-            user_id: authData.user.id,
-            status: selectedPlan === "free" ? "active" : "pending",
-            plan_type: selectedPlan || "free",
-            current_period_end: null,
-            cancel_at_period_end: false,
-          });
-
-        if (subError) throw subError;
-
-        // Redirigir según el plan seleccionado
-        if (selectedPlan && selectedPlan !== "free") {
-          navigate(`/checkout?plan=${selectedPlan}`);
-        } else {
-          navigate("/dashboard");
-        }
-      }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during signup:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo completar el registro. Por favor, intenta de nuevo.",
+        title: "Error en el registro",
+        description: error.message || "No se pudo completar el registro. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -102,10 +121,7 @@ export default function SignUpForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"

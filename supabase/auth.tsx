@@ -108,9 +108,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    // El usuario será redirigido por el componente que llame a signOut
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error during sign out:", error);
+        throw error;
+      }
+      // Limpiar cualquier estado local si es necesario
+      setUser(null);
+    } catch (error) {
+      console.error("Error in signOut:", error);
+      throw error;
+    }
   };
 
   const value = {

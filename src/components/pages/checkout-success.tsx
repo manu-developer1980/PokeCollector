@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "../../../supabase/auth";
+import { supabase } from "../../../supabase/supabase"; // Corregido aquí
 
 interface Plan {
   id: string;
@@ -31,17 +32,29 @@ const CheckoutSuccessPage = () => {
   const [orderNumber, setOrderNumber] = useState("");
 
   useEffect(() => {
-    // Parse query parameters to get plan ID
-    const params = new URLSearchParams(location.search);
-    const planId = params.get("plan");
+    const checkSubscriptionStatus = async () => {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
 
-    if (planId && defaultPlans[planId]) {
-      setPlanName(defaultPlans[planId]);
+      if (error) {
+        console.error('Error checking subscription:', error);
+        navigate('/dashboard');
+        return;
+      }
+
+      if (data?.status === 'active') {
+        setPlanName(data.plan_type);
+        // Actualizar otros detalles de la suscripción
+      }
+    };
+
+    if (user) {
+      checkSubscriptionStatus();
     }
-
-    // Generate a random order number
-    setOrderNumber(`PK-${Math.floor(100000 + Math.random() * 900000)}`);
-  }, [location.search]);
+  }, [user]);
 
   const handleGoToDashboard = () => {
     navigate("/dashboard");
