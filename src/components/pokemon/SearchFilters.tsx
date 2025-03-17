@@ -253,6 +253,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <PaginationControls
                 currentPage={currentPage}
                 totalPages={totalPages}
+                pageSize={pageSize}
+                totalCount={totalCount}
                 onPageChange={handleSearch}
               />
             </div>

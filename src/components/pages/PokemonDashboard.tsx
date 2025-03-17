@@ -1115,14 +1115,14 @@ const PokemonDashboard = () => {
             ) : (
               <CollectionList
                 collections={collections}
-                onSelectCollection={setSelectedCollection}
                 onCreateCollection={() => {
                   setEditingCollection(null);
                   setIsCollectionDialogOpen(true);
                 }}
                 onEditCollection={handleEditCollection}
                 onDeleteCollection={handleDeleteCollection}
-                selectedCollectionId={selectedCollection?.id}
+                onCollectionSelect={setSelectedCollection}
+                selectedCollection={selectedCollection}
               />
             )}
           </div>
