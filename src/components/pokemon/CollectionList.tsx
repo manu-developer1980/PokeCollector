@@ -10,6 +10,8 @@ interface CollectionListProps {
   selectedCollection?: Collection | null;
   onCollectionSelect: (collection: Collection) => void;
   onCreateCollection: () => void;
+  onEditCollection: (collection: Collection) => void;
+  onDeleteCollection: (collectionId: string) => void;
   showCreateButton?: boolean;
   isLoading?: boolean;
 }
