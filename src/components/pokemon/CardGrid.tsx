@@ -9,7 +9,7 @@ interface CardGridProps {
   onRemove?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
   actions?: "collection" | "wishlist" | "search";
-  showPrice?: boolean; // Añadimos esta prop
+  showPrice?: boolean;
 }
 
 const CardGrid = ({
@@ -19,7 +19,7 @@ const CardGrid = ({
   onRemove,
   onAddToWishlist,
   actions = "search",
-  showPrice = false, // Valor por defecto
+  showPrice = false,
 }: CardGridProps) => {
   return (
     <div className="flex flex-wrap gap-4 justify-center">
@@ -27,7 +27,7 @@ const CardGrid = ({
         <CardItem
           key={card.id}
           card={card}
-          onClick={onCardClick}
+          onClick={() => onCardClick(card)}
           onQuickAdd={onQuickAdd}
           onRemove={onRemove}
           onAddToWishlist={onAddToWishlist}

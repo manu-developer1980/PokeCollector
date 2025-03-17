@@ -3,15 +3,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
-import CardItem from "./CardItem";
 import { PokemonCard } from "@/types/pokemon";
+import CardGrid from "./CardGrid";
 
 interface WishlistGridProps {
   cards: PokemonCard[];
   onCardClick: (card: PokemonCard) => void;
+  onRemove: (card: PokemonCard) => void;
+  onQuickAdd: (card: PokemonCard) => void;
 }
 
-const WishlistGrid = ({ cards, onCardClick }: WishlistGridProps) => {
+const WishlistGrid = ({ 
+  cards, 
+  onCardClick, 
+  onRemove,
+  onQuickAdd 
+}: WishlistGridProps) => {
   if (cards.length === 0) {
     return (
       <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
@@ -34,16 +41,14 @@ const WishlistGrid = ({ cards, onCardClick }: WishlistGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {cards.map((card) => (
-        <CardItem
-          key={card.id}
-          card={card}
-          onClick={() => onCardClick(card)}
-          actions="wishlist"
-        />
-      ))}
-    </div>
+    <CardGrid
+      cards={cards}
+      onCardClick={onCardClick}
+      onRemove={onRemove}
+      onQuickAdd={onQuickAdd}
+      actions="wishlist"
+      showPrice={true}
+    />
   );
 };
 

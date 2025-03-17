@@ -1044,17 +1044,21 @@ const PokemonDashboard = () => {
     }
   }, [user]);
 
-  const handleRemoveFromWishlist = async (wishlistId: string) => {
+  const handleRemoveFromWishlist = async (card: PokemonCard) => {
     try {
+      if (!card.wishlist_id) {
+        throw new Error("Wishlist ID not found");
+      }
+
       const { error } = await supabase
         .from("wishlist_cards")
         .delete()
-        .eq("id", wishlistId);
+        .eq("id", card.wishlist_id);
 
       if (error) throw error;
 
       setWishlistCards((prev) =>
-        prev.filter((card) => card.wishlist_id !== wishlistId)
+        prev.filter((c) => c.wishlist_id !== card.wishlist_id)
       );
 
       toast({
@@ -1065,8 +1069,7 @@ const PokemonDashboard = () => {
       console.error("Error removing from wishlist:", error);
       toast({
         title: "Error",
-        description:
-          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+        description: "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -1129,13 +1132,17 @@ const PokemonDashboard = () => {
         );
       case "Wishlist":
         return (
-          <WishlistGrid
-            cards={wishlistCards}
-            onCardClick={(card) => {
-              setSelectedCard(card);
-              setIsCardDetailOpen(true);
-            }}
-          />
+          <div className="space-y-6">
+            <WishlistGrid
+              cards={wishlistCards}
+              onCardClick={(card) => {
+                setSelectedCard(card);
+                setIsCardDetailOpen(true);
+              }}
+              onRemove={handleRemoveFromWishlist}
+              onQuickAdd={handleQuickAddToCollection}
+            />
+          </div>
         );
       case "Account":
         return <AccountPage />;
@@ -1190,10 +1197,10 @@ const PokemonDashboard = () => {
         onClose={() => setIsCardDetailOpen(false)}
         onAddToCollection={handleAddToCollection}
         onAddToWishlist={handleAddToWishlist}
-        onRemoveFromWishlist={(cardId) => {
-          const card = wishlistCards.find((c) => c.id === cardId);
-          if (card && card.wishlist_id) {
-            handleRemoveFromWishlist(card.wishlist_id);
+        onRemoveFromWishlist={(card) => {
+          // Pasamos la carta completa en lugar de solo el ID
+          if (card) {
+            handleRemoveFromWishlist(card);
           }
         }}
         mode={

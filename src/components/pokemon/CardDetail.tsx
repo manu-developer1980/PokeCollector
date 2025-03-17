@@ -27,20 +27,13 @@ import {
 } from "@/lib/constants";
 
 interface CardDetailProps {
-  card: PokemonCard | CollectionCard | null;
+  card: PokemonCard | null;
   isOpen: boolean;
   onClose: () => void;
   onAddToCollection?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
-  onRemoveFromWishlist?: (cardId: string) => void;
-  onUpdate?: (cardData: {
-    id: string;
-    quantity: number;
-    condition?: string;
-    isFoil?: boolean;
-    isFirstEdition?: boolean;
-    notes?: string;
-  }) => void;
+  onRemoveFromWishlist?: (card: PokemonCard) => void; // Cambiado para recibir la carta completa
+  onUpdate?: (cardData: any) => void;
   onRemove?: (cardId: string) => void;
   mode: "search" | "collection" | "wishlist";
 }
@@ -114,7 +107,12 @@ const CardDetail = ({
             </Button>
             <Button
               variant="destructive"
-              onClick={() => onRemoveFromWishlist?.(card.id)}
+              onClick={() => {
+                if (card && onRemoveFromWishlist) {
+                  onRemoveFromWishlist(card);
+                }
+                onClose();
+              }}
               className=" hover:font-bold w-full"
             >
               <Trash className="h-4 w-4 mr-2" /> Eliminar de la Lista de Deseos
