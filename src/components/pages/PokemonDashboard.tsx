@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,8 @@ const PokemonDashboard = () => {
   const initialSection = location.state?.activeSection || "My Collection";
   const { user } = useAuth();
   const { toast } = useToast();
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
 
   // State for active tab/section
   const [activeSection, setActiveSection] = useState(initialSection);
@@ -87,15 +89,10 @@ const PokemonDashboard = () => {
   const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
 
   // Collection state
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [selectedCollection, setSelectedCollection] =
-    useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(
-    null
-  );
-  const [selectedCollectionCard, setSelectedCollectionCard] =
-    useState<CollectionCard | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [selectedCollectionCard, setSelectedCollectionCard] = useState<CollectionCard | null>(null);
   const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
 
   // Filter data
@@ -109,8 +106,7 @@ const PokemonDashboard = () => {
   const pageSize = 20;
 
   // Realtime channel state
-  const [realtimeChannel, setRealtimeChannel] =
-    useState<RealtimeChannel | null>(null);
+  const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
 
   // Añadir nuevo estado para la lista de deseos
   const [wishlistCards, setWishlistCards] = useState<WishlistCardType[]>([]);
@@ -185,11 +181,12 @@ const PokemonDashboard = () => {
   // Load collections on mount
   useEffect(() => {
     if (user) {
-      fetchCollections();
+      getCollections();
     }
   }, [user]);
 
-  const fetchCollections = async () => {
+  const getCollections = async () => {
+    setIsCollectionLoading(true);
     try {
       const { data, error } = await supabase
         .from("collections")
@@ -204,10 +201,9 @@ const PokemonDashboard = () => {
         return;
       }
 
-      // Para cada colección, obtener sus cartas con detalles
       const collectionsWithCards = await Promise.all(
         data.map(async (collection) => {
-          const cards = await fetchCollectionCards(collection.id);
+          const cards = await getCollectionCards(collection.id);
           return {
             ...collection,
             cards: cards || [],
@@ -223,6 +219,54 @@ const PokemonDashboard = () => {
         description: "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
+    } finally {
+      setIsCollectionLoading(false);
+    }
+  };
+
+  const getCollectionCards = async (collectionId: string) => {
+    try {
+      const { data: cardsData, error: cardsError } = await supabase
+        .from("collection_cards")
+        .select(`
+          id,
+          card_id,
+          quantity,
+          condition,
+          is_foil,
+          is_first_edition,
+          notes,
+          date_added
+        `)
+        .eq("collection_id", collectionId);
+
+      if (cardsError) throw cardsError;
+
+      const cardsWithDetails = await Promise.all(
+        cardsData.map(async (collectionCard) => {
+          const cardData = await getCardById(collectionCard.card_id);
+          return {
+            ...collectionCard,
+            name: cardData.name,
+            images: cardData.images,
+            set: cardData.set,
+            rarity: cardData.rarity,
+            types: cardData.types,
+            number: cardData.number,
+            cardmarket: cardData.cardmarket,
+          };
+        })
+      );
+
+      return cardsWithDetails;
+    } catch (error) {
+      console.error("Error fetching collection cards:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las cartas de la colección",
+        variant: "destructive",
+      });
+      return [];
     }
   };
 
@@ -788,66 +832,6 @@ const PokemonDashboard = () => {
     return `${start} - ${end} de ${totalCount} resultados`;
   };
 
-  // Función para obtener las cartas de una colección específica
-  const fetchCollectionCards = async (collectionId: string) => {
-    try {
-      // Primero obtenemos las cartas de la colección
-      const { data: cardsData, error: cardsError } = await supabase
-        .from("collection_cards")
-        .select(`
-          id,
-          card_id,
-          quantity,
-          condition,
-          is_foil,
-          is_first_edition,
-          notes,
-          date_added
-        `)
-        .eq("collection_id", collectionId);
-
-      if (cardsError) throw cardsError;
-
-      // Obtenemos los detalles de cada carta de la API de Pokémon
-      const cardsWithDetails = await Promise.all(
-        cardsData.map(async (collectionCard) => {
-          // Obtener los detalles de la carta de la API de Pokémon
-          const response = await fetch(
-            `https://api.pokemontcg.io/v2/cards/${collectionCard.card_id}`,
-            {
-              headers: {
-                'X-Api-Key': import.meta.env.VITE_POKEMON_API_KEY || '',
-              },
-            }
-          );
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const cardData = await response.json();
-          
-          // Combinar los datos de la colección con los detalles de la carta
-          return {
-            ...collectionCard,
-            name: cardData.data.name,
-            images: cardData.data.images,
-            set: cardData.data.set,
-            rarity: cardData.data.rarity,
-            types: cardData.data.types,
-            number: cardData.data.number,
-            cardmarket: cardData.data.cardmarket,
-          };
-        })
-      );
-
-      return cardsWithDetails;
-    } catch (error) {
-      console.error("Error fetching collection cards:", error);
-      throw error;
-    }
-  };
-
   // Configurar suscripciones en tiempo real
   useEffect(() => {
     if (!user || !selectedCollection) return;
@@ -1116,18 +1100,16 @@ const PokemonDashboard = () => {
                   setSelectedCollectionCard(card);
                   setIsCardDetailDialogOpen(true);
                 }}
+                isLoading={isCollectionLoading}
               />
             ) : (
               <CollectionList
                 collections={collections}
-                onCreateCollection={() => {
-                  setEditingCollection(null);
-                  setIsCollectionDialogOpen(true);
-                }}
-                onEditCollection={handleEditCollection}
-                onDeleteCollection={handleDeleteCollection}
-                onCollectionSelect={setSelectedCollection}
                 selectedCollection={selectedCollection}
+                onCollectionSelect={setSelectedCollection}
+                onCreateCollection={handleCreateCollection}
+                showCreateButton={true}
+                isLoading={isCollectionLoading}
               />
             )}
           </div>

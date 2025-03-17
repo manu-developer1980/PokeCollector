@@ -15,6 +15,7 @@ interface CollectionDetailProps {
   onEditCollection: (collection: Collection) => void;
   onRemoveCard: (cardId: string) => void;
   onCardClick: (card: CollectionCard) => void;
+  isLoading?: boolean; // Añadimos esta prop
 }
 
 const CollectionDetail = ({
@@ -23,6 +24,7 @@ const CollectionDetail = ({
   onEditCollection,
   onRemoveCard,
   onCardClick,
+  isLoading = false,
 }: CollectionDetailProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -32,7 +34,19 @@ const CollectionDetail = ({
     ) || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-10">
+          <div className="flex flex-col items-center justify-center">
+            <div className="pokeball mb-4" />
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Cargando colección...
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center space-x-4 flex-wrap">
           <Button

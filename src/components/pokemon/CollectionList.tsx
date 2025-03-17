@@ -7,11 +7,11 @@ import { Plus, Edit, Trash } from "lucide-react";
 
 interface CollectionListProps {
   collections: Collection[];
-  onCreateCollection: () => void;
-  onEditCollection: (collection: Collection) => void;
-  onDeleteCollection: (collectionId: string) => void;
+  selectedCollection?: Collection | null;
   onCollectionSelect: (collection: Collection) => void;
-  selectedCollection: Collection | null;
+  onCreateCollection: () => void;
+  showCreateButton?: boolean;
+  isLoading?: boolean;
 }
 
 const CollectionList = ({
@@ -21,12 +21,15 @@ const CollectionList = ({
   onDeleteCollection,
   onCollectionSelect,
   selectedCollection,
+  isLoading,
 }: CollectionListProps) => {
+  const showCreateButton = collections.length > 0 || isLoading;
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Mis Colecciones</h2>
-        {collections.length > 0 && (
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Mis Colecciones</h2>
+        {showCreateButton && (
           <Button
             onClick={onCreateCollection}
             size="sm"
@@ -37,7 +40,19 @@ const CollectionList = ({
         )}
       </div>
 
-      {collections.length === 0 ? (
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-10">
+          <div className="flex flex-col items-center justify-center">
+            <div className="pokeball mb-4" />
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Cargando colecciones...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && collections.length === 0 ? (
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-gray-500 mb-4">

@@ -269,11 +269,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
       {/* Mostrar el loader de Pokéball cuando se está buscando */}
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="pokeball mb-4" />
-          <p className="text-sm text-muted-foreground animate-pulse">
-            ¡Buscando cartas Pokémon!
-          </p>
+        <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-10">
+          <div className="flex flex-col items-center justify-center">
+            <div className="pokeball mb-4" />
+            <p className="text-sm text-muted-foreground animate-pulse">
+              ¡Buscando cartas Pokémon!
+            </p>
+          </div>
         </div>
       )}
 
