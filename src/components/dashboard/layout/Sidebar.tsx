@@ -10,6 +10,7 @@ import {
   CreditCard,
   Menu,
   X,
+  User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +49,11 @@ const Sidebar = ({
 }: SidebarProps) => {
   const allItems = [
     ...items,
+    {
+      icon: <User size={18} />,
+      label: "Mi Cuenta",
+      id: "account",
+    },
     {
       icon: <CreditCard size={18} />,
       label: "Suscripción",

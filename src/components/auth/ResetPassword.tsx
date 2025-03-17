@@ -87,7 +87,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            Restablecer Contraseña
+            Cambiar Contraseña
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -121,14 +121,11 @@ export default function ResetPassword() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Actualizar Contraseña"
-              )}
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Cambiar Contraseña
             </Button>
           </form>
         </CardContent>

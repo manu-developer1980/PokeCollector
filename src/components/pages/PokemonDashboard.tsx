@@ -31,10 +31,20 @@ import {
   PokemonCard,
   PokemonCardSearchParams,
 } from "@/types/pokemon";
-import { Database, Heart, Search, Grid3X3, Plus, Loader2 } from "lucide-react";
+import {
+  Database,
+  Heart,
+  Search,
+  Grid3X3,
+  Plus,
+  Loader2,
+  User,
+} from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import SubscriptionPage from "../subscription/SubscriptionPage";
 import MainHeader from "../layout/MainHeader";
+import AccountPage from "./AccountPage";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 
 interface PolarSubscription {
   status: string;
@@ -47,6 +57,7 @@ const defaultNavItems = [
   { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
   { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
+  { icon: <User size={18} />, label: "Mi Cuenta", id: "Account" },
 ];
 
 const PokemonDashboard = () => {
@@ -103,6 +114,13 @@ const PokemonDashboard = () => {
 
   // Añadir nuevo estado para la lista de deseos
   const [wishlistCards, setWishlistCards] = useState<WishlistCardType[]>([]);
+
+  // Estado para el modal de confirmación de borrado
+  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
+    isOpen: false,
+    collectionId: null as string | null,
+    collectionName: "",
+  });
 
   // Load filter data on mount
   useEffect(() => {
@@ -201,7 +219,6 @@ const PokemonDashboard = () => {
           const cardsWithDetails = await Promise.all(
             (cardsData || []).map(async (card) => {
               try {
-                // Asume que tienes una función para obtener los detalles de la carta de la API de Pokemon
                 const pokemonCard = await getCardById(card.card_id);
                 return {
                   ...card,
@@ -227,10 +244,6 @@ const PokemonDashboard = () => {
       );
 
       setCollections(collectionsWithCards);
-
-      if (collectionsWithCards.length === 0) {
-        createDefaultCollection();
-      }
     } catch (error) {
       console.error("Error fetching collections:", error);
       toast({
@@ -501,8 +514,8 @@ const PokemonDashboard = () => {
         if (error) throw error;
 
         toast({
-          title: "Collection Updated",
-          description: `${collectionData.name} has been updated.`,
+          title: "Colección Actualizada",
+          description: `La colección "${collectionData.name}" ha sido actualizada.`,
         });
       } else {
         // Create new collection
@@ -518,8 +531,8 @@ const PokemonDashboard = () => {
         if (error) throw error;
 
         toast({
-          title: "Collection Created",
-          description: `${collectionData.name} has been created.`,
+          title: "Colección Creada",
+          description: `La colección "${collectionData.name}" ha sido creada.`,
         });
       }
 
@@ -529,38 +542,56 @@ const PokemonDashboard = () => {
       console.error("Error saving collection:", error);
       toast({
         title: "Error",
-        description: "Failed to save collection. Please try again.",
+        description:
+          "No se pudo guardar la colección. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
   };
 
   const handleDeleteCollection = async (collectionId: string) => {
+    const collection = collections.find((c) => c.id === collectionId);
+    if (!collection) return;
+
+    setDeleteConfirmationState({
+      isOpen: true,
+      collectionId,
+      collectionName: collection.name,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmationState.collectionId) return;
+
     try {
-      // First delete all cards in the collection
       const { error: cardsError } = await supabase
         .from("collection_cards")
         .delete()
-        .eq("collection_id", collectionId);
+        .eq("collection_id", deleteConfirmationState.collectionId);
 
       if (cardsError) throw cardsError;
 
-      // Then delete the collection
       const { error } = await supabase
         .from("collections")
         .delete()
-        .eq("id", collectionId);
+        .eq("id", deleteConfirmationState.collectionId);
 
       if (error) throw error;
+
+      setCollections((prevCollections) =>
+        prevCollections.filter(
+          (collection) => collection.id !== deleteConfirmationState.collectionId
+        )
+      );
+
+      if (selectedCollection?.id === deleteConfirmationState.collectionId) {
+        setSelectedCollection(null);
+      }
 
       toast({
         title: "Colección Eliminada",
         description: "La colección ha sido eliminada correctamente.",
       });
-
-      // Refresh collections
-      fetchCollections();
-      setSelectedCollection(null);
     } catch (error) {
       console.error("Error deleting collection:", error);
       toast({
@@ -569,6 +600,8 @@ const PokemonDashboard = () => {
           "No se pudo eliminar la colección. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
+    } finally {
+      setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }));
     }
   };
 
@@ -1037,11 +1070,85 @@ const PokemonDashboard = () => {
   const renderContent = () => {
     switch (activeSection) {
       case "Search Cards":
-        return <SearchSection /* ... props ... */ />;
+        return (
+          <>
+            <SearchFilters
+              sets={sets}
+              types={types}
+              rarities={rarities}
+              searchParams={searchParams}
+              onSearchParamsChange={handleSearchParamsChange}
+            />
+            <CardGrid
+              cards={cards}
+              isLoading={isLoading}
+              onCardClick={handleCardClick}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          </>
+        );
       case "My Collection":
-        return <CollectionSection /* ... props ... */ />;
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <Button
+                onClick={() => {
+                  setEditingCollection(null);
+                  setIsCollectionDialogOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Colección
+              </Button>
+            </div>
+
+            {selectedCollection ? (
+              <CollectionDetail
+                collection={selectedCollection}
+                onBack={() => setSelectedCollection(null)}
+                onEditCollection={(collection) => {
+                  setEditingCollection(collection);
+                  setIsCollectionDialogOpen(true);
+                }}
+                onCardClick={(card) => {
+                  setSelectedCollectionCard(card);
+                  setIsCardDetailDialogOpen(true);
+                }}
+              />
+            ) : (
+              <CollectionList
+                collections={collections}
+                onSelectCollection={setSelectedCollection}
+                onCreateCollection={() => {
+                  setEditingCollection(null);
+                  setIsCollectionDialogOpen(true);
+                }}
+                onEditCollection={(collection) => {
+                  setEditingCollection(collection);
+                  setIsCollectionDialogOpen(true);
+                }}
+                onDeleteCollection={handleDeleteCollection}
+              />
+            )}
+          </div>
+        );
       case "Wishlist":
-        return <WishlistSection /* ... props ... */ />;
+        return (
+          <WishlistGrid
+            cards={wishlistCards}
+            onCardClick={(card) => {
+              setSelectedCard(card);
+              setIsCardDetailOpen(true);
+            }}
+          />
+        );
+      case "Account":
+        return <AccountPage />;
       case "subscription":
         return <SubscriptionPage />;
       default:
@@ -1050,7 +1157,7 @@ const PokemonDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <MainHeader showNavigation={false} />
       <div className="flex">
         <Sidebar
@@ -1068,6 +1175,7 @@ const PokemonDashboard = () => {
               {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
               {activeSection === "My Collection" && "Mi Colección de Pokémon"}
               {activeSection === "Wishlist" && "Mi Lista de Deseos"}
+              {activeSection === "Account" && "Mi Cuenta"}
             </h1>
             <p className="text-gray-600">
               {activeSection === "Search Cards" &&
@@ -1076,102 +1184,12 @@ const PokemonDashboard = () => {
                 "Gestiona tu colección de cartas Pokémon"}
               {activeSection === "Wishlist" &&
                 "Cartas que deseas añadir a tu colección"}
+              {activeSection === "Account" &&
+                "Gestiona tu información personal y configuración"}
             </p>
           </div>
 
-          {activeSection === "Search Cards" && (
-            <div className="space-y-6">
-              <SearchFilters
-                onSearch={handleSearch}
-                isLoading={isSearching}
-                totalCount={totalCount}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                onQuickAdd={handleQuickAddToCollection}
-                onAddToWishlist={handleAddToWishlist}
-              >
-                {isSearching ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-red-600" />
-                  </div>
-                ) : (
-                  <CardGrid
-                    cards={searchResults}
-                    onCardClick={(card) => {
-                      setSelectedCard(card);
-                      setIsCardDetailOpen(true);
-                    }}
-                    onQuickAdd={handleQuickAddToCollection}
-                    onAddToWishlist={handleAddToWishlist}
-                    actions="search"
-                  />
-                )}
-              </SearchFilters>
-            </div>
-          )}
-
-          {activeSection === "My Collection" && (
-            <div>
-              {selectedCollection ? (
-                <CollectionDetail
-                  collection={selectedCollection}
-                  onBack={() => setSelectedCollection(null)}
-                  onEditCollection={handleEditCollection}
-                  onRemoveCard={handleRemoveCard}
-                  onCardClick={(card) => {
-                    setSelectedCollectionCard(card);
-                    setIsCardDetailDialogOpen(true);
-                  }}
-                />
-              ) : (
-                <CollectionList
-                  collections={collections}
-                  onSelectCollection={setSelectedCollection}
-                  onCreateCollection={handleCreateCollection}
-                  onEditCollection={handleEditCollection}
-                  onDeleteCollection={handleDeleteCollection}
-                />
-              )}
-            </div>
-          )}
-
-          {activeSection === "Wishlist" && (
-            <div>
-              {wishlistCards.length > 0 ? (
-                <WishlistGrid
-                  cards={wishlistCards}
-                  onCardClick={(card) => {
-                    setSelectedCard(card);
-                    setIsCardDetailOpen(true);
-                  }}
-                  onRemoveFromWishlist={(card) => {
-                    if (card.wishlist_id) {
-                      handleRemoveFromWishlist(card.wishlist_id);
-                    }
-                  }}
-                  onAddToCollection={handleAddToCollection}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 bg-white rounded-lg border border-gray-200">
-                  <Heart className="h-16 w-16 text-gray-300 mb-4" />
-                  <h3 className="text-xl font-medium text-gray-700 mb-2">
-                    Tu Lista de Deseos está Vacía
-                  </h3>
-                  <p className="text-gray-500 mb-6 text-center max-w-md">
-                    Añade cartas a tu lista de deseos mientras exploras el
-                    catálogo.
-                  </p>
-                  <Button
-                    onClick={() => setActiveSection("Search Cards")}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    <Search className="h-4 w-4 mr-2" />
-                    Buscar Cartas
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+          {renderContent()}
         </main>
       </div>
 
@@ -1227,6 +1245,15 @@ const PokemonDashboard = () => {
         onClose={() => setShowOnboarding(false)}
       />
       <Toaster />
+      <DeleteConfirmationDialog
+        isOpen={deleteConfirmationState.isOpen}
+        onClose={() =>
+          setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Colección"
+        description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
+      />
     </div>
   );
 };

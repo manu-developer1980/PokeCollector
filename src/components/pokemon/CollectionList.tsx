@@ -39,13 +39,14 @@ const CollectionList = ({
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-gray-500 mb-4">
-              You don't have any collections yet.
+              Aún no has creado ninguna colección. ¡Comienza a organizar tus
+              cartas Pokémon creando tu primera colección!
             </p>
             <Button
               onClick={onCreateCollection}
               className="bg-red-600 hover:bg-red-700"
             >
-              <Plus className="h-4 w-4 mr-1" /> Create Your First Collection
+              <Plus className="h-4 w-4 mr-1" /> Crear Mi Primera Colección
             </Button>
           </CardContent>
         </Card>
@@ -54,7 +55,11 @@ const CollectionList = ({
           {collections.map((collection) => (
             <Card
               key={collection.id}
-              className={`cursor-pointer hover:shadow-md transition-shadow ${selectedCollectionId === collection.id ? "ring-2 ring-red-500" : ""}`}
+              className={`cursor-pointer hover:shadow-md transition-shadow ${
+                selectedCollectionId === collection.id
+                  ? "ring-2 ring-red-500"
+                  : ""
+              }`}
               onClick={() => onSelectCollection(collection)}
             >
               <CardHeader className="pb-2">
@@ -65,12 +70,12 @@ const CollectionList = ({
                       variant="outline"
                       className="bg-blue-50 text-blue-700 text-xs"
                     >
-                      Default
+                      Predeterminada
                     </Badge>
                   )}
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
-                  {collection.description || "No description"}
+                  {collection.description || "Sin descripción"}
                 </p>
               </CardHeader>
               <CardContent>

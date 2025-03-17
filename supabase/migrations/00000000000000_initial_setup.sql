@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users table with improved structure
 CREATE TABLE IF NOT EXISTS public.users (
-    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id uuid PRIMARY KEY,  -- Removed the foreign key constraint
     user_id text GENERATED ALWAYS AS (id::text) STORED UNIQUE,
     email text,
     name text,
@@ -13,13 +13,14 @@ CREATE TABLE IF NOT EXISTS public.users (
     subscription_status text DEFAULT 'inactive',
     credits integer DEFAULT 0,
     created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
+    updated_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL,
+    deleted_at timestamptz DEFAULT NULL
 );
 
 -- Create subscriptions table
 CREATE TABLE IF NOT EXISTS public.subscriptions (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE,  -- Changed to reference public.users
     polar_id text,
     polar_price_id text,
     status text DEFAULT 'inactive',
@@ -37,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.collections (
     description text,
     created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL,
-    user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE,
     is_default boolean DEFAULT false
 );
 
@@ -57,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.collection_cards (
 -- Create wishlist_cards table
 CREATE TABLE IF NOT EXISTS public.wishlist_cards (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE,
     card_id text NOT NULL,
     date_added timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL,
     notes text,
@@ -75,15 +76,87 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create triggers for updated_at columns
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_subscriptions_updated_at
+    BEFORE UPDATE ON subscriptions
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_collections_updated_at
     BEFORE UPDATE ON collections
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+-- Grant necessary permissions
+GRANT ALL ON public.users TO authenticated;
+GRANT ALL ON public.users TO service_role;
+GRANT ALL ON public.users TO postgres;
+
 -- Enable RLS
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE collection_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wishlist_cards ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for users
+DROP POLICY IF EXISTS "Enable insert for registration" ON users;
+DROP POLICY IF EXISTS "Users can view their own profile" ON users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
+
+-- Drop and recreate the insert policy for users
+DROP POLICY IF EXISTS "Enable insert for registration" ON users;
+
+CREATE POLICY "Enable insert for registration"
+    ON users FOR INSERT
+    WITH CHECK (
+        -- Allow anonymous users during registration
+        auth.role() = 'anon' OR 
+        -- Allow authenticated users
+        auth.role() = 'authenticated' OR 
+        -- Allow service role
+        auth.role() = 'service_role' OR 
+        -- Allow if the user is inserting their own record
+        auth.uid() = id
+    );
+
+-- Política para ver perfil
+CREATE POLICY "Users can view their own profile"
+    ON users FOR SELECT
+    USING (
+        auth.uid() = id OR 
+        auth.role() = 'service_role'
+    );
+
+-- Política para actualizar perfil
+CREATE POLICY "Users can update their own profile"
+    ON users FOR UPDATE
+    USING (
+        auth.uid() = id OR 
+        auth.role() = 'service_role'
+    );
+
+-- Asegurar que los permisos estén correctamente configurados
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
+GRANT SELECT, INSERT, UPDATE ON public.users TO authenticated;
+GRANT SELECT ON public.users TO anon;
+
+-- Asegurar que la tabla users tiene RLS activado
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for subscriptions
+CREATE POLICY "Users can view their own subscriptions"
+    ON subscriptions FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can manage their own subscriptions"
+    ON subscriptions FOR ALL
+    USING (auth.uid() = user_id);
 
 -- Create policies for collections
 CREATE POLICY "Users can view their own collections"
@@ -180,3 +253,28 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON public.subscriptions(use
 CREATE INDEX IF NOT EXISTS idx_collections_user_id ON collections(user_id);
 CREATE INDEX IF NOT EXISTS idx_collection_cards_collection_id ON collection_cards(collection_id);
 CREATE INDEX IF NOT EXISTS idx_wishlist_cards_user_id ON wishlist_cards(user_id);
+
+-- Crear un trigger para manejar la eliminación suave
+CREATE OR REPLACE FUNCTION handle_soft_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        UPDATE public.users
+        SET deleted_at = timezone('utc'::text, now())
+        WHERE id = OLD.id;
+        RETURN NULL;
+    END IF;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger para soft delete
+CREATE TRIGGER soft_delete_users
+    BEFORE DELETE ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_soft_delete();
+
+
+
+
+
