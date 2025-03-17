@@ -29,8 +29,7 @@ export default function ForgotPassword() {
       if (lastAttempt && now - parseInt(lastAttempt) < COOLDOWN_TIME) {
         toast({
           title: "Demasiados intentos",
-          description:
-            "Por favor, espera 30 minutos antes de intentar de nuevo",
+          description: "Por favor, espera 30 minutos antes de intentar de nuevo",
           variant: "destructive",
         });
         return;
@@ -43,6 +42,7 @@ export default function ForgotPassword() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
+        captchaToken: undefined // Opcional: si tienes reCAPTCHA configurado
       });
 
       if (error) throw error;
@@ -50,8 +50,7 @@ export default function ForgotPassword() {
       setIsSubmitted(true);
       toast({
         title: "Email enviado",
-        description:
-          "Revisa tu bandeja de entrada para restablecer tu contraseña.",
+        description: "Revisa tu bandeja de entrada para restablecer tu contraseña.",
       });
     } catch (error: any) {
       toast({

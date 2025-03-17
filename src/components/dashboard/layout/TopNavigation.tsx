@@ -33,15 +33,14 @@ const TopNavigation = ({ onSearch = () => {} }: TopNavigationProps) => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Primero navegar al home
-      navigate("/");
-      // Luego mostrar el toast
+      navigate("/", { replace: true });
       toast({
         title: "Sesión cerrada",
         description: "Has cerrado sesión correctamente.",
       });
     } catch (error) {
       console.error("Error during sign out:", error);
+      navigate("/", { replace: true });
       toast({
         title: "Error",
         description: "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",

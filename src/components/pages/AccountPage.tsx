@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
+import GoodbyeModal from "../auth/GoodbyeModal";
 
 interface UserProfile {
   full_name: string;
@@ -62,6 +63,7 @@ export default function AccountPage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showGoodbyeModal, setShowGoodbyeModal] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -161,36 +163,20 @@ export default function AccountPage() {
     try {
       setIsLoading(true);
 
-      // Primero eliminamos las colecciones del usuario
-      const { error: collectionsError } = await supabase
-        .from("collections")
-        .delete()
-        .eq("user_id", user?.id);
+      // Primero obtenemos el ID del usuario actual
+      const userId = user?.id;
+      if (!userId) throw new Error("No se encontró el ID del usuario");
 
-      if (collectionsError) throw collectionsError;
-
-      // Eliminamos el usuario de la base de datos
-      const { error: dbError } = await supabase
-        .from("users")
-        .delete()
-        .eq("id", user?.id);
-
-      if (dbError) throw dbError;
-
-      // Eliminamos la cuenta de autenticación
-      const { error: authError } = await supabase.auth.admin.deleteUser(
-        user?.id as string
-      );
-
-      if (authError) throw authError;
-
-      // Cerramos sesión
-      await supabase.auth.signOut();
-
-      toast({
-        title: "Cuenta eliminada",
-        description: "Tu cuenta ha sido eliminada correctamente.",
+      // Primero eliminamos los datos usando una función RPC
+      const { error: deleteError } = await supabase.rpc('delete_user_data', {
+        user_id_param: userId
       });
+      if (deleteError) throw deleteError;
+
+      // Mostrar el modal de despedida
+      setShowGoodbyeModal(true);
+      setShowDeleteConfirmation(false);
+
     } catch (error: any) {
       console.error("Error deleting account:", error);
       toast({
@@ -200,9 +186,25 @@ export default function AccountPage() {
           "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
+      setShowDeleteConfirmation(false);
     } finally {
       setIsLoading(false);
-      setShowDeleteConfirmation(false);
+    }
+  };
+
+  const handleGoodbyeModalClose = async () => {
+    try {
+      // Cerramos sesión después de que el usuario vea el mensaje de despedida
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+
+      setShowGoodbyeModal(false);
+      // Redirigimos a la landing page
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      // Redirigimos a la landing page incluso si hay error
+      navigate("/", { replace: true });
     }
   };
 
@@ -475,6 +477,10 @@ export default function AccountPage() {
         onConfirm={handleDeleteAccountConfirm}
         title="Eliminar Cuenta"
         description="¿Estás seguro de que deseas eliminar tu cuenta? Esta acción eliminará permanentemente todos tus datos, incluyendo tus colecciones y configuraciones. Esta acción no se puede deshacer."
+      />
+      <GoodbyeModal 
+        isOpen={showGoodbyeModal}
+        onClose={handleGoodbyeModalClose}
       />
     </div>
   );

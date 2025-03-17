@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../../supabase/auth";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,12 +27,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
-
-// Cliente de Supabase con clave de servicio para operaciones administrativas
-const supabaseAdmin = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_SERVICE_KEY
-);
 
 const formSchema = z
   .object({
@@ -79,16 +73,12 @@ export default function SignUpForm() {
         throw new Error("No user data returned after signup");
       }
 
-      // 2. Crear la suscripción usando el cliente admin
-      const { error: subError } = await supabaseAdmin
-        .from("subscriptions")
-        .insert([{
-          user_id: result.data.user.id,
-          status: selectedPlan === "free" ? "active" : "pending",
-          plan_type: selectedPlan || "free",
-          current_period_end: null,
-          cancel_at_period_end: false
-        }]);
+      // 2. Crear la suscripción usando la función RPC
+      const { error: subError } = await supabase
+        .rpc('create_user_subscription', {
+          user_id_param: result.data.user.id,
+          plan_type_param: selectedPlan || 'free'
+        });
 
       if (subError) {
         console.error("Subscription error:", subError);

@@ -1,9 +1,9 @@
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table with improved structure
+-- Create users table
 CREATE TABLE IF NOT EXISTS public.users (
-    id uuid PRIMARY KEY,  -- Removed the foreign key constraint
+    id uuid PRIMARY KEY,
     user_id text GENERATED ALWAYS AS (id::text) STORED UNIQUE,
     email text,
     name text,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS public.wishlist_cards (
     CONSTRAINT unique_user_card UNIQUE (user_id, card_id)
 );
 
--- Create function to update updated_at timestamp
+-- Create functions
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -76,7 +76,45 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create triggers for updated_at columns
+CREATE OR REPLACE FUNCTION handle_soft_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        UPDATE public.users
+        SET deleted_at = timezone('utc'::text, now())
+        WHERE id = OLD.id;
+        RETURN NULL;
+    END IF;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_user_subscription(
+    user_id_param UUID,
+    plan_type_param TEXT
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    INSERT INTO subscriptions (
+        user_id,
+        status,
+        plan_type,
+        current_period_end,
+        cancel_at_period_end
+    ) VALUES (
+        user_id_param,
+        CASE WHEN plan_type_param = 'free' THEN 'active' ELSE 'pending' END,
+        plan_type_param,
+        NULL,
+        false
+    );
+END;
+$$;
+
+-- Create triggers
 CREATE TRIGGER update_users_updated_at
     BEFORE UPDATE ON users
     FOR EACH ROW
@@ -92,10 +130,10 @@ CREATE TRIGGER update_collections_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- Grant necessary permissions
-GRANT ALL ON public.users TO authenticated;
-GRANT ALL ON public.users TO service_role;
-GRANT ALL ON public.users TO postgres;
+CREATE TRIGGER soft_delete_users
+    BEFORE DELETE ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_soft_delete();
 
 -- Enable RLS
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -105,27 +143,15 @@ ALTER TABLE collection_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wishlist_cards ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for users
-DROP POLICY IF EXISTS "Enable insert for registration" ON users;
-DROP POLICY IF EXISTS "Users can view their own profile" ON users;
-DROP POLICY IF EXISTS "Users can update their own profile" ON users;
-
--- Drop and recreate the insert policy for users
-DROP POLICY IF EXISTS "Enable insert for registration" ON users;
-
 CREATE POLICY "Enable insert for registration"
     ON users FOR INSERT
     WITH CHECK (
-        -- Allow anonymous users during registration
         auth.role() = 'anon' OR 
-        -- Allow authenticated users
         auth.role() = 'authenticated' OR 
-        -- Allow service role
         auth.role() = 'service_role' OR 
-        -- Allow if the user is inserting their own record
         auth.uid() = id
     );
 
--- Política para ver perfil
 CREATE POLICY "Users can view their own profile"
     ON users FOR SELECT
     USING (
@@ -133,7 +159,6 @@ CREATE POLICY "Users can view their own profile"
         auth.role() = 'service_role'
     );
 
--- Política para actualizar perfil
 CREATE POLICY "Users can update their own profile"
     ON users FOR UPDATE
     USING (
@@ -141,37 +166,35 @@ CREATE POLICY "Users can update their own profile"
         auth.role() = 'service_role'
     );
 
--- Asegurar que los permisos estén correctamente configurados
-GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
-GRANT SELECT, INSERT, UPDATE ON public.users TO authenticated;
-GRANT SELECT ON public.users TO anon;
-
--- Asegurar que la tabla users tiene RLS activado
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
 -- Create policies for subscriptions
+CREATE POLICY "Enable subscription creation during signup"
+    ON subscriptions
+    FOR INSERT
+    WITH CHECK (
+        auth.role() = 'service_role'
+        OR (auth.role() = 'authenticated' AND auth.uid() = user_id)
+        OR auth.role() = 'anon'
+    );
+
 CREATE POLICY "Users can view their own subscriptions"
     ON subscriptions FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own subscriptions"
-    ON subscriptions FOR INSERT
-    WITH CHECK (
-        auth.uid() = user_id OR
+    USING (
+        auth.uid() = user_id OR 
         auth.role() = 'service_role'
     );
 
 CREATE POLICY "Users can update their own subscriptions"
     ON subscriptions FOR UPDATE
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
+    USING (
+        auth.uid() = user_id OR 
+        auth.role() = 'service_role'
+    )
+    WITH CHECK (
+        auth.uid() = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Service role full access"
-    ON subscriptions FOR ALL
-    USING (auth.role() = 'service_role');
-
--- Create policies for collections
+-- Create policies for collections and cards
 CREATE POLICY "Users can view their own collections"
     ON collections FOR SELECT
     USING (auth.uid() = user_id);
@@ -188,7 +211,7 @@ CREATE POLICY "Users can delete their own collections"
     ON collections FOR DELETE
     USING (auth.uid() = user_id);
 
--- Create policies for collection_cards
+-- Collection cards policies
 CREATE POLICY "Users can view their own collection cards"
     ON collection_cards FOR SELECT
     USING (EXISTS (
@@ -221,7 +244,7 @@ CREATE POLICY "Users can delete their own collection cards"
         AND collections.user_id = auth.uid()
     ));
 
--- Create policies for wishlist_cards
+-- Wishlist cards policies
 CREATE POLICY "Users can view their own wishlist cards"
     ON wishlist_cards FOR SELECT
     USING (auth.uid() = user_id);
@@ -238,27 +261,35 @@ CREATE POLICY "Users can delete their own wishlist cards"
     ON wishlist_cards FOR DELETE
     USING (auth.uid() = user_id);
 
+-- Grant permissions
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
+GRANT SELECT, INSERT, UPDATE ON public.users TO authenticated;
+GRANT SELECT ON public.users TO anon;
+GRANT ALL ON subscriptions TO service_role;
+GRANT SELECT, INSERT, UPDATE ON subscriptions TO authenticated;
+GRANT INSERT ON subscriptions TO anon;
+GRANT EXECUTE ON FUNCTION create_user_subscription TO authenticated, anon;
+
 -- Enable realtime
-BEGIN;
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.users (
+ALTER PUBLICATION supabase_realtime ADD TABLE public.users (
     id,
     has_seen_onboarding,
     subscription_status,
     updated_at
-  );
-  
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.subscriptions (
+);
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.subscriptions (
     id,
     user_id,
     status,
     current_period_end,
     cancel_at_period_end
-  );
+);
 
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.collections;
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.collection_cards;
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.wishlist_cards;
-COMMIT;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.collections;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.collection_cards;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wishlist_cards;
 
 -- Add indexes
 CREATE INDEX IF NOT EXISTS idx_users_has_seen_onboarding ON public.users(has_seen_onboarding);
@@ -267,25 +298,9 @@ CREATE INDEX IF NOT EXISTS idx_collections_user_id ON collections(user_id);
 CREATE INDEX IF NOT EXISTS idx_collection_cards_collection_id ON collection_cards(collection_id);
 CREATE INDEX IF NOT EXISTS idx_wishlist_cards_user_id ON wishlist_cards(user_id);
 
--- Crear un trigger para manejar la eliminación suave
-CREATE OR REPLACE FUNCTION handle_soft_delete()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'DELETE' THEN
-        UPDATE public.users
-        SET deleted_at = timezone('utc'::text, now())
-        WHERE id = OLD.id;
-        RETURN NULL;
-    END IF;
-    RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
--- Crear el trigger para soft delete
-CREATE TRIGGER soft_delete_users
-    BEFORE DELETE ON public.users
-    FOR EACH ROW
-    EXECUTE FUNCTION handle_soft_delete();
+-- Set replica identity for realtime
+ALTER TABLE collection_cards REPLICA IDENTITY FULL;
+ALTER TABLE collections REPLICA IDENTITY FULL;
 
 
 
