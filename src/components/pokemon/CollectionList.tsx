@@ -16,22 +16,22 @@ interface CollectionListProps {
 
 const CollectionList = ({
   collections = [],
-  onSelectCollection = () => {},
-  onCreateCollection = () => {},
-  onEditCollection = () => {},
-  onDeleteCollection = () => {},
+  onSelectCollection,
+  onCreateCollection,
+  onEditCollection,
+  onDeleteCollection,
   selectedCollectionId,
 }: CollectionListProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">My Collections</h2>
+        <h2 className="text-xl font-semibold">Mis Colecciones</h2>
         <Button
           onClick={onCreateCollection}
           size="sm"
           className="bg-red-600 hover:bg-red-700"
         >
-          <Plus className="h-4 w-4 mr-1" /> New Collection
+          <Plus className="h-4 w-4 mr-1" /> Nueva Colección
         </Button>
       </div>
 
@@ -39,8 +39,7 @@ const CollectionList = ({
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-gray-500 mb-4">
-              Aún no has creado ninguna colección. ¡Comienza a organizar tus
-              cartas Pokémon creando tu primera colección!
+              No tienes colecciones aún. ¡Crea tu primera colección!
             </p>
             <Button
               onClick={onCreateCollection}
@@ -55,39 +54,34 @@ const CollectionList = ({
           {collections.map((collection) => (
             <Card
               key={collection.id}
-              className={`cursor-pointer hover:shadow-md transition-shadow ${
+              className={`hover:shadow-md transition-shadow ${
                 selectedCollectionId === collection.id
                   ? "ring-2 ring-red-500"
                   : ""
               }`}
-              onClick={() => onSelectCollection(collection)}
             >
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-base">{collection.name}</CardTitle>
-                  {collection.isDefault && (
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-50 text-blue-700 text-xs"
-                    >
-                      Predeterminada
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  {collection.description || "Sin descripción"}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
-                    {collection.cards?.length || 0} cards
-                  </span>
-                  <div className="flex gap-1">
+                  <div
+                    className="cursor-pointer flex-grow"
+                    onClick={() => onSelectCollection(collection)}
+                  >
+                    <CardTitle className="text-base">
+                      {collection.name}
+                    </CardTitle>
+                    {collection.is_default && (
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 text-xs"
+                      >
+                        Predeterminada
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-gray-500 hover:text-gray-700"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditCollection(collection);
@@ -95,22 +89,27 @@ const CollectionList = ({
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    {!collection.isDefault && (
+                    {!collection.is_default && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-500 hover:text-red-600"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeleteCollection(collection.id);
                         }}
                       >
-                        <Trash className="h-4 w-4" />
+                        <Trash className="h-4 w-4 text-red-500" />
                       </Button>
                     )}
                   </div>
                 </div>
-              </CardContent>
+                <p className="text-sm text-gray-500 mt-1">
+                  {collection.description || "Sin descripción"}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Cartas: {collection.cards?.length || 0}
+                </p>
+              </CardHeader>
             </Card>
           ))}
         </div>

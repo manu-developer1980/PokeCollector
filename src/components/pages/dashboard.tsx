@@ -113,54 +113,88 @@ const Dashboard = () => {
     setIsCollectionDialogOpen(true);
   };
 
-  const handleSaveCollection = async (collectionData: Partial<Collection>) => {
+  const handleSaveCollection = async (collectionData: {
+    id?: string;
+    name: string;
+    description?: string;
+    isDefault: boolean;
+  }) => {
     try {
-      if (collectionData.id) {
-        // Update existing collection
-        const { error } = await supabase
+      const { id, name, description, isDefault } = collectionData;
+
+      // Si la nueva colección será predeterminada, primero quitamos el estado predeterminado de otras colecciones
+      if (isDefault) {
+        const { error: updateError } = await supabase
           .from("collections")
-          .update({
-            name: collectionData.name,
-            description: collectionData.description,
-            is_default: collectionData.isDefault,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", collectionData.id);
+          .update({ is_default: false })
+          .eq("user_id", user?.id)
+          .eq("is_default", true);
 
-        if (error) throw error;
-
-        toast({
-          title: "Colección Actualizada",
-          description: `${collectionData.name} ha sido actualizada.`,
-        });
-      } else {
-        // Create new collection
-        const { error } = await supabase.from("collections").insert({
-          name: collectionData.name,
-          description: collectionData.description,
-          user_id: user?.id,
-          is_default: collectionData.isDefault,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Colección Creada",
-          description: `${collectionData.name} ha sido creada.`,
-        });
+        if (updateError) throw updateError;
       }
 
-      fetchCollections();
-    } catch (error) {
-      console.error("Error saving collection:", error);
+      if (id) {
+        // Actualizar colección existente
+        const { data, error } = await supabase
+          .from("collections")
+          .update({
+            name,
+            description,
+            is_default: isDefault,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select();
+
+        if (error) throw error;
+
+        setCollections(
+          collections.map((c) => (c.id === id ? { ...c, ...data[0] } : c))
+        );
+      } else {
+        // Crear nueva colección
+        const { data, error } = await supabase
+          .from("collections")
+          .insert({
+            name,
+            description,
+            user_id: user?.id,
+            is_default: isDefault,
+          })
+          .select();
+
+        if (error) throw error;
+
+        setCollections([...collections, { ...data[0], cards: [] }]);
+      }
+
       toast({
-        title: "Error",
-        description:
-          "No se pudo guardar la colección. Por favor, intenta de nuevo.",
-        variant: "destructive",
+        title: id ? "Colección actualizada" : "Colección creada",
+        description: `La colección "${name}" ha sido ${
+          id ? "actualizada" : "creada"
+        } exitosamente.`,
       });
+
+      setIsCollectionDialogOpen(false);
+    } catch (error: any) {
+      console.error("Error saving collection:", error);
+
+      // Mensaje de error específico para violación de restricción única
+      if (error.code === "23P01") {
+        toast({
+          title: "Error",
+          description:
+            "Ya existe una colección predeterminada. Por favor, desmarca la colección predeterminada actual antes de establecer otra.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "No se pudo guardar la colección. Por favor, intenta de nuevo.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
