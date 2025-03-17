@@ -37,9 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      // Log pre-signup
-      console.log("Iniciando signup con:", { email, fullName });
-
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -51,27 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      // Log detallado de la respuesta
-      console.log("Respuesta completa de signup:", JSON.stringify(authData, null, 2));
-
       if (authError) {
-        console.error("Error detallado de signup:", authError);
+        console.error("Error durante el registro:", authError);
         return { error: authError };
       }
 
       if (!authData.user) {
-        console.error("No se recibieron datos de usuario");
         return { error: new Error("No user data returned") };
       }
 
-      // Verificar si se envió el email de confirmación
-      if (authData.user.confirmation_sent_at) {
-        console.log("Email de confirmación enviado en:", authData.user.confirmation_sent_at);
-      } else {
-        console.warn("No se detectó envío de email de confirmación");
-      }
-
-      // Crear el perfil en users con más logging
       try {
         const { error: profileError } = await supabase
           .from("users")
@@ -86,19 +71,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (profileError) {
-          console.error("Error al crear perfil:", profileError);
+          console.error("Error al crear perfil de usuario:", profileError);
           return { error: profileError };
         }
-
-        console.log("Perfil de usuario creado exitosamente");
       } catch (profileError) {
-        console.error("Error inesperado al crear perfil:", profileError);
+        console.error("Error al crear perfil de usuario:", profileError);
         return { error: profileError };
       }
 
       return { data: authData, error: null };
     } catch (error) {
-      console.error("Error inesperado durante todo el proceso:", error);
+      console.error("Error inesperado durante el registro:", error);
       return {
         error: {
           message: "Error inesperado durante el registro",

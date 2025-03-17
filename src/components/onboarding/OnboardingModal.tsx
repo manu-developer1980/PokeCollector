@@ -29,8 +29,6 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
     if (!user?.id) return;
 
     try {
-      console.log("Checking onboarding status for user:", user.id);
-
       let { data, error } = await supabase
         .from("users")
         .select("has_seen_onboarding")

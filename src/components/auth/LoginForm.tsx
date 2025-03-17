@@ -121,7 +121,6 @@ export default function LoginForm() {
         if (result.error.message === "EMAIL_NOT_CONFIRMED") {
           mensajeError = "Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.";
           
-          // Opcionalmente, podemos ofrecer reenviar el email de confirmación
           const { error: resendError } = await supabase.auth.resend({
             type: 'signup',
             email: data.email,
@@ -145,11 +144,9 @@ export default function LoginForm() {
         return;
       }
 
-      // Verificar si el usuario necesita ver el onboarding
       if (result.data?.user) {
         const needsOnboarding = await checkOnboardingStatus(result.data.user.id);
         if (needsOnboarding) {
-          console.log("Usuario necesita ver onboarding");
           setShowOnboarding(true);
           setIsLoading(false);
           return;
@@ -175,7 +172,6 @@ export default function LoginForm() {
   };
 
   const handleOnboardingClose = () => {
-    console.log("Cerrando onboarding");
     setShowOnboarding(false);
     navigate(redirectTo);
   };

@@ -48,7 +48,6 @@ export default function SignUpForm() {
   const { toast } = useToast();
   const { signUp } = useAuth();
 
-  // Definir el formulario usando useForm
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,22 +57,22 @@ export default function SignUpForm() {
     },
   });
 
-  // Función para manejar el envío del formulario
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     const searchParams = new URLSearchParams(location.search);
     const selectedPlan = searchParams.get("plan");
 
     try {
-      // 1. Registrar al usuario
       const result = await signUp(data.email, data.password, data.fullName);
-      if (result.error) throw result.error;
-
-      if (!result.data?.user) {
-        throw new Error("No user data returned after signup");
+      
+      if (result.error) {
+        throw result.error;
       }
 
-      // 2. Crear la suscripción usando la función RPC
+      if (!result.data?.user) {
+        throw new Error("No se recibieron datos del usuario");
+      }
+
       const { error: subError } = await supabase
         .rpc('create_user_subscription', {
           user_id_param: result.data.user.id,
@@ -81,18 +80,17 @@ export default function SignUpForm() {
         });
 
       if (subError) {
-        console.error("Subscription error:", subError);
+        console.error("Error al crear la suscripción:", subError);
         throw subError;
       }
 
-      // 3. Redirigir a la página de confirmación de email
       navigate("/confirm-signup", {
         state: { email: data.email },
         replace: true
       });
 
     } catch (error: any) {
-      console.error("Error during signup:", error);
+      console.error("Error durante el registro:", error);
       toast({
         title: "Error en el registro",
         description: error.message || "No se pudo completar el registro. Por favor, intenta de nuevo.",
@@ -120,6 +118,7 @@ export default function SignUpForm() {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
+                        type="email"
                         placeholder="tu@email.com"
                         {...field}
                       />
