@@ -7,39 +7,42 @@ import { Plus, Edit, Trash } from "lucide-react";
 
 interface CollectionListProps {
   collections: Collection[];
-  onSelectCollection: (collection: Collection) => void;
   onCreateCollection: () => void;
   onEditCollection: (collection: Collection) => void;
   onDeleteCollection: (collectionId: string) => void;
-  selectedCollectionId?: string;
+  onCollectionSelect: (collection: Collection) => void;
+  selectedCollection: Collection | null;
 }
 
 const CollectionList = ({
-  collections = [],
-  onSelectCollection,
+  collections,
   onCreateCollection,
   onEditCollection,
   onDeleteCollection,
-  selectedCollectionId,
+  onCollectionSelect,
+  selectedCollection,
 }: CollectionListProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Mis Colecciones</h2>
-        <Button
-          onClick={onCreateCollection}
-          size="sm"
-          className="bg-red-600 hover:bg-red-700"
-        >
-          <Plus className="h-4 w-4 mr-1" /> Nueva Colección
-        </Button>
+        <h2 className="text-2xl font-bold">Mis Colecciones</h2>
+        {collections.length > 0 && (
+          <Button
+            onClick={onCreateCollection}
+            size="sm"
+            className="bg-red-600 hover:bg-red-700"
+          >
+            <Plus className="h-4 w-4 mr-1" /> Nueva Colección
+          </Button>
+        )}
       </div>
 
       {collections.length === 0 ? (
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-gray-500 mb-4">
-              No tienes colecciones aún. ¡Crea tu primera colección!
+              No tienes colecciones aún. ¡Crea tu primera colección para empezar
+              a guardar tus cartas!
             </p>
             <Button
               onClick={onCreateCollection}
@@ -55,7 +58,7 @@ const CollectionList = ({
             <Card
               key={collection.id}
               className={`hover:shadow-md transition-shadow ${
-                selectedCollectionId === collection.id
+                selectedCollection?.id === collection.id
                   ? "ring-2 ring-red-500"
                   : ""
               }`}
@@ -64,7 +67,7 @@ const CollectionList = ({
                 <div className="flex justify-between items-start">
                   <div
                     className="cursor-pointer flex-grow"
-                    onClick={() => onSelectCollection(collection)}
+                    onClick={() => onCollectionSelect(collection)}
                   >
                     <CardTitle className="text-base">
                       {collection.name}

@@ -186,32 +186,11 @@ const PokemonDashboard = () => {
   useEffect(() => {
     if (user) {
       fetchCollections();
-      checkOnboardingStatus();
     }
   }, [user]);
 
-  const checkOnboardingStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("has_seen_onboarding")
-        .eq("user_id", user?.id)
-        .single();
-
-      if (error) throw error;
-
-      // Solo mostramos el onboarding si el usuario no lo ha visto antes
-      if (!data?.has_seen_onboarding) {
-        setShowOnboarding(true);
-      }
-    } catch (error) {
-      console.error("Error checking onboarding status:", error);
-    }
-  };
-
   const fetchCollections = async () => {
     try {
-      // Primero obtener las colecciones
       const { data, error } = await supabase
         .from("collections")
         .select("*")
@@ -220,9 +199,9 @@ const PokemonDashboard = () => {
 
       if (error) throw error;
 
+      // Ya no creamos una colección por defecto
       if (!data || data.length === 0) {
-        // Si no hay colecciones, crear una por defecto
-        await createDefaultCollection();
+        setCollections([]);
         return;
       }
 
@@ -246,7 +225,6 @@ const PokemonDashboard = () => {
         })
       );
 
-      console.log("Colecciones cargadas:", collectionsWithCards); // Debug
       setCollections(collectionsWithCards);
     } catch (error) {
       console.error("Error fetching collections:", error);
@@ -259,29 +237,22 @@ const PokemonDashboard = () => {
     }
   };
 
-  const createDefaultCollection = async () => {
+  const checkOnboardingStatus = async () => {
     try {
       const { data, error } = await supabase
-        .from("collections")
-        .insert({
-          name: "Mi Colección",
-          description: "Mi colección de cartas Pokémon",
-          user_id: user?.id,
-          is_default: true,
-        })
-        .select();
+        .from("users")
+        .select("has_seen_onboarding")
+        .eq("user_id", user?.id)
+        .single();
 
       if (error) throw error;
 
-      setCollections([{ ...data[0], cards: [] }]);
+      // Solo mostramos el onboarding si el usuario no lo ha visto antes
+      if (!data?.has_seen_onboarding) {
+        setShowOnboarding(true);
+      }
     } catch (error) {
-      console.error("Error al crear colección por defecto:", error);
-      toast({
-        title: "Error",
-        description:
-          "No se pudo crear la colección por defecto. Por favor, intenta de nuevo.",
-        variant: "destructive",
-      });
+      console.error("Error checking onboarding status:", error);
     }
   };
 
