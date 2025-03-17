@@ -15,9 +15,11 @@ import {
   POKEMON_TYPES_MAP,
   SUPERTYPE_MAP,
   SUBTYPE_MAP,
+  RARITY_MAP,
   type PokemonType,
   type CardSupertype,
   type CardSubtype,
+  type CardRarity
 } from "@/lib/constants";
 
 interface SearchFiltersProps {
@@ -29,9 +31,15 @@ interface SearchFiltersProps {
   children?: React.ReactNode;
   onAddToCollection?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
+  sets: string[];
+  types: string[];
+  rarities: string[];
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
+  sets,
+  types,
+  rarities,
   onSearch,
   isLoading = false,
   totalCount = 0,
@@ -46,6 +54,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const [supertype, setSupertype] = useState<CardSupertype | "all">("all");
   const [subtype, setSubtype] = useState<CardSubtype | "all">("all");
   const [sortBy, setSortBy] = useState("name_asc");
+  const [selectedRarity, setSelectedRarity] = useState<string>("all");
 
   const totalPages = Math.ceil(totalCount / pageSize);
   const shouldShowPagination = totalCount > 0 && totalPages > 1;
@@ -73,6 +82,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
     if (subtype !== "all") {
       queryParts.push(`subtype:"${subtype}"`);
+    }
+
+    if (selectedRarity && selectedRarity !== "all") {
+      queryParts.push(`rarity:"${selectedRarity}"`);
     }
 
     if (queryParts.length > 0) {
@@ -186,6 +199,26 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                     value={value}
                   >
                     {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtro de Rareza */}
+          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+            <Select
+              value={selectedRarity}
+              onValueChange={setSelectedRarity}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Rareza" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las rarezas</SelectItem>
+                {rarities.map((rarity) => (
+                  <SelectItem key={rarity} value={rarity}>
+                    {RARITY_MAP[rarity as CardRarity] || rarity}
                   </SelectItem>
                 ))}
               </SelectContent>

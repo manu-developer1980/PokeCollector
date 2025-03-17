@@ -12,25 +12,32 @@ export const POKEMON_TYPES_MAP = {
   water: "Agua",
 } as const;
 
-export const RARITY_MAP = {
-  Common: "Común",
-  Uncommon: "Poco común",
-  Rare: "Rara",
+export type CardRarity = 
+  | "Common"
+  | "Uncommon"
+  | "Rare"
+  | "Rare Holo"
+  | "Rare Ultra"
+  | "Rare Secret"
+  | "Rare Rainbow"
+  | "Rare Shining"
+  | "Amazing Rare"
+  | "Promo"
+  | "Classic Collection";
+
+export const RARITY_MAP: Record<CardRarity, string> = {
+  "Common": "Común",
+  "Uncommon": "Poco común",
+  "Rare": "Rara",
   "Rare Holo": "Rara Holo",
-  "Rare Holo V": "Rara Holo V",
-  "Rare Holo VMAX": "Rara Holo VMAX",
-  "Rare Holo GX": "Rara Holo GX",
-  "Rare Holo EX": "Rara Holo EX",
-  "Rare BREAK": "Rara BREAK",
-  "Rare Prime": "Rara Prime",
-  "Rare Prism Star": "Rara Prisma",
   "Rare Ultra": "Ultra Rara",
-  "Rare Secret": "Rara Secreta",
-  "Rare Rainbow": "Rara Arcoíris",
+  "Rare Secret": "Secreta Rara",
+  "Rare Rainbow": "Arcoíris Rara",
+  "Rare Shining": "Brillante Rara",
   "Amazing Rare": "Rara Asombrosa",
-  "Rare Shining": "Rara Brillante",
-  Promo: "Promocional",
-} as const;
+  "Promo": "Promocional",
+  "Classic Collection": "Colección Clásica"
+};
 
 export const CONDITION_MAP = {
   Mint: "Perfecta",
@@ -87,7 +94,6 @@ export const EDITION_MAP = {
 } as const;
 
 export type PokemonType = keyof typeof POKEMON_TYPES_MAP | "all";
-export type CardRarity = keyof typeof RARITY_MAP;
 export type CardCondition = keyof typeof CONDITION_MAP;
 export type CardSupertype = keyof typeof SUPERTYPE_MAP;
 export type CardSubtype = keyof typeof SUBTYPE_MAP;

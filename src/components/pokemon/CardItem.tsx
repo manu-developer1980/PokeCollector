@@ -26,15 +26,15 @@ interface CardItemProps {
   showPrice?: boolean; // Añadimos esta prop
 }
 
-const CardItem = ({
-  card,
-  onClick,
-  onQuickAdd,
+const CardItem: React.FC<CardItemProps> = ({ 
+  card, 
+  onClick, 
+  onQuickAdd, 
+  onAddToWishlist, 
   onRemove,
-  onAddToWishlist,
-  actions = "search",
-  showPrice = false, // Valor por defecto
-}: CardItemProps) => {
+  actions = "search", // Añadimos un valor por defecto
+  showPrice = false 
+}) => {
   const [imageError, setImageError] = useState(false);
 
   if (!card) return null;
@@ -66,6 +66,14 @@ const CardItem = ({
         ))}
       </div>
     );
+  };
+
+  // Función helper para determinar el estilo del badge de rareza
+  const getRarityBadgeStyle = (rarity: string) => {
+    if (rarity.toLowerCase().includes('secret')) {
+      return "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-md";
+    }
+    return "bg-indigo-50 text-indigo-700";
   };
 
   return (
@@ -195,7 +203,7 @@ const CardItem = ({
             {card.rarity && (
               <Badge
                 variant="outline"
-                className="bg-indigo-50 text-indigo-700 text-xs"
+                className={`text-xs ${getRarityBadgeStyle(card.rarity)}`}
               >
                 {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
               </Badge>
