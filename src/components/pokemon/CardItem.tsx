@@ -14,7 +14,12 @@ import {
   type CardRarity,
   type CardCondition,
 } from "@/lib/constants";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CardItemProps {
   card: PokemonCard;
@@ -26,14 +31,14 @@ interface CardItemProps {
   showPrice?: boolean; // Añadimos esta prop
 }
 
-const CardItem: React.FC<CardItemProps> = ({ 
-  card, 
-  onClick, 
-  onQuickAdd, 
-  onAddToWishlist, 
+const CardItem: React.FC<CardItemProps> = ({
+  card,
+  onClick,
+  onQuickAdd,
+  onAddToWishlist,
   onRemove,
   actions = "search", // Añadimos un valor por defecto
-  showPrice = false 
+  showPrice = false,
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -70,10 +75,32 @@ const CardItem: React.FC<CardItemProps> = ({
 
   // Función helper para determinar el estilo del badge de rareza
   const getRarityBadgeStyle = (rarity: string) => {
-    if (rarity.toLowerCase().includes('secret')) {
-      return "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-md";
+    switch (rarity) {
+      case "Rare Rainbow":
+        return "bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 text-white border-none shadow-md";
+      case "Rare Secret":
+        return "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none shadow-md";
+      case "Rare Ultra":
+        return "bg-gradient-to-r from-yellow-400 to-amber-600 text-white border-none shadow-md";
+      case "Rare Holo":
+        return "bg-gradient-to-r from-blue-400 to-cyan-300 text-white border-none shadow-md";
+      case "Rare Shining":
+        return "bg-gradient-to-r from-slate-300 to-slate-100 text-slate-800 border-none shadow-md";
+      case "Amazing Rare":
+        return "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white border-none shadow-md";
+      case "Classic Collection":
+        return "bg-gradient-to-r from-amber-700 to-yellow-600 text-white border-none shadow-md";
+      case "Promo":
+        return "bg-gradient-to-r from-emerald-500 to-teal-400 text-white border-none shadow-md";
+      case "Rare":
+        return "bg-gradient-to-r from-blue-600 to-blue-400 text-white border-none shadow-md";
+      case "Uncommon":
+        return "bg-gradient-to-r from-slate-600 to-slate-400 text-white border-none shadow-md";
+      case "Common":
+        return "bg-gradient-to-r from-slate-400 to-slate-300 text-slate-700 border-none shadow-md";
+      default:
+        return "bg-indigo-50 text-indigo-700";
     }
-    return "bg-indigo-50 text-indigo-700";
   };
 
   return (
@@ -111,7 +138,9 @@ const CardItem: React.FC<CardItemProps> = ({
                         <Button
                           size="sm"
                           className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
-                          onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                          onClick={(e) =>
+                            handleAction(e, () => onQuickAdd(card))
+                          }
                           title="Añadir a Colección"
                         >
                           <Plus className="h-4 w-4" />
@@ -130,7 +159,9 @@ const CardItem: React.FC<CardItemProps> = ({
                         <Button
                           size="sm"
                           className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg"
-                          onClick={(e) => handleAction(e, () => onAddToWishlist(card))}
+                          onClick={(e) =>
+                            handleAction(e, () => onAddToWishlist(card))
+                          }
                           title="Añadir a Lista de Deseos"
                         >
                           <Heart className="h-4 w-4" />
@@ -184,10 +215,7 @@ const CardItem: React.FC<CardItemProps> = ({
 
         {/* Card info */}
         <div className="space-y-1.5">
-          <h3 className="font-medium text-sm truncate text-blue-900">
-            {card.name}
-          </h3>
-          <div className="flex justify-between items-center text-sm">
+          <h3 className="flex justify-between items-center text-sm">
             <span className="text-indigo-600 font-medium">
               {card.set?.name}
             </span>
@@ -195,7 +223,7 @@ const CardItem: React.FC<CardItemProps> = ({
               {card.number}
               {card.set?.printedTotal ? `/${card.set.printedTotal}` : ""}
             </span>
-          </div>
+          </h3>
 
           {/* Contenedor de badges */}
           <div className="mt-2 flex flex-wrap gap-1">
