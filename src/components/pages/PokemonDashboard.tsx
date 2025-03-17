@@ -199,28 +199,18 @@ const PokemonDashboard = () => {
 
       if (error) throw error;
 
-      // Ya no creamos una colección por defecto
       if (!data || data.length === 0) {
         setCollections([]);
         return;
       }
 
-      // Para cada colección, obtener sus cartas
+      // Para cada colección, obtener sus cartas con detalles
       const collectionsWithCards = await Promise.all(
         data.map(async (collection) => {
-          const { data: cardsData, error: cardsError } = await supabase
-            .from("collection_cards")
-            .select("*")
-            .eq("collection_id", collection.id);
-
-          if (cardsError) {
-            console.error("Error fetching cards for collection:", cardsError);
-            return { ...collection, cards: [] };
-          }
-
+          const cards = await fetchCollectionCards(collection.id);
           return {
             ...collection,
-            cards: cardsData || [],
+            cards: cards || [],
           };
         })
       );
@@ -230,8 +220,7 @@ const PokemonDashboard = () => {
       console.error("Error fetching collections:", error);
       toast({
         title: "Error",
-        description:
-          "No se pudieron cargar tus colecciones. Por favor, intenta de nuevo.",
+        description: "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -801,49 +790,62 @@ const PokemonDashboard = () => {
 
   // Función para obtener las cartas de una colección específica
   const fetchCollectionCards = async (collectionId: string) => {
-    const { data: cardsData, error: cardsError } = await supabase
-      .from("collection_cards")
-      .select(
-        `
-        id,
-        card_id,
-        quantity,
-        condition,
-        is_foil,
-        is_first_edition,
-        notes,
-        date_added
-      `
-      )
-      .eq("collection_id", collectionId);
+    try {
+      // Primero obtenemos las cartas de la colección
+      const { data: cardsData, error: cardsError } = await supabase
+        .from("collection_cards")
+        .select(`
+          id,
+          card_id,
+          quantity,
+          condition,
+          is_foil,
+          is_first_edition,
+          notes,
+          date_added
+        `)
+        .eq("collection_id", collectionId);
 
-    if (cardsError) {
-      console.error("Error fetching cards:", cardsError);
-      return [];
-    }
+      if (cardsError) throw cardsError;
 
-    // Obtener detalles de las cartas
-    const cardsWithDetails = await Promise.all(
-      (cardsData || []).map(async (card) => {
-        try {
-          const pokemonCard = await getCardById(card.card_id);
-          return {
-            ...card,
-            name: pokemonCard.name,
-            images: pokemonCard.images,
-            set: pokemonCard.set?.name,
-          };
-        } catch (error) {
-          console.error(
-            `Error fetching card details for ${card.card_id}:`,
-            error
+      // Obtenemos los detalles de cada carta de la API de Pokémon
+      const cardsWithDetails = await Promise.all(
+        cardsData.map(async (collectionCard) => {
+          // Obtener los detalles de la carta de la API de Pokémon
+          const response = await fetch(
+            `https://api.pokemontcg.io/v2/cards/${collectionCard.card_id}`,
+            {
+              headers: {
+                'X-Api-Key': import.meta.env.VITE_POKEMON_API_KEY || '',
+              },
+            }
           );
-          return card;
-        }
-      })
-    );
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const cardData = await response.json();
+          
+          // Combinar los datos de la colección con los detalles de la carta
+          return {
+            ...collectionCard,
+            name: cardData.data.name,
+            images: cardData.data.images,
+            set: cardData.data.set,
+            rarity: cardData.data.rarity,
+            types: cardData.data.types,
+            number: cardData.data.number,
+            cardmarket: cardData.data.cardmarket,
+          };
+        })
+      );
 
-    return cardsWithDetails;
+      return cardsWithDetails;
+    } catch (error) {
+      console.error("Error fetching collection cards:", error);
+      throw error;
+    }
   };
 
   // Configurar suscripciones en tiempo real

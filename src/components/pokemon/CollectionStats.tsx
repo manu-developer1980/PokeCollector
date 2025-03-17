@@ -1,4 +1,35 @@
 import { RARITY_MAP } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
+
+// Importamos la función getRarityBadgeStyle
+const getRarityBadgeStyle = (rarity: string) => {
+  switch (rarity) {
+    case "Rare Rainbow":
+      return "bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 text-white border-none shadow-md";
+    case "Rare Secret":
+      return "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none shadow-md";
+    case "Rare Ultra":
+      return "bg-gradient-to-r from-yellow-400 to-amber-600 text-white border-none shadow-md";
+    case "Rare Holo":
+      return "bg-gradient-to-r from-blue-400 to-cyan-300 text-white border-none shadow-md";
+    case "Rare Shining":
+      return "bg-gradient-to-r from-slate-300 to-slate-100 text-slate-800 border-none shadow-md";
+    case "Amazing Rare":
+      return "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white border-none shadow-md";
+    case "Classic Collection":
+      return "bg-gradient-to-r from-amber-700 to-yellow-600 text-white border-none shadow-md";
+    case "Promo":
+      return "bg-gradient-to-r from-emerald-500 to-teal-400 text-white border-none shadow-md";
+    case "Rare":
+      return "bg-gradient-to-r from-blue-600 to-blue-400 text-white border-none shadow-md";
+    case "Uncommon":
+      return "bg-gradient-to-r from-slate-600 to-slate-400 text-white border-none shadow-md";
+    case "Common":
+      return "bg-gradient-to-r from-slate-400 to-slate-300 text-slate-700 border-none shadow-md";
+    default:
+      return "bg-indigo-50 text-indigo-700";
+  }
+};
 
 const CollectionStats = ({ collection }) => {
   const stats = useMemo(() => {
@@ -49,10 +80,15 @@ const CollectionStats = ({ collection }) => {
             {Object.entries(stats.byRarity).map(([rarity, count]) => (
               <li
                 key={rarity}
-                className="flex justify-between"
+                className="flex justify-between items-center"
               >
-                <span>{RARITY_MAP[rarity as CardRarity] || rarity}</span>
-                <span>{count}</span>
+                <Badge
+                  variant="outline"
+                  className={`text-xs ${getRarityBadgeStyle(rarity)}`}
+                >
+                  {RARITY_MAP[rarity as CardRarity] || rarity}
+                </Badge>
+                <span className="font-medium">{count}</span>
               </li>
             ))}
           </ul>
@@ -71,7 +107,7 @@ const CollectionStats = ({ collection }) => {
                 className="flex justify-between"
               >
                 <span>{type}</span>
-                <span>{count}</span>
+                <span className="font-medium">{count}</span>
               </li>
             ))}
           </ul>
@@ -80,3 +116,6 @@ const CollectionStats = ({ collection }) => {
     </div>
   );
 };
+
+export default CollectionStats;
+

@@ -22,13 +22,10 @@ import {
 } from "@/components/ui/tooltip";
 
 interface CardItemProps {
-  card: PokemonCard;
-  onClick: (card: PokemonCard) => void;
-  onQuickAdd?: (card: PokemonCard) => void;
-  onRemove?: (card: PokemonCard) => void;
-  onAddToWishlist?: (card: PokemonCard) => void;
+  card: CollectionCard;
+  onClick?: (card: CollectionCard) => void;
+  onRemove?: (cardId: string) => void;
   actions?: "collection" | "wishlist" | "search";
-  showPrice?: boolean; // Añadimos esta prop
 }
 
 const CardItem: React.FC<CardItemProps> = ({
