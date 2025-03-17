@@ -11,14 +11,12 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
-import MainHeader from "../layout/MainHeader";
 
 export default function LandingPage() {
   const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-red-50">
-      <MainHeader showNavigation={true} />
       {/* Hero Section */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-24">
         <div className="container px-4 mx-auto">

@@ -61,17 +61,26 @@ const defaultNavItems = [
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
 ];
 
-const PokemonDashboard = () => {
+export default function PokemonDashboard() {
   const location = useLocation();
-  const initialSection = location.state?.activeSection || "My Collection";
+  const [activeSection, setActiveSection] = useState(
+    location.state?.activeSection || "My Collection"
+  );
+
+  // Actualizar la sección activa cuando cambia el estado de la ubicación
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      setActiveSection(location.state.activeSection);
+    }
+  }, [location.state]);
+
   const { user } = useAuth();
   const { toast } = useToast();
 
   // Agrupa todos los estados relacionados al inicio del componente
-  const [isLoading, setIsLoading] = useState(true);  // Añadido estado de loading
+  const [isLoading, setIsLoading] = useState(true); // Añadido estado de loading
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
-  const [activeSection, setActiveSection] = useState(initialSection);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -186,10 +195,7 @@ const PokemonDashboard = () => {
     const initializeData = async () => {
       try {
         if (user) {
-          await Promise.all([
-            getCollections(),
-            checkOnboardingStatus(),
-          ]);
+          await Promise.all([getCollections(), checkOnboardingStatus()]);
         }
       } catch (error) {
         console.error("Error initializing data:", error);
@@ -1092,19 +1098,6 @@ const PokemonDashboard = () => {
   };
 
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="fixed inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center justify-center">
-            <div className="pokeball mb-4" />
-            <p className="text-lg font-bold text-muted-foreground animate-pulse">
-              Cargando...
-            </p>
-          </div>
-        </div>
-      );
-    }
-
     switch (activeSection) {
       case "Search Cards":
         return (
@@ -1198,7 +1191,7 @@ const PokemonDashboard = () => {
     <>
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
-        <div className="flex-1 flex relative pt-16">
+        <div className="flex-1 flex relative">
           {" "}
           {/* Añadido pt-16 para el espacio del header */}
           <Sidebar
@@ -1303,6 +1296,4 @@ const PokemonDashboard = () => {
       />
     </>
   );
-};
-
-export default PokemonDashboard;
+}

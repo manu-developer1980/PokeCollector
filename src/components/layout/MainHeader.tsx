@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
-import { Menu, User, LogOut, CreditCard } from "lucide-react";
+import {
+  Menu,
+  User,
+  LogOut,
+  CreditCard,
+  Search,
+  Database,
+  Heart,
+} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -17,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
 interface MainHeaderProps {
@@ -26,9 +39,87 @@ interface MainHeaderProps {
 
 export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const { user, signOut } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleNavigation = (section: string) => {
+    console.log('Navigating to section:', section); // Para debugging
+    navigate("/dashboard", { 
+      state: { activeSection: section },
+      replace: true
+    });
+  };
+
+  // Separar los botones de navegación del Sheet
+  const NavigationButtons = ({ isMobile = false }) => (
+    <>
+      {isMobile ? (
+        <>
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => handleNavigation("Search Cards")}
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Buscar Cartas
+            </Button>
+          </SheetClose>
+          
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => handleNavigation("My Collection")}
+            >
+              <Database className="mr-2 h-4 w-4" />
+              Mi Colección
+            </Button>
+          </SheetClose>
+          
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => handleNavigation("Wishlist")}
+            >
+              <Heart className="mr-2 h-4 w-4" />
+              Lista de Deseos
+            </Button>
+          </SheetClose>
+        </>
+      ) : (
+        <>
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => handleNavigation("Search Cards")}
+          >
+            <Search className="mr-2 h-4 w-4" />
+            Buscar Cartas
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => handleNavigation("My Collection")}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            Mi Colección
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => handleNavigation("Wishlist")}
+          >
+            <Heart className="mr-2 h-4 w-4" />
+            Lista de Deseos
+          </Button>
+        </>
+      )}
+    </>
+  );
 
   const handleSignOut = async () => {
     try {
@@ -42,19 +133,19 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
       console.error("Error during sign out:", error);
       toast({
         title: "Error",
-        description: "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
+        description:
+          "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto flex h-16 items-center">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
         <div className="flex items-center justify-between w-full gap-4">
-          {/* Contenedor izquierdo con menú móvil y logo */}
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Solo mostrar en móvil */}
+            {/* Menú móvil */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button
@@ -67,12 +158,15 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="w-64 p-0 pt-16"
+                className="w-64 p-4"
               >
-                {/* Contenido del Sheet */}
+                <nav className="space-y-2">
+                  <NavigationButtons isMobile={true} />
+                </nav>
               </SheetContent>
             </Sheet>
 
+            {/* Logo */}
             <Link
               to="/"
               className="font-bold text-xl flex items-center text-red-600"
@@ -84,14 +178,24 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               />
               PokéCollector
             </Link>
+
+            {/* Navegación desktop */}
+            {showNavigation && (
+              <nav className="hidden md:flex items-center space-x-4">
+                <NavigationButtons isMobile={false} />
+              </nav>
+            )}
           </div>
 
-          {/* Contenedor derecho con avatar/menú usuario */}
+          {/* Avatar y menú de usuario */}
           <div className="flex items-center">
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={user?.user_metadata?.avatar_url}
@@ -103,14 +207,29 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56"
+                >
                   <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/dashboard", { state: { activeSection: "Account" } })}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate("/dashboard", {
+                        state: { activeSection: "Account" },
+                      })
+                    }
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard", { state: { activeSection: "subscription" } })}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate("/dashboard", {
+                        state: { activeSection: "subscription" },
+                      })
+                    }
+                  >
                     <CreditCard className="mr-2 h-4 w-4" />
                     Suscripción
                   </DropdownMenuItem>

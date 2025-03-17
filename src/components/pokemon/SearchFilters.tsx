@@ -254,34 +254,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onClick={() => handleSearch(1)}
               className="w-full"
               disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span>Buscando...</span>
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Search className="h-4 w-4" />
-                  <span>Buscar</span>
-                </span>
-              )}
-            </Button>
+            ></Button>
           </div>
         </div>
       </div>
-
-      {/* Mostrar el loader de Pokéball cuando se está buscando */}
-      {isLoading && (
-        <div className="fixed top-[4rem] left-[calc(256px+24px)] right-6 bottom-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-50">
-          <div className="flex flex-col items-center justify-center">
-            <div className="pokeball mb-4" />
-            <p className="text-base font-bold text-muted-foreground animate-pulse">
-              Buscando...
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Resultados y paginación */}
       {!isLoading && (
         <>
