@@ -14,6 +14,7 @@ import {
   type CardRarity,
   type CardCondition,
 } from "@/lib/constants";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CardItemProps {
   card: PokemonCard;
@@ -96,24 +97,42 @@ const CardItem = ({
             {actions === "search" && (
               <>
                 {onQuickAdd && (
-                  <Button
-                    size="sm"
-                    className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
-                    onClick={(e) => handleAction(e, () => onQuickAdd(card))}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+                          onClick={(e) => handleAction(e, () => onQuickAdd(card))}
+                          title="Añadir a Colección"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Añadir a colección por defecto</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {onAddToWishlist && (
-                  <Button
-                    size="sm"
-                    className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg"
-                    onClick={(e) =>
-                      handleAction(e, () => onAddToWishlist(card))
-                    }
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg"
+                          onClick={(e) => handleAction(e, () => onAddToWishlist(card))}
+                          title="Añadir a Lista de Deseos"
+                        >
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Añadir a lista de deseos</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </>
             )}

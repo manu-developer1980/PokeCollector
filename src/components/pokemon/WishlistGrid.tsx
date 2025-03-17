@@ -44,10 +44,9 @@ const WishlistGrid = ({
     <CardGrid
       cards={cards}
       onCardClick={onCardClick}
+      onAddToCollection={onQuickAdd}
       onRemove={onRemove}
-      onQuickAdd={onQuickAdd}
       actions="wishlist"
-      showPrice={true}
     />
   );
 };
