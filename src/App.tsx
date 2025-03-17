@@ -21,6 +21,7 @@ import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/auth/AuthCallback";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
+import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -163,6 +164,14 @@ function AppRoutes() {
           element={
             <MainLayout>
               <ResetPassword />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/confirm-email-change"
+          element={
+            <MainLayout>
+              <ConfirmEmailChange />
             </MainLayout>
           }
         />

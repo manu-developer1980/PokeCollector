@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,111 +14,69 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 
-interface SubscriptionInfo {
-  status: string;
-  currentPeriodEnd?: number;
-  cancelAtPeriodEnd?: boolean;
-  polarPriceId?: string;
-}
-
 const SubscriptionPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchSubscriptionInfo();
-  }, []);
+  const handlePlanSelection = async (planType: string) => {
+    setIsLoading(true);
 
-  const fetchSubscriptionInfo = async () => {
     try {
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .select(
-          "status, current_period_end, cancel_at_period_end, polar_price_id"
-        )
-        .eq("user_id", user?.id)
-        .single();
+      if (planType === "free") {
+        // Si el usuario ya está autenticado, actualizar su suscripción a free
+        if (user) {
+          const { error } = await supabase.from("subscriptions").upsert({
+            user_id: user.id,
+            status: "active",
+            plan_type: "free",
+            current_period_end: null,
+            cancel_at_period_end: false,
+          });
 
-      if (error) throw error;
+          if (error) throw error;
 
-      setSubscription({
-        status: data?.status || "free",
-        currentPeriodEnd: data?.current_period_end,
-        cancelAtPeriodEnd: data?.cancel_at_period_end,
-        polarPriceId: data?.polar_price_id,
-      });
+          navigate("/dashboard");
+        } else {
+          // Si no está autenticado, enviarlo al registro
+          navigate("/signup?plan=free");
+        }
+      } else {
+        // Para planes premium, redirigir al checkout
+        if (user) {
+          navigate(`/checkout?plan=${planType}`);
+        } else {
+          // Si no está autenticado, guardar el plan en la URL del registro
+          navigate(`/signup?plan=${planType}`);
+        }
+      }
     } catch (error) {
-      console.error("Error fetching subscription:", error);
-      setSubscription({
-        status: "free",
+      console.error("Error handling plan selection:", error);
+      toast({
+        title: "Error",
+        description:
+          "No se pudo procesar tu selección. Por favor, intenta de nuevo.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUpgrade = () => {
-    navigate("/pricing");
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  const isPremium = subscription?.status === "active";
-
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Tu Suscripción</h1>
+      <h1 className="text-2xl font-bold mb-6">Elige tu Plan</h1>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Plan Actual</CardTitle>
-            <Badge variant={isPremium ? "default" : "outline"}>
-              {isPremium ? "Premium" : "Free"}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {subscription?.currentPeriodEnd && (
-              <p className="text-sm text-gray-600">
-                Próxima renovación:{" "}
-                {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-              </p>
-            )}
-            {subscription?.cancelAtPeriodEnd && (
-              <p className="text-sm text-amber-600">
-                Tu suscripción se cancelará al final del período actual
-              </p>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button
-            onClick={handleUpgrade}
-            className="w-full bg-red-600 hover:bg-red-700"
-          >
-            {isPremium ? "Cambiar Plan" : "Mejorar a Premium"}
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Características de tu plan</h2>
-        <ul className="space-y-2">
-          {!isPremium ? (
-            <>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Plan Free */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Free</CardTitle>
+            <Badge variant="outline">Gratis</Badge>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
               <li className="flex items-center space-x-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 <span>Búsqueda básica de cartas</span>
@@ -127,12 +85,34 @@ const SubscriptionPage = () => {
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 <span>1 colección</span>
               </li>
-            </>
-          ) : (
-            <>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={() => handlePlanSelection("free")}
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Comenzar Gratis"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Plan Premium Mensual */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Premium Mensual</CardTitle>
+            <Badge>9.99€/mes</Badge>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
               <li className="flex items-center space-x-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Búsqueda avanzada de cartas</span>
+                <span>Todas las características Free</span>
               </li>
               <li className="flex items-center space-x-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -142,9 +122,61 @@ const SubscriptionPage = () => {
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 <span>Análisis de precios</span>
               </li>
-            </>
-          )}
-        </ul>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={() => handlePlanSelection("premium_monthly")}
+              className="w-full bg-red-600 hover:bg-red-700"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Elegir Plan"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Plan Premium Anual */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Premium Anual</CardTitle>
+            <Badge>99.99€/año</Badge>
+            <Badge
+              variant="outline"
+              className="ml-2"
+            >
+              ¡2 meses gratis!
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li className="flex items-center space-x-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <span>Todas las características Premium</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <span>Ahorra 2 meses</span>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={() => handlePlanSelection("premium_yearly")}
+              className="w-full bg-red-600 hover:bg-red-700"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Elegir Plan"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );

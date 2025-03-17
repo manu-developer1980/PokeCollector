@@ -67,11 +67,6 @@ const Dashboard = () => {
       );
 
       setCollections(collectionsWithCards);
-
-      // If no collections exist, create a default one
-      if (collectionsWithCards.length === 0) {
-        createDefaultCollection();
-      }
     } catch (error) {
       console.error("Error fetching collections:", error);
       toast({
@@ -210,7 +205,7 @@ const Dashboard = () => {
       const { error } = await supabase
         .from("collection_cards")
         .delete()
-        .eq("card_id", cardId)
+        .eq("id", cardId) // Cambiado de card_id a id
         .eq("collection_id", selectedCollection.id);
 
       if (error) throw error;

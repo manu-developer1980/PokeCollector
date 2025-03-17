@@ -131,6 +131,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
                 {Object.entries(POKEMON_TYPES_MAP).map(([value, label]) => (
                   <SelectItem
                     key={value}

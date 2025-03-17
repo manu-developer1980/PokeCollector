@@ -58,30 +58,33 @@ const CollectionDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {collection ? "Edit Collection" : "Create Collection"}
+            {collection ? "Editar Colección" : "Crear Colección"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Collection Name</Label>
+            <Label htmlFor="name">Nombre de la Colección</Label>
             <Input
               id="name"
-              placeholder="My Awesome Collection"
+              placeholder="Mi Colección Increíble"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="description">Descripción (Opcional)</Label>
             <Textarea
               id="description"
-              placeholder="Describe your collection..."
+              placeholder="Describe tu colección..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="resize-none"
@@ -91,26 +94,32 @@ const CollectionDialog = ({
 
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="default"
+              id="isDefault"
               checked={makeDefault}
               onCheckedChange={(checked) => setMakeDefault(checked as boolean)}
               disabled={collection?.isDefault}
             />
-            <Label htmlFor="default" className="text-sm cursor-pointer">
-              Make this my default collection
+            <Label
+              htmlFor="isDefault"
+              className="text-sm cursor-pointer"
+            >
+              Establecer como colección predeterminada
             </Label>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
             className="bg-red-600 hover:bg-red-700"
           >
-            {collection ? "Save Changes" : "Create Collection"}
+            {collection ? "Guardar Cambios" : "Crear Colección"}
           </Button>
         </DialogFooter>
       </DialogContent>

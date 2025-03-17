@@ -58,10 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: new Error("No user data returned") };
       }
 
-      // 2. Esperar un momento para asegurar que el usuario esté creado
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 3. Crear el perfil en la tabla users
+      // 2. Crear el perfil en la tabla users
       const { error: profileError } = await supabase
         .from("users")
         .insert([
@@ -76,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (profileError) {
         console.error("Profile creation error:", profileError);
+        // No eliminamos el usuario de auth aquí, ya que no tenemos permisos de admin
         return { error: profileError };
       }
 
