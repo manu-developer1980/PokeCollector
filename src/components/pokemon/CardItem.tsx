@@ -102,21 +102,21 @@ const CardItem: React.FC<CardItemProps> = ({
 
   return (
     <Card
-      className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200"
+      className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200 w-[235px]"
       onClick={() => onClick?.(card)}
     >
       <CardContent className="p-4">
-        {/* Image container */}
+        {/* Image container - mantener ancho fijo */}
         <div className="relative aspect-[2.5/3.5] rounded-lg mb-2">
           {!imageError ? (
             <img
               src={card.images?.small || card.images?.large}
               alt={card.name}
-              className="object-contain w-[235px] h-full transform transition-transform duration-300 group-hover:scale-105"
+              className="object-contain w-full h-full transform transition-transform duration-300 group-hover:scale-105"
               onError={handleImageError}
             />
           ) : (
-            <div className="w-[235px] h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
               <div className="text-center">
                 <div className="mb-2">❓</div>
                 <div className="text-sm">Who's that Pokémon?</div>
@@ -213,22 +213,22 @@ const CardItem: React.FC<CardItemProps> = ({
         {/* Card info */}
         <div className="space-y-1.5">
           <h3 className="flex justify-between items-center text-sm">
-            <span className="text-indigo-600 font-medium">
+            <span className="text-indigo-600 font-medium truncate max-w-[150px]">
               {card.set?.name}
             </span>
-            <span className="text-gray-500">
+            <span className="text-gray-500 ml-1 shrink-0">
               {card.number}
               {card.set?.printedTotal ? `/${card.set.printedTotal}` : ""}
             </span>
           </h3>
 
-          {/* Contenedor de badges */}
-          <div className="mt-2 flex flex-wrap gap-1">
+          {/* Contenedor de badges - mejorar el wrapping */}
+          <div className="mt-2 flex flex-wrap gap-1 min-h-[24px]">
             {/* Badge de Rareza */}
             {card.rarity && (
               <Badge
                 variant="outline"
-                className={`text-xs ${getRarityBadgeStyle(card.rarity)}`}
+                className={`text-xs ${getRarityBadgeStyle(card.rarity)} shrink-0`}
               >
                 {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
               </Badge>
@@ -241,7 +241,7 @@ const CardItem: React.FC<CardItemProps> = ({
                 {card.quantity && card.quantity > 1 && (
                   <Badge
                     variant="outline"
-                    className="bg-blue-50 text-blue-700 text-xs"
+                    className="bg-blue-50 text-blue-700 text-xs shrink-0"
                   >
                     x{card.quantity}
                   </Badge>
@@ -251,7 +251,7 @@ const CardItem: React.FC<CardItemProps> = ({
                 {card.isFirstEdition && (
                   <Badge
                     variant="outline"
-                    className="bg-purple-50 text-purple-700 text-xs"
+                    className="bg-purple-50 text-purple-700 text-xs shrink-0"
                     tooltip="1ª Edición"
                   >
                     1st
@@ -262,7 +262,7 @@ const CardItem: React.FC<CardItemProps> = ({
                 {card.isFoil && (
                   <Badge
                     variant="outline"
-                    className="bg-yellow-50 text-yellow-700 text-xs"
+                    className="bg-yellow-50 text-yellow-700 text-xs shrink-0"
                     tooltip="Foil"
                   >
                     ✨
@@ -273,7 +273,7 @@ const CardItem: React.FC<CardItemProps> = ({
                 {card.condition && (
                   <Badge
                     variant="outline"
-                    className="bg-green-50 text-green-700 text-xs"
+                    className="bg-green-50 text-green-700 text-xs shrink-0"
                   >
                     {CONDITION_MAP[card.condition as CardCondition] ||
                       card.condition}
