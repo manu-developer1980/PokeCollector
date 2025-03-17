@@ -64,9 +64,23 @@ export default function LoginForm() {
       if (result.error) {
         let mensajeError = "Email o contraseña incorrectos";
 
-        if (result.error.message.includes("Database error")) {
-          mensajeError =
-            "Error de conexión con la base de datos. Por favor, intente más tarde.";
+        if (result.error.message === "EMAIL_NOT_CONFIRMED") {
+          mensajeError = "Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.";
+          
+          // Opcionalmente, podemos ofrecer reenviar el email de confirmación
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: data.email,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
+          });
+
+          if (!resendError) {
+            mensajeError += " Hemos reenviado el email de confirmación.";
+          }
+        } else if (result.error.message.includes("Database error")) {
+          mensajeError = "Error de conexión con la base de datos. Por favor, intente más tarde.";
         }
 
         toast({
@@ -87,8 +101,7 @@ export default function LoginForm() {
       console.error("Error durante el inicio de sesión:", error);
       toast({
         title: "Error de inicio de sesión",
-        description:
-          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
+        description: "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
         variant: "destructive",
       });
     } finally {

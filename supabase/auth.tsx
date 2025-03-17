@@ -37,7 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      // 1. Crear el usuario en auth
+      // Log pre-signup
+      console.log("Iniciando signup con:", { email, fullName });
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -49,37 +51,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
+      // Log detallado de la respuesta
+      console.log("Respuesta completa de signup:", JSON.stringify(authData, null, 2));
+
       if (authError) {
-        console.error("Auth signup error:", authError);
+        console.error("Error detallado de signup:", authError);
         return { error: authError };
       }
 
       if (!authData.user) {
+        console.error("No se recibieron datos de usuario");
         return { error: new Error("No user data returned") };
       }
 
-      // 2. Crear el perfil en la tabla users
-      const { error: profileError } = await supabase
-        .from("users")
-        .insert([
-          {
-            id: authData.user.id,
-            email: authData.user.email,
-            full_name: fullName,
-            has_seen_onboarding: false,
-          },
-        ])
-        .single();
+      // Verificar si se envió el email de confirmación
+      if (authData.user.confirmation_sent_at) {
+        console.log("Email de confirmación enviado en:", authData.user.confirmation_sent_at);
+      } else {
+        console.warn("No se detectó envío de email de confirmación");
+      }
 
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        // No eliminamos el usuario de auth aquí, ya que no tenemos permisos de admin
+      // Crear el perfil en users con más logging
+      try {
+        const { error: profileError } = await supabase
+          .from("users")
+          .insert([
+            {
+              id: authData.user.id,
+              email: authData.user.email,
+              full_name: fullName,
+              has_seen_onboarding: false,
+            },
+          ])
+          .single();
+
+        if (profileError) {
+          console.error("Error al crear perfil:", profileError);
+          return { error: profileError };
+        }
+
+        console.log("Perfil de usuario creado exitosamente");
+      } catch (profileError) {
+        console.error("Error inesperado al crear perfil:", profileError);
         return { error: profileError };
       }
 
       return { data: authData, error: null };
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("Error inesperado durante todo el proceso:", error);
       return {
         error: {
           message: "Error inesperado durante el registro",
@@ -96,14 +115,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error("Error de inicio de sesión:", error);
         return { error };
+      }
+
+      // Verificar si el email está confirmado
+      if (!data.user?.email_confirmed_at) {
+        return {
+          error: {
+            message: "EMAIL_NOT_CONFIRMED",
+          },
+        };
       }
 
       return { data, error: null };
     } catch (error) {
-      console.error("Error en la autenticación:", error);
-      return { error };
+      return {
+        error: {
+          message: "Error inesperado durante el inicio de sesión",
+        },
+      };
     }
   };
 
