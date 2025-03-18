@@ -70,8 +70,6 @@ export function ConfirmDialog({
 }
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { signIn } = useAuth();
@@ -118,7 +116,9 @@ export default function LoginForm() {
       if (result.error) {
         let mensajeError = "Email o contraseña incorrectos";
 
-        if (result.error.message === "EMAIL_NOT_CONFIRMED") {
+        if (result.error.message === "Invalid login credentials") {
+          mensajeError = "Email o contraseña incorrectos";
+        } else if (result.error.message === "EMAIL_NOT_CONFIRMED") {
           mensajeError = "Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.";
           
           const { error: resendError } = await supabase.auth.resend({
@@ -135,6 +135,10 @@ export default function LoginForm() {
         } else if (result.error.message.includes("Database error")) {
           mensajeError = "Error de conexión con la base de datos. Por favor, intente más tarde.";
         }
+
+        form.setError("root", { 
+          message: mensajeError 
+        });
 
         toast({
           title: "Error de inicio de sesión",
@@ -161,6 +165,9 @@ export default function LoginForm() {
       navigate(redirectTo);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
+      form.setError("root", {
+        message: "Ha ocurrido un error inesperado. Por favor, intente nuevamente."
+      });
       toast({
         title: "Error de inicio de sesión",
         description: "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
@@ -220,6 +227,11 @@ export default function LoginForm() {
                   </FormItem>
                 )}
               />
+              {form.formState.errors.root && (
+                <div className="text-sm font-medium text-destructive">
+                  {form.formState.errors.root.message}
+                </div>
+              )}
               <Button
                 type="submit"
                 className="w-full"
