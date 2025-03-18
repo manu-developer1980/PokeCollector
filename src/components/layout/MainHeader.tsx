@@ -43,19 +43,56 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const { toast } = useToast();
 
   const handleNavigation = (section: string) => {
-    console.log('Navigating to section:', section); // Para debugging
-    navigate("/dashboard", { 
+    console.log("Navigating to section:", section); // Para debugging
+    navigate("/dashboard", {
       state: { activeSection: section },
-      replace: true
+      replace: true,
     });
   };
 
   // Separar los botones de navegación del Sheet
-  const NavigationButtons = ({ isMobile = false }) => (
-    <>
-      {isMobile ? (
-        <>
-          <SheetClose asChild>
+  const NavigationButtons = ({ isMobile = false }) => {
+    if (!user) return null;
+
+    return (
+      <>
+        {isMobile ? (
+          <>
+            <SheetClose asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => handleNavigation("Search Cards")}
+              >
+                <Search className="mr-2 h-4 w-4" />
+                Buscar Cartas
+              </Button>
+            </SheetClose>
+
+            <SheetClose asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => handleNavigation("My Collection")}
+              >
+                <Database className="mr-2 h-4 w-4" />
+                Mi Colección
+              </Button>
+            </SheetClose>
+
+            <SheetClose asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => handleNavigation("Wishlist")}
+              >
+                <Heart className="mr-2 h-4 w-4" />
+                Lista de Deseos
+              </Button>
+            </SheetClose>
+          </>
+        ) : (
+          <>
             <Button
               variant="ghost"
               className="w-full justify-start"
@@ -64,9 +101,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               <Search className="mr-2 h-4 w-4" />
               Buscar Cartas
             </Button>
-          </SheetClose>
-          
-          <SheetClose asChild>
+
             <Button
               variant="ghost"
               className="w-full justify-start"
@@ -75,9 +110,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               <Database className="mr-2 h-4 w-4" />
               Mi Colección
             </Button>
-          </SheetClose>
-          
-          <SheetClose asChild>
+
             <Button
               variant="ghost"
               className="w-full justify-start"
@@ -86,40 +119,11 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               <Heart className="mr-2 h-4 w-4" />
               Lista de Deseos
             </Button>
-          </SheetClose>
-        </>
-      ) : (
-        <>
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={() => handleNavigation("Search Cards")}
-          >
-            <Search className="mr-2 h-4 w-4" />
-            Buscar Cartas
-          </Button>
-          
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={() => handleNavigation("My Collection")}
-          >
-            <Database className="mr-2 h-4 w-4" />
-            Mi Colección
-          </Button>
-          
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={() => handleNavigation("Wishlist")}
-          >
-            <Heart className="mr-2 h-4 w-4" />
-            Lista de Deseos
-          </Button>
-        </>
-      )}
-    </>
-  );
+          </>
+        )}
+      </>
+    );
+  };
 
   const handleSignOut = async () => {
     try {
@@ -145,26 +149,28 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
       <div className="container flex h-14 items-center">
         <div className="flex items-center justify-between w-full gap-4">
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Menú móvil */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden"
+            {/* Menú móvil - Solo mostrar si el usuario está autenticado */}
+            {user && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden"
+                  >
+                    <Menu size={20} />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-64 p-4"
                 >
-                  <Menu size={20} />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="w-64 p-4"
-              >
-                <nav className="space-y-2">
-                  <NavigationButtons isMobile={true} />
-                </nav>
-              </SheetContent>
-            </Sheet>
+                  <nav className="space-y-2">
+                    <NavigationButtons isMobile={true} />
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            )}
 
             {/* Logo */}
             <Link
