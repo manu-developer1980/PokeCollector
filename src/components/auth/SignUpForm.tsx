@@ -8,20 +8,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { UserPlus, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -34,40 +24,6 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-
-// Añadir el componente ConfirmDialog
-export function ConfirmDialog({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title, 
-  description 
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>
-            Confirmar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 const formSchema = z
   .object({
@@ -84,8 +40,6 @@ const formSchema = z
 
 export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [showConfirmEmail, setShowConfirmEmail] = useState(false);
-  const [emailToConfirm, setEmailToConfirm] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -130,9 +84,11 @@ export default function SignUpForm() {
         throw subError;
       }
 
-      // Mostrar el diálogo de confirmación
-      setEmailToConfirm(data.email);
-      setShowConfirmEmail(true);
+      // Navegar directamente a la página de confirmación
+      navigate('/confirm-signup', { 
+        state: { email: data.email },
+        replace: true 
+      });
 
     } catch (error: any) {
       console.error("Error durante el registro:", error);
@@ -225,19 +181,6 @@ export default function SignUpForm() {
           </div>
         </CardContent>
       </Card>
-      <ConfirmDialog
-        isOpen={showConfirmEmail}
-        onClose={() => setShowConfirmEmail(false)}
-        onConfirm={() => {
-          setShowConfirmEmail(false);
-          navigate('/confirm-signup', { 
-            state: { email: emailToConfirm },
-            replace: true 
-          });
-        }}
-        title="Confirma tu email"
-        description={`Te hemos enviado un email de confirmación a ${emailToConfirm}. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para activar tu cuenta.`}
-      />
     </AuthLayout>
   );
 }
