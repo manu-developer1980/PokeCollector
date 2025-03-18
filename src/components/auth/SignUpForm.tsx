@@ -10,10 +10,18 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,7 +34,40 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+
+// Añadir el componente ConfirmDialog
+export function ConfirmDialog({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  title, 
+  description 
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={onConfirm}>
+            Confirmar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const formSchema = z
   .object({
@@ -43,21 +84,17 @@ const formSchema = z
 
 export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmEmail, setShowConfirmEmail] = useState(false);
+  const [emailToConfirm, setEmailToConfirm] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const { signUp } = useAuth();
 
-  // Obtener los parámetros de la URL
   const searchParams = new URLSearchParams(location.search);
   const planId = searchParams.get('plan');
   const interval = searchParams.get('interval');
   const redirectPath = searchParams.get('redirect');
-
-  const handleSignUpSuccess = () => {
-    // Por ahora, siempre redirigimos al dashboard después del registro
-    navigate('/dashboard');
-  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,7 +109,7 @@ export default function SignUpForm() {
     setIsLoading(true);
 
     try {
-      const result = await signUp(data.email, data.password, data.fullName);
+      const result = await signUp(data.email, data.password);
       
       if (result.error) {
         throw result.error;
@@ -93,7 +130,9 @@ export default function SignUpForm() {
         throw subError;
       }
 
-      handleSignUpSuccess();
+      // Mostrar el diálogo de confirmación
+      setEmailToConfirm(data.email);
+      setShowConfirmEmail(true);
 
     } catch (error: any) {
       console.error("Error durante el registro:", error);
@@ -186,6 +225,19 @@ export default function SignUpForm() {
           </div>
         </CardContent>
       </Card>
+      <ConfirmDialog
+        isOpen={showConfirmEmail}
+        onClose={() => setShowConfirmEmail(false)}
+        onConfirm={() => {
+          setShowConfirmEmail(false);
+          navigate('/confirm-signup', { 
+            state: { email: emailToConfirm },
+            replace: true 
+          });
+        }}
+        title="Confirma tu email"
+        description={`Te hemos enviado un email de confirmación a ${emailToConfirm}. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para activar tu cuenta.`}
+      />
     </AuthLayout>
   );
 }

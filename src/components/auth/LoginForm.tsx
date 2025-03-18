@@ -72,6 +72,8 @@ export function ConfirmDialog({
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showConfirmEmail, setShowConfirmEmail] = useState(false);
+  const [emailToConfirm, setEmailToConfirm] = useState("");
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,8 +120,9 @@ export default function LoginForm() {
 
         if (result.error.message === "Invalid login credentials") {
           mensajeError = "Email o contraseña incorrectos";
-        } else if (result.error.message === "EMAIL_NOT_CONFIRMED") {
-          mensajeError = "Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.";
+        } else if (result.error.message === "Email not confirmed") {
+          setEmailToConfirm(data.email);
+          setShowConfirmEmail(true);
           
           const { error: resendError } = await supabase.auth.resend({
             type: 'signup',
@@ -130,8 +133,13 @@ export default function LoginForm() {
           });
 
           if (!resendError) {
-            mensajeError += " Hemos reenviado el email de confirmación.";
+            toast({
+              title: "Email de confirmación reenviado",
+              description: "Hemos enviado un nuevo email de confirmación a tu correo.",
+            });
           }
+          setIsLoading(false);
+          return;
         } else if (result.error.message.includes("Database error")) {
           mensajeError = "Error de conexión con la base de datos. Por favor, intente más tarde.";
         }
@@ -264,6 +272,19 @@ export default function LoginForm() {
       <OnboardingModal 
         isOpen={showOnboarding} 
         onClose={handleOnboardingClose} 
+      />
+      <ConfirmDialog
+        isOpen={showConfirmEmail}
+        onClose={() => setShowConfirmEmail(false)}
+        onConfirm={() => {
+          setShowConfirmEmail(false);
+          navigate('/confirm-signup', { 
+            state: { email: emailToConfirm },
+            replace: true 
+          });
+        }}
+        title="Confirma tu email"
+        description={`Por favor, confirma tu email ${emailToConfirm} antes de iniciar sesión. ¿Necesitas que te reenviemos el email de confirmación?`}
       />
     </AuthLayout>
   );
