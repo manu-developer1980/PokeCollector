@@ -155,7 +155,7 @@ const CardDetail = ({
               <img
                 src={cardDetails.images?.large || cardDetails.images?.small}
                 alt={cardDetails.name}
-                className="rounded-lg max-w-[300px]"
+                className="rounded-lg xxs:max-w-[300px] w-auto"
               />
               {mode === "collection" && (
                 <Button
