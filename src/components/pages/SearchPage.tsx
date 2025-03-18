@@ -17,8 +17,8 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (user) {
-      // Redirigir al dashboard con la pestaña de búsqueda activa
-      navigate("/dashboard", { state: { activeSection: "Search Cards" } });
+      // Solo especificamos la sección de búsqueda si realmente queremos ir a ella
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -60,7 +60,8 @@ export default function SearchPage() {
         console.error("Error loading filter data:", error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
+          description:
+            "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
           variant: "destructive",
         });
       }

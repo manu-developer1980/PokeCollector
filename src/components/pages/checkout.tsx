@@ -62,14 +62,20 @@ const defaultPlans: Plan[] = [
   },
 ];
 
-const CheckoutPage = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Si no hay usuario autenticado y verificado, redirigir a pricing
+    if (!loading && (!user || !user.email_confirmed_at)) {
+      navigate("/pricing");
+      return;
+    }
+
     // Parse query parameters to get plan ID and interval
     const params = new URLSearchParams(location.search);
     const planId = params.get("plan");
@@ -83,7 +89,6 @@ const CheckoutPage = () => {
     // Find the selected plan
     const plan = defaultPlans.find((p) => p.id === planId);
     if (plan) {
-      // Apply interval to the plan
       const planWithInterval = {
         ...plan,
         interval,
@@ -95,13 +100,7 @@ const CheckoutPage = () => {
     }
 
     setIsLoading(false);
-  }, [location.search, navigate]);
-
-  useEffect(() => {
-    if (!loading && !user && !isLoading) {
-      navigate("/pricing"); // Cambiado de /login a /pricing
-    }
-  }, [user, loading, navigate, location.search, isLoading]);
+  }, [location.search, navigate, user, loading]);
 
   const handleCancel = () => {
     navigate("/pricing");
@@ -128,5 +127,3 @@ const CheckoutPage = () => {
     </div>
   );
 };
-
-export default CheckoutPage;

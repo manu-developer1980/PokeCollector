@@ -13,6 +13,11 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
   },
+  global: {
+    headers: {
+      "x-custom-header": "custom-value",
+    },
+  },
 });
 
 export { supabase };

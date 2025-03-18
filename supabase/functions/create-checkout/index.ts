@@ -33,7 +33,8 @@ serve(async (req) => {
       successUrl: `${Deno.env.get('SITE_URL')}/checkout/success`,
       cancelUrl: `${Deno.env.get('SITE_URL')}/pricing`,
       customerEmail,
-      metadata
+      metadata,
+      currency: 'eur',
     });
 
     return new Response(

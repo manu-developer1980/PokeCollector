@@ -1,90 +1,164 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
+import { validateEvent } from '@polar-sh/sdk';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+async function verifyPolarSignature(request: Request, body: string): Promise<boolean> {
+  try {
+    const headers: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
 
-const WEBHOOK_SECRET = Deno.env.get('POLAR_WEBHOOK_SECRET')!;
+    validateEvent(
+      body,
+      headers,
+      Deno.env.get('POLAR_WEBHOOK_SECRET') ?? '',
+    );
+    return true;
+  } catch (error) {
+    console.error('Error verifying webhook signature:', error);
+    return false;
+  }
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   try {
-    const signature = req.headers.get('x-polar-signature');
-    if (!signature) {
-      return new Response('Missing signature', { status: 401 });
+    const clonedReq = req.clone();
+    const rawBody = await clonedReq.text();
+    
+    const isValidSignature = await verifyPolarSignature(req, rawBody);
+    if (!isValidSignature) {
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), { 
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
-    // Verificar la firma del webhook (implementar la verificación)
-    
-    const payload = await req.json();
+    const payload = JSON.parse(rawBody);
     const { type, data } = payload;
 
-    switch (type) {
-      case 'subscription.created':
-        await handleSubscriptionCreated(data);
-        break;
-      case 'subscription.updated':
-        await handleSubscriptionUpdated(data);
-        break;
-      case 'subscription.deleted':
-        await handleSubscriptionDeleted(data);
-        break;
-      default:
-        console.log(`Unhandled event type: ${type}`);
+    // Registrar el evento en la base de datos
+    const { error: logError } = await supabase
+      .from('webhook_events')
+      .insert({
+        event_type: type,
+        payload: data,
+        processed_at: new Date().toISOString()
+      });
+
+    if (logError) {
+      console.error('Error logging webhook event:', logError);
     }
 
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { 'Content-Type': 'application/json' },
+    let result;
+    switch (type) {
+      case 'subscription.created':
+        result = await handleSubscriptionCreated(data);
+        break;
+      case 'subscription.updated':
+        result = await handleSubscriptionUpdated(data);
+        break;
+      case 'subscription.deleted':
+        result = await handleSubscriptionDeleted(data);
+        break;
+      default:
+        return new Response(JSON.stringify({ message: `Unhandled event type: ${type}` }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('Webhook error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
 
 async function handleSubscriptionCreated(data: any) {
-  const { user_id, subscription_id, plan_id, status } = data;
+  const { metadata, price_id, status } = data;
+  const userId = metadata?.user_id;
+
+  if (!userId) {
+    throw new Error('User ID not found in metadata');
+  }
+
+  const planType = getPlanTypeFromPriceId(price_id);
   
   const { error } = await supabase
     .from('subscriptions')
     .upsert({
-      user_id,
-      subscription_id,
-      plan_id,
+      user_id: userId,
+      polar_id: data.id,
+      polar_price_id: price_id,
       status,
-      current_period_end: data.current_period_end,
+      plan_type: planType,
+      current_period_end: new Date(data.current_period_end).getTime(),
       cancel_at_period_end: data.cancel_at_period_end,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     });
 
   if (error) throw error;
+  return { success: true };
 }
 
 async function handleSubscriptionUpdated(data: any) {
-  const { subscription_id, status } = data;
+  const { id, price_id, status } = data;
+  
+  const planType = getPlanTypeFromPriceId(price_id);
   
   const { error } = await supabase
     .from('subscriptions')
     .update({
       status,
-      current_period_end: data.current_period_end,
+      plan_type: planType,
+      polar_price_id: price_id,
+      current_period_end: new Date(data.current_period_end).getTime(),
       cancel_at_period_end: data.cancel_at_period_end,
+      updated_at: new Date().toISOString()
     })
-    .eq('subscription_id', subscription_id);
+    .eq('polar_id', id);
 
   if (error) throw error;
+  return { success: true };
 }
 
 async function handleSubscriptionDeleted(data: any) {
-  const { subscription_id } = data;
+  const { id } = data;
   
   const { error } = await supabase
     .from('subscriptions')
-    .update({ status: 'cancelled' })
-    .eq('subscription_id', subscription_id);
+    .update({ 
+      status: 'cancelled',
+      plan_type: 'APRENDIZ',
+      updated_at: new Date().toISOString()
+    })
+    .eq('polar_id', id);
 
   if (error) throw error;
+  return { success: true };
+}
+
+function getPlanTypeFromPriceId(priceId: string): SubscriptionPlan {
+  const planEntry = Object.entries(SUBSCRIPTION_PLANS).find(([_, id]) => id === priceId);
+  return (planEntry?.[0] as SubscriptionPlan) || 'APRENDIZ';
 }

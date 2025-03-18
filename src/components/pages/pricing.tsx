@@ -27,54 +27,68 @@ interface Plan {
 
 const defaultPlans: Plan[] = [
   {
-    id: "free",
-    name: "Gratis",
-    description: "Seguimiento básico de colección",
+    id: "APRENDIZ",
+    name: "Aprendiz",
+    description: "Plan gratuito para comenzar",
     price: 0,
     interval: "month",
     features: [
-      "Hasta 100 cartas en colección",
-      "Funcionalidad básica de búsqueda",
-      "Una colección",
+      "Hasta 50 cartas",
+      "1 colección",
+      "10 cartas en lista de deseos",
+      "Búsqueda básica",
       "Acceso a la comunidad",
     ],
-    buttonText: "Comenzar",
+    buttonText: "Comenzar Gratis",
   },
   {
-    id: "trainer",
+    id: "ENTRENADOR",
     name: "Entrenador",
     description: "Para coleccionistas serios",
-    price: 9.99,
+    price: 5,
     interval: "month",
     features: [
-      "Cartas ilimitadas en colección",
+      "Hasta 500 cartas",
+      "5 colecciones",
+      "50 cartas en lista de deseos",
+      "Estadísticas avanzadas",
       "Filtros de búsqueda avanzados",
-      "Hasta 5 colecciones personalizadas",
-      "Seguimiento del estado de las cartas",
-      "Estimaciones de valor de colección",
       "Soporte prioritario",
     ],
     isPopular: true,
     buttonText: "Comenzar Prueba Gratuita",
   },
   {
-    id: "master",
+    id: "MAESTRO",
     name: "Maestro",
     description: "Para coleccionistas profesionales",
-    price: 19.99,
+    price: 10,
     interval: "month",
     features: [
-      "Todo lo incluido en Entrenador",
-      "Colecciones personalizadas ilimitadas",
+      "Cartas ilimitadas",
+      "Colecciones ilimitadas",
+      "Lista de deseos ilimitada",
+      "Estadísticas avanzadas",
       "Análisis de tendencias de precios",
-      "Exportación de colección",
-      "Acceso a API",
-      "Soporte dedicado",
-      "Acceso anticipado a nuevas funciones",
+      "Exportación de datos",
+      "Soporte prioritario",
     ],
     buttonText: "Comenzar Prueba Gratuita",
   },
 ];
+
+const getPokeball = (planId: string) => {
+  switch (planId) {
+    case "APRENDIZ":
+      return "pokeball";
+    case "ENTRENADOR":
+      return "greatball";
+    case "MAESTRO":
+      return "masterball";
+    default:
+      return "pokeball";
+  }
+};
 
 export default function PricingPage() {
   const { user } = useAuth();
@@ -85,6 +99,20 @@ export default function PricingPage() {
   const [billingInterval, setBillingInterval] = useState<"month" | "year">(
     "month"
   );
+
+  const formatPrice = (price: number | string) => {
+    if (price === 0 || price === "0") {
+      return "Gratis";
+    }
+    
+    const numericPrice = typeof price === "string" ? parseFloat(price) : price;
+    
+    if (isNaN(numericPrice)) {
+      return "Gratis";
+    }
+    
+    return `${numericPrice.toFixed(2)}€`;
+  };
 
   useEffect(() => {
     // Fetch plans from Supabase or API if needed
@@ -171,10 +199,9 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => {
             // Calculate yearly price with discount if applicable
-            const price =
-              billingInterval === "year" && plan.price > 0
-                ? (plan.price * 12 * 0.8).toFixed(2)
-                : plan.price.toFixed(2);
+            const price = billingInterval === "year" && Number(plan.price) > 0
+              ? (Number(plan.price) * 12 * 0.8)
+              : Number(plan.price);
 
             return (
               <Card
@@ -193,6 +220,9 @@ export default function PricingPage() {
                       </Badge>
                     </div>
                   )}
+                  <div className="flex items-center justify-center mb-4">
+                    <div className={`${getPokeball(plan.id)} mx-auto`} />
+                  </div>
                   <CardTitle className="text-xl font-bold text-gray-900 mt-2">
                     {plan.name}
                   </CardTitle>
@@ -201,9 +231,9 @@ export default function PricingPage() {
                 <CardContent>
                   <div className="mt-2 mb-6">
                     <span className="text-4xl font-bold text-gray-900">
-                      {price === "0.00" ? "Free" : `$${price}`}
+                      {formatPrice(price)}
                     </span>
-                    {price !== "0.00" && (
+                    {price !== 0 && (
                       <span className="text-gray-600 ml-2">
                         /{billingInterval}
                       </span>

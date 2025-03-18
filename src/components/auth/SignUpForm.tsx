@@ -48,7 +48,6 @@ export default function SignUpForm() {
   const searchParams = new URLSearchParams(location.search);
   const planId = searchParams.get('plan');
   const interval = searchParams.get('interval');
-  const redirectPath = searchParams.get('redirect');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,28 +72,30 @@ export default function SignUpForm() {
         throw new Error("No se recibieron datos del usuario");
       }
 
-      const { error: subError } = await supabase
-        .rpc('create_user_subscription', {
-          user_id_param: result.data.user.id,
-          plan_type_param: planId || 'free'
-        });
-
-      if (subError) {
-        console.error("Error al crear la suscripción:", subError);
-        throw subError;
+      // Almacenar información del plan seleccionado en localStorage
+      if (planId && interval) {
+        localStorage.setItem('selectedPlan', JSON.stringify({
+          planId,
+          interval,
+          userId: result.data.user.id
+        }));
       }
 
-      // Navegar directamente a la página de confirmación
+      // Siempre redirigir a confirmación de email
       navigate('/confirm-signup', { 
-        state: { email: data.email },
+        state: { 
+          email: data.email,
+          planId,
+          interval
+        },
         replace: true 
       });
 
-    } catch (error: any) {
-      console.error("Error durante el registro:", error);
+    } catch (error) {
+      console.error("Error en el registro:", error);
       toast({
         title: "Error en el registro",
-        description: error.message || "No se pudo completar el registro. Por favor, intenta de nuevo.",
+        description: error.message,
         variant: "destructive",
       });
     } finally {

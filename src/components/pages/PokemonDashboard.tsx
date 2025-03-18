@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,11 @@ import MainHeader from "../layout/MainHeader";
 import AccountPage from "./AccountPage";
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog";
+import { useSubscription } from "@/hooks/useSubscription";
+import { validateSubscriptionLimits } from "@/lib/subscription-utils";
+import { useNavigate } from "react-router-dom";
+import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
+import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 
 interface PolarSubscription {
   status: string;
@@ -56,105 +61,360 @@ interface PolarSubscription {
 }
 
 const defaultNavItems = [
-  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
   { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
+  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
 ];
 
 export default function PokemonDashboard() {
+  // 1. Context hooks
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [activeSection, setActiveSection] = useState(
-    location.state?.activeSection || "My Collection"
-  );
+  const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
 
-  // Actualizar la sección activa cuando cambia el estado de la ubicación
+  // 2. State hooks - Move ALL useState declarations here
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+
+  // Actualizar para usar el estado de la navegación si existe, o "My Collection" por defecto
+  const [activeSection, setActiveSection] = useState(() => {
+    return location.state?.activeSection || "My Collection";
+  });
+
+  // Actualizar activeSection cuando cambie el estado de la ubicación
   useEffect(() => {
     if (location.state?.activeSection) {
       setActiveSection(location.state.activeSection);
     }
   }, [location.state]);
 
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  // Agrupa todos los estados relacionados al inicio del componente
-  const [isLoading, setIsLoading] = useState(true); // Añadido estado de loading
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
-  const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
-  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
   const [selectedCollection, setSelectedCollection] =
     useState<Collection | null>(null);
-  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null
   );
+  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [selectedCollectionCard, setSelectedCollectionCard] =
     useState<CollectionCard | null>(null);
-  const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
-
-  // Agrega estos dos estados que faltaban
-  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
-    useState(false);
   const [pendingQuickAddCard, setPendingQuickAddCard] =
     useState<PokemonCard | null>(null);
-
-  // Filter data
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [rarities, setRarities] = useState<string[]>([]);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 20;
-
-  // Realtime channel state
-  const [realtimeChannel, setRealtimeChannel] =
-    useState<RealtimeChannel | null>(null);
-
-  // Añadir nuevo estado cerca de los otros estados de loading
-  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
-
-  // Añadir nuevo estado para la lista de deseos
-  const [wishlistCards, setWishlistCards] = useState<WishlistCardType[]>([]);
-
-  // Estado para el modal de confirmación de borrado
-  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
-    isOpen: false,
-    collectionId: null as string | null,
-    collectionName: "",
-  });
-
-  // Añadir el estado searchParams
+  const [currentPage, setCurrentPage] = useState(1);
+  const [wishlistCards, setWishlistCards] = useState<PokemonCard[]>([]);
   const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
     q: "",
     page: 1,
     pageSize: 20,
     orderBy: "name",
   });
+  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
+    isOpen: false,
+    collectionId: null as string | null,
+    collectionName: "",
+  });
+  const [realtimeChannel, setRealtimeChannel] =
+    useState<RealtimeChannel | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+  const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
+  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
+  const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
+  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
+    useState(false);
+  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
+  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+  const [limitError, setLimitError] = useState({
+    message: "",
+    type: null as "cards" | "collections" | "wishlist" | null,
+  });
 
-  // Añadir el manejador de cambios de searchParams
-  const handleSearchParamsChange = (
-    newParams: Partial<PokemonCardSearchParams>
-  ) => {
-    setSearchParams((prev) => ({
-      ...prev,
-      ...newParams,
-      page: 1, // Reset page when filters change
-    }));
-    handleSearch({
-      ...searchParams,
-      ...newParams,
-      page: 1,
-    });
-  };
+  // Define fetchWishlist first
+  const fetchWishlist = useCallback(async () => {
+    setIsWishlistLoading(true);
+    try {
+      const { data: wishlistData, error } = await supabase
+        .from("wishlist_cards") // Nombre correcto de la tabla
+        .select(
+          `
+          id,
+          card_id,
+          user_id,
+          date_added
+        `
+        )
+        .eq("user_id", user?.id);
 
-  // Load filter data on mount
+      if (error) {
+        console.error("Error fetching wishlist:", error);
+        throw error;
+      }
+
+      if (!wishlistData || wishlistData.length === 0) {
+        setWishlistCards([]);
+        return;
+      }
+
+      const cardsWithDetails = await Promise.all(
+        wishlistData.map(async (item) => {
+          try {
+            const cardDetails = await getCardById(item.card_id);
+            if (!cardDetails) return null;
+            return {
+              ...cardDetails,
+              wishlist_id: item.id,
+              date_added: item.date_added,
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching details for card ${item.card_id}:`,
+              error
+            );
+            return null;
+          }
+        })
+      );
+
+      const validCards = cardsWithDetails.filter(
+        (
+          card
+        ): card is PokemonCard & {
+          wishlist_id: string;
+          date_added: string;
+        } => card !== null
+      );
+
+      setWishlistCards(validCards);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de deseos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  }, [user?.id, toast]);
+
+  const validateResourceLimit = useCallback(
+    async (
+      resourceType: "wishlist" | "collection_cards" | "collections",
+      userId: string,
+      quantity: number = 1
+    ) => {
+      try {
+        if (isSubscriptionLoading) {
+          return {
+            valid: false,
+            error: "Verificando estado de suscripción...",
+          };
+        }
+
+        const planType = subscription?.plan_type || "APRENDIZ";
+        const { count } = await supabase
+          .from(
+            resourceType === "wishlist" ? "wishlist_cards" : "collection_cards"
+          )
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId);
+
+        const currentCount = count || 0;
+        const validation = validateSubscriptionLimits(
+          planType,
+          resourceType === "collection_cards" ? currentCount + quantity : 0,
+          resourceType === "collections" ? currentCount + quantity : 0,
+          resourceType === "wishlist" ? currentCount + quantity : 0
+        );
+
+        if (!validation.valid) {
+          setLimitError({
+            message: validation.error || "",
+            type: validation.limitType,
+          });
+          setIsLimitModalOpen(true);
+        }
+
+        return validation;
+      } catch (error) {
+        console.error("Error validating limit:", error);
+        return {
+          valid: false,
+          error: "Error al validar los límites de la suscripción",
+        };
+      }
+    },
+    [subscription, isSubscriptionLoading]
+  );
+
+  // Then define handleAddToWishlist
+  const handleAddToWishlist = useCallback(
+    async (card: PokemonCard) => {
+      try {
+        if (!user?.id) {
+          setLimitError({
+            message:
+              "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
+            type: "wishlist",
+          });
+          setIsLimitModalOpen(true);
+          return;
+        }
+
+        const { valid, error: limitError } = await validateResourceLimit(
+          "wishlist",
+          user.id
+        );
+
+        if (!valid) {
+          setLimitError({
+            message: limitError || "",
+            type: "wishlist",
+          });
+          setIsLimitModalOpen(true);
+          return;
+        }
+
+        const { data: existingCard } = await supabase
+          .from("wishlist_cards")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("card_id", card.id)
+          .maybeSingle();
+
+        if (existingCard) {
+          toast({
+            title: "Ya en Lista de Deseos",
+            description: "Esta carta ya está en tu lista de deseos.",
+          });
+          return;
+        }
+
+        await supabase.from("wishlist_cards").insert({
+          user_id: user.id,
+          card_id: card.id,
+          date_added: new Date().toISOString(),
+        });
+
+        toast({
+          title: "Carta Añadida",
+          description: "La carta ha sido añadida a tu lista de deseos.",
+        });
+
+        // Refrescar la lista de deseos inmediatamente
+        await fetchWishlist();
+      } catch (error) {
+        console.error("Error adding to wishlist:", error);
+        toast({
+          title: "Error",
+          description: "No se pudo añadir la carta a la lista de deseos.",
+          variant: "destructive",
+        });
+      }
+    },
+    [user, toast, navigate, validateResourceLimit, fetchWishlist]
+  );
+
+  // 3. Refs
+  const cardsChannel = useRef<RealtimeChannel | null>(null);
+
+  // 4. Constants
+  const pageSize = 20;
+
+  // 5. Callbacks using useCallback
+  const handleSearchParamsChange = useCallback(
+    (newParams: Partial<PokemonCardSearchParams>) => {
+      setSearchParams((prevParams) => ({
+        ...prevParams,
+        ...newParams,
+      }));
+
+      // If the page parameter is being updated, trigger a search immediately
+      if ("page" in newParams) {
+        handleSearch({
+          ...searchParams,
+          ...newParams,
+        });
+      }
+    },
+    [searchParams]
+  );
+
+  const handleSearch = useCallback(
+    async (params: PokemonCardSearchParams) => {
+      setIsSearching(true);
+      try {
+        const response = await searchCards({
+          ...params,
+          page: params.page || 1,
+          pageSize: params.pageSize || 20,
+        });
+
+        if (response.data) {
+          setSearchResults(response.data);
+          setTotalCount(response.totalCount || 0);
+          setCurrentPage(response.page || 1);
+        } else {
+          setSearchResults([]);
+          setTotalCount(0);
+          setCurrentPage(1);
+          toast({
+            title: "No Results",
+            description: "No cards found matching your search criteria.",
+          });
+        }
+      } catch (error) {
+        console.error("Error searching cards:", error);
+        toast({
+          title: "Error",
+          description: "Failed to search cards. Please try again.",
+          variant: "destructive",
+        });
+        setSearchResults([]);
+        setTotalCount(0);
+        setCurrentPage(1);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [toast]
+  );
+
+  // 6. Effects using useEffect
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    const initializeDashboard = async () => {
+      try {
+        setIsLoading(true);
+
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          has_completed_onboarding: true,
+        });
+      } catch (error) {
+        console.error("Error initializing dashboard:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeDashboard();
+  }, [user, navigate]);
+
+  // Move all other useEffect hooks here
   useEffect(() => {
     const loadFilterData = async () => {
       try {
@@ -314,43 +574,6 @@ export default function PokemonDashboard() {
     }
   };
 
-  const handleSearch = async (params: PokemonCardSearchParams) => {
-    setIsSearching(true);
-    try {
-      const response = await searchCards({
-        ...params,
-        page: params.page || 1,
-        pageSize: params.pageSize || 20,
-      });
-
-      if (response.data) {
-        setSearchResults(response.data);
-        setTotalCount(response.totalCount || 0);
-        setCurrentPage(response.page || 1);
-      } else {
-        setSearchResults([]);
-        setTotalCount(0);
-        setCurrentPage(1);
-        toast({
-          title: "No Results",
-          description: "No cards found matching your search criteria.",
-        });
-      }
-    } catch (error) {
-      console.error("Error searching cards:", error);
-      toast({
-        title: "Error",
-        description: "Failed to search cards. Please try again.",
-        variant: "destructive",
-      });
-      setSearchResults([]);
-      setTotalCount(0);
-      setCurrentPage(1);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   const handleCardClick = (card: PokemonCard) => {
     setSelectedCard(card);
     setIsCardDetailOpen(true);
@@ -362,73 +585,6 @@ export default function PokemonDashboard() {
     setIsCardDetailOpen(false); // Cerrar el modal de detalle
   };
 
-  const handleAddToWishlist = async (card: PokemonCard) => {
-    try {
-      if (!user?.id) {
-        toast({
-          title: "Error",
-          description:
-            "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Verificar duplicados usando single() con comillas
-      const { data: existingCard, error: checkError } = await supabase
-        .from("wishlist_cards")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("card_id", card.id)
-        .maybeSingle();
-
-      if (checkError) {
-        throw checkError;
-      }
-
-      if (existingCard) {
-        toast({
-          title: "Ya en Lista de Deseos",
-          description: "Esta carta ya está en tu lista de deseos.",
-        });
-        return;
-      }
-
-      // Insertar nueva carta
-      const { data, error } = await supabase
-        .from("wishlist_cards")
-        .insert({
-          user_id: user.id,
-          card_id: card.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const cardWithDetails = {
-        ...card,
-        wishlist_id: data.id,
-        date_added: data.date_added,
-      };
-
-      setWishlistCards((prev) => [...prev, cardWithDetails]);
-
-      setIsCardDetailOpen(false); // Cerrar el modal de detalle
-      toast({
-        title: "Añadido a Lista de Deseos",
-        description: `${card.name} ha sido añadido a tu lista de deseos.`,
-      });
-    } catch (error) {
-      console.error("Error adding to wishlist:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo añadir la carta a la lista de deseos.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleSaveToCollection = async (cardData: {
     card: PokemonCard;
     collectionId: string;
@@ -438,8 +594,34 @@ export default function PokemonDashboard() {
     isFirstEdition?: boolean;
     notes?: string;
   }) => {
+    if (!subscription) return;
+
     try {
-      // Primero insertamos la carta en la colección
+      // Obtener el conteo actual de cartas en todas las colecciones del usuario
+      const { count } = await supabase
+        .from("collection_cards")
+        .select("*", { count: "exact", head: true })
+        .eq("collection_id", cardData.collectionId);
+
+      const currentCardCount = count || 0;
+
+      // Validar límites
+      const validation = validateSubscriptionLimits(
+        subscription.plan_type,
+        currentCardCount + cardData.quantity,
+        0 // No validamos colecciones aquí
+      );
+
+      if (!validation.valid) {
+        setLimitError({
+          message: validation.error || "",
+          type: "cards",
+        });
+        setIsLimitModalOpen(true);
+        return;
+      }
+
+      // Continuar con la lógica existente de guardar la carta
       const { data: insertedCard, error } = await supabase
         .from("collection_cards")
         .insert({
@@ -523,9 +705,39 @@ export default function PokemonDashboard() {
     }
   };
 
-  const handleCreateCollection = () => {
-    setEditingCollection(null);
-    setIsCollectionDialogOpen(true);
+  const handleCreateCollection = async () => {
+    if (!subscription) return;
+
+    try {
+      // Obtener el conteo actual de colecciones
+      const { count } = await supabase
+        .from("collections")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user?.id);
+
+      const currentCollectionCount = count || 0;
+
+      // Validar límites
+      const validation = validateSubscriptionLimits(
+        subscription.plan_type,
+        0, // No validamos cartas aquí
+        currentCollectionCount + 1
+      );
+
+      if (!validation.valid) {
+        setLimitError({
+          message: validation.error || "",
+          type: "collections",
+        });
+        setIsLimitModalOpen(true);
+        return;
+      }
+
+      setEditingCollection(null);
+      setIsCollectionDialogOpen(true);
+    } catch (error) {
+      console.error("Error validando límites de colección:", error);
+    }
   };
 
   const handleEditCollection = (collection: Collection) => {
@@ -975,93 +1187,41 @@ export default function PokemonDashboard() {
     };
   }, [user, selectedCollection?.id]); // Dependencias actualizadas
 
-  // Añadir función para cargar la lista de deseos
-  const fetchWishlist = async () => {
-    setIsWishlistLoading(true);
-    try {
-      const { data: wishlistData, error } = await supabase
-        .from("wishlist_cards")
-        .select("*")
-        .eq("user_id", user?.id);
-
-      if (error) throw error;
-
-      const cardsWithDetails = await Promise.all(
-        (wishlistData || []).map(async (item) => {
-          try {
-            const cardDetails = await getCardById(item.card_id);
-            return {
-              ...cardDetails,
-              wishlist_id: item.id,
-              date_added: item.date_added,
-            };
-          } catch (error) {
-            console.error(
-              `Error fetching details for card ${item.card_id}:`,
-              error
-            );
-            return null;
-          }
-        })
-      );
-
-      const validCards = cardsWithDetails.filter((card) => card !== null);
-      setWishlistCards(validCards);
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo cargar la lista de deseos.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsWishlistLoading(false);
-    }
-  };
-
   // Asegurarnos de que fetchWishlist se llama cuando se cambia a la pestaña de Lista de Deseos
   useEffect(() => {
     if (activeSection === "Wishlist" && user) {
       fetchWishlist();
     }
-  }, [activeSection, user]);
+  }, [activeSection, user, fetchWishlist]);
 
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+  const fetchSubscriptionStatus = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select(
+          "status, polar_price_id, current_period_end, cancel_at_period_end"
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!data || data.status !== "active") {
+        return "free";
+      }
+
+      const hasExpired =
+        data.current_period_end && Date.now() > data.current_period_end;
+      return hasExpired ? "free" : "premium";
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+      return "free";
+    }
+  };
 
   useEffect(() => {
-    const fetchSubscriptionInfo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("subscriptions")
-          .select(
-            "status, polar_price_id, current_period_end, cancel_at_period_end"
-          )
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (error) throw error;
-
-        // Si no hay datos o la suscripción no está activa, el usuario es free
-        if (!data || data.status !== "active") {
-          setSubscriptionStatus("free");
-          return;
-        }
-
-        // Verificar si la suscripción ha expirado
-        const hasExpired =
-          data.current_period_end && Date.now() > data.current_period_end;
-
-        setSubscriptionStatus(hasExpired ? "free" : "premium");
-      } catch (error) {
-        console.error("Error fetching subscription:", error);
-        setSubscriptionStatus("free");
-      }
-    };
-
-    if (user) {
-      fetchSubscriptionInfo();
+    if (user?.id) {
+      fetchSubscriptionStatus(user.id).then(setSubscriptionStatus);
     }
   }, [user]);
 
@@ -1097,44 +1257,46 @@ export default function PokemonDashboard() {
     }
   };
 
+  const renderSearchContent = () => (
+    <>
+      <SearchFilters
+        sets={sets}
+        types={types}
+        rarities={rarities}
+        searchParams={searchParams}
+        onSearchParamsChange={handleSearchParamsChange}
+        onSearch={handleSearch}
+        isLoading={isSearching}
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={searchParams.pageSize}
+      />
+      {isSearching ? (
+        <LoadingSpinner message="Buscando cartas..." />
+      ) : (
+        <CardGrid
+          cards={searchResults}
+          onCardClick={handleCardClick}
+          onQuickAdd={handleQuickAddToCollection}
+          onAddToWishlist={handleAddToWishlist}
+        />
+      )}
+    </>
+  );
+
+  const LoadingSpinner = ({ message }: { message: string }) => (
+    <div className="flex justify-center items-center py-12">
+      <div className="flex flex-col items-center">
+        <div className="pokeball mb-4" />
+        <p className="text-sm text-muted-foreground animate-pulse">{message}</p>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case "Search Cards":
-        return (
-          <>
-            <SearchFilters
-              sets={sets}
-              types={types}
-              rarities={rarities}
-              searchParams={searchParams}
-              onSearchParamsChange={handleSearchParamsChange}
-              onSearch={handleSearch}
-              isLoading={isSearching}
-              totalCount={totalCount}
-              currentPage={currentPage}
-              pageSize={searchParams.pageSize}
-            />
-            {isSearching ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="flex flex-col items-center">
-                  <div className="pokeball mb-4" />
-                  <p className="text-sm text-muted-foreground animate-pulse">
-                    Buscando cartas...
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <CardGrid
-                cards={searchResults}
-                onCardClick={handleCardClick}
-                onQuickAdd={handleQuickAddToCollection}
-                onAddToWishlist={handleAddToWishlist}
-                isLoading={isSearching}
-                actions="search"
-              />
-            )}
-          </>
-        );
+        return renderSearchContent();
       case "My Collection":
         return (
           <div className="space-y-6">
@@ -1236,13 +1398,7 @@ export default function PokemonDashboard() {
             handleRemoveFromWishlist(card);
           }
         }}
-        mode={
-          activeSection === "Wishlist"
-            ? "wishlist"
-            : activeSection === "My Collection"
-            ? "collection"
-            : "search"
-        }
+        mode={activeSection === "Search Cards" && "search"}
       />
 
       <AddToCollectionDialog
@@ -1293,6 +1449,20 @@ export default function PokemonDashboard() {
         onCreateNew={handleCreateNewFromNoDefault}
         onSetDefault={handleSetDefaultCollection}
         existingCollections={collections.filter((c) => !c.is_default)}
+      />
+      {!isLoading && (
+        <PlanUpgradeDialog
+          isOpen={isPlanDialogOpen}
+          onClose={() => setIsPlanDialogOpen(false)}
+          currentPlan={subscription?.plan_type || "APRENDIZ"}
+        />
+      )}
+      <SubscriptionLimitModal
+        isOpen={isLimitModalOpen}
+        onClose={() => setIsLimitModalOpen(false)}
+        limitType={limitError.type}
+        currentPlan={subscription?.plan_type || "APRENDIZ"}
+        errorMessage={limitError.message}
       />
     </>
   );

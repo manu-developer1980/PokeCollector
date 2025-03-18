@@ -13,9 +13,9 @@ import { Database, Heart, Search } from "lucide-react";
 import MainHeader from "../layout/MainHeader";
 
 const defaultNavItems = [
-  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
-  { icon: <Database size={18} />, label: "Mi Colección", id: "My Collection" },
+  { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
+  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
 ];
 
 const Dashboard = () => {
