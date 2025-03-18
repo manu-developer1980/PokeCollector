@@ -146,7 +146,12 @@ export default function SearchPage() {
           >
             {isSearching ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+                <div className="flex flex-col items-center">
+                  <div className="pokeball mb-4" />
+                  <p className="text-sm text-muted-foreground animate-pulse">
+                    Buscando cartas...
+                  </p>
+                </div>
               </div>
             ) : (
               <CardGrid

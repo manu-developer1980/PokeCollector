@@ -122,7 +122,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Buscar por nombre..."
-                className="pl-9 w-full"
+                className="pl-9 w-full bg-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -140,8 +140,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               value={type}
               onValueChange={(value: PokemonType) => setType(value)}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por tipo" />
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Tipo de Pokémon" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los tipos</SelectItem>
@@ -165,8 +165,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 setSupertype(value)
               }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por supertipo" />
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Supertipo" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los supertipos</SelectItem>
@@ -188,7 +188,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               value={subtype}
               onValueChange={(value: CardSubtype | "all") => setSubtype(value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder="Filtrar por subtipo" />
               </SelectTrigger>
               <SelectContent>
@@ -211,7 +211,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               value={selectedRarity}
               onValueChange={setSelectedRarity}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder="Rareza" />
               </SelectTrigger>
               <SelectContent>
@@ -234,16 +234,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               value={sortBy}
               onValueChange={setSortBy}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="name_asc">Nombre (A-Z)</SelectItem>
                 <SelectItem value="name_desc">Nombre (Z-A)</SelectItem>
                 <SelectItem value="number_asc">Número (Menor-Mayor)</SelectItem>
-                <SelectItem value="number_desc">
-                  Número (Mayor-Menor)
-                </SelectItem>
+                <SelectItem value="number_desc">Número (Mayor-Menor)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -252,7 +250,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Button
               onClick={() => handleSearch(1)}
-              className="w-full"
+              className="w-full bg-red-600 hover:bg-red-700"
               disabled={isLoading}
             >
               Buscar Cartas
