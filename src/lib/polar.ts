@@ -14,7 +14,7 @@ const config = {
 
 export const SUBSCRIPTION_PLANS = {
   APRENDIZ: "free",
-  ENTRENADOR: "price_1Nx04rG9ZrYX57462X652X9a",
+  ENTRENADOR: "price_414a1d47-f38a-4249-b6e5-93cf1541e255",
   MAESTRO: "price_eb9a0088-87a1-4248-bd93-ae1ee3deddd7",
 } as const;
 
@@ -104,4 +104,3 @@ export async function createCheckoutSession(
     throw error;
   }
 }
-

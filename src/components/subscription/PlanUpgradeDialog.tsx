@@ -1,49 +1,81 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useSubscription } from "@/hooks/useSubscription";
-import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/polar";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "../../../supabase/supabase";
+import { useAuth } from "../../../supabase/auth";
+import { SUBSCRIPTION_PLANS, PLAN_FEATURES } from "@/lib/polar";
 
 interface PlanUpgradeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  currentPlan: SubscriptionPlan;
+  currentPlan: string;
 }
 
-export function PlanUpgradeDialog({ isOpen, onClose, currentPlan }: PlanUpgradeDialogProps) {
+export function PlanUpgradeDialog({
+  isOpen,
+  onClose,
+  currentPlan,
+}: PlanUpgradeDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { subscription } = useSubscription();
+  const { user } = useAuth();
 
   const handleUpgrade = async (planId: string) => {
     setIsLoading(true);
+
     try {
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: planId,
-          currentPlanId: subscription?.id
-        }),
+      if (!user?.email) {
+        throw new Error("Usuario no autenticado");
+      }
+
+      console.log("Iniciando checkout con:", {
+        planId,
+        email: user.email,
+        userId: user.id,
       });
 
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
+      const response = await supabase.functions.invoke("create-checkout", {
+        body: {
+          productPriceId: planId,
+          customerEmail: user.email,
+          metadata: {
+            user_id: user.id,
+          },
+        },
+      });
+
+      console.log("Respuesta completa:", response);
+
+      if (response.error) {
+        console.error("Error detallado:", {
+          error: response.error,
+          data: response.data,
+        });
+        throw new Error(
+          `Error del servidor: ${JSON.stringify(response.error)}`
+        );
       }
+
+      if (!response.data?.url) {
+        console.error("Respuesta sin URL:", response.data);
+        throw new Error("No se recibió la URL de checkout");
+      }
+
+      // Redirigir al checkout
+      window.location.href = response.data.url;
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error("Error completo:", error);
       toast({
-        title: "Error",
-        description: "No se pudo iniciar el proceso de actualización. Por favor, intenta de nuevo.",
+        title: "Error al procesar el pago",
+        description: error.message || "Por favor, intenta nuevamente más tarde",
         variant: "destructive",
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -51,37 +83,57 @@ export function PlanUpgradeDialog({ isOpen, onClose, currentPlan }: PlanUpgradeD
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Actualizar Plan</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          {Object.entries(PLAN_FEATURES).map(([planType, plan]) => (
-            planType !== currentPlan && (
-              <div key={planType} className="flex flex-col gap-2 p-4 border rounded-lg">
-                <h3 className="font-semibold">{plan.name}</h3>
-                <p className="text-sm text-gray-500">{plan.description}</p>
-                <ul className="space-y-2">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="text-sm flex items-center gap-2">
-                      <span>✓</span> {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={isLoading}
-                  className="mt-4"
-                >
-                  {isLoading ? "Procesando..." : `Actualizar a ${plan.name}`}
-                </Button>
-              </div>
-            )
-          ))}
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <h3 className="font-medium">{PLAN_FEATURES.ENTRENADOR.name}</h3>
+            <p className="text-sm text-muted-foreground">
+              {PLAN_FEATURES.ENTRENADOR.price}€/mes
+            </p>
+            <ul className="text-sm text-muted-foreground mb-4">
+              {PLAN_FEATURES.ENTRENADOR.features.map((feature, index) => (
+                <li key={index}>• {feature}</li>
+              ))}
+            </ul>
+            <Button
+              onClick={() => handleUpgrade(SUBSCRIPTION_PLANS.ENTRENADOR)}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading
+                ? "Procesando..."
+                : `Actualizar a ${PLAN_FEATURES.ENTRENADOR.name}`}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-medium">{PLAN_FEATURES.MAESTRO.name}</h3>
+            <p className="text-sm text-muted-foreground">
+              {PLAN_FEATURES.MAESTRO.price}€/mes
+            </p>
+            <ul className="text-sm text-muted-foreground mb-4">
+              {PLAN_FEATURES.MAESTRO.features.map((feature, index) => (
+                <li key={index}>• {feature}</li>
+              ))}
+            </ul>
+            <Button
+              onClick={() => handleUpgrade(SUBSCRIPTION_PLANS.MAESTRO)}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading
+                ? "Procesando..."
+                : `Actualizar a ${PLAN_FEATURES.MAESTRO.name}`}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-
