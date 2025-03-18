@@ -195,7 +195,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
 
           {/* Avatar y menú de usuario */}
           <div className="flex items-center">
-            {user && (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -246,6 +246,13 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            ) : (
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={() => navigate("/login")}
+              >
+                Entrar
+              </Button>
             )}
           </div>
         </div>
