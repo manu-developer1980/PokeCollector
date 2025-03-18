@@ -1191,7 +1191,7 @@ export default function PokemonDashboard() {
     <>
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
-        <div className="flex-1 flex relative">
+        <div className="flex-1 flex  w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
           {" "}
           {/* Añadido pt-16 para el espacio del header */}
           <Sidebar

@@ -43,11 +43,7 @@ const defaultNavItems: NavItem[] = [
   { icon: <Settings size={18} />, label: "Settings", id: "settings" },
 ];
 
-const Sidebar = ({
-  items,
-  activeItem,
-  onItemClick,
-}: SidebarProps) => {
+const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   const renderNavItems = (isMobile: boolean = false) => (
     <nav className="space-y-2">
       {items.map((item) =>
@@ -94,7 +90,7 @@ const Sidebar = ({
     <>
       {/* Versión Desktop */}
       <aside className="hidden md:block w-64 bg-white border-r border-gray-200 shrink-0">
-        <div className="sticky top-16 h-[calc(100vh-4rem)]">
+        <div className="sticky top-16 h-auto">
           <div className="flex flex-col flex-1 p-4">
             <ScrollArea className="flex-1">{renderNavItems(false)}</ScrollArea>
           </div>
