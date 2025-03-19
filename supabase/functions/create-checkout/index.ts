@@ -9,6 +9,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -30,26 +31,31 @@ serve(async (req) => {
       throw new Error("SITE_URL no está configurado");
     }
 
-    // Log de configuración
-    console.log("Configuración:", {
-      environment,
-      siteUrl,
-      hasAccessToken: !!polarAccessToken,
-    });
-
     const requestData = await req.json();
-    console.log("Datos de la solicitud:", {
+
+    // Validación más detallada de los datos de entrada
+    if (!requestData) {
+      throw new Error("No se recibieron datos en el request");
+    }
+
+    console.log("Datos recibidos:", {
       productPriceId: requestData.productPriceId,
-      hasEmail: !!requestData.customerEmail,
+      customerEmail: requestData.customerEmail,
       metadata: requestData.metadata,
+      successUrl: requestData.successUrl,
+      cancelUrl: requestData.cancelUrl,
     });
 
-    // Validación de datos
+    // Validación de datos requeridos
     if (!requestData.productPriceId || !requestData.customerEmail) {
       return new Response(
         JSON.stringify({
           error: "Datos incompletos",
           details: "Se requiere productPriceId y customerEmail",
+          received: {
+            productPriceId: requestData.productPriceId,
+            customerEmail: requestData.customerEmail,
+          },
         }),
         {
           status: 400,
@@ -58,59 +64,65 @@ serve(async (req) => {
       );
     }
 
-    // Inicializar cliente Polar
+    // Inicializar cliente Polar con más logging
+    console.log("Inicializando cliente Polar con configuración:", {
+      environment,
+      hasAccessToken: !!polarAccessToken,
+    });
+
     const polar = new Polar({
       accessToken: polarAccessToken,
       server: environment === "production" ? "production" : "sandbox",
     });
 
-    console.log("Cliente Polar inicializado, creando sesión de checkout...");
-
-    // Crear sesión de checkout
-    const checkoutSession = await polar.checkouts
-      .create({
+    try {
+      const checkoutSession = await polar.checkouts.create({
         productPriceId: requestData.productPriceId,
-        successUrl: `${siteUrl}/checkout/success`,
-        cancelUrl: `${siteUrl}/pricing`,
+        successUrl: requestData.successUrl || `${siteUrl}/checkout/success`,
+        cancelUrl: requestData.cancelUrl || `${siteUrl}/pricing`,
         customerEmail: requestData.customerEmail,
         metadata: requestData.metadata || {},
         currency: "eur",
-      })
-      .catch((error) => {
-        console.error("Error de Polar:", {
-          message: error.message,
-          response: error.response,
-          status: error.status,
-        });
-        throw error;
       });
 
-    console.log("Sesión de checkout creada:", {
-      hasUrl: !!checkoutSession?.url,
-    });
+      console.log("Sesión de checkout creada exitosamente:", {
+        hasUrl: !!checkoutSession?.url,
+        sessionId: checkoutSession?.id,
+      });
 
-    return new Response(JSON.stringify({ url: checkoutSession.url }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      return new Response(JSON.stringify({ url: checkoutSession.url }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (polarError) {
+      console.error("Error de Polar al crear checkout:", {
+        error: polarError,
+        message: polarError.message,
+        stack: polarError.stack,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Error al crear sesión de checkout",
+          details: polarError.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
   } catch (error) {
-    console.error("Error detallado:", {
+    console.error("Error general en el endpoint:", {
+      error,
       message: error.message,
-      name: error.name,
       stack: error.stack,
-      cause: error.cause,
-      response: error.response,
-      status: error.status,
     });
 
     return new Response(
       JSON.stringify({
-        error: "Error al crear sesión de checkout",
-        details: {
-          message: error.message,
-          type: error.name,
-          status: error.status,
-        },
+        error: "Error interno del servidor",
+        details: error.message,
       }),
       {
         status: 500,

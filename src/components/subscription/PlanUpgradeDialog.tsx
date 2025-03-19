@@ -34,12 +34,7 @@ export function PlanUpgradeDialog({
         throw new Error("Usuario no autenticado");
       }
 
-      console.log("Iniciando checkout con:", {
-        planId,
-        email: user.email,
-        userId: user.id,
-      });
-
+      // Add success URL and cancel URL
       const response = await supabase.functions.invoke("create-checkout", {
         body: {
           productPriceId: planId,
@@ -47,18 +42,25 @@ export function PlanUpgradeDialog({
           metadata: {
             user_id: user.id,
           },
+          successUrl: `${window.location.origin}/checkout/success`,
+          cancelUrl: `${window.location.origin}/pricing`,
         },
       });
 
-      console.log("Respuesta completa:", response);
-
+      // More detailed error logging
       if (response.error) {
         console.error("Error detallado:", {
           error: response.error,
+          message: response.error.message,
+          context: response.error.context,
+          status: response.error.status,
           data: response.data,
         });
+
         throw new Error(
-          `Error del servidor: ${JSON.stringify(response.error)}`
+          `Error del servidor: ${
+            response.error.message || JSON.stringify(response.error)
+          }`
         );
       }
 
@@ -67,7 +69,6 @@ export function PlanUpgradeDialog({
         throw new Error("No se recibió la URL de checkout");
       }
 
-      // Redirigir al checkout
       window.location.href = response.data.url;
     } catch (error) {
       console.error("Error completo:", error);
