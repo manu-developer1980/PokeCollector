@@ -1,9 +1,14 @@
-import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Mail, ArrowRight } from 'lucide-react';
-import { useAuth } from '../../../supabase/auth';
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Mail, ArrowRight } from "lucide-react";
+import { useAuth } from "../../../supabase/auth";
 
 export default function EmailConfirmation() {
   const { user } = useAuth();
@@ -14,20 +19,17 @@ export default function EmailConfirmation() {
   useEffect(() => {
     // Si el usuario está autenticado y verificado
     if (user?.email_confirmed_at) {
-      const storedPlan = localStorage.getItem('selectedPlan');
-      
+      const storedPlan = localStorage.getItem("selectedPlan");
+
       if (storedPlan) {
         const { planId, interval } = JSON.parse(storedPlan);
-        // Redirigir al checkout si seleccionó un plan de pago
-        if (planId !== 'APRENDIZ') {
-          navigate(`/checkout?plan=${planId}&interval=${interval}`);
-        } else {
-          // Redirigir al dashboard para plan gratuito
-          navigate('/dashboard');
-        }
-        localStorage.removeItem('selectedPlan');
+        // Redirigir al login para primer ingreso
+        navigate(
+          `/login?redirect=checkout&plan=${planId}&interval=${interval}`
+        );
+        localStorage.removeItem("selectedPlan");
       } else {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     }
   }, [user, navigate]);
@@ -54,7 +56,7 @@ export default function EmailConfirmation() {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => window.location.href = "https://gmail.com"}
+            onClick={() => (window.location.href = "https://gmail.com")}
           >
             Abrir Gmail
             <ArrowRight className="ml-2 h-4 w-4" />

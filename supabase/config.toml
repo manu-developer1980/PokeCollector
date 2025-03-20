@@ -1,8 +1,5 @@
-# Project ID from the Supabase dashboard
-project_id = "kiphglgoanmibjztwhmj"
-
 [auth]
-site_url = "http://localhost:5173"
+site_url = "https://poke-collector.netlify.app"
 additional_redirect_urls = [
   "http://localhost:5173",
   "http://localhost:5173/auth/callback",
@@ -28,5 +25,7 @@ otp_expiry = 3600
 otp_length = 6
 
 [functions]
-[functions.import_map]
-imports = {}
+[functions.create-checkout]
+verify_jwt = true
+[functions.stripe-webhook]
+verify_jwt = false

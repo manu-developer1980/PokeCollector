@@ -34,12 +34,17 @@ CREATE TRIGGER update_subscriptions_updated_at
 -- Políticas RLS (Row Level Security)
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
--- Los usuarios solo pueden ver su propia suscripción
+-- Los usuarios pueden ver su propia suscripción
 CREATE POLICY "Users can view own subscription"
     ON subscriptions FOR SELECT
     USING (auth.uid() = user_id);
 
--- Solo el sistema puede insertar/actualizar suscripciones
+-- Los usuarios pueden insertar su propia suscripción inicial
+CREATE POLICY "Users can insert own subscription"
+    ON subscriptions FOR INSERT
+    WITH CHECK (auth.uid() = user_id AND plan_type = 'aprendiz');
+
+-- Solo el sistema puede actualizar suscripciones
 CREATE POLICY "System can manage subscriptions"
-    ON subscriptions FOR ALL
+    ON subscriptions FOR UPDATE
     USING (auth.role() = 'service_role');

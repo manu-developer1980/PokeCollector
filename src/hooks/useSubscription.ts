@@ -1,67 +1,71 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../../supabase/supabase';
-import { useAuth } from '../../supabase/auth';
-import { SubscriptionPlan } from '@/lib/polar';
+import { useState, useEffect } from "react";
+import { useAuth } from "../../supabase/auth";
+import { supabase } from "../../supabase/supabase";
 
-interface Subscription {
-  id: string;
-  plan_type: SubscriptionPlan;
-  status: string;
-  current_period_end: string;
+export interface Subscription {
+  id?: string;
+  user_id: string;
+  status:
+    | "active"
+    | "canceled"
+    | "incomplete"
+    | "incomplete_expired"
+    | "past_due"
+    | "trialing"
+    | "unpaid";
+  plan_type: string;
+  current_period_end?: string;
+  stripe_subscription_id?: string;
+  stripe_customer_id?: string;
+  price_id?: string;
+  is_active?: boolean;
+  cancel_at_period_end?: boolean;
 }
 
 export function useSubscription() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!user) {
       setSubscription(null);
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     const fetchSubscription = async () => {
       try {
         const { data, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+          .from("subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
           .limit(1)
           .single();
 
         if (error) {
-          // Si no hay suscripción, crear una suscripción básica
-          if (error.code === 'PGRST116') { // código de "no rows returned"
-            const { data: newSub, error: createError } = await supabase
-              .from('subscriptions')
-              .insert({
-                user_id: user.id,
-                plan_type: 'APRENDIZ',
-                status: 'active'
-              })
-              .select()
-              .single();
-
-            if (!createError && newSub) {
-              setSubscription(newSub);
-            }
+          if (error.code === "PGRST116") {
+            // No data found
+            setSubscription(null); // Usuario sin suscripción
+          } else {
+            throw error;
           }
         } else {
           setSubscription(data);
         }
-      } catch (error) {
-        console.error('Error fetching subscription:', error);
+      } catch (err) {
+        console.error("Error fetching subscription:", err);
+        setError(err instanceof Error ? err : new Error("Unknown error"));
+        setSubscription(null);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchSubscription();
   }, [user]);
 
-  return { subscription, isLoading };
+  return { subscription, loading, error };
 }
-

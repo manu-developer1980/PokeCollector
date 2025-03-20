@@ -42,9 +42,9 @@ import {
   User,
 } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import SubscriptionPage from "../subscription/SubscriptionPage";
+import SubscriptionManagement from "../subscription/SubscriptionManagement";
 import MainHeader from "../layout/MainHeader";
-import AccountPage from "./AccountPage";
+import { AccountSection } from "../dashboard/AccountSection"; // Importar el nuevo componente
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -64,6 +64,8 @@ const defaultNavItems = [
   { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
   { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
+  { icon: <User size={18} />, label: "Mi Cuenta", id: "Account" },
+  // No es necesario añadirlo a la navegación lateral, ya que se accede desde Account
 ];
 
 export default function PokemonDashboard() {
@@ -560,7 +562,7 @@ export default function PokemonDashboard() {
       const { data, error } = await supabase
         .from("users")
         .select("has_seen_onboarding")
-        .eq("user_id", user?.id)
+        .eq("id", user?.id) // Cambiado de user_id a id
         .single();
 
       if (error) throw error;
@@ -1198,9 +1200,7 @@ export default function PokemonDashboard() {
     try {
       const { data } = await supabase
         .from("subscriptions")
-        .select(
-          "status, polar_price_id, current_period_end, cancel_at_period_end"
-        )
+        .select("status, plan_type, current_period_end, cancel_at_period_end") // Cambiado polar_price_id por plan_type
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -1293,10 +1293,8 @@ export default function PokemonDashboard() {
     </div>
   );
 
-  const renderContent = () => {
+  const renderSection = () => {
     switch (activeSection) {
-      case "Search Cards":
-        return renderSearchContent();
       case "My Collection":
         return (
           <div className="space-y-6">
@@ -1341,9 +1339,9 @@ export default function PokemonDashboard() {
           </div>
         );
       case "Account":
-        return <AccountPage />;
-      case "subscription":
-        return <SubscriptionPage />;
+        return <AccountSection />;
+      case "Subscription":
+        return <SubscriptionManagement />; // Cambiado de SubscriptionPage a SubscriptionManagement
       default:
         return null;
     }
@@ -1371,13 +1369,15 @@ export default function PokemonDashboard() {
                   {activeSection === "My Collection" &&
                     "Mi Colección de Pokémon"}
                   {activeSection === "Wishlist" && "Mi Lista de Deseos"}
+                  {activeSection === "Account" && "Mi Cuenta"}
+                  {activeSection === "Subscription" && "Gestión de Suscripción"}
                 </h1>
               </div>
 
               <div className="mb-6">
                 {" "}
                 {/* Añadido margin bottom */}
-                {renderContent()}
+                {renderSection()}
               </div>
             </div>
           </main>

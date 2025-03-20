@@ -1,80 +1,114 @@
-import React, { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "../../../supabase/auth";
-import { supabase } from "../../../supabase/supabase";
 import { useSubscription } from "@/hooks/useSubscription";
-import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
+import { Loader2 } from "lucide-react";
+import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 
-const PLAN_FEATURES = {
-  APRENDIZ: {
-    features: ["Búsqueda básica de cartas", "1 colección"],
-  },
-  PREMIUM_MENSUAL: {
-    features: [
-      "Todas las características Free",
-      "Colecciones ilimitadas",
-      "Análisis de precios",
-    ],
-  },
-  PREMIUM_ANUAL: {
-    features: ["Todas las características Premium", "Ahorra 2 meses"],
-  },
-};
+export default function SubscriptionPage() {
+  const navigate = useNavigate();
+  const { subscription, loading } = useSubscription();
 
-const SubscriptionPage = () => {
-  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
-  const { subscription } = useSubscription();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Obtener las características del plan actual
+  const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
+    "APRENDIZ") as SubscriptionPlan;
+  const currentPlan = PLAN_FEATURES[currentPlanType] || PLAN_FEATURES.APRENDIZ;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tu Suscripción</h1>
+    <div className="container mx-auto py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Gestión de Suscripción
+        </h1>
+        <p className="text-gray-600">Administra tu plan y suscripción</p>
+      </div>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Plan Actual</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <p className="font-medium">Plan: {currentPlan.name}</p>
+              <p>
+                Estado:{" "}
+                {subscription?.status === "active" ? "Activo" : "No activo"}
+              </p>
+              {subscription?.current_period_end && (
+                <p className="text-sm text-muted-foreground">
+                  Próxima renovación:{" "}
+                  {new Date(
+                    subscription.current_period_end
+                  ).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-medium">Límites del plan:</h3>
+              <ul className="list-disc list-inside space-y-1">
+                <li>
+                  Máximo de cartas:{" "}
+                  {currentPlan.maxCards === Infinity
+                    ? "Ilimitado"
+                    : currentPlan.maxCards}
+                </li>
+                <li>
+                  Máximo de colecciones:{" "}
+                  {currentPlan.maxCollections === Infinity
+                    ? "Ilimitado"
+                    : currentPlan.maxCollections}
+                </li>
+                <li>
+                  Máximo en lista de deseos:{" "}
+                  {currentPlan.maxWishlist === Infinity
+                    ? "Ilimitado"
+                    : currentPlan.maxWishlist}
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-medium">Características incluidas:</h3>
+              <ul className="list-disc list-inside space-y-1">
+                {currentPlan.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+
+            {subscription?.status === "active" && (
+              <div className="mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Precio:{" "}
+                  {currentPlan.price === 0
+                    ? "Gratis"
+                    : `${currentPlan.price}€/mes`}
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end gap-4">
         <Button
-          onClick={() => setIsPlanDialogOpen(true)}
-          variant="outline"
+          variant="default"
+          onClick={() => navigate("/dashboard/pricing")}
         >
-          Cambiar Plan
+          {subscription?.status === "active" ? "Cambiar Plan" : "Ver Planes"}
         </Button>
       </div>
-
-      {/* Mostrar detalles de la suscripción actual */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">
-          Plan Actual: {subscription?.plan_type}
-        </h2>
-        <div className="space-y-2">
-          {PLAN_FEATURES[subscription?.plan_type || "APRENDIZ"].features.map(
-            (feature, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2"
-              >
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>{feature}</span>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-
-      <PlanUpgradeDialog
-        isOpen={isPlanDialogOpen}
-        onClose={() => setIsPlanDialogOpen(false)}
-        currentPlan={subscription?.plan_type || "APRENDIZ"}
-      />
     </div>
   );
-};
-
-export default SubscriptionPage;
+}

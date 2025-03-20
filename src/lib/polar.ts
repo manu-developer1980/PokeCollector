@@ -13,10 +13,19 @@ const config = {
 // Uncomment and adjust the line above based on the console output
 
 export const SUBSCRIPTION_PLANS = {
-  APRENDIZ: "free",
-  ENTRENADOR: "price_414a1d47-f38a-4249-b6e5-93cf1541e255",
-  MAESTRO: "price_eb9a0088-87a1-4248-bd93-ae1ee3deddd7",
-} as const;
+  APRENDIZ: {
+    product_id: "a184d629-5253-4171-8bb3-40ee69f5f3fb",
+    price_id: "d50de742-a015-444b-9cc4-f83af8757e66",
+  },
+  ENTRENADOR: {
+    product_id: "1e0f535c-429d-4c4a-9c9c-bdb39ed74d7b",
+    price_id: "414a1d47-f38a-4249-b6e5-93cf1541e255",
+  },
+  MAESTRO: {
+    product_id: "de48e85c-5447-451c-b70b-b7f3ccfc9cda",
+    price_id: "eb9a0088-87a1-4248-bd93-ae1ee3deddd7",
+  },
+};
 
 export type SubscriptionPlan = keyof typeof SUBSCRIPTION_PLANS;
 

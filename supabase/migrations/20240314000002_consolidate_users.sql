@@ -63,8 +63,26 @@ BEGIN
         _full_name := '';
     END;
 
-    -- Attempt insert with detailed logging
-    BEGIN
+    -- Check if user exists and was soft-deleted
+    IF EXISTS (
+        SELECT 1 FROM public.users 
+        WHERE id = NEW.id 
+        AND deleted_at IS NOT NULL
+    ) THEN
+        -- Update existing soft-deleted user
+        UPDATE public.users
+        SET 
+            email = NEW.email,
+            full_name = _full_name,
+            has_seen_onboarding = false,
+            deleted_at = NULL,
+            created_at = _now,
+            updated_at = _now
+        WHERE id = NEW.id;
+        
+        RAISE LOG 'Updated soft-deleted user with ID: %', NEW.id;
+    ELSE
+        -- Insert new user
         INSERT INTO public.users (
             id,
             email,
@@ -81,15 +99,15 @@ BEGIN
             _now
         );
         RAISE LOG 'Successfully inserted new user with ID: %', NEW.id;
-    EXCEPTION WHEN OTHERS THEN
-        RAISE LOG 'Error inserting user - SQLSTATE: %, SQLERRM: %, Details: %',
-            SQLSTATE,
-            SQLERRM,
-            NEW;
-        -- Don't raise exception, let auth continue
-    END;
+    END IF;
 
     RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    RAISE LOG 'Error in handle_new_user - SQLSTATE: %, SQLERRM: %, Details: %',
+        SQLSTATE,
+        SQLERRM,
+        NEW;
+    RETURN NEW;  -- Continue with auth process even if public.users insert fails
 END;
 $$;
 

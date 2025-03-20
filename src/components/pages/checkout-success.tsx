@@ -1,58 +1,95 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { CheckCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "../../../supabase/auth";
+import { CheckCircle2 } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/components/ui/use-toast";
 
-const CheckoutSuccessPage = () => {
-  const { user } = useAuth();
+export default function CheckoutSuccessPage() {
   const navigate = useNavigate();
+  const { subscription, refetchSubscription } = useSubscription();
+  const { toast } = useToast();
+  const [isVerifying, setIsVerifying] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
-  }, [user, navigate]);
+    const verifySubscription = async () => {
+      try {
+        await refetchSubscription();
 
-  const handleGoToDashboard = () => {
-    navigate("/dashboard");
-  };
+        if (!subscription?.status === "active") {
+          toast({
+            title: "Verificación pendiente",
+            description:
+              "Tu suscripción está siendo procesada. Esto puede tomar unos minutos.",
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error("Error verificando suscripción:", error);
+        toast({
+          title: "Error de verificación",
+          description: "No se pudo verificar el estado de tu suscripción.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsVerifying(false);
+      }
+    };
+
+    verifySubscription();
+  }, [refetchSubscription, toast]);
+
+  if (isVerifying) {
+    return (
+      <div className="container max-w-2xl mx-auto py-16">
+        <div className="text-center space-y-6">
+          <div className="flex flex-col items-center justify-center">
+            <div className="pokeball mb-4" />
+            <p className="text-[18px] font-bold text-muted-foreground animate-pulse">
+              Verificando tu suscripción...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full bg-white shadow-xl">
-        <CardHeader className="text-center pb-2">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="mx-auto"
-          >
-            <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-10 w-10 text-green-600" />
-            </div>
-          </motion.div>
-          <CardTitle className="text-2xl font-bold text-gray-800">
-            Payment Successful!
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center text-gray-600">
-          <p>Thank you for your subscription. Your account has been upgraded.</p>
-        </CardContent>
-        <CardFooter>
+    <div className="container max-w-2xl mx-auto py-16">
+      <div className="text-center space-y-6">
+        <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+
+        <h1 className="text-3xl font-bold">¡Pago exitoso!</h1>
+
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            Tu suscripción ha sido procesada correctamente. Ya puedes comenzar a
+            disfrutar de todas las características de tu nuevo plan.
+          </p>
+
+          {subscription?.status === "active" && (
+            <p className="text-green-600 font-medium">
+              Plan activo: {subscription.plan_type}
+            </p>
+          )}
+        </div>
+
+        <div className="flex justify-center gap-4">
           <Button
-            className="w-full bg-red-600 hover:bg-red-700"
-            onClick={handleGoToDashboard}
+            variant="outline"
+            onClick={() => navigate("/pricing")}
           >
-            Go to Dashboard
-            <ArrowRight className="ml-2 h-4 w-4" />
+            Ver planes
           </Button>
-        </CardFooter>
-      </Card>
+
+          <Button
+            onClick={() => navigate("/dashboard")}
+            className="bg-primary"
+          >
+            Ir al dashboard
+          </Button>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default CheckoutSuccessPage;
+}
