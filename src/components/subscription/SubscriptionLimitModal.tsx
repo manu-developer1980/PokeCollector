@@ -15,6 +15,7 @@ interface SubscriptionLimitModalProps {
   limitType: "cards" | "collections" | "wishlist" | null;
   currentPlan: string;
   errorMessage: string;
+  onViewPlans?: () => void; // Añadimos esta prop
 }
 
 export function SubscriptionLimitModal({
@@ -23,6 +24,7 @@ export function SubscriptionLimitModal({
   limitType,
   currentPlan,
   errorMessage,
+  onViewPlans,
 }: SubscriptionLimitModalProps) {
   const navigate = useNavigate();
 
@@ -68,7 +70,14 @@ export function SubscriptionLimitModal({
           >
             Cancelar
           </Button>
-          <Button onClick={handleUpgrade}>Mejorar Plan</Button>
+          <Button
+            onClick={() => {
+              onClose();
+              onViewPlans?.();
+            }}
+          >
+            Mejorar Plan
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

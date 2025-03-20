@@ -1494,6 +1494,7 @@ export default function PokemonDashboard() {
         limitType={limitError.type}
         currentPlan={subscription?.plan_type || "APRENDIZ"}
         errorMessage={limitError.message}
+        onViewPlans={() => setActiveSection("Pricing")}
       />
       <NoActiveSubscriptionModal
         isOpen={isNoSubscriptionModalOpen}
