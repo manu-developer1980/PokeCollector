@@ -50,49 +50,68 @@ export function PricingCard({
   };
 
   return (
-    <Card className={isPopular ? "border-primary" : ""}>
-      {isPopular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">
-            <Crown className="w-4 h-4" />
-            Popular
-          </span>
-        </div>
+    <div className="relative">
+      {/* Overlay gris translúcido para el plan actual */}
+      {isCurrentPlan && (
+        <div
+          className="absolute inset-0 bg-gray-500/10 rounded-lg z-10"
+          style={{ pointerEvents: "none" }}
+        />
       )}
 
-      <CardHeader className="text-center">
-        <h3 className="text-2xl font-bold">{plan.name}</h3>
-        <p className="text-muted-foreground">{plan.description}</p>
-        <div className="mt-4">
-          <span className="text-4xl font-bold">{plan.price}€</span>
-          <span className="text-muted-foreground">/mes</span>
-        </div>
-      </CardHeader>
+      <Card
+        className={`relative ${isPopular ? "border-primary" : ""} ${
+          isCurrentPlan ? "bg-opacity-90" : ""
+        }`}
+      >
+        {isPopular && (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">
+              <Crown className="w-4 h-4" />
+              Popular
+            </span>
+          </div>
+        )}
 
-      <CardContent>
-        <ul className="space-y-3">
-          {plan.features.map((feature, index) => (
-            <li
-              key={index}
-              className="flex items-center gap-2"
+        <CardHeader className="text-center">
+          <h3 className="text-2xl font-bold">{plan.name}</h3>
+          <p className="text-muted-foreground">{plan.description}</p>
+          <div className="mt-4">
+            <span className="text-4xl font-bold">{plan.price}€</span>
+            <span className="text-muted-foreground">/mes</span>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <ul className="space-y-3">
+            {plan.features.map((feature, index) => (
+              <li
+                key={index}
+                className="flex items-center gap-2"
+              >
+                <Check className="w-5 h-5 text-primary" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+
+        <CardFooter>
+          {isCurrentPlan ? (
+            <div className="w-full px-4 py-2 bg-green-100 text-green-800 rounded-md text-center font-medium shadow-sm">
+              Plan Actual
+            </div>
+          ) : (
+            <Button
+              className="w-full"
+              variant={isPopular ? "default" : "outline"}
+              onClick={handleSelectPlan}
             >
-              <Check className="w-5 h-5 text-primary" />
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-
-      <CardFooter>
-        <Button
-          className="w-full"
-          variant={isPopular ? "default" : "outline"}
-          disabled={isCurrentPlan}
-          onClick={handleSelectPlan}
-        >
-          {isCurrentPlan ? "Plan actual" : "Seleccionar plan"}
-        </Button>
-      </CardFooter>
-    </Card>
+              Seleccionar plan
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

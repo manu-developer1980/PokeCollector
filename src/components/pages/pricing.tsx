@@ -30,7 +30,8 @@ export default function PricingPage() {
     );
   }
 
-  const currentPlanId = subscription?.plan_type?.toLowerCase();
+  // Asegurarse de que el plan actual se identifica correctamente
+  const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
 
   return (
     <div className="container py-12 space-y-8">
@@ -42,13 +43,13 @@ export default function PricingPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        {Object.values(PLAN_FEATURES).map((plan) => (
+        {Object.entries(PLAN_FEATURES).map(([planType, plan]) => (
           <PricingCard
             key={plan.id}
             plan={plan}
             isPopular={plan.name === "Entrenador"}
             onSelectPlan={handleSelectPlan}
-            isCurrentPlan={plan.id.toLowerCase() === currentPlanId}
+            isCurrentPlan={planType === currentPlanType}
           />
         ))}
       </div>
