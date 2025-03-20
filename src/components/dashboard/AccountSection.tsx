@@ -7,7 +7,7 @@ import { useAuth } from "../../../supabase/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "../../../supabase/supabase";
 import { Loader2, Pencil } from "lucide-react";
-import { ConfirmDialog } from "../auth/LoginForm";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { PasswordResetInstructionsModal } from "../auth/PasswordResetInstructionsModal";
 
 export function AccountSection() {

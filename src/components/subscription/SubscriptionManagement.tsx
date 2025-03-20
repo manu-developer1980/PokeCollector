@@ -16,13 +16,15 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PlanUpgradeDialog } from "./PlanUpgradeDialog";
 import { useNavigate } from "react-router-dom";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Loader2 } from "lucide-react";
 
 export default function SubscriptionManagement() {
   const { subscription, loading } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Obtener las características del plan actual
   const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
@@ -31,9 +33,6 @@ export default function SubscriptionManagement() {
 
   const handleCancelSubscription = async () => {
     if (!subscription?.stripe_subscription_id) return;
-
-    if (!confirm("¿Estás seguro de que deseas cancelar tu suscripción?"))
-      return;
 
     setIsLoading(true);
     try {
@@ -44,6 +43,7 @@ export default function SubscriptionManagement() {
         },
         body: JSON.stringify({
           subscriptionId: subscription.stripe_subscription_id,
+          userId: subscription.user_id, // Asegúrate de enviar el userId también
         }),
       });
 
@@ -56,6 +56,9 @@ export default function SubscriptionManagement() {
         description:
           "Tu suscripción se cancelará al final del período de facturación actual",
       });
+
+      // Cerrar el diálogo de confirmación
+      setShowCancelDialog(false);
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -122,10 +125,7 @@ export default function SubscriptionManagement() {
                   new Date(subscription.current_period_end),
                   "d 'de' MMMM, yyyy",
                   { locale: es }
-                )}{" "}
-                <span className="text-sm">
-                  (se renueva automáticamente cada mes)
-                </span>
+                )}
               </p>
             </div>
 
@@ -150,10 +150,17 @@ export default function SubscriptionManagement() {
               {subscription.status === "active" && (
                 <Button
                   variant="destructive"
-                  onClick={handleCancelSubscription}
+                  onClick={() => setShowCancelDialog(true)}
                   disabled={isLoading}
                 >
-                  {isLoading ? "Cancelando..." : "Cancelar suscripción"}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Cancelando...
+                    </>
+                  ) : (
+                    "Cancelar suscripción"
+                  )}
                 </Button>
               )}
 
@@ -171,6 +178,14 @@ export default function SubscriptionManagement() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        isOpen={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        onConfirm={handleCancelSubscription}
+        title="Cancelar suscripción"
+        description="¿Estás seguro de que deseas cancelar tu suscripción? Podrás seguir usando el servicio hasta el final del período actual."
+      />
     </div>
   );
 }

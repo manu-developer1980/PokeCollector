@@ -3,17 +3,10 @@ import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { LogIn } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,48 +19,13 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
 import OnboardingModal from "../onboarding/OnboardingModal";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
-
-export function ConfirmDialog({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title, 
-  description 
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>
-            Confirmar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -123,9 +81,9 @@ export default function LoginForm() {
         } else if (result.error.message === "Email not confirmed") {
           setEmailToConfirm(data.email);
           setShowConfirmEmail(true);
-          
+
           const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
+            type: "signup",
             email: data.email,
             options: {
               emailRedirectTo: `${window.location.origin}/auth/callback`,
@@ -135,17 +93,19 @@ export default function LoginForm() {
           if (!resendError) {
             toast({
               title: "Email de confirmación reenviado",
-              description: "Hemos enviado un nuevo email de confirmación a tu correo.",
+              description:
+                "Hemos enviado un nuevo email de confirmación a tu correo.",
             });
           }
           setIsLoading(false);
           return;
         } else if (result.error.message.includes("Database error")) {
-          mensajeError = "Error de conexión con la base de datos. Por favor, intente más tarde.";
+          mensajeError =
+            "Error de conexión con la base de datos. Por favor, intente más tarde.";
         }
 
-        form.setError("root", { 
-          message: mensajeError 
+        form.setError("root", {
+          message: mensajeError,
         });
 
         toast({
@@ -157,7 +117,9 @@ export default function LoginForm() {
       }
 
       if (result.data?.user) {
-        const needsOnboarding = await checkOnboardingStatus(result.data.user.id);
+        const needsOnboarding = await checkOnboardingStatus(
+          result.data.user.id
+        );
         if (needsOnboarding) {
           setShowOnboarding(true);
           setIsLoading(false);
@@ -174,11 +136,13 @@ export default function LoginForm() {
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
       form.setError("root", {
-        message: "Ha ocurrido un error inesperado. Por favor, intente nuevamente."
+        message:
+          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
       });
       toast({
         title: "Error de inicio de sesión",
-        description: "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
+        description:
+          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
         variant: "destructive",
       });
     } finally {
@@ -269,18 +233,18 @@ export default function LoginForm() {
           </div>
         </CardContent>
       </Card>
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onClose={handleOnboardingClose} 
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={handleOnboardingClose}
       />
       <ConfirmDialog
         isOpen={showConfirmEmail}
         onClose={() => setShowConfirmEmail(false)}
         onConfirm={() => {
           setShowConfirmEmail(false);
-          navigate('/confirm-signup', { 
+          navigate("/confirm-signup", {
             state: { email: emailToConfirm },
-            replace: true 
+            replace: true,
           });
         }}
         title="Confirma tu email"
