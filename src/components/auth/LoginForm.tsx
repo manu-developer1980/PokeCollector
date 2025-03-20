@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import OnboardingModal from "../onboarding/OnboardingModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -32,6 +33,7 @@ export default function LoginForm() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showConfirmEmail, setShowConfirmEmail] = useState(false);
   const [emailToConfirm, setEmailToConfirm] = useState("");
+  const [showPlansDialog, setShowPlansDialog] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -161,6 +163,11 @@ export default function LoginForm() {
 
   const handleOnboardingClose = () => {
     setShowOnboarding(false);
+    setShowPlansDialog(true); // Mostrar planes después del onboarding
+  };
+
+  const handlePlansDialogClose = () => {
+    setShowPlansDialog(false);
     navigate(redirectTo);
   };
 
@@ -245,6 +252,12 @@ export default function LoginForm() {
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={handleOnboardingClose}
+      />
+      <PlanUpgradeDialog
+        isOpen={showPlansDialog}
+        onClose={handlePlansDialogClose}
+        currentPlan="APRENDIZ"
+        showWelcomeMessage={true}
       />
       <ConfirmDialog
         isOpen={showConfirmEmail}

@@ -10,20 +10,24 @@ import { Loader2, Pencil } from "lucide-react";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { PasswordResetInstructionsModal } from "../auth/PasswordResetInstructionsModal";
 
-export function AccountSection() {
-  const navigate = useNavigate();
-  const { user, refreshSession } = useAuth();
+interface AccountSectionProps {
+  setActiveSection: (section: string) => void;
+}
+
+export function AccountSection({ setActiveSection }: AccountSectionProps) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [userData, setUserData] = useState({
-    fullName: "",
-    email: "",
-  });
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [showPasswordInstructions, setShowPasswordInstructions] =
     useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [userData, setUserData] = useState({
+    fullName: "",
+    email: "",
+  });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,6 +48,11 @@ export function AccountSection() {
         });
       } catch (error) {
         console.error("Error fetching user data:", error);
+        toast({
+          title: "Error",
+          description: "No se pudo cargar la información del usuario.",
+          variant: "destructive",
+        });
       }
     };
 
@@ -221,11 +230,7 @@ export function AccountSection() {
         <CardContent>
           <Button
             variant="outline"
-            onClick={() =>
-              navigate("/dashboard", {
-                state: { activeSection: "Subscription" },
-              })
-            }
+            onClick={() => setActiveSection("Pricing")}
             className="w-full"
           >
             Gestionar suscripción

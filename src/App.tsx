@@ -96,7 +96,7 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={
             <PrivateRoute>
               <PokemonDashboard />

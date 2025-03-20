@@ -16,12 +16,14 @@ interface PricingCardProps {
   plan: PlanFeature;
   isPopular?: boolean;
   onSelectPlan: (planId: string) => void;
+  isCurrentPlan: boolean;
 }
 
 export function PricingCard({
   plan,
   isPopular,
   onSelectPlan,
+  isCurrentPlan,
 }: PricingCardProps) {
   const { user } = useAuth();
   const { subscription } = useSubscription();
@@ -34,7 +36,7 @@ export function PricingCard({
       return;
     }
 
-    if (subscription?.status === "active") {
+    if (subscription?.status === "active" && !isCurrentPlan) {
       toast({
         title: "Suscripción existente",
         description:
@@ -44,15 +46,11 @@ export function PricingCard({
       return;
     }
 
-    // Llamar directamente a onSelectPlan para iniciar el checkout
     onSelectPlan(plan.id);
   };
 
-  const isCurrentPlan =
-    subscription?.plan_type?.toLowerCase() === plan.name.toLowerCase();
-
   return (
-    <Card className={`relative ${isPopular ? "border-primary shadow-lg" : ""}`}>
+    <Card className={isPopular ? "border-primary" : ""}>
       {isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">

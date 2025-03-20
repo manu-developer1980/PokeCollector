@@ -13,51 +13,36 @@ interface NoActiveSubscriptionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onViewPlans: () => void;
-  action?: string;
+  action: string;
 }
 
 export function NoActiveSubscriptionModal({
   isOpen,
   onClose,
   onViewPlans,
-  action = "realizar esta acción",
+  action,
 }: NoActiveSubscriptionModalProps) {
   return (
     <Dialog
       open={isOpen}
       onOpenChange={onClose}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-center gap-2 text-2xl">
-            <Crown className="h-6 w-6 text-yellow-500" />
-            Suscripción Requerida
-          </DialogTitle>
-          <DialogDescription className="text-center">
-            Necesitas una suscripción activa para {action}
+          <DialogTitle>Suscripción Requerida</DialogTitle>
+          <DialogDescription>
+            Necesitas una suscripción activa para {action}.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          <p className="text-center text-muted-foreground">
-            Descubre nuestros planes y elige el que mejor se adapte a tus
-            necesidades
-          </p>
-        </div>
-        <DialogFooter className="flex gap-2 sm:justify-center">
+        <div className="flex justify-end space-x-2">
           <Button
             variant="outline"
             onClick={onClose}
           >
             Cancelar
           </Button>
-          <Button
-            onClick={onViewPlans}
-            className="flex items-center gap-2"
-          >
-            <Crown className="h-4 w-4" />
-            Ver planes disponibles
-          </Button>
-        </DialogFooter>
+          <Button onClick={onViewPlans}>Ver Planes</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

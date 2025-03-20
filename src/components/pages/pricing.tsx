@@ -30,6 +30,8 @@ export default function PricingPage() {
     );
   }
 
+  const currentPlanId = subscription?.plan_type?.toLowerCase();
+
   return (
     <div className="container py-12 space-y-8">
       <div className="text-center space-y-4">
@@ -46,6 +48,7 @@ export default function PricingPage() {
             plan={plan}
             isPopular={plan.name === "Entrenador"}
             onSelectPlan={handleSelectPlan}
+            isCurrentPlan={plan.id.toLowerCase() === currentPlanId}
           />
         ))}
       </div>

@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -19,12 +20,14 @@ interface PlanUpgradeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   currentPlan: SubscriptionPlan;
+  showWelcomeMessage?: boolean;
 }
 
 export function PlanUpgradeDialog({
   isOpen,
   onClose,
   currentPlan,
+  showWelcomeMessage = false,
 }: PlanUpgradeDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -106,9 +109,18 @@ export function PlanUpgradeDialog({
       open={isOpen}
       onOpenChange={onClose}
     >
-      <DialogContent>
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Actualizar Plan</DialogTitle>
+          <DialogTitle>
+            {showWelcomeMessage
+              ? "¡Bienvenido a PokéCollector!"
+              : "Mejora tu Plan"}
+          </DialogTitle>
+          <DialogDescription>
+            {showWelcomeMessage
+              ? "Comienza con el plan Aprendiz gratuito y mejora cuando lo necesites para acceder a más funcionalidades."
+              : "Descubre los beneficios de nuestros planes premium"}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           {/* No mostramos el plan Aprendiz ya que es gratuito */}

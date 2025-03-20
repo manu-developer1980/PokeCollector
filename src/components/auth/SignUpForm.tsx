@@ -3,12 +3,7 @@ import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { Loader2 } from "lucide-react";
@@ -24,6 +19,54 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { useSubscription } from "@/hooks/useSubscription";
+import { cn } from "@/lib/utils";
+import { Crown } from "lucide-react";
+
+interface PlanUpgradeDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentPlan: SubscriptionPlan;
+  showWelcomeMessage?: boolean;
+}
+
+export function PlanUpgradeDialog({
+  isOpen,
+  onClose,
+  currentPlan,
+  showWelcomeMessage = false,
+}: PlanUpgradeDialogProps) {
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>
+            {showWelcomeMessage
+              ? "¡Bienvenido a PokéCollector!"
+              : "Mejora tu Plan"}
+          </DialogTitle>
+          <DialogDescription>
+            {showWelcomeMessage
+              ? "Comienza con el plan Aprendiz gratuito y mejora cuando lo necesites para acceder a más funcionalidades."
+              : "Descubre los beneficios de nuestros planes premium"}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* ... resto del contenido ... */}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const formSchema = z
   .object({
@@ -39,15 +82,10 @@ const formSchema = z
   });
 
 export default function SignUpForm() {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { signUp } = useAuth();
-
-  const searchParams = new URLSearchParams(location.search);
-  const planId = searchParams.get('plan');
-  const interval = searchParams.get('interval');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,7 +101,7 @@ export default function SignUpForm() {
 
     try {
       const result = await signUp(data.email, data.password);
-      
+
       if (result.error) {
         throw result.error;
       }
@@ -72,30 +110,18 @@ export default function SignUpForm() {
         throw new Error("No se recibieron datos del usuario");
       }
 
-      // Almacenar información del plan seleccionado en localStorage
-      if (planId && interval) {
-        localStorage.setItem('selectedPlan', JSON.stringify({
-          planId,
-          interval,
-          userId: result.data.user.id
-        }));
-      }
-
-      // Siempre redirigir a confirmación de email
-      navigate('/confirm-signup', { 
-        state: { 
+      // Redirigir directamente a confirmación de email
+      navigate("/confirm-signup", {
+        state: {
           email: data.email,
-          planId,
-          interval
         },
-        replace: true 
+        replace: true,
       });
-
     } catch (error) {
-      console.error("Error en el registro:", error);
       toast({
         title: "Error en el registro",
-        description: error.message,
+        description:
+          "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente.",
         variant: "destructive",
       });
     } finally {
@@ -111,7 +137,10 @@ export default function SignUpForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="email"
@@ -183,5 +212,49 @@ export default function SignUpForm() {
         </CardContent>
       </Card>
     </AuthLayout>
+  );
+}
+
+export function Sidebar({ items, activeItem, onItemClick }: SidebarProps) {
+  const { subscription } = useSubscription();
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+
+  const isPremium = subscription?.status === "active";
+
+  return (
+    <div className="w-64 border-r bg-card p-4">
+      <nav className="space-y-2">
+        {items.map((item) => (
+          <button
+            key={item}
+            onClick={() => onItemClick(item)}
+            className={cn(
+              "w-full flex items-center px-3 py-2 rounded-lg text-sm",
+              activeItem === item
+                ? "bg-red-100 text-red-900"
+                : "hover:bg-red-50 text-gray-700"
+            )}
+          >
+            {item}
+          </button>
+        ))}
+
+        {!isPremium && (
+          <button
+            onClick={() => setShowUpgradeDialog(true)}
+            className="w-full flex items-center px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            Mejora tu Plan
+          </button>
+        )}
+      </nav>
+
+      <PlanUpgradeDialog
+        isOpen={showUpgradeDialog}
+        onClose={() => setShowUpgradeDialog(false)}
+        currentPlan="APRENDIZ"
+      />
+    </div>
   );
 }

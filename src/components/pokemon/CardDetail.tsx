@@ -140,20 +140,36 @@ const CardDetail = ({
   };
 
   const handleUpdate = async (cardData: any) => {
-    if (onUpdate) {
-      await onUpdate(cardData);
+    if (!onUpdate || !card) return;
+
+    try {
+      await onUpdate({
+        id: (card as CollectionCard).id,
+        quantity: cardData.quantity,
+        condition: cardData.condition,
+        isFoil: cardData.isFoil,
+        isFirstEdition: cardData.isFirstEdition,
+        notes: cardData.notes,
+      });
+
       // Después de la actualización, volvemos a cargar los detalles
       if (mode === "collection" && card) {
         const details = await getCardById((card as CollectionCard).card_id);
         if (details) {
           setCardDetails({
             ...details,
-            ...cardData, // Incluimos los datos actualizados
+            quantity: cardData.quantity,
+            condition: cardData.condition,
+            isFoil: cardData.isFoil,
+            isFirstEdition: cardData.isFirstEdition,
+            notes: cardData.notes,
           });
         }
       }
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating card:", error);
     }
-    setIsEditModalOpen(false);
   };
 
   return (

@@ -960,68 +960,86 @@ export default function PokemonDashboard() {
     try {
       console.log("Received card data for update:", cardData);
 
+      // Primero, verificar si la carta existe
+      const { data: existingCard, error: checkError } = await supabase
+        .from("collection_cards")
+        .select("*")
+        .eq("id", cardData.id)
+        .single();
+
+      if (checkError) {
+        console.error("Error checking card existence:", checkError);
+        throw new Error("Error verificando la existencia de la carta");
+      }
+
+      if (!existingCard) {
+        throw new Error(`No se encontró la carta con ID: ${cardData.id}`);
+      }
+
+      console.log("Existing card found:", existingCard);
+
       // 1. Actualizar en Supabase
       const updateData = {
         quantity: cardData.quantity,
-        condition: cardData.condition,
-        is_foil: cardData.isFoil,
-        is_first_edition: cardData.isFirstEdition,
-        notes: cardData.notes,
+        condition: cardData.condition || "Near Mint",
+        is_foil: cardData.isFoil ?? false,
+        is_first_edition: cardData.isFirstEdition ?? false,
+        notes: cardData.notes || "",
       };
 
-      console.log("Sending to Supabase:", updateData);
+      console.log("Sending update to Supabase:", updateData);
 
-      const { data: updatedCard, error } = await supabase
+      const { data: updatedCard, error: updateError } = await supabase
         .from("collection_cards")
         .update(updateData)
         .eq("id", cardData.id)
-        .select("*")
+        .select()
         .single();
 
-      if (error) throw error;
+      if (updateError) {
+        console.error("Error in update operation:", updateError);
+        throw updateError;
+      }
 
-      console.log("Response from Supabase:", updatedCard);
+      console.log("Updated card data:", updatedCard);
 
-      // 2. Actualizar el estado local con los datos exactos de Supabase
-      const updatedCardData = {
-        ...updatedCard,
-        isFoil: updatedCard.is_foil,
-        isFirstEdition: updatedCard.is_first_edition,
+      // Si no hay datos actualizados, usar una combinación de los datos existentes y nuevos
+      const finalCardData = updatedCard || {
+        ...existingCard,
+        ...updateData,
+        isFoil: updateData.is_foil,
+        isFirstEdition: updateData.is_first_edition,
       };
 
-      // 3. Actualizar collections de manera inmutable
+      // 3. Actualizar collections
       setCollections((prevCollections) => {
-        const newCollections = prevCollections.map((collection) => {
+        return prevCollections.map((collection) => {
           if (collection.id === selectedCollection.id) {
             return {
               ...collection,
               cards: collection.cards.map((card) =>
-                card.id === cardData.id ? { ...card, ...updatedCardData } : card
+                card.id === cardData.id ? { ...card, ...finalCardData } : card
               ),
             };
           }
           return collection;
         });
-        console.log("Updated collections:", newCollections);
-        return newCollections;
       });
 
-      // 4. Actualizar selectedCollection si es necesario
-      if (selectedCollection) {
-        setSelectedCollection((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            cards: prev.cards.map((card) =>
-              card.id === cardData.id ? { ...card, ...updatedCardData } : card
-            ),
-          };
-        });
-      }
+      // 4. Actualizar selectedCollection
+      setSelectedCollection((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          cards: prev.cards.map((card) =>
+            card.id === cardData.id ? { ...card, ...finalCardData } : card
+          ),
+        };
+      });
 
       // 5. Actualizar selectedCollectionCard
       setSelectedCollectionCard((prev) =>
-        prev?.id === cardData.id ? { ...prev, ...updatedCardData } : prev
+        prev?.id === cardData.id ? { ...prev, ...finalCardData } : prev
       );
 
       toast({
@@ -1033,7 +1051,9 @@ export default function PokemonDashboard() {
       toast({
         title: "Error",
         description:
-          "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
+          error instanceof Error
+            ? error.message
+            : "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -1314,7 +1334,7 @@ export default function PokemonDashboard() {
   const renderAccountContent = () => (
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">Mi Cuenta</h2>
-      <AccountSection />
+      <AccountSection setActiveSection={setActiveSection} />
     </div>
   );
 
@@ -1377,24 +1397,23 @@ export default function PokemonDashboard() {
     }
   };
 
+  const handleUpgradePlan = () => {
+    setActiveSection("Pricing");
+  };
+
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
         <div className="flex-1 flex w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
-          {activeSection !== "Pricing" && (
-            <Sidebar
-              items={defaultNavItems}
-              activeItem={activeSection}
-              onItemClick={(item) => setActiveSection(item)}
-            />
-          )}
+          <Sidebar
+            items={defaultNavItems}
+            activeItem={activeSection}
+            onItemClick={setActiveSection}
+            onUpgrade={handleUpgradePlan}
+          />
           <main className="flex-1 min-h-0">
-            {activeSection === "Pricing" ? (
-              <div className="container mx-auto p-6">{renderSection()}</div>
-            ) : (
-              <div className="container mx-auto p-6">{renderSection()}</div>
-            )}
+            <div className="container mx-auto p-6">{renderSection()}</div>
           </main>
         </div>
       </div>

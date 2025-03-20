@@ -47,11 +47,11 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
 
   const handleNavigation = (section: string) => {
-    console.log("Navigating to section:", section); // Para debugging
-    navigate("/dashboard", {
-      state: { activeSection: section },
-      replace: true,
-    });
+    if (section === "Pricing") {
+      navigate("/pricing"); // Aquí sí navegamos a la página de pricing independiente
+    } else {
+      navigate("/dashboard", { state: { activeSection: section } });
+    }
   };
 
   // Separar los botones de navegación del Sheet

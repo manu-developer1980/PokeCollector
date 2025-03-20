@@ -1,28 +1,25 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
   Home,
   Search,
   Settings,
-  HelpCircle,
   CreditCard,
   Menu,
   X,
   User,
   LogOut,
+  Crown,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { useAuth } from "../../../../supabase/auth";
-import { useToast } from "@/components/ui/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useNavigate } from "react-router-dom";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -44,6 +41,13 @@ const defaultNavItems: NavItem[] = [
 ];
 
 const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
+  const { subscription } = useSubscription();
+  const isPremium = subscription?.status === "active";
+
+  const handleUpgradeClick = () => {
+    onItemClick("Pricing"); // En lugar de usar navigate, usamos onItemClick
+  };
+
   const renderNavItems = (isMobile: boolean = false) => (
     <nav className="space-y-2">
       {items.map((item) =>
@@ -83,6 +87,16 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
           </button>
         )
       )}
+
+      {!isPremium && (
+        <button
+          onClick={handleUpgradeClick}
+          className="w-full flex items-center px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
+        >
+          <Crown className="w-4 h-4 mr-2" />
+          <span>Mejora tu Plan</span>
+        </button>
+      )}
     </nav>
   );
 
@@ -101,7 +115,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
       <Sheet>
         <SheetTrigger asChild>
           <button className="md:hidden">
-            {/* Botón del menú móvil si lo necesitas */}
+            <Menu className="h-6 w-6" />
           </button>
         </SheetTrigger>
         <SheetContent
