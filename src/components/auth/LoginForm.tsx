@@ -74,13 +74,12 @@ export default function LoginForm() {
       );
 
       if (result.error) {
-        let mensajeError = "Email o contraseña incorrectos";
-
-        if (result.error.message === "Invalid login credentials") {
-          mensajeError = "Email o contraseña incorrectos";
-        } else if (result.error.message === "Email not confirmed") {
+        if (result.error.message === "Email not confirmed") {
           setEmailToConfirm(data.email);
           setShowConfirmEmail(true);
+
+          // Añadir un retraso antes de intentar reenviar
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           const { error: resendError } = await supabase.auth.resend({
             type: "signup",
@@ -90,24 +89,37 @@ export default function LoginForm() {
             },
           });
 
-          if (!resendError) {
+          if (resendError) {
+            if (resendError.status === 429) {
+              toast({
+                title: "Demasiados intentos",
+                description:
+                  "Por favor, espera unos minutos antes de solicitar otro email de confirmación.",
+                variant: "destructive",
+              });
+            } else {
+              throw resendError;
+            }
+          } else {
             toast({
-              title: "Email de confirmación reenviado",
-              description:
-                "Hemos enviado un nuevo email de confirmación a tu correo.",
+              title: "Email de confirmación enviado",
+              description: "Por favor, revisa tu bandeja de entrada y spam.",
             });
           }
           setIsLoading(false);
           return;
+        }
+
+        // Otros errores
+        let mensajeError = "Error al iniciar sesión";
+        if (result.error.message === "Email o contraseña incorrectos") {
+          mensajeError = "Email o contraseña incorrectos";
         } else if (result.error.message.includes("Database error")) {
           mensajeError =
             "Error de conexión con la base de datos. Por favor, intente más tarde.";
         }
 
-        form.setError("root", {
-          message: mensajeError,
-        });
-
+        form.setError("root", { message: mensajeError });
         toast({
           title: "Error de inicio de sesión",
           description: mensajeError,
@@ -116,6 +128,7 @@ export default function LoginForm() {
         return;
       }
 
+      // Éxito en el inicio de sesión
       if (result.data?.user) {
         const needsOnboarding = await checkOnboardingStatus(
           result.data.user.id
@@ -135,10 +148,6 @@ export default function LoginForm() {
       navigate(redirectTo);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
-      form.setError("root", {
-        message:
-          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
-      });
       toast({
         title: "Error de inicio de sesión",
         description:
@@ -240,6 +249,20 @@ export default function LoginForm() {
       <ConfirmDialog
         isOpen={showConfirmEmail}
         onClose={() => setShowConfirmEmail(false)}
+        title="Confirma tu email"
+        description={
+          <>
+            <p>
+              Tu cuenta aún no ha sido verificada. Hemos enviado un nuevo email
+              de confirmación a:
+            </p>
+            <p className="font-semibold mt-2">{emailToConfirm}</p>
+            <p className="mt-2">
+              Por favor, revisa tu bandeja de entrada y carpeta de spam.
+            </p>
+          </>
+        }
+        confirmLabel="Entendido"
         onConfirm={() => {
           setShowConfirmEmail(false);
           navigate("/confirm-signup", {
@@ -247,8 +270,6 @@ export default function LoginForm() {
             replace: true,
           });
         }}
-        title="Confirma tu email"
-        description={`Por favor, confirma tu email ${emailToConfirm} antes de iniciar sesión. ¿Necesitas que te reenviemos el email de confirmación?`}
       />
     </AuthLayout>
   );

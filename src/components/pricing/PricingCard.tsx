@@ -29,7 +29,7 @@ export function PricingCard({
 
   const handleSelectPlan = () => {
     if (!user) {
-      // Si no hay usuario, redirigir a signup con el plan seleccionado
+      sessionStorage.setItem("selectedPlan", plan.id);
       navigate(`/signup?plan=${plan.name.toLowerCase()}`);
       return;
     }
@@ -44,7 +44,7 @@ export function PricingCard({
       return;
     }
 
-    // Proceder con la selección del plan
+    // Llamar directamente a onSelectPlan para iniciar el checkout
     onSelectPlan(plan.id);
   };
 
