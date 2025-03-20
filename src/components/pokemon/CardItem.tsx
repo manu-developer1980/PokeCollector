@@ -167,7 +167,7 @@ const CardItem: React.FC<CardItemProps> = ({
               <Button
                 size="sm"
                 className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
-                onClick={(e) => handleAction(e, () => onRemove(card))}
+                onClick={(e) => handleAction(e, () => onRemove(card.id))}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

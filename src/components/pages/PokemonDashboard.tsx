@@ -48,6 +48,9 @@ import { validateSubscriptionLimits } from "@/lib/subscription-utils";
 import { useNavigate } from "react-router-dom";
 import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
+import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
+import PricingPage from "./pricing";
+import { Button } from "@/components/ui/button";
 
 interface PolarSubscription {
   status: string;
@@ -135,6 +138,9 @@ export default function PokemonDashboard() {
     message: "",
     type: null as "cards" | "collections" | "wishlist" | null,
   });
+  const [isNoSubscriptionModalOpen, setIsNoSubscriptionModalOpen] =
+    useState(false);
+  const [lastAttemptedAction, setLastAttemptedAction] = useState<string>("");
 
   // Define fetchWishlist first
   const fetchWishlist = useCallback(async () => {
@@ -215,6 +221,20 @@ export default function PokemonDashboard() {
           return {
             valid: false,
             error: "Verificando estado de suscripción...",
+          };
+        }
+
+        if (!subscription || subscription.status !== "active") {
+          const actionMap = {
+            wishlist: "añadir a tu lista de deseos",
+            collection_cards: "añadir cartas a tu colección",
+            collections: "crear nuevas colecciones",
+          };
+          setLastAttemptedAction(actionMap[resourceType]);
+          setIsNoSubscriptionModalOpen(true);
+          return {
+            valid: false,
+            error: "Suscripción requerida",
           };
         }
 
@@ -912,8 +932,6 @@ export default function PokemonDashboard() {
         };
       });
 
-      setIsCardDetailDialogOpen(false);
-
       toast({
         title: "Carta Eliminada",
         description: "La carta ha sido eliminada de tu colección.",
@@ -1192,34 +1210,20 @@ export default function PokemonDashboard() {
     }
   }, [activeSection, user, fetchWishlist]);
 
-  const fetchSubscriptionStatus = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from("subscriptions")
-        .select("status, plan_type, current_period_end, cancel_at_period_end") // Cambiado polar_price_id por plan_type
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (!data || data.status !== "active") {
-        return "free";
-      }
-
-      const hasExpired =
-        data.current_period_end && Date.now() > data.current_period_end;
-      return hasExpired ? "free" : "premium";
-    } catch (error) {
-      console.error("Error fetching subscription:", error);
+  const getSubscriptionStatus = () => {
+    if (!subscription || subscription.status !== "active") {
       return "free";
     }
+
+    const hasExpired =
+      subscription.current_period_end &&
+      Date.now() > new Date(subscription.current_period_end).getTime();
+    return hasExpired ? "free" : "premium";
   };
 
   useEffect(() => {
-    if (user?.id) {
-      fetchSubscriptionStatus(user.id).then(setSubscriptionStatus);
-    }
-  }, [user]);
+    setSubscriptionStatus(getSubscriptionStatus());
+  }, [subscription]);
 
   const handleRemoveFromWishlist = async (card: PokemonCard) => {
     try {
@@ -1289,59 +1293,87 @@ export default function PokemonDashboard() {
     </div>
   );
 
+  const renderWishlistContent = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold">Lista de Deseos</h2>
+      </div>
+      <WishlistGrid
+        cards={wishlistCards}
+        onCardClick={(card) => {
+          setSelectedCard(card);
+          setIsCardDetailOpen(true);
+        }}
+        onQuickAdd={handleQuickAddToCollection}
+        onRemove={handleRemoveFromWishlist}
+        isLoading={isWishlistLoading}
+      />
+    </div>
+  );
+
+  const renderAccountContent = () => (
+    <div className="space-y-6">
+      <h2 className="text-3xl font-bold">Mi Cuenta</h2>
+      <AccountSection />
+    </div>
+  );
+
+  const renderCollectionContent = () => {
+    if (selectedCollection) {
+      return (
+        <CollectionDetail
+          collection={selectedCollection}
+          onBack={() => setSelectedCollection(null)}
+          onEdit={handleEditCollection}
+          onDelete={(collection) =>
+            setDeleteConfirmationState({
+              isOpen: true,
+              collectionId: collection.id,
+              collectionName: collection.name,
+            })
+          }
+          onCardClick={(card) => {
+            setSelectedCollectionCard(card);
+            setSelectedCard(card);
+            setIsCardDetailOpen(true);
+          }}
+        />
+      );
+    }
+
+    return (
+      <>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold">Mis Colecciones</h2>
+        </div>
+
+        <CollectionList
+          collections={collections}
+          selectedCollection={selectedCollection}
+          onCollectionSelect={setSelectedCollection}
+          onCreateCollection={handleCreateCollection}
+          onEditCollection={handleEditCollection}
+          onDeleteCollection={handleDeleteCollection}
+          isLoading={isCollectionLoading}
+        />
+      </>
+    );
+  };
+
   const renderSection = () => {
     switch (activeSection) {
+      case "My Collection":
+        return renderCollectionContent();
       case "Search Cards":
         return renderSearchContent();
-      case "My Collection":
-        return (
-          <div className="space-y-6">
-            {selectedCollection ? (
-              <CollectionDetail
-                collection={selectedCollection}
-                onBack={() => setSelectedCollection(null)}
-                onEditCollection={handleEditCollection}
-                onRemoveCard={handleRemoveCard}
-                onCardClick={(card) => {
-                  setSelectedCard(card); // Cambiado de setSelectedCollectionCard
-                  setIsCardDetailOpen(true); // Cambiado de setIsCardDetailDialogOpen
-                }}
-                isLoading={isCollectionLoading}
-              />
-            ) : (
-              <CollectionList
-                collections={collections}
-                selectedCollection={selectedCollection}
-                onCollectionSelect={setSelectedCollection}
-                onCreateCollection={handleCreateCollection}
-                onEditCollection={handleEditCollection}
-                onDeleteCollection={handleDeleteCollection}
-                isLoading={isCollectionLoading}
-              />
-            )}
-          </div>
-        );
       case "Wishlist":
-        return (
-          <div className="space-y-6">
-            <WishlistGrid
-              cards={wishlistCards}
-              onCardClick={(card) => {
-                setSelectedCard(card);
-                setIsCardDetailOpen(true);
-              }}
-              onRemove={handleRemoveFromWishlist}
-              onQuickAdd={handleQuickAddToCollection}
-              isLoading={isWishlistLoading}
-            />
-          </div>
-        );
+        return renderWishlistContent();
       case "Account":
-        return <AccountSection />;
-      case "Subscription":
-        return <SubscriptionManagement />; // Cambiado de SubscriptionPage a SubscriptionManagement
+        return renderAccountContent();
+      case "Pricing":
+        return <PricingPage />;
       default:
-        return null;
+        return renderSearchContent();
     }
   };
 
@@ -1349,38 +1381,22 @@ export default function PokemonDashboard() {
     <>
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
-        <div className="flex-1 flex  w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
-          {" "}
-          {/* Añadido pt-16 para el espacio del header */}
-          <Sidebar
-            items={defaultNavItems}
-            activeItem={activeSection}
-            onItemClick={(item) => setActiveSection(item)}
-          />
+        <div className="flex-1 flex w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
+          {activeSection !== "Pricing" && (
+            <Sidebar
+              items={defaultNavItems}
+              activeItem={activeSection}
+              onItemClick={(item) => setActiveSection(item)}
+            />
+          )}
           <main className="flex-1 min-h-0">
-            {" "}
-            {/* Cambiado a ml-64 fijo */}
-            <div className="container mx-auto p-6">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
-                  {activeSection === "My Collection" &&
-                    "Mi Colección de Pokémon"}
-                  {activeSection === "Wishlist" && "Mi Lista de Deseos"}
-                  {activeSection === "Account" && "Mi Cuenta"}
-                  {activeSection === "Subscription" && "Gestión de Suscripción"}
-                </h1>
-              </div>
-
-              <div className="mb-6">
-                {" "}
-                {/* Añadido margin bottom */}
-                {renderSection()}
-              </div>
-            </div>
+            {activeSection === "Pricing" ? (
+              <div className="container mx-auto p-6">{renderSection()}</div>
+            ) : (
+              <div className="container mx-auto p-6">{renderSection()}</div>
+            )}
           </main>
         </div>
-        <Footer />
       </div>
 
       {/* Dialogs */}
@@ -1459,6 +1475,15 @@ export default function PokemonDashboard() {
         limitType={limitError.type}
         currentPlan={subscription?.plan_type || "APRENDIZ"}
         errorMessage={limitError.message}
+      />
+      <NoActiveSubscriptionModal
+        isOpen={isNoSubscriptionModalOpen}
+        onClose={() => setIsNoSubscriptionModalOpen(false)}
+        onViewPlans={() => {
+          setIsNoSubscriptionModalOpen(false);
+          setActiveSection("Pricing");
+        }}
+        action={lastAttemptedAction}
       />
     </>
   );

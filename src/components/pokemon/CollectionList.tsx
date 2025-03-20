@@ -18,30 +18,17 @@ interface CollectionListProps {
 
 const CollectionList = ({
   collections,
+  selectedCollection,
+  onCollectionSelect,
   onCreateCollection,
   onEditCollection,
   onDeleteCollection,
-  onCollectionSelect,
-  selectedCollection,
   isLoading,
 }: CollectionListProps) => {
   const showCreateButton = collections.length > 0 || isLoading;
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Mis Colecciones</h2>
-        {showCreateButton && (
-          <Button
-            onClick={onCreateCollection}
-            size="sm"
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <Plus className="h-4 w-4 mr-1" /> Nueva Colección
-          </Button>
-        )}
-      </div>
-
       {!isLoading && collections.length === 0 ? (
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">

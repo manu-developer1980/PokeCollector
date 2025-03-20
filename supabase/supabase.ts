@@ -8,6 +8,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: window.localStorage,
+  },
+  db: {
+    schema: "public",
+  },
+  global: {
+    headers: {
+      Accept: "application/json",
+      Prefer: "return=minimal",
+    },
   },
 });

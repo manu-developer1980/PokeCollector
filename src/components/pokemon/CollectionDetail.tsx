@@ -16,7 +16,7 @@ interface CollectionDetailProps {
   onEditCollection: (collection: Collection) => void;
   onRemoveCard: (cardId: string) => void;
   onCardClick: (card: CollectionCard) => void;
-  isLoading?: boolean; // Añadimos esta prop
+  isLoading?: boolean;
 }
 
 const CollectionDetail = ({

@@ -329,10 +329,12 @@ const Dashboard = () => {
             ) : (
               <CollectionList
                 collections={collections}
-                onSelectCollection={setSelectedCollection}
+                selectedCollection={selectedCollection}
+                onCollectionSelect={setSelectedCollection}
                 onCreateCollection={handleCreateCollection}
                 onEditCollection={handleEditCollection}
                 onDeleteCollection={handleDeleteCollection}
+                isLoading={isLoading}
               />
             )}
           </div>
