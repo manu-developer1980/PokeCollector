@@ -16,12 +16,7 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 
-[auth.external.email]
-enabled = true
-# Personalizar las plantillas de email
-template_create_user = "Verifica tu cuenta en {site_name}"
-template_action_url = "{action_url}"
-template_confirm_email = "Por favor confirma tu email para {site_name}"
+# Eliminamos la sección problemática [auth.external.email]
 
 [functions]
 [functions.create-checkout]

@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -37,56 +38,46 @@ export function CheckoutFlow({
   );
 
   const handleCheckout = async () => {
-    if (!user || !selectedPlan) return;
-
-    setIsLoading(true);
-
     try {
-      // Si ya existe una suscripción activa, mostrar error
-      if (currentSubscription?.status === "active") {
-        toast({
-          title: "Suscripción existente",
-          description: "Ya tienes una suscripción activa.",
-          variant: "destructive",
-        });
-        navigate("/dashboard");
-        return;
-      }
+      const requestData = {
+        priceId: planId,
+        customerEmail: user.email,
+        metadata: {
+          user_id: user.id,
+          plan_name: selectedPlan.name,
+        },
+        successUrl: `${window.location.origin}/checkout-success`,
+        cancelUrl: `${window.location.origin}/dashboard`,
+      };
 
-      // Crear sesión de checkout
+      console.log("Checkout request data:", requestData);
+
       const { data, error } = await supabase.functions.invoke(
         "create-stripe-checkout",
         {
-          body: {
-            priceId: planId,
-            customerEmail: user.email,
-            metadata: {
-              user_id: user.id,
-              plan_name: selectedPlan.name,
-            },
-            successUrl: `${window.location.origin}/checkout/success`,
-            cancelUrl: `${window.location.origin}/pricing`,
-          },
+          body: requestData,
         }
       );
 
-      if (error) throw error;
-
-      // Redirigir a Stripe
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No se recibió URL de checkout");
+      if (error) {
+        console.error("Checkout error:", error);
+        throw error;
       }
+
+      if (!data?.url) {
+        throw new Error("No se recibió la URL de checkout");
+      }
+
+      window.location.href = data.url;
     } catch (error) {
-      console.error("Error al crear checkout:", error);
+      console.error("Error completo:", error);
       toast({
-        title: "Error",
-        description: "No se pudo procesar el checkout. Intenta nuevamente.",
+        title: "Error al procesar el pago",
+        description:
+          "Error al conectar con el servicio de pagos. Por favor, intenta nuevamente.",
         variant: "destructive",
+        duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -109,14 +100,14 @@ export function CheckoutFlow({
             <div>
               <h4 className="font-medium">Precio:</h4>
               <p className="text-2xl">
-                ${selectedPlan?.price}
+                {selectedPlan?.price}€
                 <span className="text-base text-muted-foreground">/mes</span>
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
+        <DialogFooter>
           <Button
             variant="outline"
             onClick={onClose}
@@ -127,10 +118,16 @@ export function CheckoutFlow({
             onClick={handleCheckout}
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Continuar al pago
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Procesando...
+              </>
+            ) : (
+              "Continuar al pago"
+            )}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

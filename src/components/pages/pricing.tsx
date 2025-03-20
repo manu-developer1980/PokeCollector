@@ -54,7 +54,7 @@ export default function PricingPage() {
         ))}
       </div>
 
-      {user && selectedPlanId && (
+      {selectedPlanId && (
         <CheckoutFlow
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}

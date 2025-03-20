@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../supabase/auth";
 import { supabase } from "../../supabase/supabase";
 
@@ -95,34 +95,37 @@ export function useSubscription() {
     return pendingPromise;
   };
 
-  const updateSubscriptionData = async () => {
+  const refetchSubscription = useCallback(async () => {
     if (!user) {
       setSubscription(null);
       setLoading(false);
-      return;
+      return null;
     }
 
     try {
+      setLoading(true);
       const data = await fetchSubscription();
       if (mountedRef.current) {
         setSubscription(data);
         setError(null);
       }
+      return data;
     } catch (err) {
       if (mountedRef.current) {
         setError(err instanceof Error ? err : new Error("Unknown error"));
         setSubscription(null);
       }
+      throw err;
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     mountedRef.current = true;
-    updateSubscriptionData();
+    refetchSubscription();
 
     if (user) {
       const channel = supabase
@@ -136,9 +139,8 @@ export function useSubscription() {
             filter: `user_id=eq.${user.id}`,
           },
           () => {
-            // Invalidar caché cuando hay cambios
             subscriptionCache = null;
-            updateSubscriptionData();
+            refetchSubscription();
           }
         )
         .subscribe();
@@ -152,7 +154,7 @@ export function useSubscription() {
     return () => {
       mountedRef.current = false;
     };
-  }, [user]);
+  }, [user, refetchSubscription]);
 
-  return { subscription, loading, error };
+  return { subscription, loading, error, refetchSubscription };
 }
