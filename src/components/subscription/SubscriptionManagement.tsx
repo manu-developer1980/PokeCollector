@@ -43,14 +43,13 @@ export default function SubscriptionManagement() {
       return;
     }
 
-    // Usar subscription_id si stripe_subscription_id no está disponible
-    const subscriptionId =
-      subscription.stripe_subscription_id || subscription.id;
+    // IMPORTANTE: Asegurarnos de usar stripe_subscription_id
+    const subscriptionId = subscription.stripe_subscription_id;
 
     if (!subscriptionId) {
       toast({
         title: "Error",
-        description: "ID de suscripción no encontrado",
+        description: "No se encontró el ID de suscripción de Stripe",
         variant: "destructive",
       });
       return;
@@ -67,7 +66,7 @@ export default function SubscriptionManagement() {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
-            subscriptionId: subscriptionId,
+            subscriptionId: subscriptionId, // Este debe ser el stripe_subscription_id
             userId: subscription.user_id,
           }),
         }

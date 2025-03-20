@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.4.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.0.0?target=deno";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -42,16 +43,24 @@ serve(async (req) => {
   try {
     // Obtener los datos de la solicitud
     const requestData = await req.json();
-    const { priceId, customerEmail, metadata, successUrl, cancelUrl } =
-      requestData;
+    const {
+      priceId,
+      customerEmail,
+      metadata,
+      successUrl,
+      cancelUrl,
+      planType,
+      userId,
+    } = requestData;
 
     console.log("Datos recibidos:", requestData);
 
     // Verificar campos requeridos
-    if (!priceId || !customerEmail) {
+    if (!priceId || !customerEmail || !planType || !userId) {
       return new Response(
         JSON.stringify({
-          error: "Missing required fields (priceId, customerEmail)",
+          error:
+            "Missing required fields (priceId, customerEmail, planType, userId)",
         }),
         {
           status: 400,
@@ -81,31 +90,54 @@ serve(async (req) => {
       apiVersion: "2023-10-16", // Usar la versión más reciente de la API
     });
 
-    console.log("Creando sesión de checkout para:", customerEmail);
-    console.log("Price ID:", priceId);
+    // Inicializar Supabase
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_KEY");
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Supabase URL or key not found");
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Buscar si ya existe un cliente con ese email
-    const existingCustomers = await stripe.customers.list({
-      email: customerEmail,
-      limit: 1,
-    });
-
+    // Primero, intentar encontrar o crear el cliente
     let customer;
+    const { data: existingCustomers, error: customerError } = await supabase
+      .from("customers")
+      .select("stripe_customer_id")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-    if (existingCustomers.data.length > 0) {
-      // Si existe, usar el cliente existente
-      customer = existingCustomers.data[0];
+    if (customerError) {
+      throw new Error(`Error buscando cliente: ${customerError.message}`);
+    }
 
-      // Actualizar los metadatos del cliente si es necesario
-      if (metadata) {
-        customer = await stripe.customers.update(customer.id, {
-          metadata: { ...customer.metadata, ...metadata },
-        });
+    if (existingCustomers?.stripe_customer_id) {
+      customer = await stripe.customers.retrieve(
+        existingCustomers.stripe_customer_id
+      );
+    } else {
+      // Crear nuevo cliente en Stripe
+      customer = await stripe.customers.create({
+        email: customerEmail,
+        metadata: {
+          user_id: userId,
+        },
+      });
+
+      // Guardar el nuevo cliente en nuestra base de datos
+      const { error: insertError } = await supabase.from("customers").insert({
+        user_id: userId,
+        stripe_customer_id: customer.id,
+      });
+
+      if (insertError) {
+        console.error("Error guardando cliente:", insertError);
+        // Continuar aunque haya error, ya que el cliente existe en Stripe
       }
     }
 
-    // Crear la sesión de checkout de Stripe
+    // Crear la sesión de checkout
     const session = await stripe.checkout.sessions.create({
+      customer: customer.id,
       payment_method_types: ["card"],
       line_items: [
         {
@@ -114,17 +146,15 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      customer: customer?.id, // Usar el ID del cliente existente si existe
-      customer_email: customer ? undefined : customerEmail, // Solo usar email si no hay cliente existente
-      metadata: metadata || {},
-      success_url:
-        successUrl ||
-        `${
-          Deno.env.get("SITE_URL") || "http://localhost:5173"
-        }/checkout/success`,
-      cancel_url:
-        cancelUrl ||
-        `${Deno.env.get("SITE_URL") || "http://localhost:5173"}/pricing`,
+      metadata: {
+        user_id: userId,
+        plan_type: planType.toLowerCase(),
+        customer_id: customer.id,
+      },
+      success_url: `${
+        successUrl || SITE_URL
+      }/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${cancelUrl || SITE_URL}/pricing`,
       allow_promotion_codes: true,
       billing_address_collection: "required",
     });

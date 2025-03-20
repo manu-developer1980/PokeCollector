@@ -40,45 +40,95 @@ serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        const userId = session.metadata?.user_id;
+        console.log("Session completed:", {
+          subscription: session.subscription,
+          customer: session.customer,
+          metadata: session.metadata,
+        });
 
+        const userId = session.metadata?.user_id;
         if (!userId) {
           throw new Error("Missing user_id in session metadata");
         }
 
+        // Obtener detalles completos de la suscripción
         const subscription = await stripe.subscriptions.retrieve(
-          session.subscription
+          session.subscription as string,
+          {
+            expand: ["customer", "default_payment_method"],
+          }
         );
+
+        // Obtener detalles del cliente
+        const customer = await stripe.customers.retrieve(
+          session.customer as string
+        );
+
+        // Obtener el price ID del primer item
         const priceId = subscription.items.data[0].price.id;
-        const planType = PRICE_TO_PLAN_TYPE[priceId];
+        const planType =
+          PRICE_TO_PLAN_TYPE[priceId] ||
+          session.metadata?.plan_type ||
+          "aprendiz";
 
-        if (!planType) {
-          throw new Error(`Unknown price_id: ${priceId}`);
-        }
+        console.log("Updating subscription with data:", {
+          userId,
+          stripeSubId: subscription.id,
+          stripeCustomerId: customer.id,
+          priceId,
+        });
 
-        const { error: updateError } = await supabase
+        const { data: updatedSub, error: updateError } = await supabase
           .from("subscriptions")
-          .upsert({
-            user_id: userId,
-            stripe_subscription_id: session.subscription,
-            stripe_customer_id: session.customer,
-            stripe_price_id: priceId,
-            status: subscription.status,
-            plan_type: planType,
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
-            is_active: subscription.status === "active",
-            updated_at: new Date().toISOString(),
-          });
+          .upsert(
+            {
+              user_id: userId,
+              stripe_subscription_id: subscription.id,
+              stripe_customer_id: customer.id,
+              stripe_price_id: priceId,
+              status: subscription.status,
+              plan_type: planType,
+              current_period_end: new Date(
+                subscription.current_period_end * 1000
+              ).toISOString(),
+              cancel_at_period_end: subscription.cancel_at_period_end,
+              is_active: subscription.status === "active",
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "user_id",
+              returning: "minimal",
+            }
+          );
 
         if (updateError) {
           console.error("Error updating subscription:", updateError);
           throw updateError;
         }
 
-        console.log(`Successfully updated subscription for user ${userId}`);
+        // También actualizar la tabla customers si existe
+        const { error: customerError } = await supabase
+          .from("customers")
+          .upsert(
+            {
+              user_id: userId,
+              stripe_customer_id: customer.id,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "user_id",
+              returning: "minimal",
+            }
+          );
+
+        if (customerError) {
+          console.error("Error updating customer:", customerError);
+          // No lanzamos el error aquí para no interrumpir el flujo principal
+        }
+
+        console.log(
+          `Successfully updated subscription and customer for user ${userId}`
+        );
         break;
       }
     }
