@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
@@ -13,7 +11,6 @@ import {
   getRarities,
   getCardById,
 } from "@/lib/api";
-import TopNavigation from "../dashboard/layout/TopNavigation";
 import Sidebar from "../dashboard/layout/Sidebar";
 import SearchFilters from "../pokemon/SearchFilters";
 import CardGrid from "../pokemon/CardGrid";
@@ -22,7 +19,6 @@ import AddToCollectionDialog from "../pokemon/AddToCollectionDialog";
 import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
-import CardDetailDialog from "../pokemon/CardDetailDialog";
 import OnboardingModal from "../onboarding/OnboardingModal";
 import WishlistGrid from "../pokemon/WishlistGrid";
 import Footer from "../pages/Footer";
@@ -1287,7 +1283,7 @@ export default function PokemonDashboard() {
   const LoadingSpinner = ({ message }: { message: string }) => (
     <div className="flex justify-center items-center py-12">
       <div className="flex flex-col items-center">
-        <div className="pokeball mb-4" />
+        <div className="pokeball mb-4 animate-spin duration-1000" />
         <p className="text-sm text-muted-foreground animate-pulse">{message}</p>
       </div>
     </div>
@@ -1295,6 +1291,8 @@ export default function PokemonDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
+      case "Search Cards":
+        return renderSearchContent();
       case "My Collection":
         return (
           <div className="space-y-6">
@@ -1305,8 +1303,8 @@ export default function PokemonDashboard() {
                 onEditCollection={handleEditCollection}
                 onRemoveCard={handleRemoveCard}
                 onCardClick={(card) => {
-                  setSelectedCollectionCard(card);
-                  setIsCardDetailDialogOpen(true);
+                  setSelectedCard(card); // Cambiado de setSelectedCollectionCard
+                  setIsCardDetailOpen(true); // Cambiado de setIsCardDetailDialogOpen
                 }}
                 isLoading={isCollectionLoading}
               />
@@ -1393,12 +1391,19 @@ export default function PokemonDashboard() {
         onAddToCollection={handleAddToCollection}
         onAddToWishlist={handleAddToWishlist}
         onRemoveFromWishlist={(card) => {
-          // Pasamos la carta completa en lugar de solo el ID
           if (card) {
             handleRemoveFromWishlist(card);
           }
         }}
-        mode={activeSection === "Search Cards" && "search"}
+        onUpdate={handleUpdateCard}
+        onRemove={handleRemoveCard}
+        mode={
+          activeSection === "My Collection"
+            ? "collection"
+            : activeSection === "Wishlist"
+            ? "wishlist"
+            : "search"
+        }
       />
 
       <AddToCollectionDialog
@@ -1415,15 +1420,6 @@ export default function PokemonDashboard() {
         onClose={() => setIsCollectionDialogOpen(false)}
         onSave={handleSaveCollection}
         isDefault={collections.length === 0}
-      />
-
-      <CardDetail
-        card={selectedCollectionCard}
-        isOpen={isCardDetailDialogOpen}
-        onClose={() => setIsCardDetailDialogOpen(false)}
-        onUpdate={handleUpdateCard}
-        onRemove={handleRemoveCard}
-        mode="collection"
       />
 
       <OnboardingModal

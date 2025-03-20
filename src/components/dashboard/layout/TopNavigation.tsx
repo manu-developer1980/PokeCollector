@@ -43,7 +43,8 @@ const TopNavigation = ({ onSearch = () => {} }: TopNavigationProps) => {
       navigate("/", { replace: true });
       toast({
         title: "Error",
-        description: "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
+        description:
+          "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -51,7 +52,13 @@ const TopNavigation = ({ onSearch = () => {} }: TopNavigationProps) => {
 
   const handleSearchClick = () => {
     if (user) {
-      navigate("/dashboard", { state: { activeSection: "Search Cards" } });
+      // Cambiamos para usar state y asegurarnos que se actualiza la sección activa
+      navigate("/dashboard", {
+        state: {
+          activeSection: "Search Cards",
+          forceUpdate: Date.now(), // Añadimos esto para forzar la actualización
+        },
+      });
     } else {
       navigate("/search");
     }

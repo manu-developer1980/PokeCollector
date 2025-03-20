@@ -20,6 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getRarityBadgeStyle } from "@/lib/utils";
 
 interface CardItemProps {
   card: CollectionCard;
@@ -70,39 +71,9 @@ const CardItem: React.FC<CardItemProps> = ({
     );
   };
 
-  // Función helper para determinar el estilo del badge de rareza
-  const getRarityBadgeStyle = (rarity: string) => {
-    switch (rarity) {
-      case "Rare Rainbow":
-        return "bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 text-white border-none shadow-md";
-      case "Rare Secret":
-        return "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none shadow-md";
-      case "Rare Ultra":
-        return "bg-gradient-to-r from-yellow-400 to-amber-600 text-white border-none shadow-md";
-      case "Rare Holo":
-        return "bg-gradient-to-r from-blue-400 to-cyan-300 text-white border-none shadow-md";
-      case "Rare Shining":
-        return "bg-gradient-to-r from-slate-300 to-slate-100 text-slate-800 border-none shadow-md";
-      case "Amazing Rare":
-        return "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white border-none shadow-md";
-      case "Classic Collection":
-        return "bg-gradient-to-r from-amber-700 to-yellow-600 text-white border-none shadow-md";
-      case "Promo":
-        return "bg-gradient-to-r from-emerald-500 to-teal-400 text-white border-none shadow-md";
-      case "Rare":
-        return "bg-gradient-to-r from-blue-600 to-blue-400 text-white border-none shadow-md";
-      case "Uncommon":
-        return "bg-gradient-to-r from-slate-600 to-slate-400 text-white border-none shadow-md";
-      case "Common":
-        return "bg-gradient-to-r from-slate-400 to-slate-300 text-slate-700 border-none shadow-md";
-      default:
-        return "bg-indigo-50 text-indigo-700";
-    }
-  };
-
   return (
     <Card
-      className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200 w-[235px]"
+      className="group relative overflow-hidden w-[235px] hover:shadow-lg transition-shadow hover:scale-105 transition-transform duration-100 cursor-pointer"
       onClick={() => onClick?.(card)}
     >
       <CardContent className="p-4">
@@ -112,7 +83,7 @@ const CardItem: React.FC<CardItemProps> = ({
             <img
               src={card.images?.small || card.images?.large}
               alt={card.name}
-              className="object-contain w-full h-full transform transition-transform duration-300 group-hover:scale-105"
+              className="object-contain w-full h-full"
               onError={handleImageError}
             />
           ) : (
@@ -135,7 +106,6 @@ const CardItem: React.FC<CardItemProps> = ({
                         size="sm"
                         className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
                         onClick={(e) => handleAction(e, () => onQuickAdd(card))}
-                        title="Añadir a Colección"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -155,7 +125,6 @@ const CardItem: React.FC<CardItemProps> = ({
                           onClick={(e) =>
                             handleAction(e, () => onAddToWishlist(card))
                           }
-                          title="Añadir a Lista de Deseos"
                         >
                           <Heart className="h-4 w-4" />
                         </Button>
@@ -224,7 +193,9 @@ const CardItem: React.FC<CardItemProps> = ({
             {card.rarity && (
               <Badge
                 variant="outline"
-                className={`text-xs ${getRarityBadgeStyle(card.rarity)} shrink-0`}
+                className={`text-xs ${getRarityBadgeStyle(
+                  card.rarity
+                )} shrink-0`}
               >
                 {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
               </Badge>

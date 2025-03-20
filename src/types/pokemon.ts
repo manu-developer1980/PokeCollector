@@ -16,6 +16,29 @@ export interface PokemonCard {
       averageSellPrice?: number;
     };
   };
+  // Propiedades de precios
+  tcgplayer?: {
+    prices: {
+      [key: string]: {
+        market: number;
+        low?: number;
+        mid?: number;
+        high?: number;
+      };
+    };
+  };
+  // Propiedades de detalles de carta
+  types?: string[];
+  hp?: string;
+  supertype?: string;
+  subtypes?: string[];
+  attacks?: Array<{
+    name: string;
+    text?: string;
+    damage?: string;
+    convertedEnergyCost?: number;
+  }>;
+  rules?: string[];
   // Propiedades específicas de la colección
   quantity?: number;
   isFirstEdition?: boolean;
