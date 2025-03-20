@@ -22,7 +22,7 @@ import AuthCallback from "./components/auth/AuthCallback";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
-import SubscriptionPage from "./components/subscription/SubscriptionPage";
+import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -181,7 +181,7 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <MainLayout>
-                <SubscriptionPage />
+                <SubscriptionManagement />
               </MainLayout>
             </PrivateRoute>
           }

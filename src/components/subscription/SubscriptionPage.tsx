@@ -6,8 +6,13 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Loader2 } from "lucide-react";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 
-export default function SubscriptionPage() {
-  const navigate = useNavigate();
+interface SubscriptionPageProps {
+  onSectionChange: (section: string) => void;
+}
+
+export default function SubscriptionPage({
+  onSectionChange,
+}: SubscriptionPageProps) {
   const { subscription, loading } = useSubscription();
 
   if (loading) {
@@ -104,7 +109,7 @@ export default function SubscriptionPage() {
       <div className="flex justify-end gap-4">
         <Button
           variant="default"
-          onClick={() => navigate("/dashboard/pricing")}
+          onClick={() => onSectionChange("Pricing")}
         >
           {subscription?.status === "active" ? "Cambiar Plan" : "Ver Planes"}
         </Button>

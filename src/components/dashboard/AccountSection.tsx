@@ -9,14 +9,16 @@ import { supabase } from "../../../supabase/supabase";
 import { Loader2, Pencil } from "lucide-react";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { PasswordResetInstructionsModal } from "../auth/PasswordResetInstructionsModal";
+import { SubscriptionManagement } from "@/components/subscription/SubscriptionManagement";
 
 interface AccountSectionProps {
-  setActiveSection: (section: string) => void;
+  onSectionChange: (section: string) => void;
 }
 
-export function AccountSection({ setActiveSection }: AccountSectionProps) {
+export function AccountSection({ onSectionChange }: AccountSectionProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
@@ -27,7 +29,6 @@ export function AccountSection({ setActiveSection }: AccountSectionProps) {
     fullName: "",
     email: "",
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -230,7 +231,7 @@ export function AccountSection({ setActiveSection }: AccountSectionProps) {
         <CardContent>
           <Button
             variant="outline"
-            onClick={() => setActiveSection("Pricing")}
+            onClick={() => onSectionChange("Subscription")}
             className="w-full"
           >
             Gestionar suscripción

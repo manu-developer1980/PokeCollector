@@ -42,7 +42,7 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div className="flex flex-row justify-center flex-wrap gap-6">
         {Object.entries(PLAN_FEATURES).map(([planType, plan]) => (
           <PricingCard
             key={plan.id}

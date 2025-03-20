@@ -50,7 +50,7 @@ export function PricingCard({
   };
 
   return (
-    <div className="relative">
+    <div className="relative xxs:max-w[250px] xs:max-w-[300px] gap-2 mx-auto mb-6  hover:scale-105 transition-transform duration-150">
       {/* Overlay gris translúcido para el plan actual */}
       {isCurrentPlan && (
         <div

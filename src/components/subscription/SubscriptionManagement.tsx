@@ -19,7 +19,13 @@ import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Loader2 } from "lucide-react";
 
-export default function SubscriptionManagement() {
+interface SubscriptionManagementProps {
+  onSectionChange: (section: string) => void;
+}
+
+export default function SubscriptionManagement({
+  onSectionChange,
+}: SubscriptionManagementProps) {
   const { subscription, loading } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -102,7 +108,11 @@ export default function SubscriptionManagement() {
   };
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   if (!subscription) {
@@ -119,7 +129,7 @@ export default function SubscriptionManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
           <CardTitle>Tu suscripción</CardTitle>
@@ -196,11 +206,10 @@ export default function SubscriptionManagement() {
 
               <Button
                 variant="default"
-                onClick={() => navigate("/dashboard/pricing")}
-                className="flex items-center gap-2"
+                onClick={() => onSectionChange("Pricing")}
               >
                 <Crown className="h-4 w-4" />
-                {subscription.status === "active"
+                {subscription?.status === "active"
                   ? "Cambiar Plan"
                   : "Ver Planes"}
               </Button>

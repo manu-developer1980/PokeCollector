@@ -38,7 +38,7 @@ import {
   User,
 } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import SubscriptionManagement from "../subscription/SubscriptionManagement";
+import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 import MainHeader from "../layout/MainHeader";
 import { AccountSection } from "../dashboard/AccountSection"; // Importar el nuevo componente
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
@@ -1331,12 +1331,9 @@ export default function PokemonDashboard() {
     </div>
   );
 
-  const renderAccountContent = () => (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Mi Cuenta</h2>
-      <AccountSection setActiveSection={setActiveSection} />
-    </div>
-  );
+  const renderAccountContent = () => {
+    return <AccountSection onSectionChange={setActiveSection} />;
+  };
 
   const renderCollectionContent = () => {
     if (selectedCollection) {
@@ -1390,6 +1387,8 @@ export default function PokemonDashboard() {
         return renderWishlistContent();
       case "Account":
         return renderAccountContent();
+      case "Subscription":
+        return <SubscriptionManagement onSectionChange={setActiveSection} />;
       case "Pricing":
         return <PricingPage />;
       default:
@@ -1416,6 +1415,7 @@ export default function PokemonDashboard() {
             <div className="container mx-auto p-6">{renderSection()}</div>
           </main>
         </div>
+        <Footer />
       </div>
 
       {/* Dialogs */}
