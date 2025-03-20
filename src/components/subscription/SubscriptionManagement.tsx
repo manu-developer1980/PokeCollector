@@ -32,23 +32,50 @@ export default function SubscriptionManagement() {
   const currentPlan = PLAN_FEATURES[currentPlanType];
 
   const handleCancelSubscription = async () => {
-    if (!subscription?.stripe_subscription_id) return;
+    console.log("Subscription data:", subscription); // Debug log
+
+    if (!subscription) {
+      toast({
+        title: "Error",
+        description: "No se encontró información de la suscripción",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Usar subscription_id si stripe_subscription_id no está disponible
+    const subscriptionId =
+      subscription.stripe_subscription_id || subscription.id;
+
+    if (!subscriptionId) {
+      toast({
+        title: "Error",
+        description: "ID de suscripción no encontrado",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/subscriptions/cancel", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subscriptionId: subscription.stripe_subscription_id,
-          userId: subscription.user_id, // Asegúrate de enviar el userId también
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cancel-subscription`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            subscriptionId: subscriptionId,
+            userId: subscription.user_id,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Error al cancelar la suscripción");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al cancelar la suscripción");
       }
 
       toast({
@@ -57,13 +84,17 @@ export default function SubscriptionManagement() {
           "Tu suscripción se cancelará al final del período de facturación actual",
       });
 
-      // Cerrar el diálogo de confirmación
+      // Refrescar los datos de la suscripción
+      window.location.reload();
       setShowCancelDialog(false);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error completo:", error);
       toast({
         title: "Error",
-        description: "No se pudo cancelar la suscripción",
+        description:
+          error instanceof Error
+            ? error.message
+            : "No se pudo cancelar la suscripción",
         variant: "destructive",
       });
     } finally {
@@ -182,9 +213,11 @@ export default function SubscriptionManagement() {
       <ConfirmDialog
         isOpen={showCancelDialog}
         onClose={() => setShowCancelDialog(false)}
-        onConfirm={handleCancelSubscription}
+        onConfirm={() => handleCancelSubscription()}
         title="Cancelar suscripción"
         description="¿Estás seguro de que deseas cancelar tu suscripción? Podrás seguir usando el servicio hasta el final del período actual."
+        confirmText="Cancelar suscripción"
+        isLoading={isLoading}
       />
     </div>
   );
