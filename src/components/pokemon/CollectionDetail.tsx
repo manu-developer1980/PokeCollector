@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Collection, CollectionCard } from "@/types/pokemon";
 import { Search, ArrowLeft, Edit, Plus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { navigateToSearch } from "@/lib/navigation";
 import CardItem from "./CardItem";
 
 interface CollectionDetailProps {
@@ -29,13 +30,6 @@ const CollectionDetail = ({
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  const handleNavigateToSearch = () => {
-    navigate("/dashboard", {
-      replace: true, // Usar replace para evitar problemas con el historial
-      state: { activeSection: "Search Cards" },
-    });
-  };
-
   if (!collection.cards || collection.cards.length === 0) {
     return (
       <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
@@ -46,7 +40,7 @@ const CollectionDetail = ({
           </p>
           <Button
             className="bg-red-600 hover:bg-red-700"
-            onClick={handleNavigateToSearch}
+            onClick={() => navigateToSearch(navigate)}
           >
             <Search className="h-4 w-4 mr-1" /> Buscar Cartas
           </Button>
@@ -159,7 +153,7 @@ const CollectionDetail = ({
             </p>
             <Button
               className="bg-red-600 hover:bg-red-700"
-              onClick={handleNavigateToSearch}
+              onClick={() => navigateToSearch(navigate)}
             >
               <Search className="h-4 w-4 mr-1" /> Buscar Cartas
             </Button>

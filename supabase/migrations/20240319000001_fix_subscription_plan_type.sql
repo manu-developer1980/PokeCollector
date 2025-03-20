@@ -30,7 +30,7 @@ CREATE TABLE subscriptions (
     stripe_subscription_id TEXT,
     stripe_customer_id TEXT,
     stripe_price_id TEXT,
-    current_period_end TIMESTAMPTZ,
+    current_period_end TIMESTAMPTZ NOT NULL DEFAULT (TIMEZONE('utc', NOW()) + INTERVAL '1 month'),
     cancel_at_period_end BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),

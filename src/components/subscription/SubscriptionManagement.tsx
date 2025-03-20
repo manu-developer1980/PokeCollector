@@ -122,7 +122,10 @@ export default function SubscriptionManagement() {
                   new Date(subscription.current_period_end),
                   "d 'de' MMMM, yyyy",
                   { locale: es }
-                )}
+                )}{" "}
+                <span className="text-sm">
+                  (se renueva automáticamente cada mes)
+                </span>
               </p>
             </div>
 
