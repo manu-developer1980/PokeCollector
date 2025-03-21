@@ -1,8 +1,10 @@
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Crown } from "lucide-react";
+import { Crown, LogOut } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
-import { MobileMenu } from "@/components/shared/MobileMenu";
+import { useAuth } from "../../../../supabase/auth";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -19,59 +21,72 @@ interface SidebarProps {
 
 const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   const { subscription } = useSubscription();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const isPremium = subscription?.status === "active";
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
   const renderNavItems = () => (
-    <nav className="space-y-2">
+    <div className="space-y-2">
       {items.map((item) => (
         <button
           key={item.id}
           onClick={() => onItemClick(item.id)}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+          className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
             activeItem === item.id
-              ? "bg-red-50 text-red-600"
-              : "text-gray-600 hover:bg-gray-50"
+              ? "bg-red-100 text-red-900"
+              : "text-gray-700 hover:bg-gray-100"
           }`}
         >
-          <div className="flex items-center space-x-3">
-            {item.icon}
-            <span>{item.label}</span>
-          </div>
+          {item.icon}
+          <span className="ml-3">{item.label}</span>
+          {item.badge && (
+            <span className="ml-auto text-xs bg-red-100 text-red-900 px-2 py-1 rounded-full">
+              {item.badge}
+            </span>
+          )}
         </button>
       ))}
 
       {!isPremium && (
         <button
           onClick={() => onItemClick("Pricing")}
-          className="w-full flex items-center px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
+          className="w-full flex items-center px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600 transition-colors"
         >
           <Crown className="w-4 h-4 mr-2" />
-          <span>Mejora tu Plan</span>
+          Mejora tu Plan
         </button>
       )}
-    </nav>
+    </div>
   );
 
   return (
-    <>
-      {/* Versión Desktop */}
-      <aside className="hidden md:block w-64 bg-white border-r border-gray-200 shrink-0">
-        <div className="sticky top-16 h-auto">
-          <div className="flex flex-col flex-1 p-4">
-            <ScrollArea className="flex-1">{renderNavItems()}</ScrollArea>
-          </div>
+    <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-200 shrink-0">
+      <div className="sticky top-16 h-[calc(100vh-4rem)] flex flex-col">
+        <div className="flex-1 flex flex-col p-4">
+          <ScrollArea className="flex-1">{renderNavItems()}</ScrollArea>
         </div>
-      </aside>
 
-      {/* Versión Mobile */}
-      <div className="md:hidden">
-        <MobileMenu
-          items={items}
-          activeItem={activeItem}
-          onItemClick={onItemClick}
-        />
+        <div className="p-4 border-t">
+          <Button
+            variant="outline"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Cerrar Sesión
+          </Button>
+        </div>
       </div>
-    </>
+    </aside>
   );
 };
 

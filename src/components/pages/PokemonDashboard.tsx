@@ -1403,12 +1403,13 @@ export default function PokemonDashboard() {
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
         <div className="flex-1 flex w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
+          {/* Sidebar solo visible en desktop */}
           <Sidebar
             items={defaultNavItems}
             activeItem={activeSection}
             onItemClick={setActiveSection}
-            onUpgrade={handleUpgradePlan}
           />
+
           <main className="flex-1 min-h-0">
             <div className="container mx-auto p-6">{renderSection()}</div>
           </main>

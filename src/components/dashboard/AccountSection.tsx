@@ -295,7 +295,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
                 />
               </div>
               {isEditing && (
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 flex-wrap gap-4 justify-center">
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={isLoading}
@@ -306,7 +306,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
                         <LoadingSpinner message="Actualizando..." />
                       </>
                     ) : (
-                      "Guardar cambios"
+                      "Guardar"
                     )}
                   </Button>
                   <Button

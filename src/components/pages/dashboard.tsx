@@ -3,7 +3,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import Sidebar from "../dashboard/layout/Sidebar";
 import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
@@ -298,12 +297,6 @@ const Dashboard = () => {
       <MainHeader />
 
       <div className="flex min-h-screen">
-        <Sidebar
-          items={defaultNavItems}
-          activeItem="My Collection"
-          onItemClick={() => {}}
-        />
-
         <main className="flex-1 w-full p-6 pt-16 bg-background">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">

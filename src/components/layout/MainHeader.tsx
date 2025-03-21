@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
-import { Search, Database, Heart, LogIn } from "lucide-react";
+import { Search, Database, Heart, LogIn, LogOut, User } from "lucide-react";
 import { MobileMenu } from "@/components/shared/MobileMenu";
 
 interface MainHeaderProps {
@@ -9,15 +9,19 @@ interface MainHeaderProps {
 }
 
 export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
   const navigationItems = [
-    {
-      icon: <Search size={18} />,
-      label: "Buscar Cartas",
-      id: "Search Cards",
-    },
     {
       icon: <Database size={18} />,
       label: "Mi Colección",
@@ -28,7 +32,30 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
       label: "Lista de Deseos",
       id: "Wishlist",
     },
+    {
+      icon: <Search size={18} />,
+      label: "Buscar Cartas",
+      id: "Search Cards",
+    },
+    {
+      icon: <User size={18} />,
+      label: "Mi Cuenta",
+      id: "Account",
+    },
   ];
+
+  // Si el usuario está autenticado, añadimos el botón de cerrar sesión
+  const mobileMenuItems = user
+    ? [
+        ...navigationItems,
+        {
+          icon: <LogOut size={18} />,
+          label: "Cerrar Sesión",
+          id: "logout",
+          onClick: handleSignOut,
+        },
+      ]
+    : navigationItems;
 
   const handleNavigation = (section: string) => {
     navigate("/dashboard", { state: { activeSection: section } });
@@ -42,9 +69,15 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
             {/* Solo mostrar el menú móvil si el usuario está autenticado */}
             {user && (
               <MobileMenu
-                items={navigationItems}
+                items={mobileMenuItems}
                 activeItem=""
-                onItemClick={handleNavigation}
+                onItemClick={(id) => {
+                  if (id === "logout") {
+                    handleSignOut();
+                  } else {
+                    handleNavigation(id);
+                  }
+                }}
               />
             )}
 
