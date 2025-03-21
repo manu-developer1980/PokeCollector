@@ -15,7 +15,7 @@ interface GoodbyeModalProps {
   onClose: () => void;
 }
 
-export default function GoodbyeModal({ isOpen, onClose }: GoodbyeModalProps) {
+export default function GoodbyeModal({ isOpen }: GoodbyeModalProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -30,7 +30,6 @@ export default function GoodbyeModal({ isOpen, onClose }: GoodbyeModalProps) {
   }
 
   const handleClose = () => {
-    onClose();
     navigate("/", { replace: true });
   };
 

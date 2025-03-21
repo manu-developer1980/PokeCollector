@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
 import LoadingSpinner from "./LoaderSpinner";
 
 interface ConfirmDialogProps {
@@ -19,6 +18,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
+  loadingMessage?: string;
 }
 
 export function ConfirmDialog({
@@ -30,6 +30,7 @@ export function ConfirmDialog({
   confirmText = "Confirmar",
   cancelText = "Cancelar",
   isLoading = false,
+  loadingMessage = "Procesando...",
 }: ConfirmDialogProps) {
   const handleConfirm = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,7 +40,7 @@ export function ConfirmDialog({
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={onClose}
+      onOpenChange={(open) => !isLoading && !open && onClose()}
     >
       <DialogContent>
         <DialogHeader>
@@ -47,24 +48,26 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-          >
-            {cancelText}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={isLoading}
-            variant="destructive"
-          >
-            {isLoading ? (
-              <LoadingSpinner message="Cancelando..." />
-            ) : (
-              confirmText
-            )}
-          </Button>
+          {isLoading ? (
+            <div className="w-full flex justify-center items-center py-2">
+              <LoadingSpinner message={loadingMessage} />
+            </div>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={onClose}
+              >
+                {cancelText}
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                variant="destructive"
+              >
+                {confirmText}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

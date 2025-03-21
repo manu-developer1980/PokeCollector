@@ -14,13 +14,21 @@ import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import LoadingSpinner from "../ui/LoaderSpinner";
 import { Progress } from "@/components/ui/progress";
 import { useStats } from "@/hooks/useStats";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
 }
 
 export function AccountSection({ onSectionChange }: AccountSectionProps) {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { subscription, loading } = useSubscription();
@@ -163,30 +171,85 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
 
     setIsLoading(true);
     try {
-      const { error: deleteDataError } = await supabase
-        .from("users")
-        .delete()
-        .eq("id", user.id);
+      // 1. Si hay una suscripción activa, intentar cancelarla
+      if (subscription?.stripe_subscription_id) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          throw new Error("No se pudo obtener el token de autorización");
+        }
 
-      if (deleteDataError) throw deleteDataError;
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_SUPABASE_URL
+          }/functions/v1/cancel-subscription`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              subscriptionId: subscription.stripe_subscription_id,
+              userId: user.id,
+            }),
+          }
+        );
 
-      const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
-        user.id
+        const responseData = await response.json();
+
+        if (
+          !response.ok &&
+          !responseData.message?.includes("already cancelled")
+        ) {
+          throw new Error(
+            responseData.error || "Error al cancelar la suscripción"
+          );
+        }
+      }
+
+      // 2. Proceder con la eliminación del usuario
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("No se pudo obtener el token de autorización");
+      }
+
+      const deleteResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ user_id: user.id }),
+        }
       );
 
-      if (deleteAuthError) throw deleteAuthError;
+      if (!deleteResponse.ok) {
+        const errorData = await deleteResponse.json();
+        throw new Error(errorData.error || "Error al eliminar la cuenta");
+      }
 
+      // 3. Limpiar el estado local y redirigir
+      setUser(null);
       navigate("/goodbye");
     } catch (error) {
       console.error("Error deleting account:", error);
       toast({
         title: "Error",
         description:
-          "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
+          error instanceof Error
+            ? error.message
+            : "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -418,6 +481,46 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Estás seguro?</DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará permanentemente tu cuenta y todos tus datos.
+              Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            {isLoading ? (
+              <div className="w-full flex justify-center items-center py-2">
+                <LoadingSpinner
+                  message="Eliminando cuenta..."
+                  compact={true}
+                />
+              </div>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                >
+                  Eliminar cuenta
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -9,7 +9,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -36,17 +35,37 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // 1. Cancelar la suscripción en Stripe
-    const subscription = await stripe.subscriptions.update(subscriptionId, {
-      cancel_at_period_end: true,
-    });
+    // Primero verificar el estado actual de la suscripción
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-    // 2. Actualizar la base de datos
+    // Si la suscripción ya está cancelada o en proceso de cancelación, considerarlo un éxito
+    if (
+      subscription.status === "canceled" ||
+      subscription.cancel_at_period_end
+    ) {
+      return new Response(
+        JSON.stringify({ message: "Subscription already cancelled" }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
+    // Si no está cancelada, proceder con la cancelación
+    const updatedSubscription = await stripe.subscriptions.update(
+      subscriptionId,
+      {
+        cancel_at_period_end: true,
+      }
+    );
+
+    // Actualizar la base de datos
     const { error: dbError } = await supabase
       .from("subscriptions")
       .update({
         cancel_at_period_end: true,
-        status: subscription.status,
+        status: updatedSubscription.status,
         updated_at: new Date().toISOString(),
       })
       .eq("stripe_subscription_id", subscriptionId)
@@ -65,9 +84,15 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return new Response(
+      JSON.stringify({
+        error: error.message || "Error al cancelar la suscripción",
+        details: error,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      }
+    );
   }
 });
