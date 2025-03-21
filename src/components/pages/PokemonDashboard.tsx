@@ -917,6 +917,7 @@ export default function PokemonDashboard() {
     if (!selectedCollection) return;
 
     try {
+      console.log("Attempting to remove card:", cardId);
       const { error } = await supabase
         .from("collection_cards")
         .delete()
@@ -925,7 +926,6 @@ export default function PokemonDashboard() {
 
       if (error) throw error;
 
-      // Actualizar el estado local inmediatamente
       setCollections((prevCollections) =>
         prevCollections.map((collection) => {
           if (collection.id === selectedCollection.id) {
@@ -938,7 +938,6 @@ export default function PokemonDashboard() {
         })
       );
 
-      // Actualizar selectedCollection también
       setSelectedCollection((prev) => {
         if (!prev) return null;
         return {
@@ -948,15 +947,14 @@ export default function PokemonDashboard() {
       });
 
       toast({
-        title: "Carta Eliminada",
-        description: "La carta ha sido eliminada de tu colección.",
+        title: "Carta eliminada",
+        description: "La carta ha sido eliminada de la colección",
       });
     } catch (error) {
       console.error("Error removing card:", error);
       toast({
         title: "Error",
-        description:
-          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+        description: "No se pudo eliminar la carta",
         variant: "destructive",
       });
     }
@@ -1348,13 +1346,7 @@ export default function PokemonDashboard() {
           collection={selectedCollection}
           onBack={() => setSelectedCollection(null)}
           onEdit={handleEditCollection}
-          onDelete={(collection) =>
-            setDeleteConfirmationState({
-              isOpen: true,
-              collectionId: collection.id,
-              collectionName: collection.name,
-            })
-          }
+          onRemove={handleRemoveCard}
           onCardClick={(card) => {
             setSelectedCollectionCard(card);
             setSelectedCard(card);

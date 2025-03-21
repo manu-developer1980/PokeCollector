@@ -26,17 +26,20 @@ interface CardItemProps {
   card: CollectionCard;
   onClick?: (card: CollectionCard) => void;
   onRemove?: (cardId: string) => void;
+  onQuickAdd?: (card: CollectionCard) => void;
+  onAddToWishlist?: (card: CollectionCard) => void;
   actions?: "collection" | "wishlist" | "search";
+  showPrice?: boolean; // Añadido showPrice como prop opcional
 }
 
 const CardItem: React.FC<CardItemProps> = ({
   card,
   onClick,
+  onRemove,
   onQuickAdd,
   onAddToWishlist,
-  onRemove,
-  actions = "search", // Añadimos un valor por defecto
-  showPrice = false,
+  actions = "search",
+  showPrice = false, // Valor por defecto false
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -72,8 +75,8 @@ const CardItem: React.FC<CardItemProps> = ({
   };
 
   return (
-    <Card
-      className="group relative overflow-hidden w-[235px] hover:shadow-lg transition-shadow hover:scale-105 transition-transform duration-100 cursor-pointer"
+    <div
+      className="relative group cursor-pointer bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 hover:scale-105 transition-transform duration-105"
       onClick={() => onClick?.(card)}
     >
       <CardContent className="p-4">
@@ -258,7 +261,7 @@ const CardItem: React.FC<CardItemProps> = ({
           )}
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 };
 

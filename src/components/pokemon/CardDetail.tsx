@@ -52,6 +52,11 @@ const CardDetail = ({
   const [cardDetails, setCardDetails] = useState<PokemonCard | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const handleRemove = (cardId: string) => {
+    onRemove?.(cardId);
+    onClose(); // Cerramos el modal después de eliminar
+  };
+
   useEffect(() => {
     const loadCardDetails = async () => {
       if (card?.id) {
@@ -249,8 +254,8 @@ const CardDetail = ({
               />
               {mode === "collection" && (
                 <Button
-                  className=" hover:font-bold w-full"
-                  onClick={() => onRemove?.(card.id)}
+                  className="hover:font-bold w-full"
+                  onClick={() => handleRemove(card.id)}
                 >
                   <Trash className="h-4 w-4 mr-2" /> Eliminar
                 </Button>
@@ -422,7 +427,7 @@ const CardDetail = ({
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           onUpdate={handleUpdate}
-          onRemove={onRemove}
+          onRemove={handleRemove}
         />
       )}
     </>

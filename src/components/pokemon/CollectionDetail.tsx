@@ -15,7 +15,7 @@ interface CollectionDetailProps {
   collection: Collection;
   onBack: () => void;
   onEdit: (collection: Collection) => void;
-  onRemoveCard: (cardId: string) => void;
+  onRemove: (cardId: string) => void; // Asegúrate de que está definido aquí
   onCardClick: (card: CollectionCard) => void;
   isLoading?: boolean;
 }
@@ -24,12 +24,28 @@ const CollectionDetail = ({
   collection,
   onBack,
   onEdit,
-  onRemoveCard,
+  onRemove,
   onCardClick,
   isLoading = false,
 }: CollectionDetailProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+
+  // Añadir log al momento de recibir las props
+  console.log("CollectionDetail props received:", {
+    hasOnRemove: !!onRemove,
+    onRemoveType: typeof onRemove,
+    collection: collection.id,
+  });
+
+  const handleRemoveCard = (cardId: string) => {
+    console.log("handleRemoveCard called with cardId:", cardId);
+    if (typeof onRemove === "function") {
+      onRemove(cardId);
+    } else {
+      console.error("onRemove is not a function:", onRemove);
+    }
+  };
 
   if (!collection.cards || collection.cards.length === 0) {
     return (
@@ -57,7 +73,6 @@ const CollectionDetail = ({
 
   return (
     <div className="space-y-6 relative">
-      {/* Loading overlay */}
       {isLoading && <LoadingSpinner message="Cargando colección..." />}
 
       {collection.cards && collection.cards.length > 0 ? (
@@ -105,18 +120,26 @@ const CollectionDetail = ({
           <Separator />
 
           {filteredCards.length > 0 ? (
-            <div className="px-2 sm:px-4">
-              <div className="flex flex-wrap gap-4 justify-center">
-                {filteredCards.map((card) => (
-                  <CardItem
-                    key={card.id}
-                    card={card}
-                    onClick={() => onCardClick(card)}
-                    onRemove={() => onRemoveCard(card.id)}
-                    actions="collection"
-                  />
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-4 justify-center">
+              {filteredCards.map((card) => {
+                const cardKey =
+                  card.id || `${card.pokemon_card_id}-${card.collection_id}`;
+
+                return (
+                  <div
+                    key={cardKey}
+                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 hover:scale-105 transition-transform duration-105"
+                  >
+                    <CardItem
+                      card={card}
+                      onClick={() => onCardClick(card)}
+                      onRemove={onRemove}
+                      actions="collection"
+                      showPrice={false}
+                    />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
@@ -136,22 +159,7 @@ const CollectionDetail = ({
             </Card>
           )}
         </>
-      ) : (
-        <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
-          <CardContent className="p-6 text-center">
-            <p className="text-gray-500 mb-4">
-              Esta colección está vacía. ¡Comienza a añadir cartas desde el
-              buscador!
-            </p>
-            <Button
-              className="bg-red-600 hover:bg-red-700"
-              onClick={() => navigateToSearch(navigate)}
-            >
-              <Search className="h-4 w-4 mr-1" /> Buscar Cartas
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      ) : null}
     </div>
   );
 };

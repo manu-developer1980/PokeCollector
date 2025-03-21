@@ -315,25 +315,16 @@ const Dashboard = () => {
           </div>
 
           <div>
-            {selectedCollection ? (
+            {selectedCollection && (
               <CollectionDetail
                 collection={selectedCollection}
                 onBack={() => setSelectedCollection(null)}
                 onEdit={handleEditCollection}
-                onRemoveCard={handleRemoveCard}
+                onRemove={handleRemoveCard} // Cambiado de onRemoveCard a onRemove
                 onCardClick={(card) => {
                   setSelectedCollectionCard(card);
                   setIsCardDetailDialogOpen(true);
                 }}
-              />
-            ) : (
-              <CollectionList
-                collections={collections}
-                selectedCollection={selectedCollection}
-                onCollectionSelect={setSelectedCollection}
-                onCreateCollection={handleCreateCollection}
-                onEditCollection={handleEditCollection}
-                onDeleteCollection={handleDeleteCollection}
                 isLoading={isLoading}
               />
             )}
