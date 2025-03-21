@@ -46,7 +46,7 @@ import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog"
 import { useSubscription } from "@/hooks/useSubscription";
 import { validateSubscriptionLimits } from "@/lib/subscription-utils";
 import { useNavigate } from "react-router-dom";
-import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
+import { PlanChangeDialog } from "@/components/subscription/PlanChangeDialog";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
@@ -1481,7 +1481,7 @@ export default function PokemonDashboard() {
         existingCollections={collections.filter((c) => !c.is_default)}
       />
       {!isLoading && (
-        <PlanUpgradeDialog
+        <PlanChangeDialog
           isOpen={isPlanDialogOpen}
           onClose={() => setIsPlanDialogOpen(false)}
           currentPlan={subscription?.plan_type || "APRENDIZ"}

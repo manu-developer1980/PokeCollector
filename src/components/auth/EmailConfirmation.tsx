@@ -11,7 +11,7 @@ import { Mail, ArrowRight, Crown } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
 import AuthLayout from "./AuthLayout";
 import { cn } from "@/lib/utils";
-import { PlanUpgradeDialog } from "../subscription/PlanUpgradeDialog";
+import { PlanChangeDialog } from "../subscription/PlanChangeDialog";
 import { useState } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -56,7 +56,7 @@ export function Sidebar({ items, activeItem, onItemClick }: SidebarProps) {
         )}
       </nav>
 
-      <PlanUpgradeDialog
+      <PlanChangeDialog
         isOpen={showUpgradeDialog}
         onClose={() => setShowUpgradeDialog(false)}
         currentPlan="APRENDIZ"

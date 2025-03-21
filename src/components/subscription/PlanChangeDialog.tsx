@@ -16,88 +16,75 @@ import {
   SubscriptionPlan,
 } from "@/lib/stripe";
 
-interface PlanUpgradeDialogProps {
+interface PlanChangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   currentPlan: SubscriptionPlan;
-  showWelcomeMessage?: boolean;
+  currentSubscriptionId: string;
 }
 
-export function PlanUpgradeDialog({
+export function PlanChangeDialog({
   isOpen,
   onClose,
   currentPlan,
-  showWelcomeMessage = false,
-}: PlanUpgradeDialogProps) {
+  currentSubscriptionId,
+}: PlanChangeDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [prorationAmount, setProrationAmount] = useState<number | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const handleUpgrade = async (planKey: SubscriptionPlan) => {
+  const handlePlanChange = async (planKey: SubscriptionPlan) => {
     setIsLoading(true);
 
     try {
-      if (!user?.email) {
-        throw new Error("Usuario no autenticado");
-      }
-
       const {
         data: { session },
-        error: sessionError,
       } = await supabase.auth.getSession();
 
-      if (sessionError || !session) {
+      if (!session?.access_token) {
         throw new Error("No se pudo obtener la sesión");
       }
 
-      // Obtener el ID del precio del plan seleccionado
-      const priceId = SUBSCRIPTION_PLANS[planKey];
+      const newPriceId = SUBSCRIPTION_PLANS[planKey];
 
-      if (!priceId) {
-        throw new Error(`Información del plan ${planKey} no disponible`);
-      }
-
-      const requestData = {
-        priceId,
-        customerEmail: user.email,
-        metadata: {
-          user_id: user.id,
-          plan: planKey,
+      const response = await supabase.functions.invoke("change-subscription", {
+        body: {
+          subscriptionId: currentSubscriptionId,
+          newPriceId,
         },
-        successUrl: `${window.location.origin}/checkout/success`,
-        cancelUrl: `${window.location.origin}/pricing`,
-      };
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-      console.log("Enviando solicitud de checkout:", requestData);
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
 
-      const { data, error } = await supabase.functions.invoke(
-        "create-stripe-checkout",
-        {
-          body: requestData,
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
+      // Si hay un monto de proración, mostrar al usuario y confirmar
+      if (response.data.prorationAmount > 0) {
+        setProrationAmount(response.data.prorationAmount / 100); // Convertir de centavos a euros
+
+        // Si se requiere pago adicional, redirigir a la página de pago
+        if (response.data.subscription.latest_invoice?.payment_intent) {
+          window.location.href =
+            response.data.subscription.latest_invoice.payment_intent.client_secret;
         }
-      );
-
-      if (error) {
-        console.error("Error de función:", error);
-        throw error;
+      } else {
+        toast({
+          title: "Plan actualizado",
+          description: "Tu plan ha sido actualizado exitosamente",
+        });
+        onClose();
       }
-
-      if (!data?.url) {
-        throw new Error("No se recibió la URL de checkout");
-      }
-
-      window.location.href = data.url;
     } catch (error) {
-      console.error("Error completo:", error);
+      console.error("Error al cambiar plan:", error);
       toast({
-        title: "Error al procesar el pago",
+        title: "Error al cambiar plan",
         description:
-          "Error al conectar con el servicio de pagos. Por favor, intenta nuevamente.",
+          "Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.",
         variant: "destructive",
-        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -111,15 +98,10 @@ export function PlanUpgradeDialog({
     >
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>
-            {showWelcomeMessage
-              ? "¡Bienvenido a PokéCollector!"
-              : "Mejora tu Plan"}
-          </DialogTitle>
+          <DialogTitle>Cambiar Plan</DialogTitle>
           <DialogDescription>
-            {showWelcomeMessage
-              ? "Comienza con el plan Aprendiz gratuito y mejora cuando lo necesites para acceder a más funcionalidades."
-              : "Descubre los beneficios de nuestros planes premium"}
+            Selecciona el plan al que deseas cambiar. Si hay una diferencia en
+            el precio, se te cobrará o acreditará el monto correspondiente.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -138,7 +120,7 @@ export function PlanUpgradeDialog({
               ))}
             </ul>
             <Button
-              onClick={() => handleUpgrade("ENTRENADOR")}
+              onClick={() => handlePlanChange("ENTRENADOR")}
               disabled={isLoading || currentPlan === "ENTRENADOR"}
               className="w-full"
             >
@@ -163,7 +145,7 @@ export function PlanUpgradeDialog({
               ))}
             </ul>
             <Button
-              onClick={() => handleUpgrade("MAESTRO")}
+              onClick={() => handlePlanChange("MAESTRO")}
               disabled={isLoading || currentPlan === "MAESTRO"}
               className="w-full"
             >
@@ -175,6 +157,13 @@ export function PlanUpgradeDialog({
             </Button>
           </div>
         </div>
+        {prorationAmount !== null && (
+          <div className="mt-4 p-4 bg-muted rounded-lg">
+            <p>
+              Monto a pagar por el cambio de plan: {prorationAmount.toFixed(2)}€
+            </p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

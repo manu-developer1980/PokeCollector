@@ -123,30 +123,32 @@ export default function PricingPage() {
         />
       )}
 
-      <div className="mt-16 max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Preguntas Frecuentes
-        </h2>
-        <Accordion
-          type="single"
-          collapsible
-          className="w-full"
-        >
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-            >
-              <AccordionTrigger className="text-left">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
+      {!user && (
+        <div className="mt-16 max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Preguntas Frecuentes
+          </h2>
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+          >
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+              >
+                <AccordionTrigger className="text-left">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      )}
     </div>
   );
 }

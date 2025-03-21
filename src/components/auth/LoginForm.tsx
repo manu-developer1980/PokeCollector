@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import OnboardingModal from "../onboarding/OnboardingModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
+import { PlanChangeDialog } from "@/components/subscription/PlanChangeDialog";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 const formSchema = z.object({
@@ -260,7 +260,7 @@ export default function LoginForm() {
         isOpen={showOnboarding}
         onClose={handleOnboardingClose}
       />
-      <PlanUpgradeDialog
+      <PlanChangeDialog
         isOpen={showPlansDialog}
         onClose={handlePlansDialogClose}
         currentPlan="APRENDIZ"
