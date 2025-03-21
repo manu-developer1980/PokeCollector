@@ -129,25 +129,6 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
     );
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/", { replace: true });
-      toast({
-        title: "Sesión cerrada",
-        description: "Has cerrado sesión correctamente.",
-      });
-    } catch (error) {
-      console.error("Error during sign out:", error);
-      toast({
-        title: "Error",
-        description:
-          "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -179,7 +160,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
 
               {/* Logo */}
               <Link
-                to="/"
+                to={user ? "/dashboard" : "/"}
                 className="font-bold text-xl flex items-center text-red-600"
               >
                 <img
@@ -189,70 +170,6 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
                 />
                 PokéCollector
               </Link>
-
-              {/* Navegación desktop */}
-              {showNavigation && (
-                <nav className="hidden md:flex items-center space-x-4">
-                  <NavigationButtons isMobile={false} />
-                </nav>
-              )}
-            </div>
-
-            {/* Avatar y menú de usuario */}
-            <div className="flex items-center">
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-8 w-8 rounded-full"
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={user?.user_metadata?.avatar_url}
-                          alt={user?.email || ""}
-                        />
-                        <AvatarFallback>
-                          {user?.email?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-56"
-                  >
-                    <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() =>
-                        navigate("/dashboard", {
-                          state: { activeSection: "Account" },
-                        })
-                      }
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsPlanDialogOpen(true)}>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Cambiar Plan
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Cerrar Sesión
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => navigate("/login")}
-                >
-                  Entrar
-                </Button>
-              )}
             </div>
           </div>
         </div>

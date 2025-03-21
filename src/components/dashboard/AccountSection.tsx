@@ -39,14 +39,32 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
           .from("users")
           .select("full_name")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
-        setUserData({
-          fullName: data?.full_name || "",
-          email: user.email || "",
-        });
+        // Si no hay datos, creamos el registro
+        if (!data) {
+          const { error: insertError } = await supabase.from("users").upsert([
+            {
+              id: user.id,
+              full_name: user.user_metadata?.full_name || "",
+              email: user.email,
+            },
+          ]);
+
+          if (insertError) throw insertError;
+
+          setUserData({
+            fullName: user.user_metadata?.full_name || "",
+            email: user.email || "",
+          });
+        } else {
+          setUserData({
+            fullName: data.full_name || user.user_metadata?.full_name || "",
+            email: user.email || "",
+          });
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
         toast({
@@ -58,17 +76,18 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
     };
 
     fetchUserData();
-  }, [user]);
+  }, [user, toast]);
 
   const handleUpdateProfile = async () => {
     if (!user?.id) return;
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({ full_name: userData.fullName })
-        .eq("id", user.id);
+      const { error } = await supabase.from("users").upsert({
+        id: user.id,
+        full_name: userData.fullName,
+        email: user.email,
+      });
 
       if (error) throw error;
 
@@ -78,8 +97,6 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
       });
 
       if (updateError) throw updateError;
-
-      await refreshSession();
 
       toast({
         title: "Perfil actualizado",

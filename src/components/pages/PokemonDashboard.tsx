@@ -578,14 +578,28 @@ export default function PokemonDashboard() {
       const { data, error } = await supabase
         .from("users")
         .select("has_seen_onboarding")
-        .eq("id", user?.id) // Cambiado de user_id a id
-        .single();
+        .eq("id", user?.id)
+        .maybeSingle();
 
       if (error) throw error;
 
-      // Solo mostramos el onboarding si el usuario no lo ha visto antes
-      if (!data?.has_seen_onboarding) {
+      // Si no hay datos, creamos el registro
+      if (!data) {
+        const { error: insertError } = await supabase.from("users").insert([
+          {
+            id: user?.id,
+            has_seen_onboarding: false,
+            email: user?.email,
+          },
+        ]);
+
+        if (insertError) throw insertError;
         setShowOnboarding(true);
+      } else {
+        // Solo mostramos el onboarding si el usuario no lo ha visto antes
+        if (!data.has_seen_onboarding) {
+          setShowOnboarding(true);
+        }
       }
     } catch (error) {
       console.error("Error checking onboarding status:", error);
