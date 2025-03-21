@@ -109,11 +109,7 @@ export default function SubscriptionManagement({
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingSpinner message="Cargando suscripción..." />;
   }
 
   if (!subscription) {

@@ -147,7 +147,7 @@ export default function SearchPage() {
             onAddToWishlist={handleAddToWishlist}
           >
             {isSearching ? (
-              <LoadingSpinner message="Buscando cartas..." />
+              <div></div>
             ) : (
               <CardGrid
                 cards={searchResults}

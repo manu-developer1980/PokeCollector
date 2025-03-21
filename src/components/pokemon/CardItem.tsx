@@ -85,7 +85,7 @@ const CardItem = ({
             <img
               src={card.images?.small || card.images?.large}
               alt={card.name}
-              className="object-contain w-full h-full"
+              className="object-contain w-full h-full max-w-[245px]"
               onError={handleImageError}
             />
           ) : (

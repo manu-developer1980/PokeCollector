@@ -21,6 +21,8 @@ import {
   type CardSubtype,
   type CardRarity,
 } from "@/lib/constants";
+import { Loading } from "@/stories/button.stories";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface SearchFiltersProps {
   onSearch: (params: PokemonCardSearchParams) => void;
@@ -241,7 +243,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <SelectItem value="name_asc">Nombre (A-Z)</SelectItem>
                 <SelectItem value="name_desc">Nombre (Z-A)</SelectItem>
                 <SelectItem value="number_asc">Número (Menor-Mayor)</SelectItem>
-                <SelectItem value="number_desc">Número (Mayor-Menor)</SelectItem>
+                <SelectItem value="number_desc">
+                  Número (Mayor-Menor)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -259,22 +263,42 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         </div>
       </div>
       {/* Resultados y paginación */}
-      {!isLoading && (
-        <>
-          <div className="mt-8 space-y-6 w-full">{children}</div>
-          {shouldShowPagination && (
-            <div className="w-full overflow-x-auto">
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                pageSize={pageSize}
-                totalCount={totalCount}
-                onPageChange={handleSearch}
-              />
-            </div>
-          )}
-        </>
-      )}
+      <div className="mt-8">
+        {isLoading ? (
+          <LoadingSpinner message="Buscando cartas..." />
+        ) : (
+          <>
+            {/* Paginación Superior */}
+            {shouldShowPagination && (
+              <div className="w-full overflow-x-auto mb-6">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalCount={totalCount}
+                  onPageChange={handleSearch}
+                />
+              </div>
+            )}
+
+            {/* Resultados */}
+            <div className="space-y-6 w-full">{children}</div>
+
+            {/* Paginación Inferior */}
+            {shouldShowPagination && (
+              <div className="w-full overflow-x-auto mt-6">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalCount={totalCount}
+                  onPageChange={handleSearch}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

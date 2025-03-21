@@ -9,7 +9,7 @@ export default function LoadingSpinner({
 }: LoadingSpinnerProps) {
   if (compact) {
     return (
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center mt-4">
         <div className="bg-card border rounded-lg shadow-sm p-6 flex flex-col items-center gap-4">
           <div className="pokeball w-12 h-12 animate-spin" />
           {message && (

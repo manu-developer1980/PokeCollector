@@ -50,8 +50,6 @@ import { PlanChangeDialog } from "@/components/subscription/PlanChangeDialog";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
-import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 interface PolarSubscription {
   status: string;
@@ -1162,8 +1160,6 @@ export default function PokemonDashboard() {
           filter: `user_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log("Collections realtime event received:", payload);
-
           switch (payload.eventType) {
             case "UPDATE": {
               const updatedCollection = payload.new as Collection;
@@ -1208,7 +1204,7 @@ export default function PokemonDashboard() {
       )
       .subscribe();
 
-    // Suscripción existente para collection_cards
+    // Suscripción para collection_cards
     const cardsChannel = selectedCollection
       ? supabase
           .channel(`collection-${selectedCollection.id}`)
@@ -1303,17 +1299,14 @@ export default function PokemonDashboard() {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={searchParams.pageSize}
-      />
-      {isSearching ? (
-        <LoadingSpinner message="Buscando cartas..." />
-      ) : (
+      >
         <CardGrid
           cards={searchResults}
           onCardClick={handleCardClick}
           onQuickAdd={handleQuickAddToCollection}
           onAddToWishlist={handleAddToWishlist}
         />
-      )}
+      </SearchFilters>
     </>
   );
 
