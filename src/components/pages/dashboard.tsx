@@ -319,7 +319,7 @@ const Dashboard = () => {
               <CollectionDetail
                 collection={selectedCollection}
                 onBack={() => setSelectedCollection(null)}
-                onEditCollection={handleEditCollection}
+                onEdit={handleEditCollection}
                 onRemoveCard={handleRemoveCard}
                 onCardClick={(card) => {
                   setSelectedCollectionCard(card);

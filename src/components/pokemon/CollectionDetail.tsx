@@ -14,7 +14,7 @@ import LoadingSpinner from "../ui/LoaderSpinner";
 interface CollectionDetailProps {
   collection: Collection;
   onBack: () => void;
-  onEditCollection: (collection: Collection) => void;
+  onEdit: (collection: Collection) => void;
   onRemoveCard: (cardId: string) => void;
   onCardClick: (card: CollectionCard) => void;
   isLoading?: boolean;
@@ -23,7 +23,7 @@ interface CollectionDetailProps {
 const CollectionDetail = ({
   collection,
   onBack,
-  onEditCollection,
+  onEdit,
   onRemoveCard,
   onCardClick,
   isLoading = false,
@@ -81,7 +81,7 @@ const CollectionDetail = ({
             </div>
             <Button
               variant="outline"
-              onClick={() => onEditCollection(collection)}
+              onClick={() => onEdit(collection)}
             >
               <Edit className="h-4 w-4 mr-2" />
               Editar Colección
