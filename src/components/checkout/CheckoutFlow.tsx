@@ -14,6 +14,7 @@ import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import type { Subscription } from "@/hooks/useSubscription";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface CheckoutFlowProps {
   isOpen: boolean;
@@ -120,8 +121,7 @@ export function CheckoutFlow({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Procesando...
+                <LoadingSpinner message="Procesando pago..." />
               </>
             ) : (
               "Continuar al pago"

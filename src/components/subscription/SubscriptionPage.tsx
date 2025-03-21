@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Loader2 } from "lucide-react";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 interface SubscriptionPageProps {
   onSectionChange: (section: string) => void;
@@ -18,7 +18,7 @@ export default function SubscriptionPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoadingSpinner message="Cargando suscripción..." />
       </div>
     );
   }

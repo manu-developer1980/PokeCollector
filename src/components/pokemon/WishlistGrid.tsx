@@ -7,6 +7,7 @@ import CardGrid from "./CardGrid";
 import CardDetailDialog from "./CardDetailDialog";
 import { useState } from "react";
 import type { PokemonCard } from "@/types/pokemon";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface WishlistGridProps {
   cards: PokemonCard[];
@@ -35,8 +36,60 @@ const WishlistGrid = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="flex flex-col items-center">
+        <LoadingSpinner message="Cargando lista de deseos..." />
+
+    );
+  }
+
+  if (!cards || cards.length === 0) {
+    return (
+      <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
+        <CardContent className="p-6 text-center">
+          <p className="text-gray-500 mb-4">
+            Tu lista de deseos está vacía. ¡Comienza a añadir cartas desde el
+            buscador!
+          </p>
+          <Button
+            className="bg-red-600 hover:bg-red-700"
+            onClick={() => navigateToSearch(navigate)}
+          >
+            <Search className="h-4 w-4 mr-1" /> Buscar Cartas
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="w-full px-2 sm:px-4">
+      <div className="mt-8 space-y-6 w-full">
+        <CardGrid
+          cards={cards}
+          onCardClick={handleCardClick}
+          onQuickAdd={onQuickAdd}
+          onRemove={onRemove}
+          actions="wishlist"
+        />
+      </div>
+
+      {selectedCard && (
+        <CardDetailDialog
+          card={selectedCard}
+          isOpen={isDetailOpen}
+          onClose={() => {
+            setIsDetailOpen(false);
+            setSelectedCard(null);
+          }}
+          onAddToCollection={onQuickAdd}
+          onRemoveFromWishlist={onRemove}
+          mode="wishlist"
+        />
+      )}
+    </div>
+  );
+};
+
+export default WishlistGrid;
           <div className="pokeball mb-4" />
           <p className="text-sm text-muted-foreground animate-pulse">
             Cargando lista de deseos...

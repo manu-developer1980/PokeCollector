@@ -9,7 +9,9 @@ import { supabase } from "../../../supabase/supabase";
 import { Loader2, Pencil } from "lucide-react";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { PasswordResetInstructionsModal } from "../auth/PasswordResetInstructionsModal";
-import { SubscriptionManagement } from "@/components/subscription/SubscriptionManagement";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
@@ -19,6 +21,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { subscription, loading } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
@@ -29,6 +32,11 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
     fullName: "",
     email: "",
   });
+
+  // Obtener el plan actual
+  const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
+    "APRENDIZ") as SubscriptionPlan;
+  const currentPlan = PLAN_FEATURES[currentPlanType] || PLAN_FEATURES.APRENDIZ;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -173,142 +181,174 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>Información Personal</CardTitle>
-          {!isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Nombre completo</label>
-            <Input
-              value={userData.fullName}
-              onChange={(e) =>
-                setUserData((prev) => ({ ...prev, fullName: e.target.value }))
-              }
-              placeholder="Tu nombre completo"
-              disabled={!isEditing}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Email</label>
-            <Input
-              value={userData.email}
-              disabled
-              className="bg-gray-50"
-            />
-          </div>
-          {isEditing && (
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleUpdateProfile}
-                disabled={isLoading}
-                className="flex-1"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Actualizando...
-                  </>
-                ) : (
-                  "Guardar cambios"
-                )}
-              </Button>
+    <div className="container max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Columna izquierda */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle>Información Personal</CardTitle>
+              {!isEditing && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre completo</label>
+                <Input
+                  value={userData.fullName}
+                  onChange={(e) =>
+                    setUserData((prev) => ({
+                      ...prev,
+                      fullName: e.target.value,
+                    }))
+                  }
+                  placeholder="Tu nombre completo"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  value={userData.email}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+              {isEditing && (
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handleUpdateProfile}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <>
+                        <LoadingSpinner message="Actualizando..." />
+                      </>
+                    ) : (
+                      "Guardar cambios"
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setUserData((prev) => ({
+                        ...prev,
+                        fullName: user?.user_metadata?.full_name || "",
+                      }));
+                    }}
+                    disabled={isLoading}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Seguridad</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <Button
                 variant="outline"
-                onClick={() => {
-                  setIsEditing(false);
-                  setUserData((prev) => ({
-                    ...prev,
-                    fullName: user?.user_metadata?.full_name || "",
-                  }));
-                }}
+                className="w-full"
+                onClick={() => setShowPasswordConfirm(true)}
                 disabled={isLoading}
               >
-                Cancelar
+                Cambiar contraseña
               </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isLoading}
+              >
+                Eliminar cuenta
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Suscripción</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="outline"
-            onClick={() => onSectionChange("Subscription")}
-            className="w-full"
-          >
-            Gestionar suscripción
-          </Button>
-        </CardContent>
-      </Card>
+        {/* Columna derecha - Información de suscripción */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Plan Actual</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center min-h-[200px]">
+                  <LoadingSpinner message="Cargando suscripción..." />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <p className="font-medium">Plan: {currentPlan.name}</p>
+                    <p>
+                      Estado:{" "}
+                      {subscription?.status === "active"
+                        ? "Activo"
+                        : "No activo"}
+                    </p>
+                    {subscription?.current_period_end && (
+                      <p className="text-sm text-muted-foreground">
+                        Próxima renovación:{" "}
+                        {new Date(
+                          subscription.current_period_end
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Seguridad</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setShowPasswordConfirm(true)}
-            disabled={isLoading}
-          >
-            Cambiar contraseña
-          </Button>
-        </CardContent>
-      </Card>
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Límites del plan:</h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>
+                        Máximo de cartas:{" "}
+                        {currentPlan.maxCards === Infinity
+                          ? "Ilimitado"
+                          : currentPlan.maxCards}
+                      </li>
+                      <li>
+                        Máximo de colecciones:{" "}
+                        {currentPlan.maxCollections === Infinity
+                          ? "Ilimitado"
+                          : currentPlan.maxCollections}
+                      </li>
+                      <li>
+                        Máximo en lista de deseos:{" "}
+                        {currentPlan.maxWishlist === Infinity
+                          ? "Ilimitado"
+                          : currentPlan.maxWishlist}
+                      </li>
+                    </ul>
+                  </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-red-600">Zona de Peligro</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="destructive"
-            className="w-full"
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={isLoading}
-          >
-            Eliminar cuenta
-          </Button>
-        </CardContent>
-      </Card>
-
-      <ConfirmDialog
-        isOpen={showPasswordConfirm}
-        onClose={() => setShowPasswordConfirm(false)}
-        onConfirm={handlePasswordReset}
-        title="Cambiar contraseña"
-        description="¿Deseas recibir un email con instrucciones para cambiar tu contraseña?"
-      />
-
-      <PasswordResetInstructionsModal
-        isOpen={showPasswordInstructions}
-        onClose={() => setShowPasswordInstructions(false)}
-        email={user?.email || ""}
-      />
-
-      <ConfirmDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteAccount}
-        title="Eliminar cuenta"
-        description="¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible y perderás todos tus datos."
-      />
+                  <Button
+                    variant="default"
+                    onClick={() => onSectionChange("Pricing")}
+                    className="w-full"
+                  >
+                    {subscription?.status === "active"
+                      ? "Cambiar Plan"
+                      : "Ver Planes"}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

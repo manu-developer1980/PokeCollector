@@ -10,6 +10,7 @@ import AuthDialog from "../auth/AuthDialog";
 import { PokemonCard, PokemonCardSearchParams } from "@/types/pokemon";
 import { searchCards } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -146,14 +147,7 @@ export default function SearchPage() {
             onAddToWishlist={handleAddToWishlist}
           >
             {isSearching ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="flex flex-col items-center">
-                  <div className="pokeball mb-4" />
-                  <p className="text-sm text-muted-foreground animate-pulse">
-                    Buscando cartas...
-                  </p>
-                </div>
-              </div>
+              <LoadingSpinner message="Buscando cartas..." />
             ) : (
               <CardGrid
                 cards={searchResults}

@@ -51,6 +51,7 @@ import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLi
 import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
 import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 interface PolarSubscription {
   status: string;
@@ -1316,15 +1317,6 @@ export default function PokemonDashboard() {
         />
       )}
     </>
-  );
-
-  const LoadingSpinner = ({ message }: { message: string }) => (
-    <div className="flex justify-center items-center py-12">
-      <div className="flex flex-col items-center">
-        <div className="pokeball mb-4 animate-spin duration-1000" />
-        <p className="text-sm text-muted-foreground animate-pulse">{message}</p>
-      </div>
-    </div>
   );
 
   const renderWishlistContent = () => (

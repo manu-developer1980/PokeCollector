@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import LoadingSpinner from "./LoaderSpinner";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -59,10 +60,7 @@ export function ConfirmDialog({
             variant="destructive"
           >
             {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cancelando...
-              </>
+              <LoadingSpinner message="Cancelando..." />
             ) : (
               confirmText
             )}

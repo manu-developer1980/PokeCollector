@@ -29,6 +29,7 @@ import {
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 import { Crown } from "lucide-react";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface PlanUpgradeDialogProps {
   isOpen: boolean;
@@ -195,7 +196,9 @@ export default function SignUpForm() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && (
+                  <LoadingSpinner message="Registrando usuario..." />
+                )}
                 Registrarse
               </Button>
             </form>

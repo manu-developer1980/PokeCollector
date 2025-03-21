@@ -4,6 +4,7 @@ import { useAuth } from "../../../supabase/auth";
 import { CheckoutFlow } from "../checkout/CheckoutFlow";
 import { Loader2 } from "lucide-react";
 import { PLAN_FEATURES, type PlanFeature } from "@/lib/stripe";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +50,7 @@ export default function CheckoutPage() {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <LoadingSpinner message="Cargando datos..." />
       </div>
     );
   }

@@ -22,6 +22,7 @@ import {
 import OnboardingModal from "../onboarding/OnboardingModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PlanUpgradeDialog } from "@/components/subscription/PlanUpgradeDialog";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -225,8 +226,10 @@ export default function LoginForm() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Iniciar Sesión
+                {isLoading && (
+                  <LoadingSpinner message="Enviando instrucciones..." />
+                )}
+                Enviar Instrucciones
               </Button>
             </form>
           </Form>

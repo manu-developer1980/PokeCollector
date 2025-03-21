@@ -18,6 +18,7 @@ import { PlanUpgradeDialog } from "./PlanUpgradeDialog";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Loader2 } from "lucide-react";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface SubscriptionManagementProps {
   onSectionChange: (section: string) => void;
@@ -194,10 +195,7 @@ export default function SubscriptionManagement({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Cancelando...
-                    </>
+                    <LoadingSpinner message="Cancelando..." />
                   ) : (
                     "Cancelar suscripción"
                   )}
