@@ -99,7 +99,10 @@ export default function ForgotPassword() {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <LoadingSpinner message="Enviando instrucciones..." />
+                  <LoadingSpinner
+                    message="Enviando instrucciones..."
+                    compact
+                  />
                 ) : (
                   "Enviar instrucciones"
                 )}

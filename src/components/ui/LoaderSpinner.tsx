@@ -1,5 +1,5 @@
 interface LoadingSpinnerProps {
-  message: string;
+  message?: string;
   compact?: boolean;
 }
 
@@ -7,15 +7,30 @@ export default function LoadingSpinner({
   message,
   compact = false,
 }: LoadingSpinnerProps) {
+  if (compact) {
+    return (
+      <div className="w-full flex justify-center">
+        <div className="bg-card border rounded-lg shadow-sm p-6 flex flex-col items-center gap-4">
+          <div className="pokeball w-12 h-12 animate-spin" />
+          {message && (
+            <p className="text-base text-muted-foreground animate-pulse text-center">
+              {message}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`flex justify-center items-center ${
-        compact ? "py-2" : "py-12"
-      }`}
-    >
-      <div className="flex flex-col items-center">
-        <div className="pokeball mb-2 animate-spin duration-1000" />
-        <p className="text-lg text-muted-foreground animate-pulse">{message}</p>
+    <div className="w-full flex justify-center">
+      <div className="bg-card border rounded-lg shadow-sm p-6 flex flex-col items-center gap-4">
+        <div className="pokeball w-12 h-12 animate-spin" />
+        {message && (
+          <p className="text-base text-muted-foreground animate-pulse text-center">
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );

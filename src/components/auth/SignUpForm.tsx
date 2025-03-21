@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../../../supabase/auth";
-import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,59 +17,13 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useSubscription } from "@/hooks/useSubscription";
-import { cn } from "@/lib/utils";
-import { Crown } from "lucide-react";
-import LoadingSpinner from "../ui/LoaderSpinner";
-
-interface PlanUpgradeDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentPlan: SubscriptionPlan;
-  showWelcomeMessage?: boolean;
-}
-
-export function PlanUpgradeDialog({
-  isOpen,
-  onClose,
-  currentPlan,
-  showWelcomeMessage = false,
-}: PlanUpgradeDialogProps) {
-  return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={onClose}
-    >
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>
-            {showWelcomeMessage
-              ? "¡Bienvenido a PokéCollector!"
-              : "Mejora tu Plan"}
-          </DialogTitle>
-          <DialogDescription>
-            {showWelcomeMessage
-              ? "Comienza con el plan Aprendiz gratuito y mejora cuando lo necesites para acceder a más funcionalidades."
-              : "Descubre los beneficios de nuestros planes premium"}
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* ... resto del contenido ... */}
-      </DialogContent>
-    </Dialog>
-  );
-}
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import EmailExistsModal from "./EmailExistsModal";
 
 const formSchema = z
   .object({
     email: z.string().email("Email inválido"),
+    fullName: z.string().min(1, "El nombre es requerido"),
     password: z
       .string()
       .min(6, "La contraseña debe tener al menos 6 caracteres"),
@@ -85,6 +37,8 @@ const formSchema = z
 export default function SignUpForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailExistsModal, setShowEmailExistsModal] = useState(false);
+  const [existingEmail, setExistingEmail] = useState("");
   const { toast } = useToast();
   const { signUp } = useAuth();
 
@@ -92,33 +46,66 @@ export default function SignUpForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      fullName: "",
       password: "",
       confirmPassword: "",
     },
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    console.log("Iniciando registro...", data);
     setIsLoading(true);
 
     try {
-      const result = await signUp(data.email, data.password);
+      // Verificar que signUp existe y es una función
+      if (!signUp || typeof signUp !== "function") {
+        console.error("signUp no está definida o no es una función", signUp);
+        throw new Error("Error de configuración de autenticación");
+      }
 
-      if (result.error) {
+      console.log("Llamando a signUp...");
+      const result = await signUp(data.email, data.password, data.fullName);
+      console.log("Resultado de signUp:", result);
+
+      if (result?.error) {
+        console.log("Error detectado:", result.error);
+        // Cambiamos la condición para que coincida con el mensaje exacto
+        if (
+          result.error.message ===
+          "Este email ya está registrado. Por favor inicia sesión."
+        ) {
+          setExistingEmail(data.email);
+          setShowEmailExistsModal(true);
+          return;
+        }
         throw result.error;
       }
 
-      if (!result.data?.user) {
+      if (!result?.data?.user) {
+        console.log("No hay datos de usuario en la respuesta");
         throw new Error("No se recibieron datos del usuario");
       }
 
-      // Redirigir directamente a confirmación de email
+      console.log("Registro exitoso, navegando a confirm-signup");
       navigate("/confirm-signup", {
         state: {
           email: data.email,
         },
         replace: true,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error completo:", error);
+      // Si el error es de email existente, mostramos el modal
+      if (
+        error.message ===
+        "Este email ya está registrado. Por favor inicia sesión."
+      ) {
+        setExistingEmail(data.email);
+        setShowEmailExistsModal(true);
+        return;
+      }
+
+      // Para otros errores mostramos el toast
       toast({
         title: "Error en el registro",
         description:
@@ -152,6 +139,22 @@ export default function SignUpForm() {
                       <Input
                         type="email"
                         placeholder="tu@email.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Tu nombre"
                         {...field}
                       />
                     </FormControl>
@@ -196,10 +199,14 @@ export default function SignUpForm() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && (
-                  <LoadingSpinner message="Registrando usuario..." />
+                {isLoading ? (
+                  <LoadingSpinner
+                    message="Registrando usuario..."
+                    compact
+                  />
+                ) : (
+                  "Registrarse"
                 )}
-                Registrarse
               </Button>
             </form>
           </Form>
@@ -214,50 +221,11 @@ export default function SignUpForm() {
           </div>
         </CardContent>
       </Card>
-    </AuthLayout>
-  );
-}
-
-export function Sidebar({ items, activeItem, onItemClick }: SidebarProps) {
-  const { subscription } = useSubscription();
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-
-  const isPremium = subscription?.status === "active";
-
-  return (
-    <div className="w-64 border-r bg-card p-4">
-      <nav className="space-y-2">
-        {items.map((item) => (
-          <button
-            key={item}
-            onClick={() => onItemClick(item)}
-            className={cn(
-              "w-full flex items-center px-3 py-2 rounded-lg text-sm",
-              activeItem === item
-                ? "bg-red-100 text-red-900"
-                : "hover:bg-red-50 text-gray-700"
-            )}
-          >
-            {item}
-          </button>
-        ))}
-
-        {!isPremium && (
-          <button
-            onClick={() => setShowUpgradeDialog(true)}
-            className="w-full flex items-center px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
-          >
-            <Crown className="w-4 h-4 mr-2" />
-            Mejora tu Plan
-          </button>
-        )}
-      </nav>
-
-      <PlanUpgradeDialog
-        isOpen={showUpgradeDialog}
-        onClose={() => setShowUpgradeDialog(false)}
-        currentPlan="APRENDIZ"
+      <EmailExistsModal
+        isOpen={showEmailExistsModal}
+        onClose={() => setShowEmailExistsModal(false)}
+        email={existingEmail}
       />
-    </div>
+    </AuthLayout>
   );
 }

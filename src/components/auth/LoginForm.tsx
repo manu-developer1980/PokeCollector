@@ -226,10 +226,14 @@ export default function LoginForm() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && (
-                  <LoadingSpinner message="Enviando instrucciones..." />
+                {isLoading ? (
+                  <LoadingSpinner
+                    message="Iniciando sesión..."
+                    compact
+                  />
+                ) : (
+                  "Iniciar Sesión"
                 )}
-                Enviar Instrucciones
               </Button>
             </form>
           </Form>
