@@ -1,5 +1,3 @@
-import { PLAN_FEATURES, SubscriptionPlan } from "./polar";
-
 export const validateSubscriptionLimits = (
   planType: SubscriptionPlan | string,
   currentCards: number = 0,

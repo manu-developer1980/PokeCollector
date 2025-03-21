@@ -263,33 +263,9 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
               )}
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Seguridad</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowPasswordConfirm(true)}
-                disabled={isLoading}
-              >
-                Cambiar contraseña
-              </Button>
-              <Button
-                variant="destructive"
-                className="w-full"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isLoading}
-              >
-                Eliminar cuenta
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Columna derecha - actualizar con dos cards */}
+        {/* Columna derecha */}
         <div className="space-y-6">
           {/* Card de Plan Actual */}
           <Card>
@@ -335,7 +311,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
             </CardContent>
           </Card>
 
-          {/* Nueva Card de Límites del Plan */}
+          {/* Card de Límites del Plan */}
           <Card>
             <CardHeader>
               <CardTitle>Límites del Plan</CardTitle>
@@ -399,6 +375,48 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Sección de Seguridad */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Seguridad</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowPasswordConfirm(true)}
+              disabled={isLoading}
+            >
+              Cambiar contraseña
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Zona de Peligro */}
+      <div className="mt-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-700">Zona de Peligro</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-red-600">
+              Las acciones en esta sección son permanentes y no se pueden
+              deshacer.
+            </div>
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isLoading}
+            >
+              Eliminar mi cuenta
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
