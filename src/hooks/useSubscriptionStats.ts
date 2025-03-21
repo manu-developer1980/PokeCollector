@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../supabase/supabase';
-import { useAuth } from '../../supabase/auth';
+import { useState, useEffect } from "react";
+import { supabase } from "../../supabase/supabase";
+import { useAuth } from "../../supabase/auth";
 
 export function useSubscriptionStats() {
   const { user } = useAuth();
@@ -17,28 +17,40 @@ export function useSubscriptionStats() {
       if (!user?.id) return;
 
       try {
-        const [cardsResult, collectionsResult, wishlistResult] = await Promise.all([
+        const [collectionsResult, wishlistResult] = await Promise.all([
+          // Primero obtenemos las colecciones del usuario
           supabase
-            .from('collection_cards')
-            .select('id', { count: 'exact' })
-            .eq('user_id', user.id),
+            .from("collections")
+            .select(
+              `
+              id,
+              collection_cards (count)
+            `
+            )
+            .eq("user_id", user.id),
+          // Obtenemos el conteo de la lista de deseos
           supabase
-            .from('collections')
-            .select('id', { count: 'exact' })
-            .eq('user_id', user.id),
-          supabase
-            .from('wishlist_cards')
-            .select('id', { count: 'exact' })
-            .eq('user_id', user.id),
+            .from("wishlist_cards")
+            .select("id", { count: "exact" })
+            .eq("user_id", user.id),
         ]);
 
+        // Calculamos el total de cartas sumando las cartas de todas las colecciones
+        const totalCards =
+          collectionsResult.data?.reduce((acc, collection) => {
+            return acc + (collection.collection_cards?.length || 0);
+          }, 0) || 0;
+
         setStats({
-          cardsCount: cardsResult.count || 0,
-          collectionsCount: collectionsResult.count || 0,
+          cardsCount: totalCards,
+          collectionsCount: collectionsResult.data?.length || 0,
           wishlistCount: wishlistResult.count || 0,
         });
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Error fetching stats'));
+        console.error("Error fetching stats:", err);
+        setError(
+          err instanceof Error ? err : new Error("Error fetching stats")
+        );
       } finally {
         setIsLoading(false);
       }
