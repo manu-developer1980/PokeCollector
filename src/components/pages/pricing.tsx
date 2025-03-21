@@ -4,21 +4,14 @@ import { PLAN_FEATURES } from "@/lib/stripe";
 import { useAuth } from "../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function PricingPage() {
   const { user } = useAuth();
   const { subscription, loading } = useSubscription();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-
-  const handleSelectPlan = (planId: string) => {
-    if (!user) {
-      window.location.href = "/login?redirect=/pricing";
-      return;
-    }
-    setSelectedPlanId(planId);
-    setIsCheckoutOpen(true);
-  };
 
   if (loading) {
     return (
@@ -30,7 +23,6 @@ export default function PricingPage() {
     );
   }
 
-  // Asegurarse de que el plan actual se identifica correctamente
   const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
 
   return (
@@ -38,7 +30,8 @@ export default function PricingPage() {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">Planes y Precios</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Elige el plan que mejor se adapte a tus necesidades de coleccionista
+          Estos son nuestros planes para ti. Empieza con el gratuito y sube de
+          nivel cuando lo necesites
         </p>
       </div>
 
@@ -48,11 +41,24 @@ export default function PricingPage() {
             key={plan.id}
             plan={plan}
             isPopular={plan.name === "Entrenador"}
-            onSelectPlan={handleSelectPlan}
             isCurrentPlan={planType === currentPlanType}
+            showButton={false}
           />
         ))}
       </div>
+
+      {!user && (
+        <div className="flex justify-center mt-8">
+          <Link to={user ? "/dashboard" : "/signup"}>
+            <Button
+              size="lg"
+              className="px-8 py-6 text-lg"
+            >
+              Empezar Gratis
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {selectedPlanId && (
         <CheckoutFlow

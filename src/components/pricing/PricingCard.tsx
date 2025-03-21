@@ -52,7 +52,7 @@ export function PricingCard({
   return (
     <div className="relative xxs:max-w[250px] xs:max-w-[300px] gap-2 mx-auto mb-6  hover:scale-105 transition-transform duration-150">
       {/* Overlay gris translúcido para el plan actual */}
-      {isCurrentPlan && (
+      {user && isCurrentPlan && (
         <div
           className="absolute inset-0 bg-gray-500/10 rounded-lg z-10"
           style={{ pointerEvents: "none" }}
@@ -61,7 +61,7 @@ export function PricingCard({
 
       <Card
         className={`relative ${isPopular ? "border-primary" : ""} ${
-          isCurrentPlan ? "bg-opacity-90" : ""
+          user && isCurrentPlan ? "bg-opacity-90" : ""
         }`}
       >
         {isPopular && (
@@ -95,22 +95,23 @@ export function PricingCard({
             ))}
           </ul>
         </CardContent>
-
-        <CardFooter>
-          {isCurrentPlan ? (
-            <div className="w-full px-4 py-2 bg-green-100 text-green-800 rounded-md text-center font-medium shadow-sm">
-              Plan Actual
-            </div>
-          ) : (
-            <Button
-              className="w-full"
-              variant={isPopular ? "default" : "outline"}
-              onClick={handleSelectPlan}
-            >
-              Seleccionar plan
-            </Button>
-          )}
-        </CardFooter>
+        {user && (
+          <CardFooter>
+            {isCurrentPlan ? (
+              <div className="w-full px-4 py-2 bg-green-100 text-green-800 rounded-md text-center font-medium shadow-sm">
+                Plan Actual
+              </div>
+            ) : (
+              <Button
+                className="w-full"
+                variant={isPopular ? "default" : "outline"}
+                onClick={handleSelectPlan}
+              >
+                Seleccionar plan
+              </Button>
+            )}
+          </CardFooter>
+        )}
       </Card>
     </div>
   );
