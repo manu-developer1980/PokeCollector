@@ -32,22 +32,21 @@ interface CardItemProps {
   showPrice?: boolean; // Añadido showPrice como prop opcional
 }
 
-const CardItem: React.FC<CardItemProps> = ({
+const CardItem = ({
   card,
   onClick,
-  onRemove,
   onQuickAdd,
   onAddToWishlist,
-  actions = "search",
-  showPrice = false, // Valor por defecto false
-}) => {
+  onRemove,
+  actions,
+  showPrice = false,
+}: CardItemProps) => {
   const [imageError, setImageError] = useState(false);
 
-  if (!card) return null;
-
   const handleImageError = () => setImageError(true);
+
   const handleAction = (e: React.MouseEvent, action: () => void) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Evita que el clic se propague al contenedor padre
     action();
   };
 
@@ -76,7 +75,7 @@ const CardItem: React.FC<CardItemProps> = ({
 
   return (
     <div
-      className="relative group cursor-pointer bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 hover:scale-105 transition-transform duration-105"
+      className="relative group cursor-pointer bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 hover:scale-105"
       onClick={() => onClick?.(card)}
     >
       <CardContent className="p-4">

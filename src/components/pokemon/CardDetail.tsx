@@ -54,7 +54,22 @@ const CardDetail = ({
 
   const handleRemove = (cardId: string) => {
     onRemove?.(cardId);
-    onClose(); // Cerramos el modal después de eliminar
+    onClose();
+  };
+
+  const handleAddToCollection = (card: PokemonCard) => {
+    onAddToCollection?.(card);
+    onClose();
+  };
+
+  const handleAddToWishlist = (card: PokemonCard) => {
+    onAddToWishlist?.(card);
+    onClose();
+  };
+
+  const handleRemoveFromWishlist = (card: PokemonCard) => {
+    onRemoveFromWishlist?.(card);
+    onClose();
   };
 
   useEffect(() => {
@@ -103,16 +118,17 @@ const CardDetail = ({
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => onAddToCollection?.(cardDetails)}
+              onClick={() => handleAddToCollection(cardDetails)}
             >
               <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
             </Button>
             <Button
               variant="outline"
-              onClick={() => onAddToWishlist?.(cardDetails)}
+              onClick={() => handleAddToWishlist(cardDetails)}
               className="w-full"
             >
-              <Heart className="h-4 w-4 mr-2" /> Añadir a Lista de Deseos
+              <Heart className="h-4 w-4 mr-2 text-red-500 fill-current" />{" "}
+              Añadir a Lista de Deseos
             </Button>
           </div>
         );
@@ -122,25 +138,23 @@ const CardDetail = ({
           <div className="flex flex-col gap-2 mt-auto pt-4">
             <Button
               variant="outline"
-              onClick={() => onAddToCollection?.(cardDetails)}
+              onClick={() => handleAddToCollection(cardDetails)}
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                if (card && onRemoveFromWishlist) {
-                  onRemoveFromWishlist(card);
-                }
-                onClose();
-              }}
+              onClick={() => handleRemoveFromWishlist(card)}
               className="w-full"
             >
               <Trash className="h-4 w-4 mr-2" /> Eliminar de Lista de Deseos
             </Button>
           </div>
         );
+
+      case "collection":
+        return null; // Eliminamos el botón de aquí
     }
   };
 
