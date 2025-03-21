@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import { Progress } from "@/components/ui/progress";
+import { useStats } from "@/hooks/useStats";
 
 interface SubscriptionPageProps {
   onSectionChange: (section: string) => void;
@@ -14,8 +16,9 @@ export default function SubscriptionPage({
   onSectionChange,
 }: SubscriptionPageProps) {
   const { subscription, loading } = useSubscription();
+  const { stats, isLoading: statsLoading } = useStats();
 
-  if (loading) {
+  if (loading || statsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingSpinner message="Cargando suscripción..." />
@@ -23,10 +26,16 @@ export default function SubscriptionPage({
     );
   }
 
-  // Obtener las características del plan actual
   const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
     "APRENDIZ") as SubscriptionPlan;
   const currentPlan = PLAN_FEATURES[currentPlanType] || PLAN_FEATURES.APRENDIZ;
+
+  // Calcular porcentajes
+  const cardsPercentage = (stats.cardsCount / currentPlan.maxCards) * 100;
+  const collectionsPercentage =
+    (stats.collectionsCount / currentPlan.maxCollections) * 100;
+  const wishlistPercentage =
+    (stats.wishlistCount / currentPlan.maxWishlist) * 100;
 
   return (
     <div className="container mx-auto py-8">
@@ -102,6 +111,63 @@ export default function SubscriptionPage({
                 </p>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Uso Actual del Plan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Cartas</span>
+                <span className="text-muted-foreground">
+                  {stats.cardsCount}/
+                  {currentPlan.maxCards === Infinity
+                    ? "∞"
+                    : currentPlan.maxCards}
+                </span>
+              </div>
+              <Progress
+                value={cardsPercentage}
+                className="h-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Colecciones</span>
+                <span className="text-muted-foreground">
+                  {stats.collectionsCount}/
+                  {currentPlan.maxCollections === Infinity
+                    ? "∞"
+                    : currentPlan.maxCollections}
+                </span>
+              </div>
+              <Progress
+                value={collectionsPercentage}
+                className="h-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Lista de Deseos</span>
+                <span className="text-muted-foreground">
+                  {stats.wishlistCount}/
+                  {currentPlan.maxWishlist === Infinity
+                    ? "∞"
+                    : currentPlan.maxWishlist}
+                </span>
+              </div>
+              <Progress
+                value={wishlistPercentage}
+                className="h-2"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

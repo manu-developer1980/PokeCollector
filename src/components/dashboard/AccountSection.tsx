@@ -12,6 +12,8 @@ import { PasswordResetInstructionsModal } from "../auth/PasswordResetInstruction
 import { useSubscription } from "@/hooks/useSubscription";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { Progress } from "@/components/ui/progress";
+import { useStats } from "@/hooks/useStats";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
@@ -22,6 +24,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { subscription, loading } = useSubscription();
+  const { stats, isLoading: statsLoading } = useStats();
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
@@ -37,6 +40,13 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
   const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
     "APRENDIZ") as SubscriptionPlan;
   const currentPlan = PLAN_FEATURES[currentPlanType] || PLAN_FEATURES.APRENDIZ;
+
+  // Calcular porcentajes
+  const cardsPercentage = (stats.cardsCount / currentPlan.maxCards) * 100;
+  const collectionsPercentage =
+    (stats.collectionsCount / currentPlan.maxCollections) * 100;
+  const wishlistPercentage =
+    (stats.wishlistCount / currentPlan.maxWishlist) * 100;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -279,8 +289,9 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
           </Card>
         </div>
 
-        {/* Columna derecha - Información de suscripción */}
-        <div>
+        {/* Columna derecha - actualizar con dos cards */}
+        <div className="space-y-6">
+          {/* Card de Plan Actual */}
           <Card>
             <CardHeader>
               <CardTitle>Plan Actual</CardTitle>
@@ -310,30 +321,6 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Límites del plan:</h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>
-                        Máximo de cartas:{" "}
-                        {currentPlan.maxCards === Infinity
-                          ? "Ilimitado"
-                          : currentPlan.maxCards}
-                      </li>
-                      <li>
-                        Máximo de colecciones:{" "}
-                        {currentPlan.maxCollections === Infinity
-                          ? "Ilimitado"
-                          : currentPlan.maxCollections}
-                      </li>
-                      <li>
-                        Máximo en lista de deseos:{" "}
-                        {currentPlan.maxWishlist === Infinity
-                          ? "Ilimitado"
-                          : currentPlan.maxWishlist}
-                      </li>
-                    </ul>
-                  </div>
-
                   <Button
                     variant="default"
                     onClick={() => onSectionChange("Pricing")}
@@ -343,6 +330,70 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
                       ? "Cambiar Plan"
                       : "Ver Planes"}
                   </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Nueva Card de Límites del Plan */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Límites del Plan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading || statsLoading ? (
+                <div className="flex items-center justify-center min-h-[100px]">
+                  <LoadingSpinner message="Cargando límites..." />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Cartas</span>
+                      <span className="text-muted-foreground">
+                        {stats.cardsCount}/
+                        {currentPlan.maxCards === Infinity
+                          ? "∞"
+                          : currentPlan.maxCards}
+                      </span>
+                    </div>
+                    <Progress
+                      value={cardsPercentage}
+                      className="h-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Colecciones</span>
+                      <span className="text-muted-foreground">
+                        {stats.collectionsCount}/
+                        {currentPlan.maxCollections === Infinity
+                          ? "∞"
+                          : currentPlan.maxCollections}
+                      </span>
+                    </div>
+                    <Progress
+                      value={collectionsPercentage}
+                      className="h-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Lista de Deseos</span>
+                      <span className="text-muted-foreground">
+                        {stats.wishlistCount}/
+                        {currentPlan.maxWishlist === Infinity
+                          ? "∞"
+                          : currentPlan.maxWishlist}
+                      </span>
+                    </div>
+                    <Progress
+                      value={wishlistPercentage}
+                      className="h-2"
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
