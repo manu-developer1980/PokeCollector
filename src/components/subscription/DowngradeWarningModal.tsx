@@ -1,15 +1,14 @@
-import React from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
-import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
+import { SubscriptionPlan } from "@/lib/stripe";
 
 interface DowngradeWarningModalProps {
   isOpen: boolean;
@@ -17,11 +16,11 @@ interface DowngradeWarningModalProps {
   onConfirm: () => void;
   currentPlan: SubscriptionPlan;
   targetPlan: SubscriptionPlan;
-  currentStats: {
-    cardsCount: number;
-    collectionsCount: number;
-    wishlistCount: number;
-  } | null;
+  currentStats?: {
+    totalCards?: number;
+    totalCollections?: number;
+    totalWishlist?: number;
+  };
 }
 
 export function DowngradeWarningModal({
@@ -30,61 +29,30 @@ export function DowngradeWarningModal({
   onConfirm,
   currentPlan,
   targetPlan,
-  currentStats = { cardsCount: 0, collectionsCount: 0, wishlistCount: 0 },
+  currentStats,
 }: DowngradeWarningModalProps) {
-  const targetFeatures = PLAN_FEATURES[targetPlan];
-  const stats = currentStats || {
-    cardsCount: 0,
-    collectionsCount: 0,
-    wishlistCount: 0,
-  };
-
-  const willLoseCards = stats.cardsCount > targetFeatures.maxCards;
-  const willLoseCollections =
-    stats.collectionsCount > targetFeatures.maxCollections;
-  const willLoseWishlist = stats.wishlistCount > targetFeatures.maxWishlist;
-
   return (
     <Dialog
       open={isOpen}
       onOpenChange={onClose}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Advertencia de Cambio de Plan
+            Confirmar cambio de plan
           </DialogTitle>
           <DialogDescription>
-            Al cambiar al plan {targetFeatures.name}, se aplicarán las
-            siguientes restricciones:
+            Estás a punto de cambiar de {currentPlan} a {targetPlan}. Este
+            cambio reducirá los límites de tu cuenta.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {willLoseCards && (
-            <div className="text-sm text-red-600">
-              • Se mantendrán solo las {targetFeatures.maxCards} cartas más
-              recientes (actualmente tienes {stats.cardsCount})
-            </div>
-          )}
-          {willLoseCollections && (
-            <div className="text-sm text-red-600">
-              • Se mantendrán solo las {targetFeatures.maxCollections}{" "}
-              colecciones más recientes (actualmente tienes{" "}
-              {stats.collectionsCount})
-            </div>
-          )}
-          {willLoseWishlist && (
-            <div className="text-sm text-red-600">
-              • Se mantendrán solo las {targetFeatures.maxWishlist} cartas en la
-              lista de deseos (actualmente tienes {stats.wishlistCount})
-            </div>
-          )}
-          <div className="text-sm font-medium">
-            Esta acción no se puede deshacer. ¿Estás seguro de que deseas
-            continuar?
-          </div>
+        <div className="py-4">
+          <p className="text-sm text-red-600 font-medium">
+            Importante: Si excedes los límites del nuevo plan, no podrás añadir
+            más items hasta que liberes espacio.
+          </p>
         </div>
 
         <DialogFooter>
@@ -98,7 +66,7 @@ export function DowngradeWarningModal({
             variant="destructive"
             onClick={onConfirm}
           >
-            Confirmar Cambio
+            Confirmar cambio
           </Button>
         </DialogFooter>
       </DialogContent>

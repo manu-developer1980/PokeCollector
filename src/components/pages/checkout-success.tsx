@@ -1,104 +1,181 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useToast } from "@/components/ui/use-toast";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
-export default function CheckoutSuccessPage() {
+const MAX_RETRIES = 5;
+const RETRY_INTERVAL = 2000;
+
+const getPlanName = (planType: string) => {
+  return planType.charAt(0).toUpperCase() + planType.slice(1).toLowerCase();
+};
+
+export default function CheckoutSuccess() {
   const navigate = useNavigate();
-  const { subscription, loading, refetchSubscription } = useSubscription();
+  const { subscription, refetchSubscription } = useSubscription();
   const { toast } = useToast();
   const [isVerifying, setIsVerifying] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 5;
-  const RETRY_INTERVAL = 3000; // 3 segundos
+  const [verificationFailed, setVerificationFailed] = useState(false);
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const selectedPlan =
+    searchParams.get("plan") || sessionStorage.getItem("selectedPlan");
+  const newPlanName = selectedPlan ? getPlanName(selectedPlan) : null;
+
+  const verifySubscription = useCallback(async () => {
+    console.log(`Intento de verificación ${retryCount + 1}/${MAX_RETRIES}`);
+
+    if (retryCount >= MAX_RETRIES) {
+      console.log("Máximo de intentos alcanzado");
+      setIsVerifying(false);
+      setVerificationFailed(true);
+      toast({
+        title: "Verificación no completada",
+        description:
+          "Los cambios pueden tardar unos minutos en reflejarse. Puedes continuar usando la aplicación normalmente.",
+        duration: 10000,
+      });
+      return;
+    }
+
+    try {
+      const updatedSubscription = await refetchSubscription();
+      console.log("Estado actual de la suscripción:", {
+        subscription: updatedSubscription,
+        selectedPlan,
+        retryCount,
+      });
+
+      // Si la suscripción es null pero aún tenemos intentos, continuamos
+      if (!updatedSubscription) {
+        console.log("Suscripción no encontrada, reintentando...");
+        setRetryCount((prev) => prev + 1);
+        setTimeout(verifySubscription, RETRY_INTERVAL);
+        return;
+      }
+
+      // Verificamos el estado y el tipo de plan
+      if (updatedSubscription.status === "active") {
+        console.log("Suscripción activa encontrada:", updatedSubscription);
+        setIsVerifying(false);
+        setVerificationFailed(false);
+        const planName = getPlanName(updatedSubscription.plan_type);
+        const isDowngrade = updatedSubscription.cancel_at_period_end;
+
+        toast({
+          title: isDowngrade
+            ? "Cambio de plan programado"
+            : "¡Suscripción activada!",
+          description: isDowngrade
+            ? `Tu plan cambiará a ${planName} al final del período de facturación actual`
+            : `Tu suscripción al plan ${planName} está activa`,
+          duration: 5000,
+        });
+
+        // Limpiar el plan seleccionado del sessionStorage
+        sessionStorage.removeItem("selectedPlan");
+        return;
+      }
+
+      console.log("Suscripción encontrada pero no activa, reintentando...");
+      setRetryCount((prev) => prev + 1);
+      setTimeout(verifySubscription, RETRY_INTERVAL);
+    } catch (error) {
+      console.error("Error en la verificación:", error);
+      setIsVerifying(false);
+      setVerificationFailed(true);
+      toast({
+        title: "Error en la verificación",
+        description: "No se pudo verificar el estado de la suscripción.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  }, [refetchSubscription, retryCount, toast, selectedPlan]);
 
   useEffect(() => {
-    const verifySubscription = async () => {
-      try {
-        const updatedSubscription = await refetchSubscription();
+    let timeoutId: NodeJS.Timeout;
 
-        if (!updatedSubscription || updatedSubscription.status !== "active") {
-          if (retryCount < MAX_RETRIES) {
-            // Programar otro intento
-            setTimeout(() => {
-              setRetryCount((prev) => prev + 1);
-            }, RETRY_INTERVAL);
-
-            toast({
-              title: "Verificación en proceso",
-              description: `Verificando estado de suscripción... Intento ${
-                retryCount + 1
-              }/${MAX_RETRIES}`,
-              duration: 2000,
-            });
-          } else {
-            toast({
-              title: "Verificación pendiente",
-              description:
-                "La activación de tu suscripción puede tomar unos minutos. Por favor, revisa tu dashboard más tarde.",
-              duration: 10000,
-            });
-            setIsVerifying(false);
-          }
-        } else {
-          setIsVerifying(false);
-          toast({
-            title: "¡Suscripción activada!",
-            description:
-              "Tu suscripción está activa y puedes comenzar a usar todas las funciones.",
-            duration: 5000,
-          });
-        }
-      } catch (error) {
-        console.error("Error verificando suscripción:", error);
-        setIsVerifying(false);
-        toast({
-          title: "Error de verificación",
-          description: "No se pudo verificar el estado de tu suscripción.",
-          variant: "destructive",
-        });
-      }
+    const initializeVerification = () => {
+      console.log("Iniciando verificación de suscripción");
+      verifySubscription();
     };
 
-    if (!loading && retryCount < MAX_RETRIES) {
-      verifySubscription();
-    }
-  }, [refetchSubscription, toast, loading, retryCount]);
+    initializeVerification();
 
-  if (loading || isVerifying) {
-    return (
-      <div className="container max-w-2xl mx-auto py-16">
-        <div className="text-center space-y-6">
-          <div className="flex flex-col items-center justify-center">
-            <div className="pokeball mb-4" />
-            <p className="text-[18px] font-bold text-muted-foreground animate-pulse">
-              Verificando tu suscripción...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    return () => {
+      console.log("Limpiando verificación");
+      clearTimeout(timeoutId);
+      setIsVerifying(false);
+      setVerificationFailed(false);
+      setRetryCount(0);
+      sessionStorage.removeItem("selectedPlan");
+    };
+  }, [verifySubscription]);
 
   return (
     <div className="container max-w-2xl mx-auto py-16">
-      <div className="text-center space-y-6">
-        <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
-        <h1 className="text-3xl font-bold">¡Pago exitoso!</h1>
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            Tu suscripción ha sido procesada correctamente. Ya puedes comenzar a
-            disfrutar de todas las características de tu nuevo plan.
+      <div className="bg-white p-8 rounded-lg shadow-md text-center">
+        <div className="mb-8">
+          <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">
+            ¡Gracias por tu preferencia!
+          </h1>
+          <p className="text-gray-600 mb-4">
+            Tu suscripción ha sido procesada correctamente.
           </p>
-          {subscription?.status === "active" && (
-            <p className="text-green-600 font-medium">
-              Plan activo: {subscription.plan_type}
+
+          {isVerifying ? (
+            <div className="space-y-4">
+              <LoadingSpinner message="Verificando suscripción..." />
+              <p className="text-sm text-gray-500">
+                Intento {retryCount + 1} de {MAX_RETRIES}
+              </p>
+            </div>
+          ) : verificationFailed ? (
+            <div className="space-y-2 text-amber-600">
+              <p>Los cambios pueden tardar unos minutos en reflejarse</p>
+              <p className="text-sm">Plan seleccionado: {newPlanName}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-green-600 font-medium">
+                Plan actual:{" "}
+                {subscription?.plan_type
+                  ? getPlanName(subscription.plan_type)
+                  : "Cargando..."}
+              </p>
+              {subscription?.cancel_at_period_end && (
+                <p className="text-amber-600">
+                  Cambio a plan {newPlanName} programado para el próximo período
+                </p>
+              )}
+              {!subscription?.cancel_at_period_end && newPlanName && (
+                <p className="text-green-600">
+                  Plan actualizado a: {newPlanName}
+                </p>
+              )}
+            </div>
+          )}
+
+          {subscription?.current_period_end && (
+            <p className="text-sm text-gray-500 mt-2">
+              Próxima facturación:{" "}
+              {new Date(subscription.current_period_end).toLocaleDateString()}
             </p>
           )}
         </div>
-        <Button onClick={() => navigate("/dashboard")}>Ir al Dashboard</Button>
+
+        <Button
+          onClick={() => navigate("/dashboard")}
+          disabled={isVerifying}
+        >
+          {isVerifying ? "Verificando..." : "Ir al Dashboard"}
+        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,12 @@
-// Tipos para los planes de suscripción
 export type SubscriptionPlan = "APRENDIZ" | "ENTRENADOR" | "MAESTRO";
+
+// También podrías necesitar una versión en minúsculas para la base de datos
+export type DatabasePlanType = "aprendiz" | "entrenador" | "maestro";
+
+// Función helper para convertir entre formatos
+export const normalizeSubscriptionPlan = (plan: string): SubscriptionPlan => {
+  return plan.toUpperCase() as SubscriptionPlan;
+};
 
 // Planes de suscripción con IDs de Stripe
 export const SUBSCRIPTION_PLANS = {
@@ -34,7 +41,7 @@ export const PLAN_FEATURES = {
       "Búsqueda de cartas por nombre y tipo",
     ],
     maxCards: 50,
-    maxCollections: 1,
+    maxCollections: 2,
     maxWishlist: 10,
   },
   ENTRENADOR: {
@@ -48,7 +55,7 @@ export const PLAN_FEATURES = {
       "50 cartas en lista de deseos",
       "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más",
     ],
-    maxCards: 500,
+    maxCards: 200,
     maxCollections: 5,
     maxWishlist: 50,
   },
@@ -64,11 +71,11 @@ export const PLAN_FEATURES = {
       "Lista de deseos ilimitada",
       "Soporte Prioritario",
     ],
-    maxCards: Infinity,
-    maxCollections: Infinity,
-    maxWishlist: Infinity,
+    maxCards: 1000,
+    maxCollections: 20,
+    maxWishlist: 200,
   },
-};
+} as const;
 
 export const getFeaturesByPriceId = (
   priceId: string

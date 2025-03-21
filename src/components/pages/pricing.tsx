@@ -26,6 +26,11 @@ export default function PricingPage() {
 
   const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
 
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlanId(planId);
+    setIsCheckoutOpen(true);
+  };
+
   const faqs = [
     {
       question: "¿Qué incluye el plan gratuito?",
@@ -96,7 +101,7 @@ export default function PricingPage() {
             plan={plan}
             isPopular={plan.name === "Entrenador"}
             isCurrentPlan={planType === currentPlanType}
-            showButton={false}
+            onSelectPlan={handleSelectPlan}
           />
         ))}
       </div>

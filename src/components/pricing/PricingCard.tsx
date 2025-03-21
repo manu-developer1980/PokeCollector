@@ -11,6 +11,10 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { PlanFeature } from "@/lib/stripe";
 import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { DowngradeWarningModal } from "@/components/subscription/DowngradeWarningModal";
+import type { SubscriptionPlan } from "@/lib/stripe";
 
 interface PricingCardProps {
   plan: PlanFeature;
@@ -28,40 +32,89 @@ export function PricingCard({
   const { user } = useAuth();
   const { subscription } = useSubscription();
   const navigate = useNavigate();
+  const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
+  const [targetPlan, setTargetPlan] = useState<string | null>(null);
 
-  const handleSelectPlan = () => {
+  const isPlanDowngrade = (current: string, target: string): boolean => {
+    const planHierarchy: Record<string, number> = {
+      APRENDIZ: 1,
+      ENTRENADOR: 2,
+      MAESTRO: 3,
+    };
+
+    const normalizedCurrent = current.toUpperCase();
+    const normalizedTarget = target.toUpperCase();
+
+    console.log("Checking downgrade:", {
+      normalizedCurrent,
+      normalizedTarget,
+      currentValue: planHierarchy[normalizedCurrent],
+      targetValue: planHierarchy[normalizedTarget],
+      isDowngrade:
+        planHierarchy[normalizedTarget] < planHierarchy[normalizedCurrent],
+    });
+
+    return planHierarchy[normalizedTarget] < planHierarchy[normalizedCurrent];
+  };
+
+  const handleSelectPlan = async () => {
     if (!user) {
       sessionStorage.setItem("selectedPlan", plan.id);
       navigate(`/signup?plan=${plan.name.toLowerCase()}`);
       return;
     }
 
-    if (subscription?.status === "active" && !isCurrentPlan) {
+    // Si es el plan actual, no hacemos nada
+    if (isCurrentPlan) {
       toast({
-        title: "Suscripción existente",
-        description:
-          "Ya tienes una suscripción activa. Cancela tu suscripción actual antes de cambiar de plan.",
-        variant: "destructive",
+        title: "Plan actual",
+        description: "Ya tienes este plan activo.",
+        variant: "default",
       });
       return;
     }
 
-    onSelectPlan(plan.id);
+    // Verificar si es un downgrade
+    const currentPlanType = (
+      subscription?.plan_type || "APRENDIZ"
+    ).toUpperCase();
+    console.log("Current plan type:", currentPlanType);
+
+    if (isPlanDowngrade(currentPlanType, plan.name)) {
+      console.log("Showing downgrade warning");
+      setShowDowngradeWarning(true);
+      setTargetPlan(plan.id);
+      return;
+    }
+
+    // Permitir el cambio de plan
+    try {
+      await onSelectPlan(plan.id);
+      toast({
+        title: "Plan actualizado",
+        description: `Tu plan ha sido actualizado a ${plan.name}`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error updating plan:", error);
+      toast({
+        title: "Error",
+        description:
+          "No se pudo actualizar el plan. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="relative xxs:max-w[250px] xs:max-w-[300px] gap-2 mx-auto mb-6  hover:scale-105 transition-transform duration-150">
-      {/* Overlay gris translúcido para el plan actual */}
-      {user && isCurrentPlan && (
-        <div
-          className="absolute inset-0 bg-gray-500/10 rounded-lg z-10"
-          style={{ pointerEvents: "none" }}
-        />
-      )}
-
+    <>
       <Card
-        className={`relative ${isPopular ? "border-primary" : ""} ${
-          user && isCurrentPlan ? "bg-opacity-90" : ""
+        className={`relative max-w-[330px] ${
+          isPopular ? "border-primary" : ""
+        } ${
+          user && isCurrentPlan
+            ? "bg-opacity-90"
+            : "hover:scale-105 duration-150 transition-transform cursor-pointer"
         }`}
       >
         {isPopular && (
@@ -95,6 +148,7 @@ export function PricingCard({
             ))}
           </ul>
         </CardContent>
+
         {user && (
           <CardFooter>
             {isCurrentPlan ? (
@@ -113,6 +167,26 @@ export function PricingCard({
           </CardFooter>
         )}
       </Card>
-    </div>
+
+      <DowngradeWarningModal
+        isOpen={showDowngradeWarning}
+        onClose={() => {
+          setShowDowngradeWarning(false);
+          setTargetPlan(null);
+        }}
+        onConfirm={() => {
+          if (targetPlan) {
+            onSelectPlan(targetPlan);
+          }
+          setShowDowngradeWarning(false);
+        }}
+        currentPlan={
+          (subscription?.plan_type?.toUpperCase() as SubscriptionPlan) ||
+          "APRENDIZ"
+        }
+        targetPlan={plan.name.toUpperCase() as SubscriptionPlan}
+        currentStats={subscription?.stats}
+      />
+    </>
   );
 }
