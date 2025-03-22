@@ -57,36 +57,41 @@ export default function SignUpForm() {
     setIsLoading(true);
 
     try {
-      // Verificar que signUp existe y es una función
       if (!signUp || typeof signUp !== "function") {
-        console.error("signUp no está definida o no es una función", signUp);
         throw new Error("Error de configuración de autenticación");
       }
 
-      console.log("Llamando a signUp...");
       const result = await signUp(data.email, data.password, data.fullName);
       console.log("Resultado de signUp:", result);
 
       if (result?.error) {
         console.log("Error detectado:", result.error);
-        // Cambiamos la condición para que coincida con el mensaje exacto
-        if (
-          result.error.message ===
-          "Este email ya está registrado. Por favor inicia sesión."
-        ) {
+
+        // Manejar diferentes tipos de errores
+        if (result.error.message === "Database error saving new user") {
+          toast({
+            title: "Error en el registro",
+            description:
+              "Hubo un problema al crear tu cuenta. Por favor, intenta nuevamente en unos momentos.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (result.error.message.includes("already registered")) {
           setExistingEmail(data.email);
           setShowEmailExistsModal(true);
           return;
         }
+
         throw result.error;
       }
 
       if (!result?.data?.user) {
-        console.log("No hay datos de usuario en la respuesta");
         throw new Error("No se recibieron datos del usuario");
       }
 
-      console.log("Registro exitoso, navegando a confirm-signup");
+      // Navegar a la página de confirmación
       navigate("/confirm-signup", {
         state: {
           email: data.email,
@@ -95,20 +100,11 @@ export default function SignUpForm() {
       });
     } catch (error: any) {
       console.error("Error completo:", error);
-      // Si el error es de email existente, mostramos el modal
-      if (
-        error.message ===
-        "Este email ya está registrado. Por favor inicia sesión."
-      ) {
-        setExistingEmail(data.email);
-        setShowEmailExistsModal(true);
-        return;
-      }
 
-      // Para otros errores mostramos el toast
       toast({
         title: "Error en el registro",
         description:
+          error.message ||
           "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente.",
         variant: "destructive",
       });

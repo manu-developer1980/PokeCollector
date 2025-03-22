@@ -40,13 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Starting signup process for:", email);
 
-      // Intentar el registro
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -57,10 +56,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           message: authError.message,
           status: authError.status,
           name: authError.name,
+          details: authError,
         });
+
+        // Handle specific error cases
+        if (authError.message === "Database error saving new user") {
+          return {
+            error: {
+              message:
+                "Error temporal del servidor. Por favor, intenta en unos minutos.",
+              originalError: authError,
+            },
+          };
+        }
+
         return {
           error: {
-            message: authError.message || "Error durante el registro",
+            message: authError.message,
+            originalError: authError,
           },
         };
       }
@@ -69,17 +82,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("No user data received from signup");
         return {
           error: {
-            message: "No se pudo crear el usuario",
+            message: "Error al crear el usuario",
           },
         };
       }
 
       console.log("Signup successful, user created:", authData.user.id);
 
-      // Esperar a que el trigger complete
+      // Wait for trigger to complete
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Verificar que el usuario se creó correctamente en la tabla users
+      // Verify user creation
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
@@ -97,7 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Unexpected error during signup:", error);
       return {
         error: {
-          message: error.message || "Error inesperado durante el registro",
+          message:
+            "Error inesperado durante el registro. Por favor, intenta nuevamente.",
+          originalError: error,
         },
       };
     }

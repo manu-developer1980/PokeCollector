@@ -40,28 +40,6 @@ CREATE TABLE public.collections (
     is_default BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE public.collection_cards (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    collection_id UUID REFERENCES collections(id) ON DELETE CASCADE,
-    card_id TEXT NOT NULL,
-    quantity INTEGER DEFAULT 1,
-    date_added TIMESTAMPTZ DEFAULT now(),
-    condition TEXT,
-    notes TEXT,
-    is_foil BOOLEAN DEFAULT FALSE,
-    is_first_edition BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE public.wishlist_cards (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    card_id TEXT NOT NULL,
-    quantity INTEGER DEFAULT 1,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT unique_user_card UNIQUE (user_id, card_id)
-);
-
 CREATE TABLE public.subscriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -77,36 +55,10 @@ CREATE TABLE public.subscriptions (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE public.webhook_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    event_type TEXT NOT NULL,
-    event_data JSONB NOT NULL,
-    status TEXT DEFAULT 'pending',
-    processed_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    stripe_event_id TEXT UNIQUE
-);
-
-CREATE TABLE public.subscription_changes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    subscription_id UUID REFERENCES subscriptions(id) ON DELETE CASCADE,
-    previous_plan subscription_plan_type,
-    new_plan subscription_plan_type,
-    status TEXT DEFAULT 'pending',
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
 -- Create indexes
-CREATE INDEX idx_collections_user_id ON collections(user_id);
-CREATE INDEX idx_collection_cards_collection_id ON collection_cards(collection_id);
-CREATE INDEX idx_wishlist_cards_user_id ON wishlist_cards(user_id);
-CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX idx_subscriptions_stripe_subscription_id ON subscriptions(stripe_subscription_id);
-CREATE INDEX idx_subscriptions_stripe_customer_id ON subscriptions(stripe_customer_id);
-CREATE INDEX idx_webhook_events_event_type ON webhook_events(event_type);
-CREATE INDEX idx_webhook_events_processed_at ON webhook_events(processed_at);
-CREATE INDEX idx_webhook_events_created_at ON webhook_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON public.subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription_id ON public.subscriptions(stripe_subscription_id);
+CREATE INDEX IF NOT EXISTS users_email_idx ON public.users(email);
 
 -- Create functions
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -128,12 +80,9 @@ BEGIN
     );
 
     -- Add detailed logging
-    RAISE LOG 'Attempting to create user with ID: %, Email: %, Full Name: %',
-        NEW.id,
-        NEW.email,
-        _full_name;
+    RAISE LOG 'handle_new_user: Starting transaction for user ID: %', NEW.id;
 
-    -- Start transaction
+    -- Use transaction to ensure both inserts succeed or fail together
     BEGIN
         -- Insert user
         INSERT INTO public.users (
@@ -146,7 +95,7 @@ BEGIN
             updated_at
         ) VALUES (
             NEW.id,
-            LOWER(NEW.email),  -- Normalize email to lowercase
+            LOWER(NEW.email),
             _full_name,
             false,
             'aprendiz',
@@ -154,7 +103,9 @@ BEGIN
             _now
         );
 
-        -- Create initial subscription with required stripe_price_id
+        RAISE LOG 'handle_new_user: User inserted successfully';
+
+        -- Create initial subscription
         INSERT INTO public.subscriptions (
             user_id,
             plan_type,
@@ -175,18 +126,21 @@ BEGIN
             _now
         );
 
+        RAISE LOG 'handle_new_user: Subscription created successfully';
+        
         RETURN NEW;
-    EXCEPTION WHEN OTHERS THEN
-        RAISE LOG 'Error in handle_new_user - SQLSTATE: %, SQLERRM: %, User Data: %',
-            SQLSTATE,
-            SQLERRM,
-            jsonb_build_object(
-                'id', NEW.id,
-                'email', NEW.email,
-                'full_name', _full_name,
-                'raw_meta', NEW.raw_user_meta_data
-            );
-        RETURN NULL;  -- Prevent the trigger from proceeding on error
+    EXCEPTION 
+        WHEN unique_violation THEN
+            RAISE LOG 'handle_new_user: Unique violation occurred';
+            IF EXISTS (SELECT 1 FROM public.users WHERE id = NEW.id) THEN
+                RETURN NEW;
+            ELSE
+                RAISE LOG 'handle_new_user: Unique violation details: %', SQLERRM;
+                RETURN NULL;
+            END IF;
+        WHEN OTHERS THEN
+            RAISE LOG 'handle_new_user: Error occurred - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+            RETURN NULL;
     END;
 END;
 $$;
@@ -242,22 +196,6 @@ CREATE POLICY "Enable insert for registration" ON public.users
     FOR INSERT
     WITH CHECK (auth.uid() = id OR auth.role() = 'service_role');
 
-CREATE POLICY "Users can manage their collections" ON public.collections
-    FOR ALL USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can manage their collection cards" ON public.collection_cards
-    FOR ALL USING (
-        collection_id IN (
-            SELECT id FROM public.collections WHERE user_id = auth.uid()
-        )
-    );
-
-CREATE POLICY "Users can manage their wishlist" ON public.wishlist_cards
-    FOR ALL USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can view their subscriptions" ON public.subscriptions
-    FOR SELECT USING (auth.uid() = user_id);
-
 -- Grant permissions
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT SELECT, UPDATE ON public.users TO authenticated;
@@ -272,12 +210,12 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.collections;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collection_cards;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.wishlist_cards;
 
--- Ensure proper permissions for functions
+-- Function permissions
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres;
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.delete_user_data() TO service_role;
-GRANT EXECUTE ON FUNCTION public.delete_user_data() TO postgres;
+GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO service_role;
+GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO postgres;
 
 COMMIT;
 
