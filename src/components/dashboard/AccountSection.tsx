@@ -1,146 +1,43 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { useAuth } from "../../../supabase/auth";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "../../../supabase/supabase";
-import { Loader2, Pencil } from "lucide-react";
-import { ConfirmDialog } from "../ui/ConfirmDialog";
-import { PasswordResetInstructionsModal } from "../auth/PasswordResetInstructionsModal";
-import { useSubscription } from "@/hooks/useSubscription";
-import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
-import LoadingSpinner from "../ui/LoaderSpinner";
-import { Progress } from "@/components/ui/progress";
-import { useStats } from "@/hooks/useStats";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
+import { PLAN_FEATURES } from "@/lib/stripe";
+import { Crown } from "lucide-react";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
 }
 
-export function AccountSection({ onSectionChange }: AccountSectionProps) {
-  const { user, setUser } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { subscription, loading } = useSubscription();
-  const { stats, isLoading: statsLoading } = useStats();
+export default function AccountSection({
+  onSectionChange,
+}: AccountSectionProps) {
+  const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [showPasswordInstructions, setShowPasswordInstructions] =
     useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [userData, setUserData] = useState({
-    fullName: "",
-    email: "",
-  });
-
-  // Obtener el plan actual
-  const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
-    "APRENDIZ") as SubscriptionPlan;
-  const currentPlan = PLAN_FEATURES[currentPlanType] || PLAN_FEATURES.APRENDIZ;
-
-  // Calcular porcentajes
-  const cardsPercentage = (stats.cardsCount / currentPlan.maxCards) * 100;
-  const collectionsPercentage =
-    (stats.collectionsCount / currentPlan.maxCollections) * 100;
-  const wishlistPercentage =
-    (stats.wishlistCount / currentPlan.maxWishlist) * 100;
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!user?.id) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("full_name")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        // Si no hay datos, creamos el registro
-        if (!data) {
-          const { error: insertError } = await supabase.from("users").upsert([
-            {
-              id: user.id,
-              full_name: user.user_metadata?.full_name || "",
-              email: user.email,
-            },
-          ]);
-
-          if (insertError) throw insertError;
-
-          setUserData({
-            fullName: user.user_metadata?.full_name || "",
-            email: user.email || "",
-          });
-        } else {
-          setUserData({
-            fullName: data.full_name || user.user_metadata?.full_name || "",
-            email: user.email || "",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        toast({
-          title: "Error",
-          description: "No se pudo cargar la información del usuario.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchUserData();
-  }, [user, toast]);
-
-  const handleUpdateProfile = async () => {
-    if (!user?.id) return;
-
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.from("users").upsert({
-        id: user.id,
-        full_name: userData.fullName,
-        email: user.email,
-      });
-
-      if (error) throw error;
-
-      // Actualizar también los metadatos del usuario en auth
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { full_name: userData.fullName },
-      });
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: "Perfil actualizado",
-        description: "Tu información ha sido actualizada correctamente.",
-      });
-
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar la información del perfil.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { toast } = useToast();
+  const [fullName, setFullName] = useState(
+    user?.user_metadata?.full_name || ""
+  );
+  const [isEditingName, setIsEditingName] = useState(false);
+  const { subscription } = useSubscription();
+  const { stats } = useSubscriptionStats();
 
   const handlePasswordReset = async () => {
     if (!user?.email) return;
@@ -155,6 +52,11 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
 
       setShowPasswordConfirm(false);
       setShowPasswordInstructions(true);
+
+      toast({
+        title: "Email enviado",
+        description: "Revisa tu bandeja de entrada para cambiar tu contraseña.",
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -166,289 +68,225 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user?.id) return;
+  const handleUpdateName = async () => {
+    if (!user) return;
 
     setIsLoading(true);
     try {
-      // 1. Si hay una suscripción activa, intentar cancelarla
-      if (subscription?.stripe_subscription_id) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          throw new Error("No se pudo obtener el token de autorización");
-        }
-
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_SUPABASE_URL
-          }/functions/v1/cancel-subscription`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              subscriptionId: subscription.stripe_subscription_id,
-              userId: user.id,
-            }),
-          }
-        );
-
-        const responseData = await response.json();
-
-        if (
-          !response.ok &&
-          !responseData.message?.includes("already cancelled")
-        ) {
-          throw new Error(
-            responseData.error || "Error al cancelar la suscripción"
-          );
-        }
-      }
-
-      // 2. Obtener el token de autorización antes de la eliminación
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error("No se pudo obtener el token de autorización");
-      }
-
-      // 3. Limpiar el estado local ANTES de eliminar la cuenta
-      setUser(null);
-
-      // 4. Cerrar la sesión
-      await supabase.auth.signOut();
-
-      // 5. Proceder con la eliminación del usuario
-      const deleteResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ user_id: user.id }),
-        }
-      );
-
-      if (!deleteResponse.ok) {
-        const errorData = await deleteResponse.json();
-        throw new Error(errorData.error || "Error al eliminar la cuenta");
-      }
-
-      // 6. Redirigir
-      navigate("/goodbye");
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
-        variant: "destructive",
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: fullName },
       });
 
-      // Si hubo un error después de limpiar el estado, redirigir al login
-      if (!user) {
-        navigate("/login");
-      }
+      if (error) throw error;
+
+      setIsEditingName(false);
+      toast({
+        title: "Nombre actualizado",
+        description: "Tu nombre ha sido actualizado correctamente.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el nombre.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
-      setShowDeleteConfirm(false);
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.rpc("delete_user_data", {
+        user_id_param: user.id,
+      });
+
+      if (error) throw error;
+
+      await signOut();
+      navigate("/", { replace: true });
+
+      toast({
+        title: "Cuenta eliminada",
+        description: "Tu cuenta ha sido eliminada correctamente.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getCurrentPlan = () => {
+    if (!subscription || subscription.status !== "active") {
+      return PLAN_FEATURES.APRENDIZ;
+    }
+    return (
+      PLAN_FEATURES[subscription.plan_type as keyof typeof PLAN_FEATURES] ||
+      PLAN_FEATURES.APRENDIZ
+    );
+  };
+
+  const currentPlan = getCurrentPlan();
+
   return (
-    <div className="container max-w-4xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Columna izquierda */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>Información Personal</CardTitle>
-              {!isEditing && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nombre completo</label>
-                <Input
-                  value={userData.fullName}
-                  onChange={(e) =>
-                    setUserData((prev) => ({
-                      ...prev,
-                      fullName: e.target.value,
-                    }))
-                  }
-                  placeholder="Tu nombre completo"
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email</label>
-                <Input
-                  value={userData.email}
-                  disabled
-                  className="bg-gray-50"
-                />
-              </div>
-              {isEditing && (
-                <div className="flex space-x-2 flex-wrap gap-4 justify-center">
+    <>
+      {/* Sección de Perfil */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Perfil</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback>
+                {user?.user_metadata?.full_name?.[0]?.toUpperCase() ||
+                  user?.email?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-1">
+              {isEditingName ? (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="max-w-[200px]"
+                  />
                   <Button
-                    onClick={handleUpdateProfile}
+                    onClick={handleUpdateName}
                     disabled={isLoading}
-                    className="flex-1"
+                    size="sm"
                   >
-                    {isLoading ? (
-                      <>
-                        <LoadingSpinner message="Actualizando..." />
-                      </>
-                    ) : (
-                      "Guardar"
-                    )}
+                    Guardar
                   </Button>
                   <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setUserData((prev) => ({
-                        ...prev,
-                        fullName: user?.user_metadata?.full_name || "",
-                      }));
-                    }}
-                    disabled={isLoading}
+                    variant="ghost"
+                    onClick={() => setIsEditingName(false)}
+                    size="sm"
                   >
                     Cancelar
                   </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Columna derecha */}
-        <div className="space-y-6">
-          {/* Card de Plan Actual */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Plan Actual</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center min-h-[200px]">
-                  <LoadingSpinner message="Cargando suscripción..." />
-                </div>
               ) : (
-                <div className="space-y-4">
-                  <div>
-                    <p className="font-medium">Plan: {currentPlan.name}</p>
-                    <p>
-                      Estado:{" "}
-                      {subscription?.status === "active"
-                        ? "Activo"
-                        : "No activo"}
-                    </p>
-                    {subscription?.current_period_end && (
-                      <p className="text-sm text-muted-foreground">
-                        Próxima renovación:{" "}
-                        {new Date(
-                          subscription.current_period_end
-                        ).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-xl font-semibold">
+                    {user?.user_metadata?.full_name || "Sin nombre"}
+                  </h3>
                   <Button
-                    variant="default"
-                    onClick={() => onSectionChange("Pricing")}
-                    className="w-full"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingName(true)}
                   >
-                    {subscription?.status === "active"
-                      ? "Cambiar Plan"
-                      : "Ver Planes"}
+                    Editar
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-          {/* Card de Límites del Plan */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Límites del Plan</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading || statsLoading ? (
-                <div className="flex items-center justify-center min-h-[100px]">
-                  <LoadingSpinner message="Cargando límites..." />
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Cartas</span>
-                      <span className="text-muted-foreground">
-                        {stats.cardsCount}/
-                        {currentPlan.maxCards === Infinity
-                          ? "∞"
-                          : currentPlan.maxCards}
-                      </span>
-                    </div>
-                    <Progress
-                      value={cardsPercentage}
-                      className="h-2"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Colecciones</span>
-                      <span className="text-muted-foreground">
-                        {stats.collectionsCount}/
-                        {currentPlan.maxCollections === Infinity
-                          ? "∞"
-                          : currentPlan.maxCollections}
-                      </span>
-                    </div>
-                    <Progress
-                      value={collectionsPercentage}
-                      className="h-2"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Lista de Deseos</span>
-                      <span className="text-muted-foreground">
-                        {stats.wishlistCount}/
-                        {currentPlan.maxWishlist === Infinity
-                          ? "∞"
-                          : currentPlan.maxWishlist}
-                      </span>
-                    </div>
-                    <Progress
-                      value={wishlistPercentage}
-                      className="h-2"
-                    />
-                  </div>
+      {/* Sección de Plan Actual */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Plan Actual</CardTitle>
+            <CardDescription>
+              {subscription?.status === "active"
+                ? "Tu suscripción está activa"
+                : "No tienes una suscripción activa"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Plan</span>
+                <span>{currentPlan.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Estado</span>
+                <span
+                  className={
+                    subscription?.status === "active"
+                      ? "text-green-600"
+                      : "text-yellow-600"
+                  }
+                >
+                  {subscription?.status === "active" ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+              {subscription?.current_period_end && (
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Próxima facturación</span>
+                  <span>
+                    {new Date(
+                      subscription.current_period_end
+                    ).toLocaleDateString()}
+                  </span>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+            <Button
+              variant="default"
+              className="w-full"
+              onClick={() => onSectionChange("Pricing")}
+            >
+              <Crown className="h-4 w-4 mr-2" />
+              {subscription?.status === "active"
+                ? "Cambiar Plan"
+                : "Ver Planes"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sección de Estadísticas */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Estadísticas</CardTitle>
+            <CardDescription>Uso actual de tu cuenta</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Cartas en colecciones</span>
+                <span>
+                  {stats?.cardsCount || 0} /{" "}
+                  {currentPlan.maxCards === -1 ? "∞" : currentPlan.maxCards}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Colecciones</span>
+                <span>
+                  {stats?.collectionsCount || 0} /{" "}
+                  {currentPlan.maxCollections === -1
+                    ? "∞"
+                    : currentPlan.maxCollections}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Lista de deseos</span>
+                <span>
+                  {stats?.wishlistCount || 0} /{" "}
+                  {currentPlan.maxWishlist === -1
+                    ? "∞"
+                    : currentPlan.maxWishlist}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Sección de Seguridad */}
@@ -472,66 +310,56 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
 
       {/* Zona de Peligro */}
       <div className="mt-6">
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200">
           <CardHeader>
-            <CardTitle className="text-red-700">Zona de Peligro</CardTitle>
+            <CardTitle className="text-red-600">Zona de Peligro</CardTitle>
+            <CardDescription>
+              Las acciones en esta sección son irreversibles
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-sm text-red-600">
-              Las acciones en esta sección son permanentes y no se pueden
-              deshacer.
-            </div>
+          <CardContent>
             <Button
               variant="destructive"
               className="w-full"
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isLoading}
             >
-              Eliminar mi cuenta
+              Eliminar cuenta
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      <Dialog
-        open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>¿Estás seguro?</DialogTitle>
-            <DialogDescription>
-              Esta acción eliminará permanentemente tu cuenta y todos tus datos.
-              Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            {isLoading ? (
-              <div className="w-full flex justify-center items-center py-2">
-                <LoadingSpinner
-                  message="Eliminando cuenta..."
-                  compact={true}
-                />
-              </div>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                >
-                  Eliminar cuenta
-                </Button>
-              </>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      {/* Modal de confirmación de cambio de contraseña */}
+      <ConfirmDialog
+        isOpen={showPasswordConfirm}
+        onClose={() => setShowPasswordConfirm(false)}
+        onConfirm={handlePasswordReset}
+        title="Cambiar contraseña"
+        description="Te enviaremos un email con instrucciones para cambiar tu contraseña. ¿Deseas continuar?"
+      />
+
+      {/* Modal de instrucciones enviadas */}
+      <ConfirmDialog
+        isOpen={showPasswordInstructions}
+        onClose={() => setShowPasswordInstructions(false)}
+        onConfirm={() => setShowPasswordInstructions(false)}
+        title="Instrucciones enviadas"
+        description="Hemos enviado un email con las instrucciones para cambiar tu contraseña. Por favor, revisa tu bandeja de entrada."
+        confirmText="Entendido"
+        showCancel={false}
+      />
+
+      {/* Modal de confirmación de eliminación de cuenta */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteAccount}
+        title="Eliminar cuenta"
+        description="¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible y perderás todas tus colecciones y datos."
+        confirmText="Eliminar cuenta"
+        confirmVariant="destructive"
+      />
+    </>
   );
 }

@@ -40,7 +40,7 @@ import {
 import { RealtimeChannel } from "@supabase/supabase-js";
 import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 import MainHeader from "../layout/MainHeader";
-import { AccountSection } from "../dashboard/AccountSection"; // Importar el nuevo componente
+import AccountSection from "../dashboard/AccountSection"; // Cambiar esta línea
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog";
 import { useSubscription } from "@/hooks/useSubscription";
