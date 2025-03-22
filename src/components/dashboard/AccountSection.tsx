@@ -209,7 +209,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
         }
       }
 
-      // 2. Proceder con la eliminación del usuario
+      // 2. Obtener el token de autorización antes de la eliminación
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -217,6 +217,13 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
         throw new Error("No se pudo obtener el token de autorización");
       }
 
+      // 3. Limpiar el estado local ANTES de eliminar la cuenta
+      setUser(null);
+
+      // 4. Cerrar la sesión
+      await supabase.auth.signOut();
+
+      // 5. Proceder con la eliminación del usuario
       const deleteResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
         {
@@ -234,8 +241,7 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
         throw new Error(errorData.error || "Error al eliminar la cuenta");
       }
 
-      // 3. Limpiar el estado local y redirigir
-      setUser(null);
+      // 6. Redirigir
       navigate("/goodbye");
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -247,6 +253,11 @@ export function AccountSection({ onSectionChange }: AccountSectionProps) {
             : "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
+
+      // Si hubo un error después de limpiar el estado, redirigir al login
+      if (!user) {
+        navigate("/login");
+      }
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(false);
