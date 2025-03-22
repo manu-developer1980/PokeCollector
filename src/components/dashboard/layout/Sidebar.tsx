@@ -23,7 +23,12 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   const { subscription } = useSubscription();
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const isPremium = subscription?.status === "active";
+
+  // Modificamos la lógica para mostrar el CTA
+  const shouldShowUpgrade =
+    !subscription?.status ||
+    subscription.status !== "active" ||
+    subscription.plan_type?.toLowerCase() === "aprendiz";
 
   const handleSignOut = async () => {
     try {
@@ -56,7 +61,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
         </button>
       ))}
 
-      {!isPremium && (
+      {shouldShowUpgrade && (
         <button
           onClick={() => onItemClick("Pricing")}
           className="w-full flex items-center px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600 transition-colors"

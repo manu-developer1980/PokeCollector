@@ -90,11 +90,7 @@ export function PricingCard({
     // Permitir el cambio de plan
     try {
       await onSelectPlan(plan.id);
-      toast({
-        title: "Plan actualizado",
-        description: `Tu plan ha sido actualizado a ${plan.name}`,
-        variant: "default",
-      });
+      // Eliminamos el toast de aquí ya que se mostrará en PlanChangeDialog
     } catch (error) {
       console.error("Error updating plan:", error);
       toast({
