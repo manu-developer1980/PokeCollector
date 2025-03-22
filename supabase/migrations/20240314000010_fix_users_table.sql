@@ -38,7 +38,21 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     _full_name TEXT;
+    _now TIMESTAMP WITH TIME ZONE;
 BEGIN
+    _now := now();
+    _full_name := COALESCE(
+        NEW.raw_user_meta_data->>'full_name',
+        NEW.raw_user_meta_data->>'name',
+        ''
+    );
+
+    -- Add detailed logging
+    RAISE LOG 'Attempting to create user with ID: %, Email: %, Full Name: %',
+        NEW.id,
+        NEW.email,
+        _full_name;
+
     INSERT INTO public.users (
         id,
         email,
@@ -49,15 +63,32 @@ BEGIN
     ) VALUES (
         NEW.id,
         NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', ''),
+        _full_name,
         false,
-        now(),
-        now()
+        _now,
+        _now
     );
+
+    -- Create initial subscription
+    INSERT INTO public.subscriptions (
+        user_id,
+        plan_type,
+        created_at,
+        updated_at
+    ) VALUES (
+        NEW.id,
+        'aprendiz',
+        _now,
+        _now
+    );
+
     RETURN NEW;
 EXCEPTION WHEN OTHERS THEN
-    RAISE LOG 'Error in handle_new_user: %', SQLERRM;
-    RETURN NEW;
+    RAISE LOG 'Error in handle_new_user - SQLSTATE: %, SQLERRM: %, User Data: %',
+        SQLSTATE,
+        SQLERRM,
+        row_to_json(NEW);
+    RETURN NULL; -- This will cause the trigger to fail explicitly
 END;
 $$;
 

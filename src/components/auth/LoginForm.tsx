@@ -67,19 +67,14 @@ export default function LoginForm() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-
     try {
-      const result = await signIn(
-        data.email.trim().toLowerCase(),
-        data.password
-      );
+      const result = await signIn(data.email, data.password);
 
       if (result.error) {
         if (result.error.message === "Email not confirmed") {
           setEmailToConfirm(data.email);
           setShowConfirmEmail(true);
 
-          // Añadir un retraso antes de intentar reenviar
           await new Promise((resolve) => setTimeout(resolve, 1000));
 
           const { error: resendError } = await supabase.auth.resend({
@@ -90,35 +85,14 @@ export default function LoginForm() {
             },
           });
 
-          if (resendError) {
-            if (resendError.status === 429) {
-              toast({
-                title: "Demasiados intentos",
-                description:
-                  "Por favor, espera unos minutos antes de solicitar otro email de confirmación.",
-                variant: "destructive",
-              });
-            } else {
-              throw resendError;
-            }
-          } else {
-            toast({
-              title: "Email de confirmación enviado",
-              description: "Por favor, revisa tu bandeja de entrada y spam.",
-            });
-          }
-          setIsLoading(false);
+          if (resendError) throw resendError;
           return;
         }
 
-        // Otros errores
-        let mensajeError = "Error al iniciar sesión";
-        if (result.error.message === "Email o contraseña incorrectos") {
-          mensajeError = "Email o contraseña incorrectos";
-        } else if (result.error.message.includes("Database error")) {
-          mensajeError =
-            "Error de conexión con la base de datos. Por favor, intente más tarde.";
-        }
+        const mensajeError =
+          result.error.message === "Invalid login credentials"
+            ? "Email o contraseña incorrectos"
+            : result.error.message;
 
         form.setError("root", { message: mensajeError });
         toast({
@@ -131,22 +105,49 @@ export default function LoginForm() {
 
       // Éxito en el inicio de sesión
       if (result.data?.user) {
-        const needsOnboarding = await checkOnboardingStatus(
-          result.data.user.id
-        );
-        if (needsOnboarding) {
-          setShowOnboarding(true);
-          setIsLoading(false);
-          return;
+        try {
+          // Inicializar usuario
+          const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/initialize-user`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${result.data.session?.access_token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: result.data.user.id,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Error initializing user");
+          }
+
+          const needsOnboarding = await checkOnboardingStatus(
+            result.data.user.id
+          );
+          if (needsOnboarding) {
+            setShowOnboarding(true);
+            return;
+          }
+
+          toast({
+            title: "¡Bienvenido!",
+            description: "Has iniciado sesión correctamente.",
+          });
+
+          navigate(redirectTo || "/dashboard");
+        } catch (error) {
+          console.error("Error during user initialization:", error);
+          toast({
+            title: "Error",
+            description: "Hubo un problema al inicializar tu cuenta.",
+            variant: "destructive",
+          });
         }
       }
-
-      toast({
-        title: "¡Bienvenido!",
-        description: "Has iniciado sesión correctamente.",
-      });
-
-      navigate(redirectTo);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
       toast({

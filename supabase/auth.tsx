@@ -38,10 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      // Primero verificamos si el usuario ya existe
+      console.log("Starting signup process for:", email);
+
+      // Check if email already exists
       const { data: existingUser } = await supabase
         .from("users")
-        .select("id, email")
+        .select("email")
         .eq("email", email.trim().toLowerCase())
         .single();
 
@@ -65,38 +67,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (authError) {
-        console.error("Error durante el registro:", authError);
+        console.error("Auth error during signup:", authError);
         return { error: authError };
       }
 
-      if (!authData.user) {
-        return { error: new Error("No user data returned") };
+      if (!authData?.user) {
+        return {
+          error: {
+            message: "No se pudo crear el usuario",
+          },
+        };
       }
 
-      // Log detallado del estado de verificación
-      console.log("Estado de verificación:", {
-        id: authData.user.id,
-        email: authData.user.email,
-        emailConfirmed: authData.user.email_confirmed_at,
-        confirmationSent: authData.user.confirmation_sent_at,
-        identities: authData.user.identities,
-        session: authData.session,
-      });
+      // Wait for database trigger to complete
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Si el usuario necesita confirmar su email
-      if (!authData.user.email_confirmed_at) {
+      // Verify user creation
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", authData.user.id)
+        .single();
+
+      if (userError || !userData) {
+        console.error("Error verifying user in database:", userError);
+        // Attempt to clean up the auth user if database insert failed
+        await supabase.auth.admin.deleteUser(authData.user.id);
         return {
-          data: {
-            ...authData,
-            message: "Por favor revisa tu email para verificar tu cuenta.",
+          error: {
+            message:
+              "Error al crear el perfil de usuario. Por favor, intente nuevamente.",
           },
-          error: null,
         };
       }
 
       return { data: authData, error: null };
     } catch (error) {
-      console.error("Error inesperado durante el registro:", error);
+      console.error("Unexpected error during signup:", error);
       return {
         error: {
           message: "Error inesperado durante el registro",

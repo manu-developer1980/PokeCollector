@@ -1,30 +1,38 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // Cambiamos esto para aceptar cualquier origen
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  // Manejar preflight OPTIONS request
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: corsHeaders,
-      status: 204,
-    });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { user_id } = await req.json();
+    // Verificar que sea POST
+    if (req.method !== "POST") {
+      throw new Error("Method not allowed");
+    }
 
+    // Obtener y validar el body
+    const { user_id } = await req.json();
+    if (!user_id) {
+      throw new Error("user_id is required");
+    }
+
+    // Crear cliente de Supabase
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
     );
 
-    // Primero eliminar datos relacionados usando la función RPC
+    // Eliminar datos relacionados
     const { error: rpcError } = await supabase.rpc("delete_user_data", {
       user_id_param: user_id,
     });
@@ -34,7 +42,7 @@ serve(async (req) => {
       throw rpcError;
     }
 
-    // Finalmente eliminar el usuario de auth.users usando el admin API
+    // Eliminar el usuario
     const { error: authError } = await supabase.auth.admin.deleteUser(user_id);
 
     if (authError) {
@@ -47,9 +55,11 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("Delete user error:", error);
+    console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message || "Error al eliminar usuario" }),
+      JSON.stringify({
+        error: error.message || "An error occurred during the delete process",
+      }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,

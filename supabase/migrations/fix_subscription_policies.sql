@@ -1,17 +1,12 @@
 BEGIN;
 
--- First, ensure RLS is enabled
-ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+-- Enable RLS
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
--- Drop all existing policies
-DROP POLICY IF EXISTS "Enable read access for users to own subscription" ON subscriptions;
-DROP POLICY IF EXISTS "Enable insert for users" ON subscriptions;
-DROP POLICY IF EXISTS "Enable update for users on own subscription" ON subscriptions;
-DROP POLICY IF EXISTS "Enable full access for service role" ON subscriptions;
-
--- Create a single, simple read policy for authenticated users
-CREATE POLICY "Allow users to read own subscriptions"
-    ON subscriptions FOR SELECT
+-- Create policy for users to read their own subscriptions
+CREATE POLICY "Users can read their own subscriptions"
+    ON public.subscriptions
+    FOR SELECT
     TO authenticated
     USING (auth.uid() = user_id);
 
