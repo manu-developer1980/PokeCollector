@@ -101,19 +101,30 @@ export default function AccountSection({
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.rpc("delete_user_data", {
-        user_id_param: user.id,
-      });
+      // Llamar a la Edge Function para eliminar el usuario
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${
+              (
+                await supabase.auth.getSession()
+              ).data.session?.access_token
+            }`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: user.id }),
+        }
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error al eliminar la cuenta");
+      }
 
       await signOut();
-      navigate("/", { replace: true });
-
-      toast({
-        title: "Cuenta eliminada",
-        description: "Tu cuenta ha sido eliminada correctamente.",
-      });
+      navigate("/goodbye", { replace: true });
     } catch (error: any) {
       toast({
         title: "Error",

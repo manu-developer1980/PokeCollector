@@ -34,24 +34,7 @@ serve(async (req) => {
       throw rpcError;
     }
 
-    // Verificar que el usuario se eliminó de public.users
-    const { data: userData, error: userCheckError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", user_id)
-      .single();
-
-    if (userCheckError && userCheckError.code !== "PGRST116") {
-      console.error("User check error:", userCheckError);
-      throw userCheckError;
-    }
-
-    if (userData) {
-      console.error("User still exists in public.users");
-      throw new Error("Failed to delete user from public.users");
-    }
-
-    // Finalmente eliminar el usuario de auth.users
+    // Finalmente eliminar el usuario de auth.users usando el admin API
     const { error: authError } = await supabase.auth.admin.deleteUser(user_id);
 
     if (authError) {

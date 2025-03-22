@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,16 +11,20 @@ import { Heart } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 
-interface GoodbyeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export default function GoodbyeModal({ isOpen }: GoodbyeModalProps) {
+export default function GoodbyeModal() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Si hay un usuario autenticado, redirigir al landing
+  useEffect(() => {
+    // Redirigir automáticamente después de 3 segundos
+    const timer = setTimeout(() => {
+      navigate("/", { replace: true });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  // Si hay un usuario autenticado, redirigir inmediatamente al landing
   if (user) {
     return (
       <Navigate
@@ -35,7 +40,7 @@ export default function GoodbyeModal({ isOpen }: GoodbyeModalProps) {
 
   return (
     <Dialog
-      open={isOpen}
+      open={true}
       onOpenChange={handleClose}
     >
       <DialogContent className="sm:max-w-md text-center">
