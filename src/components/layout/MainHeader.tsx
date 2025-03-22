@@ -92,27 +92,26 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
           </div>
 
           {/* Botones de autenticación */}
-          <div className="hidden sm:flex items-center gap-4">
-            {!user && (
-              <Button
-                variant="outline"
-                onClick={() => navigate("/login")}
-              >
-                <LogIn className="mr-2 h-4 w-4" />
-                Iniciar sesión
-              </Button>
-            )}
-            {user && (
-              <Button
-                variant="outline"
-                onClick={handleSignOut}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar sesión
-              </Button>
-            )}
-          </div>
+
+          {!user && (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/login")}
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              <span className="hidden xs:inline">Iniciar sesión</span>
+            </Button>
+          )}
+          {user && (
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <LogOut className="mr-2 h-4 w-4 " />
+              Cerrar sesión
+            </Button>
+          )}
         </div>
       </div>
     </header>
