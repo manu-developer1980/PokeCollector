@@ -114,7 +114,10 @@ export default function LoginForm() {
               headers: {
                 Authorization: `Bearer ${result.data.session?.access_token}`,
                 "Content-Type": "application/json",
+                apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
               },
+              mode: "cors",
+              credentials: "include",
               body: JSON.stringify({
                 user_id: result.data.user.id,
               }),
@@ -122,8 +125,13 @@ export default function LoginForm() {
           );
 
           if (!response.ok) {
-            throw new Error("Error initializing user");
+            const errorData = await response.json();
+            console.error("Error initializing user:", errorData);
+            throw new Error(errorData.error || "Error initializing user");
           }
+
+          const data = await response.json();
+          console.log("Usuario inicializado correctamente:", data);
 
           const needsOnboarding = await checkOnboardingStatus(
             result.data.user.id

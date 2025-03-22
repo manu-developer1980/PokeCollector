@@ -1,32 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@12.4.0?target=deno";
+import { corsHeaders } from "../_shared/cors.ts";
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-  "https://poke-collector.netlify.app",
-];
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGINS.join(", "),
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Credentials": "true",
-  "Access-Control-Max-Age": "86400",
-};
+const APRENDIZ_PRICE_ID = "price_1R4KH1EoOyqILXNqxnOSjJHZ";
 
 serve(async (req) => {
+  // Always add CORS headers
+  const headers = corsHeaders(req);
+
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: corsHeaders,
+    return new Response(null, {
       status: 204,
+      headers,
     });
   }
 
   try {
     const { user_id } = await req.json();
-    console.log("Initializing user:", user_id);
 
     if (!user_id) {
       throw new Error("user_id is required");
@@ -41,19 +33,15 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
 
-    // 1. Crear o actualizar usuario
-    const { error: userError } = await supabase.from("users").upsert(
-      {
-        id: user_id,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "id",
-      }
-    );
+    // 1. Obtener información del usuario
+    const { data: userData, error: userDataError } = await supabase
+      .from("users")
+      .select("email")
+      .eq("id", user_id)
+      .single();
 
-    if (userError) {
-      throw userError;
+    if (userDataError) {
+      throw userDataError;
     }
 
     // 2. Verificar si ya existe una suscripción
@@ -64,19 +52,50 @@ serve(async (req) => {
       .single();
 
     if (!existingSub) {
-      // 3. Crear suscripción gratuita por defecto
+      // 3. Crear cliente en Stripe
+      const customer = await stripe.customers.create({
+        email: userData.email,
+        metadata: {
+          user_id: user_id,
+        },
+      });
+
+      // 4. Crear suscripción en Stripe
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{ price: APRENDIZ_PRICE_ID }],
+        metadata: {
+          user_id: user_id,
+        },
+      });
+
+      // 5. Crear suscripción en la base de datos
       const { error: subError } = await supabase.from("subscriptions").insert({
         user_id: user_id,
-        status: "active",
-        plan_type: "free",
-        is_active: true,
+        plan_type: "aprendiz",
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customer.id,
+        stripe_price_id: APRENDIZ_PRICE_ID,
+        status: subscription.status,
+        current_period_end: new Date(
+          subscription.current_period_end * 1000
+        ).toISOString(),
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        is_active: subscription.status === "active",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
 
       if (subError) {
+        console.error("Error creating subscription:", subError);
         throw subError;
       }
+
+      console.log("✅ Successfully created subscription:", {
+        userId: user_id,
+        subscriptionId: subscription.id,
+        customerId: customer.id,
+      });
     }
 
     return new Response(
@@ -86,7 +105,7 @@ serve(async (req) => {
       }),
       {
         headers: {
-          ...corsHeaders,
+          ...headers,
           "Content-Type": "application/json",
         },
       }
@@ -102,7 +121,7 @@ serve(async (req) => {
       {
         status: 400,
         headers: {
-          ...corsHeaders,
+          ...headers,
           "Content-Type": "application/json",
         },
       }
