@@ -1,0 +1,21 @@
+[functions]
+[functions.cancel-subscription]
+verify_jwt = true
+
+[functions.change-subscription]
+verify_jwt = true
+
+[functions.create-stripe-checkout]
+verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.initialize-user]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.test-stripe-config]
+verify_jwt = true

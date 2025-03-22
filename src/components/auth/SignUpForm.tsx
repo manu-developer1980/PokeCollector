@@ -138,6 +138,7 @@ export default function SignUpForm() {
                     <FormControl>
                       <Input
                         type="email"
+                        autoComplete="email"
                         placeholder="tu@email.com"
                         {...field}
                       />
@@ -171,6 +172,7 @@ export default function SignUpForm() {
                     <FormControl>
                       <Input
                         type="password"
+                        autoComplete="new-password"
                         {...field}
                       />
                     </FormControl>
@@ -187,6 +189,7 @@ export default function SignUpForm() {
                     <FormControl>
                       <Input
                         type="password"
+                        autoComplete="new-password"
                         {...field}
                       />
                     </FormControl>

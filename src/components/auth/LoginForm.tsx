@@ -207,6 +207,7 @@ export default function LoginForm() {
                     <FormControl>
                       <Input
                         type="password"
+                        autoComplete="current-password"
                         {...field}
                       />
                     </FormControl>

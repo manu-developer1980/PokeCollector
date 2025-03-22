@@ -93,7 +93,18 @@ export default function PricingPage() {
           nivel cuando lo necesites
         </p>
       </div>
-
+      {!user && (
+        <div className="flex justify-center mt-8">
+          <Link to={user ? "/dashboard" : "/signup"}>
+            <Button
+              size="lg"
+              className="px-8 py-6 text-lg"
+            >
+              Empezar Gratis
+            </Button>
+          </Link>
+        </div>
+      )}
       <div className="flex flex-row justify-center flex-wrap gap-6">
         {Object.entries(PLAN_FEATURES).map(([planType, plan]) => (
           <PricingCard

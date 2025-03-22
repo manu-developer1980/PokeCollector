@@ -5,7 +5,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 serve(async (req) => {
   // Manejar preflight OPTIONS request
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
@@ -51,7 +51,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
@@ -61,7 +61,7 @@ serve(async (req) => {
         error: error.message || "An error occurred during the delete process",
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
         status: 400,
       }
     );
