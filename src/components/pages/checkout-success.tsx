@@ -139,7 +139,11 @@ export default function CheckoutSuccessPage() {
         <div className="mb-8">
           <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">
-            ¡Gracias por tu preferencia!
+            ¡Enhorabuena, ahora eres todo un{" "}
+            {subscription?.plan_type
+              ? getPlanName(subscription.plan_type)
+              : newPlanName}{" "}
+            Pokémon!
           </h1>
           <p className="text-gray-600 mb-4">
             Tu suscripción ha sido procesada correctamente.
