@@ -9,7 +9,7 @@ interface CheckoutSummaryProps {
 
 const CheckoutSummary = ({ plan }: CheckoutSummaryProps) => {
   const formatPrice = (price: number) => {
-    return price.toFixed(2);
+    return `${price.toFixed(2)}€`;
   };
 
   return (
@@ -24,7 +24,7 @@ const CheckoutSummary = ({ plan }: CheckoutSummaryProps) => {
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold">
-            ${formatPrice(plan.price)}
+            {formatPrice(plan.price)}
             <span className="text-sm font-normal text-gray-600">
               /{plan.interval}
             </span>
@@ -51,22 +51,19 @@ const CheckoutSummary = ({ plan }: CheckoutSummaryProps) => {
       <div className="space-y-2">
         <div className="flex justify-between">
           <span>Subtotal</span>
-          <span>${formatPrice(plan.price)}</span>
+          <span>{formatPrice(plan.price)}</span>
         </div>
         {plan.interval === "year" && (
           <div className="flex justify-between text-green-600">
-            <span>Annual discount (20%)</span>
-            <span>-${formatPrice(plan.price * 0.2)}</span>
+            <span>Descuento anual (20%)</span>
+            <span>-{formatPrice(plan.price * 0.2)}</span>
           </div>
         )}
         <Separator className="my-2" />
         <div className="flex justify-between font-bold">
           <span>Total</span>
           <span>
-            $
-            {formatPrice(
-              plan.interval === "year" ? plan.price * 0.8 : plan.price,
-            )}
+            {formatPrice(plan.interval === "year" ? plan.price * 0.8 : plan.price)}
             <span className="text-sm font-normal text-gray-600">
               /{plan.interval}
             </span>

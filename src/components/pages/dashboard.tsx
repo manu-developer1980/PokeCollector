@@ -3,7 +3,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import Sidebar from "../dashboard/layout/Sidebar";
 import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
@@ -13,9 +12,9 @@ import { Database, Heart, Search } from "lucide-react";
 import MainHeader from "../layout/MainHeader";
 
 const defaultNavItems = [
-  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
-  { icon: <Database size={18} />, label: "Mi Colección", id: "My Collection" },
+  { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
+  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
 ];
 
 const Dashboard = () => {
@@ -298,12 +297,6 @@ const Dashboard = () => {
       <MainHeader />
 
       <div className="flex min-h-screen">
-        <Sidebar
-          items={defaultNavItems}
-          activeItem="My Collection"
-          onItemClick={() => {}}
-        />
-
         <main className="flex-1 w-full p-6 pt-16 bg-background">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
@@ -315,24 +308,17 @@ const Dashboard = () => {
           </div>
 
           <div>
-            {selectedCollection ? (
+            {selectedCollection && (
               <CollectionDetail
                 collection={selectedCollection}
                 onBack={() => setSelectedCollection(null)}
-                onEditCollection={handleEditCollection}
-                onRemoveCard={handleRemoveCard}
+                onEdit={handleEditCollection}
+                onRemove={handleRemoveCard} // Cambiado de onRemoveCard a onRemove
                 onCardClick={(card) => {
                   setSelectedCollectionCard(card);
                   setIsCardDetailDialogOpen(true);
                 }}
-              />
-            ) : (
-              <CollectionList
-                collections={collections}
-                onSelectCollection={setSelectedCollection}
-                onCreateCollection={handleCreateCollection}
-                onEditCollection={handleEditCollection}
-                onDeleteCollection={handleDeleteCollection}
+                isLoading={isLoading}
               />
             )}
           </div>

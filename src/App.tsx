@@ -22,6 +22,8 @@ import AuthCallback from "./components/auth/AuthCallback";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
+import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
+import GoodbyeModal from "@/components/auth/GoodbyeModal";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -95,7 +97,7 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={
             <PrivateRoute>
               <PokemonDashboard />
@@ -172,6 +174,27 @@ function AppRoutes() {
           element={
             <MainLayout>
               <ConfirmEmailChange />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/subscription-management"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <SubscriptionManagement />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/goodbye"
+          element={
+            <MainLayout>
+              <GoodbyeModal
+                isOpen={true}
+                onClose={() => {}}
+              />
             </MainLayout>
           }
         />

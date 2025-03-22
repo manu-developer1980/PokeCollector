@@ -1,305 +1,159 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Loader2, ChevronRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { PricingCard } from "../pricing/PricingCard";
+import { PLAN_FEATURES } from "@/lib/stripe";
 import { useAuth } from "../../../supabase/auth";
-import { supabase } from "../../../supabase/supabase";
-
-interface Plan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  interval: "month" | "year";
-  features: string[];
-  isPopular?: boolean;
-  buttonText: string;
-}
-
-const defaultPlans: Plan[] = [
-  {
-    id: "free",
-    name: "Gratis",
-    description: "Seguimiento básico de colección",
-    price: 0,
-    interval: "month",
-    features: [
-      "Hasta 100 cartas en colección",
-      "Funcionalidad básica de búsqueda",
-      "Una colección",
-      "Acceso a la comunidad",
-    ],
-    buttonText: "Comenzar",
-  },
-  {
-    id: "trainer",
-    name: "Entrenador",
-    description: "Para coleccionistas serios",
-    price: 9.99,
-    interval: "month",
-    features: [
-      "Cartas ilimitadas en colección",
-      "Filtros de búsqueda avanzados",
-      "Hasta 5 colecciones personalizadas",
-      "Seguimiento del estado de las cartas",
-      "Estimaciones de valor de colección",
-      "Soporte prioritario",
-    ],
-    isPopular: true,
-    buttonText: "Comenzar Prueba Gratuita",
-  },
-  {
-    id: "master",
-    name: "Maestro",
-    description: "Para coleccionistas profesionales",
-    price: 19.99,
-    interval: "month",
-    features: [
-      "Todo lo incluido en Entrenador",
-      "Colecciones personalizadas ilimitadas",
-      "Análisis de tendencias de precios",
-      "Exportación de colección",
-      "Acceso a API",
-      "Soporte dedicado",
-      "Acceso anticipado a nuevas funciones",
-    ],
-    buttonText: "Comenzar Prueba Gratuita",
-  },
-];
+import { useSubscription } from "@/hooks/useSubscription";
+import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import LoadingSpinner from "../ui/LoaderSpinner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function PricingPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [plans, setPlans] = useState<Plan[]>(defaultPlans);
-  const [isLoading, setIsLoading] = useState(false);
-  const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
-  const [billingInterval, setBillingInterval] = useState<"month" | "year">(
-    "month"
-  );
+  const { subscription, loading } = useSubscription();
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  useEffect(() => {
-    // Fetch plans from Supabase or API if needed
-    // For now, we'll use the default plans
-  }, []);
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
-  const handlePlanSelect = async (plan: Plan) => {
-    setIsLoading(true);
-    setProcessingPlanId(plan.id);
+  const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
 
-    try {
-      if (!user) {
-        // Siempre redirigir a signup con información del plan
-        navigate(`/signup?plan=${plan.id}&interval=${billingInterval}`);
-        return;
-      }
-
-      // Incluso para usuarios logueados, por ahora redirigimos a signup
-      navigate(`/signup?plan=${plan.id}&interval=${billingInterval}`);
-    } catch (error) {
-      console.error("Error navigating to signup:", error);
-    } finally {
-      setIsLoading(false);
-      setProcessingPlanId(null);
-    }
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlanId(planId);
+    setIsCheckoutOpen(true);
   };
 
+  const faqs = [
+    {
+      question: "¿Qué incluye el plan gratuito?",
+      answer:
+        "El plan Aprendiz incluye todas las funciones básicas para empezar tu colección: hasta 50 cartas, una colección, 10 cartas en tu lista de deseos y búsqueda básica por nombre y tipo. Es perfecto para comenzar y familiarizarte con la plataforma.",
+    },
+    {
+      question: "¿Puedo cambiar de plan en cualquier momento?",
+      answer:
+        "Sí, puedes actualizar o cambiar tu plan en cualquier momento. Si actualizas a un plan superior, tendrás acceso inmediato a todas las nuevas funciones. Si decides bajar de plan, el cambio se aplicará al final del período de facturación actual.",
+    },
+    {
+      question: "¿Cómo funciona el sistema de colecciones?",
+      answer:
+        "Cada colección te permite organizar tus cartas Pokémon de la manera que prefieras. Puedes crear colecciones por set, por tipo, por rareza o cualquier otro criterio. Cada carta puede incluir detalles como su condición, notas personales y fecha de adquisición.",
+    },
+    {
+      question: "¿Qué métodos de pago aceptan?",
+      answer:
+        "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express) y PayPal. Todos los pagos se procesan de forma segura a través de Stripe.",
+    },
+    {
+      question: "¿Puedo cancelar mi suscripción en cualquier momento?",
+      answer:
+        "Sí, puedes cancelar tu suscripción cuando quieras. No hay compromisos de permanencia. Al cancelar, mantendrás el acceso a las funciones premium hasta el final del período facturado.",
+    },
+    {
+      question: "¿Qué pasa con mis datos si cancelo mi suscripción?",
+      answer:
+        "Si cancelas una suscripción premium y vuelves al plan gratuito, tus datos se mantendrán guardados, pero solo podrás acceder a las limitaciones del plan gratuito. Podrás volver a acceder a todos tus datos al reactivar tu suscripción.",
+    },
+    {
+      question: "¿Cómo funciona la lista de deseos?",
+      answer:
+        "La lista de deseos te permite guardar las cartas que te gustaría adquirir en el futuro. Puedes añadir notas, establecer prioridades y recibir notificaciones cuando actualicemos información sobre esas cartas.",
+    },
+    {
+      question: "¿Puedo compartir mi colección con otros usuarios?",
+      answer:
+        "Sí, puedes compartir tu colección con otros usuarios mediante un enlace público. Tú controlas qué información es visible para otros coleccionistas y puedes desactivar la visibilidad en cualquier momento.",
+    },
+    {
+      question: "¿Cómo mantienen actualizada la base de datos de cartas?",
+      answer:
+        "Nuestra base de datos se actualiza regularmente con los últimos lanzamientos de cartas Pokémon. Trabajamos con fuentes oficiales y bases de datos reconocidas para garantizar que tengas acceso a la información más precisa y actualizada.",
+    },
+    {
+      question: "¿Ofrecen soporte técnico?",
+      answer:
+        "Sí, ofrecemos soporte técnico por email para todos los usuarios. Los usuarios de planes premium tienen acceso a soporte prioritario con tiempos de respuesta garantizados.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-yellow-50 py-20">
-      <div className="container px-4 mx-auto">
-        <div className="text-center mb-12">
-          <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-            Elige tu Plan
-          </Badge>
-          <h1 className="text-4xl font-bold mb-4 text-gray-900">
-            Comienza tu Viaje de Colección Pokémon
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Selecciona el plan que mejor se adapte a tus necesidades de
-            colección. Todos los planes incluyen nuestras funciones principales.
-          </p>
+    <div className="container py-12 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Planes y Precios</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Estos son nuestros planes para ti. Empieza con el gratuito y sube de
+          nivel cuando lo necesites
+        </p>
+      </div>
 
-          <div className="flex items-center justify-center mt-8 space-x-4">
-            <span
-              className={`text-sm ${
-                billingInterval === "month"
-                  ? "text-gray-900 font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              Mensual
-            </span>
-            <button
-              type="button"
-              className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none"
-              role="switch"
-              aria-checked={billingInterval === "year"}
-              onClick={() =>
-                setBillingInterval(
-                  billingInterval === "month" ? "year" : "month"
-                )
-              }
-            >
-              <span
-                aria-hidden="true"
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  billingInterval === "year" ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
-            <span
-              className={`text-sm ${
-                billingInterval === "year"
-                  ? "text-gray-900 font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              Anual{" "}
-              <span className="text-green-500 font-medium">Ahorra 20%</span>
-            </span>
-          </div>
-        </div>
+      <div className="flex flex-row justify-center flex-wrap gap-6">
+        {Object.entries(PLAN_FEATURES).map(([planType, plan]) => (
+          <PricingCard
+            key={plan.id}
+            plan={plan}
+            isPopular={plan.name === "Entrenador"}
+            isCurrentPlan={planType === currentPlanType}
+            onSelectPlan={handleSelectPlan}
+          />
+        ))}
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => {
-            // Calculate yearly price with discount if applicable
-            const price =
-              billingInterval === "year" && plan.price > 0
-                ? (plan.price * 12 * 0.8).toFixed(2)
-                : plan.price.toFixed(2);
-
-            return (
-              <Card
-                key={plan.id}
-                className={`border relative ${
-                  plan.isPopular
-                    ? "border-red-200 shadow-lg ring-2 ring-red-500"
-                    : "border-gray-200 shadow-md"
-                } hover:shadow-xl transition-shadow`}
-              >
-                <CardHeader className="pb-2">
-                  {plan.isPopular && (
-                    <div className="absolute -top-3 left-0 right-0 flex justify-center">
-                      <Badge className="bg-red-500 text-white hover:bg-red-600 border-none">
-                        Más Popular
-                      </Badge>
-                    </div>
-                  )}
-                  <CardTitle className="text-xl font-bold text-gray-900 mt-2">
-                    {plan.name}
-                  </CardTitle>
-                  <p className="text-sm text-gray-600">{plan.description}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="mt-2 mb-6">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {price === "0.00" ? "Free" : `$${price}`}
-                    </span>
-                    {price !== "0.00" && (
-                      <span className="text-gray-600 ml-2">
-                        /{billingInterval}
-                      </span>
-                    )}
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start"
-                      >
-                        <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className={`w-full ${
-                      plan.isPopular
-                        ? "bg-red-600 hover:bg-red-700"
-                        : "bg-gray-900 hover:bg-gray-800"
-                    }`}
-                    onClick={() => handlePlanSelect(plan)}
-                    disabled={isLoading && processingPlanId === plan.id}
-                  >
-                    {isLoading && processingPlanId === plan.id ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Procesando...
-                      </>
-                    ) : (
-                      <>
-                        {plan.buttonText}
-                        <ChevronRight className="ml-1 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">
-            Preguntas Frecuentes
-          </h2>
-          <div className="max-w-3xl mx-auto grid gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="font-bold text-lg mb-2 text-gray-900">
-                ¿Puedo cancelar mi suscripción?
-              </h3>
-              <p className="text-gray-600">
-                Sí, puedes cancelar tu suscripción en cualquier momento.
-                Seguirás teniendo acceso hasta el final de tu período de
-                facturación.
-              </p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="font-bold text-lg mb-2 text-gray-900">
-                ¿Hay una prueba gratuita?
-              </h3>
-              <p className="text-gray-600">
-                Sí, los planes Entrenador y Maestro incluyen una prueba gratuita
-                de 14 días. No se requiere tarjeta de crédito para comenzar.
-              </p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="font-bold text-lg mb-2 text-gray-900">
-                ¿Qué métodos de pago aceptan?
-              </h3>
-              <p className="text-gray-600">
-                Aceptamos todas las tarjetas de crédito principales, incluyendo
-                Visa, Mastercard, y American Express.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-16 text-center">
-          <p className="text-gray-600 mb-4">Have more questions?</p>
-          <Link to="/contact">
+      {!user && (
+        <div className="flex justify-center mt-8">
+          <Link to={user ? "/dashboard" : "/signup"}>
             <Button
-              variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              size="lg"
+              className="px-8 py-6 text-lg"
             >
-              Contact Support
+              Empezar Gratis
             </Button>
           </Link>
         </div>
-      </div>
+      )}
+
+      {selectedPlanId && (
+        <CheckoutFlow
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          planId={selectedPlanId}
+          currentSubscription={subscription}
+        />
+      )}
+
+      {!user && (
+        <div className="mt-16 max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Preguntas Frecuentes
+          </h2>
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+          >
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+              >
+                <AccordionTrigger className="text-left">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      )}
     </div>
   );
 }

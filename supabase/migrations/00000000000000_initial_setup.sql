@@ -302,6 +302,32 @@ CREATE INDEX IF NOT EXISTS idx_wishlist_cards_user_id ON wishlist_cards(user_id)
 ALTER TABLE collection_cards REPLICA IDENTITY FULL;
 ALTER TABLE collections REPLICA IDENTITY FULL;
 
+-- Crear tabla para eventos webhook
+CREATE TABLE IF NOT EXISTS public.webhook_events (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_type text NOT NULL,
+    payload jsonb NOT NULL,
+    processed_at timestamptz NOT NULL,
+    error text,
+    created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Asegurar que la tabla de subscriptions tiene todos los campos necesarios
+ALTER TABLE public.subscriptions
+ADD COLUMN IF NOT EXISTS polar_id text,
+ADD COLUMN IF NOT EXISTS polar_price_id text,
+ADD COLUMN IF NOT EXISTS current_period_end timestamptz,
+ADD COLUMN IF NOT EXISTS cancel_at_period_end boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS plan_type text DEFAULT 'APRENDIZ';
+
+-- Índices para mejor rendimiento
+CREATE INDEX IF NOT EXISTS idx_webhook_events_event_type ON webhook_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_polar_id ON subscriptions(polar_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id_status ON subscriptions(user_id, status);
+
+-- Permisos
+GRANT SELECT, INSERT ON public.webhook_events TO service_role;
+
 
 
 

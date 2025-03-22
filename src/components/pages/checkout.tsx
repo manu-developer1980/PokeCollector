@@ -1,89 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
-import CheckoutFlow from "../checkout/CheckoutFlow";
+import { CheckoutFlow } from "../checkout/CheckoutFlow";
 import { Loader2 } from "lucide-react";
+import { PLAN_FEATURES, type PlanFeature } from "@/lib/stripe";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
-interface Plan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  interval: "month" | "year";
-  features: string[];
-  isPopular?: boolean;
-}
-
-const defaultPlans: Plan[] = [
-  {
-    id: "free",
-    name: "Free",
-    description: "Basic collection tracking",
-    price: 0,
-    interval: "month",
-    features: [
-      "Up to 100 cards in collection",
-      "Basic search functionality",
-      "Single collection",
-      "Community access",
-    ],
-  },
-  {
-    id: "price_trainer_monthly", // ID de Polar para el plan mensual
-    name: "Trainer",
-    description: "For serious collectors",
-    price: 9.99,
-    interval: "month",
-    features: [
-      "Unlimited cards in collection",
-      "Advanced search filters",
-      "Up to 5 custom collections",
-      "Card condition tracking",
-      "Collection value estimates",
-      "Priority support",
-    ],
-    isPopular: true,
-  },
-  {
-    id: "price_trainer_yearly", // ID de Polar para el plan anual
-    name: "Master",
-    description: "For professional collectors",
-    price: 19.99,
-    interval: "month",
-    features: [
-      "Everything in Trainer",
-      "Unlimited custom collections",
-      "Price trend analytics",
-      "Collection export",
-      "API access",
-      "Dedicated support",
-      "Early access to new features",
-    ],
-  },
-];
-
-const CheckoutPage = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<PlanFeature | null>(null);
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Parse query parameters to get plan ID and interval
+    if (!loading && (!user || !user.email_confirmed_at)) {
+      navigate("/pricing");
+      return;
+    }
+
     const params = new URLSearchParams(location.search);
     const planId = params.get("plan");
-    const interval = (params.get("interval") as "month" | "year") || "month";
+    const interval = params.get("interval") as "month" | "year";
 
     if (!planId) {
       navigate("/pricing");
       return;
     }
 
-    // Find the selected plan
-    const plan = defaultPlans.find((p) => p.id === planId);
+    const plan = Object.values(PLAN_FEATURES).find((p) => p.id === planId);
     if (plan) {
-      // Apply interval to the plan
       const planWithInterval = {
         ...plan,
         interval,
@@ -95,13 +41,7 @@ const CheckoutPage = () => {
     }
 
     setIsLoading(false);
-  }, [location.search, navigate]);
-
-  useEffect(() => {
-    if (!loading && !user && !isLoading) {
-      navigate("/pricing"); // Cambiado de /login a /pricing
-    }
-  }, [user, loading, navigate, location.search, isLoading]);
+  }, [location.search, navigate, user, loading]);
 
   const handleCancel = () => {
     navigate("/pricing");
@@ -110,7 +50,7 @@ const CheckoutPage = () => {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <LoadingSpinner message="Cargando datos..." />
       </div>
     );
   }
@@ -127,6 +67,4 @@ const CheckoutPage = () => {
       />
     </div>
   );
-};
-
-export default CheckoutPage;
+}

@@ -1,111 +1,134 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import CheckoutSummary from "./CheckoutSummary";
-
-export interface PlanDetails {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  interval: "month" | "year";
-  features: string[];
-  isPopular?: boolean;
-}
+import { PLAN_FEATURES } from "@/lib/stripe";
+import type { Subscription } from "@/hooks/useSubscription";
+import LoadingSpinner from "../ui/LoaderSpinner";
 
 interface CheckoutFlowProps {
-  plan: PlanDetails;
-  onCancel: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  planId: string;
+  currentSubscription: Subscription | null;
 }
 
-const CheckoutFlow = ({ plan, onCancel }: CheckoutFlowProps) => {
+export function CheckoutFlow({
+  isOpen,
+  onClose,
+  planId,
+  currentSubscription,
+}: CheckoutFlowProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleProceedToPayment = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to subscribe to a plan.",
-        variant: "destructive",
-      });
-      navigate("/login?redirect=pricing");
-      return;
-    }
+  const selectedPlan = Object.values(PLAN_FEATURES).find(
+    (plan) => plan.id === planId
+  );
 
-    setIsLoading(true);
-
+  const handleCheckout = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          productPriceId: plan.id,
-          successUrl: `${window.location.origin}/checkout/success`,
-          customerEmail: user.email,
-          metadata: {
-            user_id: user.id,
-            plan_name: plan.name,
-            plan_interval: plan.interval,
-          },
+      const requestData = {
+        priceId: planId,
+        customerEmail: user.email,
+        metadata: {
+          user_id: user.id,
+          plan_name: selectedPlan.name,
         },
-      });
+        successUrl: `${window.location.origin}/checkout-success`,
+        cancelUrl: `${window.location.origin}/dashboard`,
+      };
 
-      if (error) throw error;
+      console.log("Checkout request data:", requestData);
 
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL returned");
+      const { data, error } = await supabase.functions.invoke(
+        "create-stripe-checkout",
+        {
+          body: requestData,
+        }
+      );
+
+      if (error) {
+        console.error("Checkout error:", error);
+        throw error;
       }
+
+      if (!data?.url) {
+        throw new Error("No se recibió la URL de checkout");
+      }
+
+      window.location.href = data.url;
     } catch (error) {
-      console.error("Error creating checkout session:", error);
+      console.error("Error completo:", error);
       toast({
-        title: "Checkout failed",
-        description: "There was an error creating your checkout session. Please try again.",
+        title: "Error al procesar el pago",
+        description:
+          "Error al conectar con el servicio de pagos. Por favor, intenta nuevamente.",
         variant: "destructive",
+        duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Review Your Subscription</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CheckoutSummary plan={plan} />
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Confirmar suscripción</DialogTitle>
+        </DialogHeader>
+
+        <div className="py-4">
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium">Plan seleccionado:</h4>
+              <p className="text-2xl font-bold">{selectedPlan?.name}</p>
+            </div>
+            <div>
+              <h4 className="font-medium">Precio:</h4>
+              <p className="text-2xl">
+                {selectedPlan?.price}€
+                <span className="text-base text-muted-foreground">/mes</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancelar
           </Button>
           <Button
-            className="bg-red-600 hover:bg-red-700"
-            onClick={handleProceedToPayment}
+            onClick={handleCheckout}
             disabled={isLoading}
           >
             {isLoading ? (
-              'Processing...'
-            ) : (
               <>
-                Proceed to Payment
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <LoadingSpinner message="Procesando pago..." />
               </>
+            ) : (
+              "Continuar al pago"
             )}
           </Button>
-        </CardFooter>
-      </Card>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default CheckoutFlow;
+}

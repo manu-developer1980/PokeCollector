@@ -68,7 +68,7 @@ export async function searchCards(
 ): Promise<PokemonCardSearchResponse> {
   const cacheKey = PokemonCache.getSearchKey(params);
   const cachedData = PokemonCache.get<PokemonCardSearchResponse>(cacheKey);
-  
+
   if (cachedData) {
     return cachedData;
   }
@@ -130,13 +130,20 @@ export async function getTypes(): Promise<string[]> {
 export async function getCardById(id: string): Promise<PokemonCard | null> {
   const cacheKey = PokemonCache.getCardKey(id);
   const cachedCard = PokemonCache.get<PokemonCard>(cacheKey);
-  
+
   if (cachedCard) {
     return cachedCard;
   }
 
   try {
+    // Volvemos a la URL original
     const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+
+    if (!data || !data.data) {
+      console.warn(`Invalid response format for card ${id}:`, data);
+      return null;
+    }
+
     PokemonCache.set(cacheKey, data.data);
     return data.data;
   } catch (error) {

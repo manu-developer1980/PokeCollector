@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../../../supabase/auth";
-import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate, Link } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -24,10 +17,13 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import EmailExistsModal from "./EmailExistsModal";
 
 const formSchema = z
   .object({
     email: z.string().email("Email inválido"),
+    fullName: z.string().min(1, "El nombre es requerido"),
     password: z
       .string()
       .min(6, "La contraseña debe tener al menos 6 caracteres"),
@@ -39,62 +35,81 @@ const formSchema = z
   });
 
 export default function SignUpForm() {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showEmailExistsModal, setShowEmailExistsModal] = useState(false);
+  const [existingEmail, setExistingEmail] = useState("");
   const { toast } = useToast();
   const { signUp } = useAuth();
-
-  const searchParams = new URLSearchParams(location.search);
-  const planId = searchParams.get('plan');
-  const interval = searchParams.get('interval');
-  const redirectPath = searchParams.get('redirect');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      fullName: "",
       password: "",
       confirmPassword: "",
     },
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    console.log("Iniciando registro...", data);
     setIsLoading(true);
 
     try {
-      const result = await signUp(data.email, data.password);
-      
-      if (result.error) {
+      // Verificar que signUp existe y es una función
+      if (!signUp || typeof signUp !== "function") {
+        console.error("signUp no está definida o no es una función", signUp);
+        throw new Error("Error de configuración de autenticación");
+      }
+
+      console.log("Llamando a signUp...");
+      const result = await signUp(data.email, data.password, data.fullName);
+      console.log("Resultado de signUp:", result);
+
+      if (result?.error) {
+        console.log("Error detectado:", result.error);
+        // Cambiamos la condición para que coincida con el mensaje exacto
+        if (
+          result.error.message ===
+          "Este email ya está registrado. Por favor inicia sesión."
+        ) {
+          setExistingEmail(data.email);
+          setShowEmailExistsModal(true);
+          return;
+        }
         throw result.error;
       }
 
-      if (!result.data?.user) {
+      if (!result?.data?.user) {
+        console.log("No hay datos de usuario en la respuesta");
         throw new Error("No se recibieron datos del usuario");
       }
 
-      const { error: subError } = await supabase
-        .rpc('create_user_subscription', {
-          user_id_param: result.data.user.id,
-          plan_type_param: planId || 'free'
-        });
-
-      if (subError) {
-        console.error("Error al crear la suscripción:", subError);
-        throw subError;
+      console.log("Registro exitoso, navegando a confirm-signup");
+      navigate("/confirm-signup", {
+        state: {
+          email: data.email,
+        },
+        replace: true,
+      });
+    } catch (error: any) {
+      console.error("Error completo:", error);
+      // Si el error es de email existente, mostramos el modal
+      if (
+        error.message ===
+        "Este email ya está registrado. Por favor inicia sesión."
+      ) {
+        setExistingEmail(data.email);
+        setShowEmailExistsModal(true);
+        return;
       }
 
-      // Navegar directamente a la página de confirmación
-      navigate('/confirm-signup', { 
-        state: { email: data.email },
-        replace: true 
-      });
-
-    } catch (error: any) {
-      console.error("Error durante el registro:", error);
+      // Para otros errores mostramos el toast
       toast({
         title: "Error en el registro",
-        description: error.message || "No se pudo completar el registro. Por favor, intenta de nuevo.",
+        description:
+          "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente.",
         variant: "destructive",
       });
     } finally {
@@ -110,7 +125,10 @@ export default function SignUpForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="email"
@@ -121,6 +139,22 @@ export default function SignUpForm() {
                       <Input
                         type="email"
                         placeholder="tu@email.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Tu nombre"
                         {...field}
                       />
                     </FormControl>
@@ -165,8 +199,14 @@ export default function SignUpForm() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Registrarse
+                {isLoading ? (
+                  <LoadingSpinner
+                    message="Registrando usuario..."
+                    compact
+                  />
+                ) : (
+                  "Registrarse"
+                )}
               </Button>
             </form>
           </Form>
@@ -181,6 +221,11 @@ export default function SignUpForm() {
           </div>
         </CardContent>
       </Card>
+      <EmailExistsModal
+        isOpen={showEmailExistsModal}
+        onClose={() => setShowEmailExistsModal(false)}
+        email={existingEmail}
+      />
     </AuthLayout>
   );
 }

@@ -1,28 +1,10 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import {
-  Home,
-  Search,
-  Settings,
-  HelpCircle,
-  CreditCard,
-  Menu,
-  X,
-  User,
-  LogOut,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-} from "@/components/ui/sheet";
+import { LogOut } from "lucide-react";
 import { useAuth } from "../../../../supabase/auth";
-import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Crown } from "lucide-react";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -37,83 +19,72 @@ interface SidebarProps {
   onItemClick: (id: string) => void;
 }
 
-const defaultNavItems: NavItem[] = [
-  { icon: <Home size={18} />, label: "Home", id: "home" },
-  { icon: <Search size={18} />, label: "Search", id: "search" },
-  { icon: <Settings size={18} />, label: "Settings", id: "settings" },
-];
-
 const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
-  const renderNavItems = (isMobile: boolean = false) => (
-    <nav className="space-y-2">
-      {items.map((item) =>
-        isMobile ? (
-          <SheetClose
-            key={item.id}
-            asChild
-          >
-            <button
-              onClick={() => onItemClick(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                activeItem === item.id
-                  ? "bg-red-50 text-red-600"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                {item.icon}
-                <span>{item.label}</span>
-              </div>
-            </button>
-          </SheetClose>
-        ) : (
-          <button
-            key={item.id}
-            onClick={() => onItemClick(item.id)}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-              activeItem === item.id
-                ? "bg-red-50 text-red-600"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              {item.icon}
-              <span>{item.label}</span>
-            </div>
-          </button>
-        )
-      )}
-    </nav>
-  );
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const { subscription } = useSubscription();
+
+  const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
+  const handleItemClick = (item: NavItem) => {
+    if (item.id === "logout") {
+      handleSignOut();
+    } else {
+      onItemClick(item.id);
+    }
+  };
 
   return (
-    <>
-      {/* Versión Desktop */}
-      <aside className="hidden md:block w-64 bg-white border-r border-gray-200 shrink-0">
-        <div className="sticky top-16 h-auto">
-          <div className="flex flex-col flex-1 p-4">
-            <ScrollArea className="flex-1">{renderNavItems(false)}</ScrollArea>
-          </div>
-        </div>
-      </aside>
+    <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-200 shrink-0">
+      <div className="flex flex-col h-[calc(100vh-4rem)] sticky top-16">
+        <div className="flex-1 p-4">
+          <ScrollArea className="h-full">
+            <div className="space-y-2">
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleItemClick(item)}
+                  className={`w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                    item.id === "logout"
+                      ? "text-red-600 hover:bg-red-50 hover:text-red-700"
+                      : activeItem === item.id
+                      ? "bg-red-100 text-red-900"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {item.icon}
+                  <span className="ml-3">{item.label}</span>
+                  {item.badge && (
+                    <span className="ml-auto text-xs bg-red-100 text-red-900 px-2 py-1 rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
 
-      {/* Versión Mobile */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <button className="md:hidden">
-            {/* Botón del menú móvil si lo necesitas */}
-          </button>
-        </SheetTrigger>
-        <SheetContent
-          side="left"
-          className="w-64 p-0 pt-16 block md:hidden"
-        >
-          <div className="flex flex-col h-full p-4">
-            <ScrollArea className="flex-1">{renderNavItems(true)}</ScrollArea>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
+              {!isMaestroPlan && (
+                <button
+                  onClick={() => onItemClick("Pricing")}
+                  className="w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
+                >
+                  <Crown className="h-4 w-4" />
+                  <span className="ml-3">Mejorar Plan</span>
+                </button>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
+    </aside>
   );
 };
 

@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
@@ -13,8 +11,7 @@ import {
   getRarities,
   getCardById,
 } from "@/lib/api";
-import TopNavigation from "../dashboard/layout/TopNavigation";
-import Sidebar from "../dashboard/layout/Sidebar";
+import Sidebar from "../../components/dashboard/layout/Sidebar";
 import SearchFilters from "../pokemon/SearchFilters";
 import CardGrid from "../pokemon/CardGrid";
 import CardDetail from "../pokemon/CardDetail";
@@ -22,7 +19,6 @@ import AddToCollectionDialog from "../pokemon/AddToCollectionDialog";
 import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
-import CardDetailDialog from "../pokemon/CardDetailDialog";
 import OnboardingModal from "../onboarding/OnboardingModal";
 import WishlistGrid from "../pokemon/WishlistGrid";
 import Footer from "../pages/Footer";
@@ -42,11 +38,18 @@ import {
   User,
 } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import SubscriptionPage from "../subscription/SubscriptionPage";
+import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 import MainHeader from "../layout/MainHeader";
-import AccountPage from "./AccountPage";
+import AccountSection from "../dashboard/AccountSection"; // Cambiar esta línea
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog";
+import { useSubscription } from "@/hooks/useSubscription";
+import { validateSubscriptionLimits } from "@/lib/subscription-utils";
+import { useNavigate } from "react-router-dom";
+import { PlanChangeDialog } from "@/components/subscription/PlanChangeDialog";
+import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
+import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
+import PricingPage from "./pricing";
 
 interface PolarSubscription {
   status: string;
@@ -56,105 +59,320 @@ interface PolarSubscription {
 }
 
 const defaultNavItems = [
-  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
   { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
   { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
+  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
+  { icon: <User size={18} />, label: "Mi Cuenta", id: "Account" },
+  // No es necesario añadirlo a la navegación lateral, ya que se accede desde Account
 ];
 
 export default function PokemonDashboard() {
+  // 1. Context hooks
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [activeSection, setActiveSection] = useState(
-    location.state?.activeSection || "My Collection"
-  );
+  const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
 
-  // Actualizar la sección activa cuando cambia el estado de la ubicación
+  // 2. All useState declarations
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+
+  // Actualizar para usar el estado de la navegación si existe, o "My Collection" por defecto
+  const [activeSection, setActiveSection] = useState(() => {
+    return location.state?.activeSection || "My Collection";
+  });
+
+  // Actualizar activeSection cuando cambie el estado de la ubicación
   useEffect(() => {
     if (location.state?.activeSection) {
       setActiveSection(location.state.activeSection);
     }
   }, [location.state]);
 
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  // Agrupa todos los estados relacionados al inicio del componente
-  const [isLoading, setIsLoading] = useState(true); // Añadido estado de loading
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
-  const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
-  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
   const [selectedCollection, setSelectedCollection] =
     useState<Collection | null>(null);
-  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null
   );
+  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [selectedCollectionCard, setSelectedCollectionCard] =
     useState<CollectionCard | null>(null);
-  const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
-
-  // Agrega estos dos estados que faltaban
-  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
-    useState(false);
   const [pendingQuickAddCard, setPendingQuickAddCard] =
     useState<PokemonCard | null>(null);
-
-  // Filter data
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [rarities, setRarities] = useState<string[]>([]);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 20;
-
-  // Realtime channel state
-  const [realtimeChannel, setRealtimeChannel] =
-    useState<RealtimeChannel | null>(null);
-
-  // Añadir nuevo estado cerca de los otros estados de loading
-  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
-
-  // Añadir nuevo estado para la lista de deseos
-  const [wishlistCards, setWishlistCards] = useState<WishlistCardType[]>([]);
-
-  // Estado para el modal de confirmación de borrado
-  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
-    isOpen: false,
-    collectionId: null as string | null,
-    collectionName: "",
-  });
-
-  // Añadir el estado searchParams
+  const [currentPage, setCurrentPage] = useState(1);
+  const [wishlistCards, setWishlistCards] = useState<PokemonCard[]>([]);
   const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
     q: "",
     page: 1,
     pageSize: 20,
     orderBy: "name",
   });
+  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
+    isOpen: false,
+    collectionId: null as string | null,
+    collectionName: "",
+  });
+  const [realtimeChannel, setRealtimeChannel] =
+    useState<RealtimeChannel | null>(null);
+  const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
+  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
+  const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
+  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
+    useState(false);
+  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
+  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+  const [limitError, setLimitError] = useState({
+    message: "",
+    type: null as "cards" | "collections" | "wishlist" | null,
+  });
+  const [isNoSubscriptionModalOpen, setIsNoSubscriptionModalOpen] =
+    useState(false);
+  const [lastAttemptedAction, setLastAttemptedAction] = useState<string>("");
 
-  // Añadir el manejador de cambios de searchParams
-  const handleSearchParamsChange = (
-    newParams: Partial<PokemonCardSearchParams>
-  ) => {
-    setSearchParams((prev) => ({
-      ...prev,
-      ...newParams,
-      page: 1, // Reset page when filters change
-    }));
-    handleSearch({
-      ...searchParams,
-      ...newParams,
-      page: 1,
-    });
-  };
+  // 3. All useRef declarations
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const cardsChannel = useRef<RealtimeChannel | null>(null);
 
-  // Load filter data on mount
+  // 4. Constants
+  const pageSize = 20;
+
+  // 5. All useCallback declarations
+  const validateResourceLimit = useCallback(
+    async (
+      resourceType: "wishlist" | "collection_cards" | "collections",
+      userId: string,
+      quantity: number = 1
+    ) => {
+      try {
+        if (isSubscriptionLoading) {
+          return {
+            valid: false,
+            error: "Verificando estado de suscripción...",
+          };
+        }
+
+        if (!subscription || subscription.status !== "active") {
+          const actionMap = {
+            wishlist: "añadir a tu lista de deseos",
+            collection_cards: "añadir cartas a tu colección",
+            collections: "crear nuevas colecciones",
+          };
+          setLastAttemptedAction(actionMap[resourceType]);
+          setIsNoSubscriptionModalOpen(true);
+          return {
+            valid: false,
+            error: "Suscripción requerida",
+          };
+        }
+
+        const planType = subscription?.plan_type || "APRENDIZ";
+        const { count } = await supabase
+          .from(
+            resourceType === "wishlist" ? "wishlist_cards" : "collection_cards"
+          )
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId);
+
+        const currentCount = count || 0;
+        const validation = validateSubscriptionLimits(
+          planType,
+          resourceType === "collection_cards" ? currentCount + quantity : 0,
+          resourceType === "collections" ? currentCount + quantity : 0,
+          resourceType === "wishlist" ? currentCount + quantity : 0
+        );
+
+        if (!validation.valid) {
+          setLimitError({
+            message: validation.error || "",
+            type: validation.limitType,
+          });
+          setIsLimitModalOpen(true);
+        }
+
+        return validation;
+      } catch (error) {
+        console.error("Error validating limit:", error);
+        return {
+          valid: false,
+          error: "Error al validar los límites de la suscripción",
+        };
+      }
+    },
+    [subscription, isSubscriptionLoading]
+  );
+
+  const fetchWishlist = useCallback(async () => {
+    setIsWishlistLoading(true);
+    try {
+      const { data: wishlistData, error } = await supabase
+        .from("wishlist_cards") // Nombre correcto de la tabla
+        .select(
+          `
+          id,
+          card_id,
+          user_id,
+          date_added
+        `
+        )
+        .eq("user_id", user?.id);
+
+      if (error) {
+        console.error("Error fetching wishlist:", error);
+        throw error;
+      }
+
+      if (!wishlistData || wishlistData.length === 0) {
+        setWishlistCards([]);
+        return;
+      }
+
+      const cardsWithDetails = await Promise.all(
+        wishlistData.map(async (item) => {
+          try {
+            const cardDetails = await getCardById(item.card_id);
+            if (!cardDetails) return null;
+            return {
+              ...cardDetails,
+              wishlist_id: item.id,
+              date_added: item.date_added,
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching details for card ${item.card_id}:`,
+              error
+            );
+            return null;
+          }
+        })
+      );
+
+      const validCards = cardsWithDetails.filter(
+        (
+          card
+        ): card is PokemonCard & {
+          wishlist_id: string;
+          date_added: string;
+        } => card !== null
+      );
+
+      setWishlistCards(validCards);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de deseos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  }, [user?.id, toast]);
+
+  const handleAddToWishlist = useCallback(
+    async (card: PokemonCard) => {
+      try {
+        if (!user?.id) {
+          setLimitError({
+            message:
+              "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
+            type: "wishlist",
+          });
+          setIsLimitModalOpen(true);
+          return;
+        }
+
+        const { valid, error: limitError } = await validateResourceLimit(
+          "wishlist",
+          user.id
+        );
+
+        if (!valid) {
+          setLimitError({
+            message: limitError || "",
+            type: "wishlist",
+          });
+          setIsLimitModalOpen(true);
+          return;
+        }
+
+        const { data: existingCard } = await supabase
+          .from("wishlist_cards")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("card_id", card.id)
+          .maybeSingle();
+
+        if (existingCard) {
+          toast({
+            title: "Ya en Lista de Deseos",
+            description: "Esta carta ya está en tu lista de deseos.",
+          });
+          return;
+        }
+
+        await supabase.from("wishlist_cards").insert({
+          user_id: user.id,
+          card_id: card.id,
+          date_added: new Date().toISOString(),
+        });
+
+        toast({
+          title: "Carta Añadida",
+          description: "La carta ha sido añadida a tu lista de deseos.",
+        });
+
+        // Refrescar la lista de deseos inmediatamente
+        await fetchWishlist();
+      } catch (error) {
+        console.error("Error adding to wishlist:", error);
+        toast({
+          title: "Error",
+          description: "No se pudo añadir la carta a la lista de deseos.",
+          variant: "destructive",
+        });
+      }
+    },
+    [user, toast, navigate, validateResourceLimit, fetchWishlist]
+  );
+
+  // 6. Effects using useEffect
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    const initializeDashboard = async () => {
+      try {
+        setIsLoading(true);
+
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          has_completed_onboarding: true,
+        });
+      } catch (error) {
+        console.error("Error initializing dashboard:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeDashboard();
+  }, [user, navigate]);
+
+  // Move all other useEffect hooks here
   useEffect(() => {
     const loadFilterData = async () => {
       try {
@@ -300,54 +518,31 @@ export default function PokemonDashboard() {
       const { data, error } = await supabase
         .from("users")
         .select("has_seen_onboarding")
-        .eq("user_id", user?.id)
-        .single();
+        .eq("id", user?.id)
+        .maybeSingle();
 
       if (error) throw error;
 
-      // Solo mostramos el onboarding si el usuario no lo ha visto antes
-      if (!data?.has_seen_onboarding) {
+      // Si no hay datos, creamos el registro
+      if (!data) {
+        const { error: insertError } = await supabase.from("users").insert([
+          {
+            id: user?.id,
+            has_seen_onboarding: false,
+            email: user?.email,
+          },
+        ]);
+
+        if (insertError) throw insertError;
         setShowOnboarding(true);
+      } else {
+        // Solo mostramos el onboarding si el usuario no lo ha visto antes
+        if (!data.has_seen_onboarding) {
+          setShowOnboarding(true);
+        }
       }
     } catch (error) {
       console.error("Error checking onboarding status:", error);
-    }
-  };
-
-  const handleSearch = async (params: PokemonCardSearchParams) => {
-    setIsSearching(true);
-    try {
-      const response = await searchCards({
-        ...params,
-        page: params.page || 1,
-        pageSize: params.pageSize || 20,
-      });
-
-      if (response.data) {
-        setSearchResults(response.data);
-        setTotalCount(response.totalCount || 0);
-        setCurrentPage(response.page || 1);
-      } else {
-        setSearchResults([]);
-        setTotalCount(0);
-        setCurrentPage(1);
-        toast({
-          title: "No Results",
-          description: "No cards found matching your search criteria.",
-        });
-      }
-    } catch (error) {
-      console.error("Error searching cards:", error);
-      toast({
-        title: "Error",
-        description: "Failed to search cards. Please try again.",
-        variant: "destructive",
-      });
-      setSearchResults([]);
-      setTotalCount(0);
-      setCurrentPage(1);
-    } finally {
-      setIsSearching(false);
     }
   };
 
@@ -362,73 +557,6 @@ export default function PokemonDashboard() {
     setIsCardDetailOpen(false); // Cerrar el modal de detalle
   };
 
-  const handleAddToWishlist = async (card: PokemonCard) => {
-    try {
-      if (!user?.id) {
-        toast({
-          title: "Error",
-          description:
-            "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Verificar duplicados usando single() con comillas
-      const { data: existingCard, error: checkError } = await supabase
-        .from("wishlist_cards")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("card_id", card.id)
-        .maybeSingle();
-
-      if (checkError) {
-        throw checkError;
-      }
-
-      if (existingCard) {
-        toast({
-          title: "Ya en Lista de Deseos",
-          description: "Esta carta ya está en tu lista de deseos.",
-        });
-        return;
-      }
-
-      // Insertar nueva carta
-      const { data, error } = await supabase
-        .from("wishlist_cards")
-        .insert({
-          user_id: user.id,
-          card_id: card.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const cardWithDetails = {
-        ...card,
-        wishlist_id: data.id,
-        date_added: data.date_added,
-      };
-
-      setWishlistCards((prev) => [...prev, cardWithDetails]);
-
-      setIsCardDetailOpen(false); // Cerrar el modal de detalle
-      toast({
-        title: "Añadido a Lista de Deseos",
-        description: `${card.name} ha sido añadido a tu lista de deseos.`,
-      });
-    } catch (error) {
-      console.error("Error adding to wishlist:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo añadir la carta a la lista de deseos.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleSaveToCollection = async (cardData: {
     card: PokemonCard;
     collectionId: string;
@@ -438,8 +566,34 @@ export default function PokemonDashboard() {
     isFirstEdition?: boolean;
     notes?: string;
   }) => {
+    if (!subscription) return;
+
     try {
-      // Primero insertamos la carta en la colección
+      // Obtener el conteo actual de cartas en todas las colecciones del usuario
+      const { count } = await supabase
+        .from("collection_cards")
+        .select("*", { count: "exact", head: true })
+        .eq("collection_id", cardData.collectionId);
+
+      const currentCardCount = count || 0;
+
+      // Validar límites
+      const validation = validateSubscriptionLimits(
+        subscription.plan_type,
+        currentCardCount + cardData.quantity,
+        0 // No validamos colecciones aquí
+      );
+
+      if (!validation.valid) {
+        setLimitError({
+          message: validation.error || "",
+          type: "cards",
+        });
+        setIsLimitModalOpen(true);
+        return;
+      }
+
+      // Continuar con la lógica existente de guardar la carta
       const { data: insertedCard, error } = await supabase
         .from("collection_cards")
         .insert({
@@ -523,9 +677,39 @@ export default function PokemonDashboard() {
     }
   };
 
-  const handleCreateCollection = () => {
-    setEditingCollection(null);
-    setIsCollectionDialogOpen(true);
+  const handleCreateCollection = async () => {
+    if (!subscription) return;
+
+    try {
+      // Obtener el conteo actual de colecciones
+      const { count } = await supabase
+        .from("collections")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user?.id);
+
+      const currentCollectionCount = count || 0;
+
+      // Validar límites
+      const validation = validateSubscriptionLimits(
+        subscription.plan_type,
+        0, // No validamos cartas aquí
+        currentCollectionCount + 1
+      );
+
+      if (!validation.valid) {
+        setLimitError({
+          message: validation.error || "",
+          type: "collections",
+        });
+        setIsLimitModalOpen(true);
+        return;
+      }
+
+      setEditingCollection(null);
+      setIsCollectionDialogOpen(true);
+    } catch (error) {
+      console.error("Error validando límites de colección:", error);
+    }
   };
 
   const handleEditCollection = (collection: Collection) => {
@@ -672,6 +856,7 @@ export default function PokemonDashboard() {
     if (!selectedCollection) return;
 
     try {
+      console.log("Attempting to remove card:", cardId);
       const { error } = await supabase
         .from("collection_cards")
         .delete()
@@ -680,7 +865,6 @@ export default function PokemonDashboard() {
 
       if (error) throw error;
 
-      // Actualizar el estado local inmediatamente
       setCollections((prevCollections) =>
         prevCollections.map((collection) => {
           if (collection.id === selectedCollection.id) {
@@ -693,7 +877,6 @@ export default function PokemonDashboard() {
         })
       );
 
-      // Actualizar selectedCollection también
       setSelectedCollection((prev) => {
         if (!prev) return null;
         return {
@@ -702,18 +885,15 @@ export default function PokemonDashboard() {
         };
       });
 
-      setIsCardDetailDialogOpen(false);
-
       toast({
-        title: "Carta Eliminada",
-        description: "La carta ha sido eliminada de tu colección.",
+        title: "Carta eliminada",
+        description: "La carta ha sido eliminada de la colección",
       });
     } catch (error) {
       console.error("Error removing card:", error);
       toast({
         title: "Error",
-        description:
-          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+        description: "No se pudo eliminar la carta",
         variant: "destructive",
       });
     }
@@ -732,68 +912,86 @@ export default function PokemonDashboard() {
     try {
       console.log("Received card data for update:", cardData);
 
+      // Primero, verificar si la carta existe
+      const { data: existingCard, error: checkError } = await supabase
+        .from("collection_cards")
+        .select("*")
+        .eq("id", cardData.id)
+        .single();
+
+      if (checkError) {
+        console.error("Error checking card existence:", checkError);
+        throw new Error("Error verificando la existencia de la carta");
+      }
+
+      if (!existingCard) {
+        throw new Error(`No se encontró la carta con ID: ${cardData.id}`);
+      }
+
+      console.log("Existing card found:", existingCard);
+
       // 1. Actualizar en Supabase
       const updateData = {
         quantity: cardData.quantity,
-        condition: cardData.condition,
-        is_foil: cardData.isFoil,
-        is_first_edition: cardData.isFirstEdition,
-        notes: cardData.notes,
+        condition: cardData.condition || "Near Mint",
+        is_foil: cardData.isFoil ?? false,
+        is_first_edition: cardData.isFirstEdition ?? false,
+        notes: cardData.notes || "",
       };
 
-      console.log("Sending to Supabase:", updateData);
+      console.log("Sending update to Supabase:", updateData);
 
-      const { data: updatedCard, error } = await supabase
+      const { data: updatedCard, error: updateError } = await supabase
         .from("collection_cards")
         .update(updateData)
         .eq("id", cardData.id)
-        .select("*")
+        .select()
         .single();
 
-      if (error) throw error;
+      if (updateError) {
+        console.error("Error in update operation:", updateError);
+        throw updateError;
+      }
 
-      console.log("Response from Supabase:", updatedCard);
+      console.log("Updated card data:", updatedCard);
 
-      // 2. Actualizar el estado local con los datos exactos de Supabase
-      const updatedCardData = {
-        ...updatedCard,
-        isFoil: updatedCard.is_foil,
-        isFirstEdition: updatedCard.is_first_edition,
+      // Si no hay datos actualizados, usar una combinación de los datos existentes y nuevos
+      const finalCardData = updatedCard || {
+        ...existingCard,
+        ...updateData,
+        isFoil: updateData.is_foil,
+        isFirstEdition: updateData.is_first_edition,
       };
 
-      // 3. Actualizar collections de manera inmutable
+      // 3. Actualizar collections
       setCollections((prevCollections) => {
-        const newCollections = prevCollections.map((collection) => {
+        return prevCollections.map((collection) => {
           if (collection.id === selectedCollection.id) {
             return {
               ...collection,
               cards: collection.cards.map((card) =>
-                card.id === cardData.id ? { ...card, ...updatedCardData } : card
+                card.id === cardData.id ? { ...card, ...finalCardData } : card
               ),
             };
           }
           return collection;
         });
-        console.log("Updated collections:", newCollections);
-        return newCollections;
       });
 
-      // 4. Actualizar selectedCollection si es necesario
-      if (selectedCollection) {
-        setSelectedCollection((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            cards: prev.cards.map((card) =>
-              card.id === cardData.id ? { ...card, ...updatedCardData } : card
-            ),
-          };
-        });
-      }
+      // 4. Actualizar selectedCollection
+      setSelectedCollection((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          cards: prev.cards.map((card) =>
+            card.id === cardData.id ? { ...card, ...finalCardData } : card
+          ),
+        };
+      });
 
       // 5. Actualizar selectedCollectionCard
       setSelectedCollectionCard((prev) =>
-        prev?.id === cardData.id ? { ...prev, ...updatedCardData } : prev
+        prev?.id === cardData.id ? { ...prev, ...finalCardData } : prev
       );
 
       toast({
@@ -805,7 +1003,9 @@ export default function PokemonDashboard() {
       toast({
         title: "Error",
         description:
-          "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
+          error instanceof Error
+            ? error.message
+            : "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -901,8 +1101,6 @@ export default function PokemonDashboard() {
           filter: `user_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log("Collections realtime event received:", payload);
-
           switch (payload.eventType) {
             case "UPDATE": {
               const updatedCollection = payload.new as Collection;
@@ -947,7 +1145,7 @@ export default function PokemonDashboard() {
       )
       .subscribe();
 
-    // Suscripción existente para collection_cards
+    // Suscripción para collection_cards
     const cardsChannel = selectedCollection
       ? supabase
           .channel(`collection-${selectedCollection.id}`)
@@ -975,95 +1173,33 @@ export default function PokemonDashboard() {
     };
   }, [user, selectedCollection?.id]); // Dependencias actualizadas
 
-  // Añadir función para cargar la lista de deseos
-  const fetchWishlist = async () => {
-    setIsWishlistLoading(true);
-    try {
-      const { data: wishlistData, error } = await supabase
-        .from("wishlist_cards")
-        .select("*")
-        .eq("user_id", user?.id);
-
-      if (error) throw error;
-
-      const cardsWithDetails = await Promise.all(
-        (wishlistData || []).map(async (item) => {
-          try {
-            const cardDetails = await getCardById(item.card_id);
-            return {
-              ...cardDetails,
-              wishlist_id: item.id,
-              date_added: item.date_added,
-            };
-          } catch (error) {
-            console.error(
-              `Error fetching details for card ${item.card_id}:`,
-              error
-            );
-            return null;
-          }
-        })
-      );
-
-      const validCards = cardsWithDetails.filter((card) => card !== null);
-      setWishlistCards(validCards);
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo cargar la lista de deseos.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsWishlistLoading(false);
-    }
-  };
-
   // Asegurarnos de que fetchWishlist se llama cuando se cambia a la pestaña de Lista de Deseos
   useEffect(() => {
     if (activeSection === "Wishlist" && user) {
       fetchWishlist();
     }
-  }, [activeSection, user]);
+  }, [activeSection, user, fetchWishlist]);
 
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+  const getSubscriptionStatus = () => {
+    if (!subscription) return "free";
+
+    if (subscription.status !== "active") return "free";
+
+    // Si está cancelado al final del período y es un downgrade a APRENDIZ
+    if (
+      subscription.cancel_at_period_end &&
+      subscription.plan_type === "aprendiz"
+    ) {
+      return "free";
+    }
+
+    // En cualquier otro caso, mantener el estado actual
+    return subscription.status === "active" ? "premium" : "free";
+  };
 
   useEffect(() => {
-    const fetchSubscriptionInfo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("subscriptions")
-          .select(
-            "status, polar_price_id, current_period_end, cancel_at_period_end"
-          )
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (error) throw error;
-
-        // Si no hay datos o la suscripción no está activa, el usuario es free
-        if (!data || data.status !== "active") {
-          setSubscriptionStatus("free");
-          return;
-        }
-
-        // Verificar si la suscripción ha expirado
-        const hasExpired =
-          data.current_period_end && Date.now() > data.current_period_end;
-
-        setSubscriptionStatus(hasExpired ? "free" : "premium");
-      } catch (error) {
-        console.error("Error fetching subscription:", error);
-        setSubscriptionStatus("free");
-      }
-    };
-
-    if (user) {
-      fetchSubscriptionInfo();
-    }
-  }, [user]);
+    setSubscriptionStatus(getSubscriptionStatus());
+  }, [subscription]);
 
   const handleRemoveFromWishlist = async (card: PokemonCard) => {
     try {
@@ -1097,127 +1233,181 @@ export default function PokemonDashboard() {
     }
   };
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case "Search Cards":
-        return (
-          <>
-            <SearchFilters
-              sets={sets}
-              types={types}
-              rarities={rarities}
-              searchParams={searchParams}
-              onSearchParamsChange={handleSearchParamsChange}
-              onSearch={handleSearch}
-              isLoading={isSearching}
-              totalCount={totalCount}
-              currentPage={currentPage}
-              pageSize={searchParams.pageSize}
-            />
-            {isSearching ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="flex flex-col items-center">
-                  <div className="pokeball mb-4" />
-                  <p className="text-sm text-muted-foreground animate-pulse">
-                    Buscando cartas...
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <CardGrid
-                cards={searchResults}
-                onCardClick={handleCardClick}
-                onQuickAdd={handleQuickAddToCollection}
-                onAddToWishlist={handleAddToWishlist}
-                isLoading={isSearching}
-                actions="search"
-              />
-            )}
-          </>
-        );
-      case "My Collection":
-        return (
-          <div className="space-y-6">
-            {selectedCollection ? (
-              <CollectionDetail
-                collection={selectedCollection}
-                onBack={() => setSelectedCollection(null)}
-                onEditCollection={handleEditCollection}
-                onRemoveCard={handleRemoveCard}
-                onCardClick={(card) => {
-                  setSelectedCollectionCard(card);
-                  setIsCardDetailDialogOpen(true);
-                }}
-                isLoading={isCollectionLoading}
-              />
-            ) : (
-              <CollectionList
-                collections={collections}
-                selectedCollection={selectedCollection}
-                onCollectionSelect={setSelectedCollection}
-                onCreateCollection={handleCreateCollection}
-                onEditCollection={handleEditCollection}
-                onDeleteCollection={handleDeleteCollection}
-                isLoading={isCollectionLoading}
-              />
-            )}
-          </div>
-        );
-      case "Wishlist":
-        return (
-          <div className="space-y-6">
-            <WishlistGrid
-              cards={wishlistCards}
-              onCardClick={(card) => {
-                setSelectedCard(card);
-                setIsCardDetailOpen(true);
-              }}
-              onRemove={handleRemoveFromWishlist}
-              onQuickAdd={handleQuickAddToCollection}
-              isLoading={isWishlistLoading}
-            />
-          </div>
-        );
-      case "Account":
-        return <AccountPage />;
-      case "subscription":
-        return <SubscriptionPage />;
-      default:
-        return null;
+  const handleSearchParamsChange = useCallback(
+    (newParams: Partial<PokemonCardSearchParams>) => {
+      setSearchParams((prevParams) => ({
+        ...prevParams,
+        ...newParams,
+      }));
+
+      // Si se cambia la página, realizar la búsqueda inmediatamente
+      if ("page" in newParams) {
+        handleSearch({
+          ...searchParams,
+          ...newParams,
+        });
+      } else {
+        // Para otros cambios, usar un debounce
+        if (searchTimeoutRef.current) {
+          clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+          handleSearch({
+            ...searchParams,
+            ...newParams,
+          });
+        }, 500);
+      }
+    },
+    [searchParams]
+  );
+
+  const handleSearch = useCallback(
+    async (params: PokemonCardSearchParams) => {
+      setIsSearching(true);
+      try {
+        const response = await searchCards({
+          ...params,
+          page: params.page || 1,
+          pageSize: params.pageSize || 20,
+        });
+        setSearchResults(response.data);
+        setTotalCount(response.totalCount);
+        setCurrentPage(params.page || 1);
+      } catch (error) {
+        console.error("Error searching cards:", error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los resultados de la búsqueda",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [toast]
+  );
+
+  const renderSearchContent = () => (
+    <>
+      <SearchFilters
+        sets={sets}
+        types={types}
+        rarities={rarities}
+        searchParams={searchParams}
+        onSearchParamsChange={handleSearchParamsChange}
+        onSearch={handleSearch}
+        isLoading={isSearching}
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={searchParams.pageSize}
+      >
+        <CardGrid
+          cards={searchResults}
+          onCardClick={handleCardClick}
+          onQuickAdd={handleQuickAddToCollection}
+          onAddToWishlist={handleAddToWishlist}
+        />
+      </SearchFilters>
+    </>
+  );
+
+  const renderWishlistContent = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold">Lista de Deseos</h2>
+      </div>
+      <WishlistGrid
+        cards={wishlistCards}
+        onCardClick={(card) => {
+          setSelectedCard(card);
+          setIsCardDetailOpen(true);
+        }}
+        onQuickAdd={handleQuickAddToCollection}
+        onRemove={handleRemoveFromWishlist}
+        isLoading={isWishlistLoading}
+      />
+    </div>
+  );
+
+  const renderAccountContent = () => {
+    return <AccountSection onSectionChange={setActiveSection} />;
+  };
+
+  const renderCollectionContent = () => {
+    if (selectedCollection) {
+      return (
+        <CollectionDetail
+          collection={selectedCollection}
+          onBack={() => setSelectedCollection(null)}
+          onEdit={handleEditCollection}
+          onRemove={handleRemoveCard}
+          onCardClick={(card) => {
+            setSelectedCollectionCard(card);
+            setSelectedCard(card);
+            setIsCardDetailOpen(true);
+          }}
+        />
+      );
     }
+
+    return (
+      <>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold">Mis Colecciones</h2>
+        </div>
+
+        <CollectionList
+          collections={collections}
+          selectedCollection={selectedCollection}
+          onCollectionSelect={setSelectedCollection}
+          onCreateCollection={handleCreateCollection}
+          onEditCollection={handleEditCollection}
+          onDeleteCollection={handleDeleteCollection}
+          isLoading={isCollectionLoading}
+        />
+      </>
+    );
+  };
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case "My Collection":
+        return renderCollectionContent();
+      case "Search Cards":
+        return renderSearchContent();
+      case "Wishlist":
+        return renderWishlistContent();
+      case "Account":
+        return renderAccountContent();
+      case "Subscription":
+        return <SubscriptionManagement onSectionChange={setActiveSection} />;
+      case "Pricing":
+        return <PricingPage />;
+      default:
+        return renderSearchContent();
+    }
+  };
+
+  const handleUpgradePlan = () => {
+    setActiveSection("Pricing");
   };
 
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
-        <div className="flex-1 flex  w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
-          {" "}
-          {/* Añadido pt-16 para el espacio del header */}
+        <div className="flex-1 flex w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
+          {/* Sidebar solo visible en desktop */}
           <Sidebar
             items={defaultNavItems}
             activeItem={activeSection}
-            onItemClick={(item) => setActiveSection(item)}
+            onItemClick={setActiveSection}
           />
-          <main className="flex-1 min-h-0">
-            {" "}
-            {/* Cambiado a ml-64 fijo */}
-            <div className="container mx-auto p-6">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {activeSection === "Search Cards" && "Buscar Cartas Pokémon"}
-                  {activeSection === "My Collection" &&
-                    "Mi Colección de Pokémon"}
-                  {activeSection === "Wishlist" && "Mi Lista de Deseos"}
-                </h1>
-              </div>
 
-              <div className="mb-6">
-                {" "}
-                {/* Añadido margin bottom */}
-                {renderContent()}
-              </div>
-            </div>
+          <main className="flex-1 min-h-0">
+            <div className="container mx-auto p-6">{renderSection()}</div>
           </main>
         </div>
         <Footer />
@@ -1231,16 +1421,17 @@ export default function PokemonDashboard() {
         onAddToCollection={handleAddToCollection}
         onAddToWishlist={handleAddToWishlist}
         onRemoveFromWishlist={(card) => {
-          // Pasamos la carta completa en lugar de solo el ID
           if (card) {
             handleRemoveFromWishlist(card);
           }
         }}
+        onUpdate={handleUpdateCard}
+        onRemove={handleRemoveCard}
         mode={
-          activeSection === "Wishlist"
-            ? "wishlist"
-            : activeSection === "My Collection"
+          activeSection === "My Collection"
             ? "collection"
+            : activeSection === "Wishlist"
+            ? "wishlist"
             : "search"
         }
       />
@@ -1259,15 +1450,6 @@ export default function PokemonDashboard() {
         onClose={() => setIsCollectionDialogOpen(false)}
         onSave={handleSaveCollection}
         isDefault={collections.length === 0}
-      />
-
-      <CardDetail
-        card={selectedCollectionCard}
-        isOpen={isCardDetailDialogOpen}
-        onClose={() => setIsCardDetailDialogOpen(false)}
-        onUpdate={handleUpdateCard}
-        onRemove={handleRemoveCard}
-        mode="collection"
       />
 
       <OnboardingModal
@@ -1293,6 +1475,30 @@ export default function PokemonDashboard() {
         onCreateNew={handleCreateNewFromNoDefault}
         onSetDefault={handleSetDefaultCollection}
         existingCollections={collections.filter((c) => !c.is_default)}
+      />
+      {!isLoading && (
+        <PlanChangeDialog
+          isOpen={isPlanDialogOpen}
+          onClose={() => setIsPlanDialogOpen(false)}
+          currentPlan={subscription?.plan_type || "APRENDIZ"}
+        />
+      )}
+      <SubscriptionLimitModal
+        isOpen={isLimitModalOpen}
+        onClose={() => setIsLimitModalOpen(false)}
+        limitType={limitError.type}
+        currentPlan={subscription?.plan_type || "APRENDIZ"}
+        errorMessage={limitError.message}
+        onViewPlans={() => setActiveSection("Pricing")}
+      />
+      <NoActiveSubscriptionModal
+        isOpen={isNoSubscriptionModalOpen}
+        onClose={() => setIsNoSubscriptionModalOpen(false)}
+        onViewPlans={() => {
+          setIsNoSubscriptionModalOpen(false);
+          setActiveSection("Pricing");
+        }}
+        action={lastAttemptedAction}
       />
     </>
   );

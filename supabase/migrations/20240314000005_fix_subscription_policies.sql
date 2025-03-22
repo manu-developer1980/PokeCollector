@@ -1,45 +1,36 @@
--- Eliminar políticas existentes para subscriptions si existen
-DROP POLICY IF EXISTS "Users can insert their own subscriptions" ON subscriptions;
-DROP POLICY IF EXISTS "Service role can manage all subscriptions" ON subscriptions;
+-- First, drop the existing foreign key constraint if it exists
+ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_user_id_fkey;
 
--- Crear política para permitir inserción durante el registro
-CREATE POLICY "Enable subscription creation during signup"
-    ON subscriptions
-    FOR INSERT
-    WITH CHECK (
-        -- Permitir al rol de servicio insertar cualquier subscription
-        auth.role() = 'service_role'
-        OR
-        -- Permitir a usuarios autenticados insertar sus propias subscriptions
-        (auth.role() = 'authenticated' AND auth.uid() = user_id)
-        OR
-        -- Permitir inserción durante el registro (rol anónimo)
-        auth.role() = 'anon'
-    );
+-- Drop existing policies
+DROP POLICY IF EXISTS "Users can view their own subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "Users can update their own subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "Users can insert own subscription" ON subscriptions;
 
--- Política para ver subscriptions
-CREATE POLICY "Users can view their own subscriptions"
-    ON subscriptions
-    FOR SELECT
-    USING (
-        auth.uid() = user_id
-        OR auth.role() = 'service_role'
-    );
+-- Enable RLS
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
--- Política para actualizar subscriptions
-CREATE POLICY "Users can update their own subscriptions"
-    ON subscriptions
-    FOR UPDATE
-    USING (
-        auth.uid() = user_id
-        OR auth.role() = 'service_role'
-    )
-    WITH CHECK (
-        auth.uid() = user_id
-        OR auth.role() = 'service_role'
-    );
+-- Add the correct foreign key constraint to auth.users
+ALTER TABLE subscriptions
+ADD CONSTRAINT subscriptions_user_id_fkey
+FOREIGN KEY (user_id) REFERENCES auth.users(id)
+ON DELETE CASCADE;
 
--- Asegurar que los permisos básicos estén configurados
-GRANT ALL ON subscriptions TO service_role;
+-- Create new policies
+CREATE POLICY "Enable read access for authenticated users"
+    ON subscriptions FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Enable insert access for authenticated users"
+    ON subscriptions FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Enable update access for authenticated users"
+    ON subscriptions FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+-- Grant necessary permissions
 GRANT SELECT, INSERT, UPDATE ON subscriptions TO authenticated;
-GRANT INSERT ON subscriptions TO anon;

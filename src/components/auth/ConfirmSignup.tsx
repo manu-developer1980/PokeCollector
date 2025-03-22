@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useLocation, Navigate } from "react-router-dom";
+import { supabase } from "../../../supabase/supabase";
 import AuthLayout from "./AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
@@ -7,6 +9,11 @@ import { Mail } from "lucide-react";
 export default function ConfirmSignup() {
   const location = useLocation();
   const email = location.state?.email;
+
+  useEffect(() => {
+    // Asegurarnos de que no haya sesión activa
+    supabase.auth.signOut();
+  }, []);
 
   // Si no hay email en el state, redirigir a signup
   if (!email) {

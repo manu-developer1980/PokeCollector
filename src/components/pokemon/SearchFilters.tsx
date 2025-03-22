@@ -21,6 +21,10 @@ import {
   type CardSubtype,
   type CardRarity,
 } from "@/lib/constants";
+import { Loading } from "@/stories/button.stories";
+import LoadingSpinner from "../ui/LoaderSpinner";
+import { useSubscription } from "@/hooks/useSubscription";
+import { SubscriptionPlan } from "@/types/subscription";
 
 interface SearchFiltersProps {
   onSearch: (params: PokemonCardSearchParams) => void;
@@ -56,6 +60,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const [sortBy, setSortBy] = useState("name_asc");
   const [selectedRarity, setSelectedRarity] = useState<string>("all");
 
+  const { subscription } = useSubscription();
+  const planType = (subscription?.plan_type?.toUpperCase() ||
+    "APRENDIZ") as SubscriptionPlan;
+
   const totalPages = Math.ceil(totalCount / pageSize);
   const shouldShowPagination = totalCount > 0 && totalPages > 1;
 
@@ -65,27 +73,33 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       page,
     };
 
-    // Build the query string
+    // Build the query string based on subscription level
     let queryParts = [];
 
     if (searchTerm) {
       queryParts.push(`name:"${searchTerm}*"`);
     }
 
+    // Básico (Aprendiz): solo nombre y tipo
     if (type !== "all") {
       queryParts.push(`types:"${type}"`);
     }
 
-    if (supertype !== "all") {
-      queryParts.push(`supertype:"${supertype}"`);
+    // Entrenador: añade rareza
+    if (planType === "ENTRENADOR" || planType === "MAESTRO") {
+      if (selectedRarity && selectedRarity !== "all") {
+        queryParts.push(`rarity:"${selectedRarity}"`);
+      }
     }
 
-    if (subtype !== "all") {
-      queryParts.push(`subtype:"${subtype}"`);
-    }
-
-    if (selectedRarity && selectedRarity !== "all") {
-      queryParts.push(`rarity:"${selectedRarity}"`);
+    // Maestro: añade supertype y subtype
+    if (planType === "MAESTRO") {
+      if (supertype !== "all") {
+        queryParts.push(`supertype:"${supertype}"`);
+      }
+      if (subtype !== "all") {
+        queryParts.push(`subtype:"${subtype}"`);
+      }
     }
 
     if (queryParts.length > 0) {
@@ -116,7 +130,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       <div className="flex flex-col gap-4">
         {/* Contenedor principal de los filtros */}
         <div className="flex flex-wrap gap-4">
-          {/* Campo de búsqueda */}
+          {/* Campo de búsqueda y tipo (disponible para todos) */}
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
@@ -134,7 +148,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             </div>
           </div>
 
-          {/* Filtro de tipos */}
+          {/* Filtro de tipos (disponible para todos) */}
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Select
               value={type}
@@ -157,78 +171,85 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             </Select>
           </div>
 
-          {/* Filtro de Supertipo */}
-          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
-            <Select
-              value={supertype}
-              onValueChange={(value: CardSupertype | "all") =>
-                setSupertype(value)
-              }
-            >
-              <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Supertipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los supertipos</SelectItem>
-                {Object.entries(SUPERTYPE_MAP).map(([value, label]) => (
-                  <SelectItem
-                    key={value}
-                    value={value}
-                  >
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Filtro de Rareza (ENTRENADOR y MAESTRO) */}
+          {(planType === "ENTRENADOR" || planType === "MAESTRO") && (
+            <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+              <Select
+                value={selectedRarity}
+                onValueChange={setSelectedRarity}
+              >
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue placeholder="Rareza" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las rarezas</SelectItem>
+                  {rarities.map((rarity) => (
+                    <SelectItem
+                      key={rarity}
+                      value={rarity}
+                    >
+                      {RARITY_MAP[rarity as CardRarity] || rarity}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          {/* Filtro de Subtipo */}
-          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
-            <Select
-              value={subtype}
-              onValueChange={(value: CardSubtype | "all") => setSubtype(value)}
-            >
-              <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Filtrar por subtipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los subtipos</SelectItem>
-                {Object.entries(SUBTYPE_MAP).map(([value, label]) => (
-                  <SelectItem
-                    key={value}
-                    value={value}
-                  >
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Filtros adicionales solo para MAESTRO */}
+          {planType === "MAESTRO" && (
+            <>
+              <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+                <Select
+                  value={supertype}
+                  onValueChange={(value: CardSupertype | "all") =>
+                    setSupertype(value)
+                  }
+                >
+                  <SelectTrigger className="w-full bg-white">
+                    <SelectValue placeholder="Supertipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los supertipos</SelectItem>
+                    {Object.entries(SUPERTYPE_MAP).map(([value, label]) => (
+                      <SelectItem
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Filtro de Rareza */}
-          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
-            <Select
-              value={selectedRarity}
-              onValueChange={setSelectedRarity}
-            >
-              <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Rareza" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las rarezas</SelectItem>
-                {rarities.map((rarity) => (
-                  <SelectItem
-                    key={rarity}
-                    value={rarity}
-                  >
-                    {RARITY_MAP[rarity as CardRarity] || rarity}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+                <Select
+                  value={subtype}
+                  onValueChange={(value: CardSubtype | "all") =>
+                    setSubtype(value)
+                  }
+                >
+                  <SelectTrigger className="w-full bg-white">
+                    <SelectValue placeholder="Filtrar por subtipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los subtipos</SelectItem>
+                    {Object.entries(SUBTYPE_MAP).map(([value, label]) => (
+                      <SelectItem
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
 
-          {/* Ordenamiento */}
+          {/* Ordenamiento (disponible para todos) */}
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Select
               value={sortBy}
@@ -241,7 +262,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <SelectItem value="name_asc">Nombre (A-Z)</SelectItem>
                 <SelectItem value="name_desc">Nombre (Z-A)</SelectItem>
                 <SelectItem value="number_asc">Número (Menor-Mayor)</SelectItem>
-                <SelectItem value="number_desc">Número (Mayor-Menor)</SelectItem>
+                <SelectItem value="number_desc">
+                  Número (Mayor-Menor)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -259,22 +282,42 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         </div>
       </div>
       {/* Resultados y paginación */}
-      {!isLoading && (
-        <>
-          <div className="mt-8 space-y-6 w-full">{children}</div>
-          {shouldShowPagination && (
-            <div className="w-full overflow-x-auto">
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                pageSize={pageSize}
-                totalCount={totalCount}
-                onPageChange={handleSearch}
-              />
-            </div>
-          )}
-        </>
-      )}
+      <div className="mt-8">
+        {isLoading ? (
+          <LoadingSpinner message="Buscando cartas..." />
+        ) : (
+          <>
+            {/* Paginación Superior */}
+            {shouldShowPagination && (
+              <div className="w-full overflow-x-auto mb-6">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalCount={totalCount}
+                  onPageChange={handleSearch}
+                />
+              </div>
+            )}
+
+            {/* Resultados */}
+            <div className="space-y-6 w-full">{children}</div>
+
+            {/* Paginación Inferior */}
+            {shouldShowPagination && (
+              <div className="w-full overflow-x-auto mt-6">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalCount={totalCount}
+                  onPageChange={handleSearch}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

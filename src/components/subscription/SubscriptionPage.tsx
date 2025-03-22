@@ -1,185 +1,197 @@
-import React, { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "../../../supabase/auth";
-import { supabase } from "../../../supabase/supabase";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import { Progress } from "@/components/ui/progress";
+import { useStats } from "@/hooks/useStats";
 
-const SubscriptionPage = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+interface SubscriptionPageProps {
+  onSectionChange: (section: string) => void;
+}
 
-  const handlePlanSelection = async (planType: string) => {
-    setIsLoading(true);
+export default function SubscriptionPage({
+  onSectionChange,
+}: SubscriptionPageProps) {
+  const { subscription, loading } = useSubscription();
+  const { stats, isLoading: statsLoading } = useStats();
 
-    try {
-      if (planType === "free") {
-        // Si el usuario ya está autenticado, actualizar su suscripción a free
-        if (user) {
-          const { error } = await supabase.from("subscriptions").upsert({
-            user_id: user.id,
-            status: "active",
-            plan_type: "free",
-            current_period_end: null,
-            cancel_at_period_end: false,
-          });
+  if (loading || statsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner message="Cargando suscripción..." />
+      </div>
+    );
+  }
 
-          if (error) throw error;
+  // Convertir el plan_type a la clave correcta para PLAN_FEATURES
+  const planTypeMap = {
+    aprendiz: "APRENDIZ",
+    entrenador: "ENTRENADOR",
+    maestro: "MAESTRO",
+  } as const;
 
-          navigate("/dashboard");
-        } else {
-          // Si no está autenticado, enviarlo al registro
-          navigate("/signup?plan=free");
-        }
-      } else {
-        // Para planes premium, redirigir al checkout
-        if (user) {
-          navigate(`/checkout?plan=${planType}`);
-        } else {
-          // Si no está autenticado, guardar el plan en la URL del registro
-          navigate(`/signup?plan=${planType}`);
-        }
-      }
-    } catch (error) {
-      console.error("Error handling plan selection:", error);
-      toast({
-        title: "Error",
-        description:
-          "No se pudo procesar tu selección. Por favor, intenta de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const currentPlanType = planTypeMap[
+    subscription?.plan_type || "aprendiz"
+  ] as SubscriptionPlan;
+  const currentPlan = PLAN_FEATURES[currentPlanType];
+
+  console.log("Current plan type:", subscription?.plan_type);
+  console.log("Mapped plan type:", currentPlanType);
+  console.log("Current plan features:", currentPlan);
+
+  // Calcular porcentajes
+  const cardsPercentage = (stats.cardsCount / currentPlan.maxCards) * 100;
+  const collectionsPercentage =
+    (stats.collectionsCount / currentPlan.maxCollections) * 100;
+  const wishlistPercentage =
+    (stats.wishlistCount / currentPlan.maxWishlist) * 100;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Elige tu Plan</h1>
+    <div className="container mx-auto py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Gestión de Suscripción
+        </h1>
+        <p className="text-gray-600">Administra tu plan y suscripción</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Plan Free */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Free</CardTitle>
-            <Badge variant="outline">Gratis</Badge>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Búsqueda básica de cartas</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>1 colección</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={() => handlePlanSelection("free")}
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Comenzar Gratis"
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Plan Actual</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <p className="font-medium">Plan: {currentPlan.name}</p>
+              <p>
+                Estado:{" "}
+                {subscription?.status === "active" ? "Activo" : "No activo"}
+              </p>
+              {subscription?.current_period_end && (
+                <p className="text-sm text-muted-foreground">
+                  Próxima renovación:{" "}
+                  {new Date(
+                    subscription.current_period_end
+                  ).toLocaleDateString()}
+                </p>
               )}
-            </Button>
-          </CardFooter>
-        </Card>
+            </div>
 
-        {/* Plan Premium Mensual */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Premium Mensual</CardTitle>
-            <Badge>9.99€/mes</Badge>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Todas las características Free</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Colecciones ilimitadas</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Análisis de precios</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={() => handlePlanSelection("premium_monthly")}
-              className="w-full bg-red-600 hover:bg-red-700"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Elegir Plan"
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
+            <div className="space-y-2">
+              <h3 className="font-medium">Límites del plan:</h3>
+              <ul className="list-disc list-inside space-y-1">
+                <li>
+                  Máximo de cartas:{" "}
+                  {currentPlan.maxCards === Infinity
+                    ? "Ilimitado"
+                    : currentPlan.maxCards}
+                </li>
+                <li>
+                  Máximo de colecciones:{" "}
+                  {currentPlan.maxCollections === Infinity
+                    ? "Ilimitado"
+                    : currentPlan.maxCollections}
+                </li>
+                <li>
+                  Máximo en lista de deseos:{" "}
+                  {currentPlan.maxWishlist === Infinity
+                    ? "Ilimitado"
+                    : currentPlan.maxWishlist}
+                </li>
+              </ul>
+            </div>
 
-        {/* Plan Premium Anual */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Premium Anual</CardTitle>
-            <Badge>99.99€/año</Badge>
-            <Badge
-              variant="outline"
-              className="ml-2"
-            >
-              ¡2 meses gratis!
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Todas las características Premium</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>Ahorra 2 meses</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={() => handlePlanSelection("premium_yearly")}
-              className="w-full bg-red-600 hover:bg-red-700"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Elegir Plan"
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
+            <div className="space-y-2">
+              <h3 className="font-medium">Características incluidas:</h3>
+              <ul className="list-disc list-inside space-y-1">
+                {currentPlan.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+
+            {subscription?.status === "active" && (
+              <div className="mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Precio:{" "}
+                  {currentPlan.price === 0
+                    ? "Gratis"
+                    : `${currentPlan.price}€/mes`}
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Uso Actual del Plan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Cartas</span>
+                <span className="text-muted-foreground">
+                  {stats.cardsCount}/
+                  {currentPlan.maxCards === Infinity
+                    ? "∞"
+                    : currentPlan.maxCards}
+                </span>
+              </div>
+              <Progress
+                value={cardsPercentage}
+                className="h-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Colecciones</span>
+                <span className="text-muted-foreground">
+                  {stats.collectionsCount}/
+                  {currentPlan.maxCollections === Infinity
+                    ? "∞"
+                    : currentPlan.maxCollections}
+                </span>
+              </div>
+              <Progress
+                value={collectionsPercentage}
+                className="h-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Lista de Deseos</span>
+                <span className="text-muted-foreground">
+                  {stats.wishlistCount}/
+                  {currentPlan.maxWishlist === Infinity
+                    ? "∞"
+                    : currentPlan.maxWishlist}
+                </span>
+              </div>
+              <Progress
+                value={wishlistPercentage}
+                className="h-2"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end gap-4">
+        <Button
+          variant="default"
+          onClick={() => onSectionChange("Pricing")}
+        >
+          {subscription?.status === "active" ? "Cambiar Plan" : "Ver Planes"}
+        </Button>
       </div>
     </div>
   );
-};
-
-export default SubscriptionPage;
+}

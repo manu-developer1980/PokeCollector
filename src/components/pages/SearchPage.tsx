@@ -10,6 +10,7 @@ import AuthDialog from "../auth/AuthDialog";
 import { PokemonCard, PokemonCardSearchParams } from "@/types/pokemon";
 import { searchCards } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -17,8 +18,8 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (user) {
-      // Redirigir al dashboard con la pestaña de búsqueda activa
-      navigate("/dashboard", { state: { activeSection: "Search Cards" } });
+      // Solo especificamos la sección de búsqueda si realmente queremos ir a ella
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -60,7 +61,8 @@ export default function SearchPage() {
         console.error("Error loading filter data:", error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
+          description:
+            "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
           variant: "destructive",
         });
       }
@@ -145,14 +147,7 @@ export default function SearchPage() {
             onAddToWishlist={handleAddToWishlist}
           >
             {isSearching ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="flex flex-col items-center">
-                  <div className="pokeball mb-4" />
-                  <p className="text-sm text-muted-foreground animate-pulse">
-                    Buscando cartas...
-                  </p>
-                </div>
-              </div>
+              <div></div>
             ) : (
               <CardGrid
                 cards={searchResults}

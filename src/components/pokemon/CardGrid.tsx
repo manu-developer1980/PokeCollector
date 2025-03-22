@@ -27,13 +27,14 @@ const CardGrid = ({
     <div className="flex flex-wrap gap-4 justify-center">
       {cards.map((card) => (
         <CardItem
-          key={card.id}
+          key={card.id || `${card.pokemon_card_id}-${card.collection_id}`}
           card={card}
           onClick={onCardClick}
           onQuickAdd={onQuickAdd || onAddToCollection}
           onAddToWishlist={onAddToWishlist}
           onRemove={onRemove}
           actions={actions}
+          showPrice={false}
         />
       ))}
     </div>

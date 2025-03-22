@@ -16,6 +16,29 @@ export interface PokemonCard {
       averageSellPrice?: number;
     };
   };
+  // Propiedades de precios
+  tcgplayer?: {
+    prices: {
+      [key: string]: {
+        market: number;
+        low?: number;
+        mid?: number;
+        high?: number;
+      };
+    };
+  };
+  // Propiedades de detalles de carta
+  types?: string[];
+  hp?: string;
+  supertype?: string;
+  subtypes?: string[];
+  attacks?: Array<{
+    name: string;
+    text?: string;
+    damage?: string;
+    convertedEnergyCost?: number;
+  }>;
+  rules?: string[];
   // Propiedades específicas de la colección
   quantity?: number;
   isFirstEdition?: boolean;
@@ -65,15 +88,14 @@ export interface PokemonCardSearchResponse {
 }
 
 export interface CollectionCard extends PokemonCard {
-  id: string; // Este es el ID de la tabla collection_cards
-  card_id: string; // Este es el ID de la carta de Pokémon
-  collection_id: string;
+  id: string; // ID único de la carta en la colección
+  collection_id: string; // ID de la colección a la que pertenece
+  pokemon_card_id: string; // ID de la carta de Pokémon original
   quantity: number;
   condition?: string;
-  is_foil?: boolean;
-  is_first_edition?: boolean;
+  isFoil?: boolean;
+  isFirstEdition?: boolean;
   notes?: string;
-  date_added?: string;
 }
 
 export interface Collection {

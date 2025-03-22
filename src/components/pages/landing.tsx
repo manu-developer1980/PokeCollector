@@ -18,8 +18,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-red-50">
       {/* Hero Section */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-24">
-        <div className="container px-4 mx-auto">
+      <section className="py-16 md:py-24">
+        <div className="container px-16 md:px-20 lg:px-32 mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2 space-y-8">
               <div>
@@ -35,7 +35,7 @@ export default function LandingPage() {
                 nuestras potentes herramientas de gestión.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link 
+                <Link
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 utilizando PokéCollector para gestionar sus colecciones.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link 
+                <Link
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
@@ -226,7 +226,6 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      
     </div>
   );
 }

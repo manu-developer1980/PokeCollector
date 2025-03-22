@@ -3,17 +3,10 @@ import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { LogIn } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,48 +19,14 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
 import OnboardingModal from "../onboarding/OnboardingModal";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
-
-export function ConfirmDialog({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title, 
-  description 
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>
-            Confirmar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -116,38 +75,52 @@ export default function LoginForm() {
       );
 
       if (result.error) {
-        let mensajeError = "Email o contraseña incorrectos";
-
-        if (result.error.message === "Invalid login credentials") {
-          mensajeError = "Email o contraseña incorrectos";
-        } else if (result.error.message === "Email not confirmed") {
+        if (result.error.message === "Email not confirmed") {
           setEmailToConfirm(data.email);
           setShowConfirmEmail(true);
-          
+
+          // Añadir un retraso antes de intentar reenviar
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
           const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
+            type: "signup",
             email: data.email,
             options: {
               emailRedirectTo: `${window.location.origin}/auth/callback`,
             },
           });
 
-          if (!resendError) {
+          if (resendError) {
+            if (resendError.status === 429) {
+              toast({
+                title: "Demasiados intentos",
+                description:
+                  "Por favor, espera unos minutos antes de solicitar otro email de confirmación.",
+                variant: "destructive",
+              });
+            } else {
+              throw resendError;
+            }
+          } else {
             toast({
-              title: "Email de confirmación reenviado",
-              description: "Hemos enviado un nuevo email de confirmación a tu correo.",
+              title: "Email de confirmación enviado",
+              description: "Por favor, revisa tu bandeja de entrada y spam.",
             });
           }
           setIsLoading(false);
           return;
-        } else if (result.error.message.includes("Database error")) {
-          mensajeError = "Error de conexión con la base de datos. Por favor, intente más tarde.";
         }
 
-        form.setError("root", { 
-          message: mensajeError 
-        });
+        // Otros errores
+        let mensajeError = "Error al iniciar sesión";
+        if (result.error.message === "Email o contraseña incorrectos") {
+          mensajeError = "Email o contraseña incorrectos";
+        } else if (result.error.message.includes("Database error")) {
+          mensajeError =
+            "Error de conexión con la base de datos. Por favor, intente más tarde.";
+        }
 
+        form.setError("root", { message: mensajeError });
         toast({
           title: "Error de inicio de sesión",
           description: mensajeError,
@@ -156,8 +129,11 @@ export default function LoginForm() {
         return;
       }
 
+      // Éxito en el inicio de sesión
       if (result.data?.user) {
-        const needsOnboarding = await checkOnboardingStatus(result.data.user.id);
+        const needsOnboarding = await checkOnboardingStatus(
+          result.data.user.id
+        );
         if (needsOnboarding) {
           setShowOnboarding(true);
           setIsLoading(false);
@@ -173,12 +149,10 @@ export default function LoginForm() {
       navigate(redirectTo);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
-      form.setError("root", {
-        message: "Ha ocurrido un error inesperado. Por favor, intente nuevamente."
-      });
       toast({
         title: "Error de inicio de sesión",
-        description: "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
+        description:
+          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
         variant: "destructive",
       });
     } finally {
@@ -188,7 +162,11 @@ export default function LoginForm() {
 
   const handleOnboardingClose = () => {
     setShowOnboarding(false);
-    navigate(redirectTo);
+    // Mostrar planes después del onboarding
+  };
+
+  const handlePlansDialogClose = () => {
+    // Eliminamos esta función ya que no la usaremos
   };
 
   return (
@@ -245,8 +223,14 @@ export default function LoginForm() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Iniciar Sesión
+                {isLoading ? (
+                  <LoadingSpinner
+                    message="Iniciando sesión..."
+                    compact
+                  />
+                ) : (
+                  "Iniciar Sesión"
+                )}
               </Button>
             </form>
           </Form>
@@ -269,22 +253,34 @@ export default function LoginForm() {
           </div>
         </CardContent>
       </Card>
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onClose={handleOnboardingClose} 
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={handleOnboardingClose}
       />
       <ConfirmDialog
         isOpen={showConfirmEmail}
         onClose={() => setShowConfirmEmail(false)}
+        title="Confirma tu email"
+        description={
+          <>
+            <p>
+              Tu cuenta aún no ha sido verificada. Hemos enviado un nuevo email
+              de confirmación a:
+            </p>
+            <p className="font-semibold mt-2">{emailToConfirm}</p>
+            <p className="mt-2">
+              Por favor, revisa tu bandeja de entrada y carpeta de spam.
+            </p>
+          </>
+        }
+        confirmLabel="Entendido"
         onConfirm={() => {
           setShowConfirmEmail(false);
-          navigate('/confirm-signup', { 
+          navigate("/confirm-signup", {
             state: { email: emailToConfirm },
-            replace: true 
+            replace: true,
           });
         }}
-        title="Confirma tu email"
-        description={`Por favor, confirma tu email ${emailToConfirm} antes de iniciar sesión. ¿Necesitas que te reenviemos el email de confirmación?`}
       />
     </AuthLayout>
   );
