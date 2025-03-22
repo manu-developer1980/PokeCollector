@@ -44,18 +44,14 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
     },
   ];
 
-  // Si el usuario está autenticado, añadimos el botón de cerrar sesión
-  const mobileMenuItems = user
-    ? [
-        ...navigationItems,
-        {
-          icon: <LogOut size={18} />,
-          label: "Cerrar Sesión",
-          id: "logout",
-          onClick: handleSignOut,
-        },
-      ]
-    : navigationItems;
+  const mobileMenuItems = [
+    ...navigationItems,
+    {
+      icon: <LogOut size={18} />,
+      label: "Cerrar Sesión",
+      id: "logout",
+    },
+  ];
 
   const handleNavigation = (section: string) => {
     navigate("/dashboard", { state: { activeSection: section } });
@@ -95,17 +91,28 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
             </Link>
           </div>
 
-          {/* Botón de login cuando el usuario no está autenticado */}
-          {!user && (
-            <Button
-              variant="outline"
-              onClick={() => navigate("/login")}
-              className="hidden sm:flex"
-            >
-              <LogIn className="mr-2 h-4 w-4" />
-              Iniciar sesión
-            </Button>
-          )}
+          {/* Botones de autenticación */}
+          <div className="hidden sm:flex items-center gap-4">
+            {!user && (
+              <Button
+                variant="outline"
+                onClick={() => navigate("/login")}
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Iniciar sesión
+              </Button>
+            )}
+            {user && (
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Cerrar sesión
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </header>

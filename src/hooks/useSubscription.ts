@@ -53,7 +53,6 @@ export const useSubscription = () => {
         throw subscriptionError;
       }
 
-      console.log("Subscription found:", data);
       setSubscription(data);
       return data;
     } catch (error) {

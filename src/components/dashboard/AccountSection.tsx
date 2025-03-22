@@ -146,13 +146,6 @@ export default function AccountSection({
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback>
-                {user?.user_metadata?.full_name?.[0]?.toUpperCase() ||
-                  user?.email?.[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
             <div className="space-y-1">
               {isEditingName ? (
                 <div className="flex items-center space-x-2">

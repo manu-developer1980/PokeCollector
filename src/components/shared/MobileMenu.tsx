@@ -4,6 +4,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -59,6 +60,9 @@ export function MobileMenu({
       >
         <SheetHeader>
           <SheetTitle>Menú</SheetTitle>
+          <SheetDescription className="hidden">
+            Navegación principal de PokéCollector
+          </SheetDescription>
         </SheetHeader>
         <div className="mt-4 space-y-2">
           {items.map((item) => (
