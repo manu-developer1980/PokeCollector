@@ -25,6 +25,7 @@ export interface PlanFeature {
   maxCards: number;
   maxCollections: number;
   maxWishlist: number;
+  hasAdvancedSearch: boolean;
 }
 
 // Características de cada plan

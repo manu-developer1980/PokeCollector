@@ -1233,6 +1233,62 @@ export default function PokemonDashboard() {
     }
   };
 
+  const handleSearchParamsChange = useCallback(
+    (newParams: Partial<PokemonCardSearchParams>) => {
+      setSearchParams((prevParams) => ({
+        ...prevParams,
+        ...newParams,
+      }));
+
+      // Si se cambia la página, realizar la búsqueda inmediatamente
+      if ("page" in newParams) {
+        handleSearch({
+          ...searchParams,
+          ...newParams,
+        });
+      } else {
+        // Para otros cambios, usar un debounce
+        if (searchTimeoutRef.current) {
+          clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+          handleSearch({
+            ...searchParams,
+            ...newParams,
+          });
+        }, 500);
+      }
+    },
+    [searchParams]
+  );
+
+  const handleSearch = useCallback(
+    async (params: PokemonCardSearchParams) => {
+      setIsSearching(true);
+      try {
+        const response = await searchCards({
+          ...params,
+          page: params.page || 1,
+          pageSize: params.pageSize || 20,
+        });
+        setSearchResults(response.data);
+        setTotalCount(response.totalCount);
+        setCurrentPage(params.page || 1);
+      } catch (error) {
+        console.error("Error searching cards:", error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los resultados de la búsqueda",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [toast]
+  );
+
   const renderSearchContent = () => (
     <>
       <SearchFilters
