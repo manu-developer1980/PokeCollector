@@ -109,7 +109,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
               <LogOut className="mr-2 h-4 w-4 " />
-              Cerrar sesión
+              <span className="hidden xs:inline">Cerrar sesión</span>
             </Button>
           )}
         </div>
