@@ -47,7 +47,9 @@ serve(async (req) => {
         },
       ],
       proration_behavior: isDowngrade ? "none" : "always_invoice",
-      cancel_at_period_end: isDowngrade,
+      // Solo establecer cancel_at_period_end si es un downgrade a APRENDIZ
+      cancel_at_period_end:
+        isDowngrade && newPrice.metadata.plan_type.toUpperCase() === "APRENDIZ",
       metadata: {
         plan_type: newPrice.metadata.plan_type.toLowerCase(),
       },

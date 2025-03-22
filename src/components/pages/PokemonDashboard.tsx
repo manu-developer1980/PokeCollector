@@ -74,11 +74,12 @@ export default function PokemonDashboard() {
   const location = useLocation();
   const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
 
-  // 2. State hooks - Move ALL useState declarations here
+  // 2. All useState declarations
   const [isLoading, setIsLoading] = useState(false);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
 
   // Actualizar para usar el estado de la navegación si existe, o "My Collection" por defecto
   const [activeSection, setActiveSection] = useState(() => {
@@ -124,7 +125,6 @@ export default function PokemonDashboard() {
   });
   const [realtimeChannel, setRealtimeChannel] =
     useState<RealtimeChannel | null>(null);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
   const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
   const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
   const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
@@ -141,7 +141,78 @@ export default function PokemonDashboard() {
     useState(false);
   const [lastAttemptedAction, setLastAttemptedAction] = useState<string>("");
 
-  // Define fetchWishlist first
+  // 3. All useRef declarations
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const cardsChannel = useRef<RealtimeChannel | null>(null);
+
+  // 4. Constants
+  const pageSize = 20;
+
+  // 5. All useCallback declarations
+  const validateResourceLimit = useCallback(
+    async (
+      resourceType: "wishlist" | "collection_cards" | "collections",
+      userId: string,
+      quantity: number = 1
+    ) => {
+      try {
+        if (isSubscriptionLoading) {
+          return {
+            valid: false,
+            error: "Verificando estado de suscripción...",
+          };
+        }
+
+        if (!subscription || subscription.status !== "active") {
+          const actionMap = {
+            wishlist: "añadir a tu lista de deseos",
+            collection_cards: "añadir cartas a tu colección",
+            collections: "crear nuevas colecciones",
+          };
+          setLastAttemptedAction(actionMap[resourceType]);
+          setIsNoSubscriptionModalOpen(true);
+          return {
+            valid: false,
+            error: "Suscripción requerida",
+          };
+        }
+
+        const planType = subscription?.plan_type || "APRENDIZ";
+        const { count } = await supabase
+          .from(
+            resourceType === "wishlist" ? "wishlist_cards" : "collection_cards"
+          )
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId);
+
+        const currentCount = count || 0;
+        const validation = validateSubscriptionLimits(
+          planType,
+          resourceType === "collection_cards" ? currentCount + quantity : 0,
+          resourceType === "collections" ? currentCount + quantity : 0,
+          resourceType === "wishlist" ? currentCount + quantity : 0
+        );
+
+        if (!validation.valid) {
+          setLimitError({
+            message: validation.error || "",
+            type: validation.limitType,
+          });
+          setIsLimitModalOpen(true);
+        }
+
+        return validation;
+      } catch (error) {
+        console.error("Error validating limit:", error);
+        return {
+          valid: false,
+          error: "Error al validar los límites de la suscripción",
+        };
+      }
+    },
+    [subscription, isSubscriptionLoading]
+  );
+
   const fetchWishlist = useCallback(async () => {
     setIsWishlistLoading(true);
     try {
@@ -209,71 +280,6 @@ export default function PokemonDashboard() {
     }
   }, [user?.id, toast]);
 
-  const validateResourceLimit = useCallback(
-    async (
-      resourceType: "wishlist" | "collection_cards" | "collections",
-      userId: string,
-      quantity: number = 1
-    ) => {
-      try {
-        if (isSubscriptionLoading) {
-          return {
-            valid: false,
-            error: "Verificando estado de suscripción...",
-          };
-        }
-
-        if (!subscription || subscription.status !== "active") {
-          const actionMap = {
-            wishlist: "añadir a tu lista de deseos",
-            collection_cards: "añadir cartas a tu colección",
-            collections: "crear nuevas colecciones",
-          };
-          setLastAttemptedAction(actionMap[resourceType]);
-          setIsNoSubscriptionModalOpen(true);
-          return {
-            valid: false,
-            error: "Suscripción requerida",
-          };
-        }
-
-        const planType = subscription?.plan_type || "APRENDIZ";
-        const { count } = await supabase
-          .from(
-            resourceType === "wishlist" ? "wishlist_cards" : "collection_cards"
-          )
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userId);
-
-        const currentCount = count || 0;
-        const validation = validateSubscriptionLimits(
-          planType,
-          resourceType === "collection_cards" ? currentCount + quantity : 0,
-          resourceType === "collections" ? currentCount + quantity : 0,
-          resourceType === "wishlist" ? currentCount + quantity : 0
-        );
-
-        if (!validation.valid) {
-          setLimitError({
-            message: validation.error || "",
-            type: validation.limitType,
-          });
-          setIsLimitModalOpen(true);
-        }
-
-        return validation;
-      } catch (error) {
-        console.error("Error validating limit:", error);
-        return {
-          valid: false,
-          error: "Error al validar los límites de la suscripción",
-        };
-      }
-    },
-    [subscription, isSubscriptionLoading]
-  );
-
-  // Then define handleAddToWishlist
   const handleAddToWishlist = useCallback(
     async (card: PokemonCard) => {
       try {
@@ -339,71 +345,6 @@ export default function PokemonDashboard() {
       }
     },
     [user, toast, navigate, validateResourceLimit, fetchWishlist]
-  );
-
-  // 3. Refs
-  const cardsChannel = useRef<RealtimeChannel | null>(null);
-
-  // 4. Constants
-  const pageSize = 20;
-
-  // 5. Callbacks using useCallback
-  const handleSearchParamsChange = useCallback(
-    (newParams: Partial<PokemonCardSearchParams>) => {
-      setSearchParams((prevParams) => ({
-        ...prevParams,
-        ...newParams,
-      }));
-
-      // If the page parameter is being updated, trigger a search immediately
-      if ("page" in newParams) {
-        handleSearch({
-          ...searchParams,
-          ...newParams,
-        });
-      }
-    },
-    [searchParams]
-  );
-
-  const handleSearch = useCallback(
-    async (params: PokemonCardSearchParams) => {
-      setIsSearching(true);
-      try {
-        const response = await searchCards({
-          ...params,
-          page: params.page || 1,
-          pageSize: params.pageSize || 20,
-        });
-
-        if (response.data) {
-          setSearchResults(response.data);
-          setTotalCount(response.totalCount || 0);
-          setCurrentPage(response.page || 1);
-        } else {
-          setSearchResults([]);
-          setTotalCount(0);
-          setCurrentPage(1);
-          toast({
-            title: "No Results",
-            description: "No cards found matching your search criteria.",
-          });
-        }
-      } catch (error) {
-        console.error("Error searching cards:", error);
-        toast({
-          title: "Error",
-          description: "Failed to search cards. Please try again.",
-          variant: "destructive",
-        });
-        setSearchResults([]);
-        setTotalCount(0);
-        setCurrentPage(1);
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [toast]
   );
 
   // 6. Effects using useEffect
@@ -1240,14 +1181,20 @@ export default function PokemonDashboard() {
   }, [activeSection, user, fetchWishlist]);
 
   const getSubscriptionStatus = () => {
-    if (!subscription || subscription.status !== "active") {
+    if (!subscription) return "free";
+
+    if (subscription.status !== "active") return "free";
+
+    // Si está cancelado al final del período y es un downgrade a APRENDIZ
+    if (
+      subscription.cancel_at_period_end &&
+      subscription.plan_type === "aprendiz"
+    ) {
       return "free";
     }
 
-    const hasExpired =
-      subscription.current_period_end &&
-      Date.now() > new Date(subscription.current_period_end).getTime();
-    return hasExpired ? "free" : "premium";
+    // En cualquier otro caso, mantener el estado actual
+    return subscription.status === "active" ? "premium" : "free";
   };
 
   useEffect(() => {

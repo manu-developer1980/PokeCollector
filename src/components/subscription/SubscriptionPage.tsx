@@ -26,9 +26,21 @@ export default function SubscriptionPage({
     );
   }
 
-  const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
-    "APRENDIZ") as SubscriptionPlan;
-  const currentPlan = PLAN_FEATURES[currentPlanType] || PLAN_FEATURES.APRENDIZ;
+  // Convertir el plan_type a la clave correcta para PLAN_FEATURES
+  const planTypeMap = {
+    aprendiz: "APRENDIZ",
+    entrenador: "ENTRENADOR",
+    maestro: "MAESTRO",
+  } as const;
+
+  const currentPlanType = planTypeMap[
+    subscription?.plan_type || "aprendiz"
+  ] as SubscriptionPlan;
+  const currentPlan = PLAN_FEATURES[currentPlanType];
+
+  console.log("Current plan type:", subscription?.plan_type);
+  console.log("Mapped plan type:", currentPlanType);
+  console.log("Current plan features:", currentPlan);
 
   // Calcular porcentajes
   const cardsPercentage = (stats.cardsCount / currentPlan.maxCards) * 100;

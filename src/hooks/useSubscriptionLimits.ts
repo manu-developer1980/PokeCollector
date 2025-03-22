@@ -1,15 +1,23 @@
-import { useSubscription } from './useSubscription';
-import { PLAN_FEATURES } from '@/lib/stripe';
+import { useSubscription } from "./useSubscription";
+import { PLAN_FEATURES } from "@/lib/stripe";
+import { DatabasePlanType, toPlanType } from "@/types/subscription";
 
 export function useSubscriptionLimits() {
   const { subscription } = useSubscription();
 
   const getCurrentLimits = () => {
-    const planType = subscription?.plan_type || 'aprendiz';
+    const databasePlanType = (subscription?.plan_type ||
+      "aprendiz") as DatabasePlanType;
+    const planType = toPlanType(databasePlanType);
+    console.log("Database Plan Type:", databasePlanType);
+    console.log("Converted Plan Type:", planType);
     return PLAN_FEATURES[planType];
   };
 
-  const checkLimit = (feature: keyof typeof PLAN_FEATURES.aprendiz, currentCount: number) => {
+  const checkLimit = (
+    feature: keyof typeof PLAN_FEATURES.APRENDIZ,
+    currentCount: number
+  ) => {
     const limits = getCurrentLimits();
     return currentCount < limits[feature];
   };
@@ -23,7 +31,7 @@ export function useSubscriptionLimits() {
     checkLimit,
     isFeatureAvailable,
     currentLimits: getCurrentLimits(),
-    planType: subscription?.plan_type || 'aprendiz',
-    isActive: subscription?.is_active || false
+    planType: subscription?.plan_type || "aprendiz",
+    isActive: subscription?.is_active || false,
   };
 }

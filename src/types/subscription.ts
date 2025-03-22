@@ -1,11 +1,21 @@
+export type DatabasePlanType = "aprendiz" | "entrenador" | "maestro";
 export type SubscriptionPlan = "APRENDIZ" | "ENTRENADOR" | "MAESTRO";
 
-export type DatabasePlanType = "aprendiz" | "entrenador" | "maestro";
+export const toPlanType = (
+  databasePlan: DatabasePlanType
+): SubscriptionPlan => {
+  const planMap: Record<DatabasePlanType, SubscriptionPlan> = {
+    aprendiz: "APRENDIZ",
+    entrenador: "ENTRENADOR",
+    maestro: "MAESTRO",
+  };
+  return planMap[databasePlan];
+};
 
 export interface Subscription {
   id: string;
   user_id: string;
-  plan_type: DatabasePlanType;
+  plan_type: DatabasePlanType; // Asegurarse de que esto está tipado correctamente
   status: string;
   stripe_subscription_id?: string;
   stripe_customer_id?: string;

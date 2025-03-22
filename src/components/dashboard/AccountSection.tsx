@@ -17,6 +17,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import { Crown } from "lucide-react";
+import { toPlanType } from "@/types/subscription";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
@@ -129,10 +130,9 @@ export default function AccountSection({
     if (!subscription || subscription.status !== "active") {
       return PLAN_FEATURES.APRENDIZ;
     }
-    return (
-      PLAN_FEATURES[subscription.plan_type as keyof typeof PLAN_FEATURES] ||
-      PLAN_FEATURES.APRENDIZ
-    );
+    // Convertir el plan_type de la base de datos al formato correcto
+    const planType = toPlanType(subscription.plan_type);
+    return PLAN_FEATURES[planType];
   };
 
   const currentPlan = getCurrentPlan();
