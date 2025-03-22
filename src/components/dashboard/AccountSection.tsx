@@ -97,21 +97,27 @@ export default function AccountSection({
   };
 
   const handleDeleteAccount = async () => {
-    if (!user) return;
-
     setIsLoading(true);
     try {
-      // Llamar a la Edge Function para eliminar el usuario
+      // Primero obtenemos el token de acceso actual
+      const session = (await supabase.auth.getSession()).data.session;
+      if (!session?.access_token) {
+        throw new Error("No hay sesión activa");
+      }
+
+      // Guardamos el token para usarlo en la llamada a la función
+      const accessToken = session.access_token;
+
+      // Primero hacemos signOut localmente
+      await signOut();
+
+      // Luego eliminamos la cuenta usando el token guardado
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${
-              (
-                await supabase.auth.getSession()
-              ).data.session?.access_token
-            }`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ user_id: user.id }),
@@ -123,15 +129,18 @@ export default function AccountSection({
         throw new Error(error.message || "Error al eliminar la cuenta");
       }
 
-      await signOut();
+      // Redirigimos al usuario
       navigate("/goodbye", { replace: true });
     } catch (error: any) {
+      console.error("Error al eliminar la cuenta:", error);
       toast({
         title: "Error",
         description:
           "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
+      // Si hubo un error, intentamos hacer login de nuevo
+      await supabase.auth.refreshSession();
     } finally {
       setIsLoading(false);
     }

@@ -16,7 +16,6 @@ export default function GoodbyeModal() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Redirigir automáticamente después de 3 segundos
     const timer = setTimeout(() => {
       navigate("/", { replace: true });
     }, 3000);
@@ -24,7 +23,6 @@ export default function GoodbyeModal() {
     return () => clearTimeout(timer);
   }, [navigate]);
 
-  // Si hay un usuario autenticado, redirigir inmediatamente al landing
   if (user) {
     return (
       <Navigate
@@ -34,14 +32,10 @@ export default function GoodbyeModal() {
     );
   }
 
-  const handleClose = () => {
-    navigate("/", { replace: true });
-  };
-
   return (
     <Dialog
       open={true}
-      onOpenChange={handleClose}
+      onOpenChange={() => navigate("/", { replace: true })}
     >
       <DialogContent className="sm:max-w-md text-center">
         <DialogHeader>
@@ -60,7 +54,7 @@ export default function GoodbyeModal() {
             comunidad de coleccionistas.
           </p>
           <Button
-            onClick={handleClose}
+            onClick={() => navigate("/", { replace: true })}
             className="w-full bg-red-600 hover:bg-red-700"
           >
             Volver al inicio

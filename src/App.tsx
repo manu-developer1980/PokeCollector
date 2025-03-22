@@ -23,7 +23,7 @@ import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
 import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
-import GoodbyeModal from "./components/auth/GoodbyeModal";
+import GoodbyeModal from "@/components/auth/GoodbyeModal";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
