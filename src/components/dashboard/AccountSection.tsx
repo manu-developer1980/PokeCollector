@@ -105,13 +105,9 @@ export default function AccountSection({
         throw new Error("No hay sesión activa");
       }
 
-      // Guardamos el token para usarlo en la llamada a la función
       const accessToken = session.access_token;
 
-      // Primero hacemos signOut localmente
-      await signOut();
-
-      // Luego eliminamos la cuenta usando el token guardado
+      // Llamada a la función de eliminar usuario
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
         {
@@ -129,8 +125,11 @@ export default function AccountSection({
         throw new Error(error.message || "Error al eliminar la cuenta");
       }
 
-      // Redirigimos al usuario
+      // Primero navegamos a goodbye
       navigate("/goodbye", { replace: true });
+
+      // Luego hacemos el signOut
+      await signOut();
     } catch (error: any) {
       console.error("Error al eliminar la cuenta:", error);
       toast({
