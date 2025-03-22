@@ -1,11 +1,16 @@
 [auth]
-site_url = "http://localhost:5173"
+site_url = "https://poke-collector.netlify.app"
 additional_redirect_urls = [
   "http://localhost:5173",
   "http://localhost:5173/auth/callback",
   "http://localhost:5173/login",
   "http://localhost:5173/dashboard",
-  "http://localhost:5173/auth/callback?*"
+  "http://localhost:5173/auth/callback?*",
+  "https://poke-collector.netlify.app",
+  "https://poke-collector.netlify.app/auth/callback",
+  "https://poke-collector.netlify.app/login",
+  "https://poke-collector.netlify.app/dashboard",
+  "https://poke-collector.netlify.app/auth/callback?*"
 ]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
