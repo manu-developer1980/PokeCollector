@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../../../../supabase/auth";
 import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Crown } from "lucide-react";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -20,6 +22,9 @@ interface SidebarProps {
 const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { subscription } = useSubscription();
+
+  const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
 
   const handleSignOut = async () => {
     try {
@@ -65,6 +70,16 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
                   )}
                 </button>
               ))}
+
+              {!isMaestroPlan && (
+                <button
+                  onClick={() => onItemClick("Pricing")}
+                  className="w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
+                >
+                  <Crown className="h-4 w-4" />
+                  <span className="ml-3">Mejorar Plan</span>
+                </button>
+              )}
             </div>
           </ScrollArea>
         </div>

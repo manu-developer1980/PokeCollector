@@ -7,8 +7,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Crown } from "lucide-react";
 import { useState } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "../../supabase/auth";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -30,6 +32,9 @@ export function MobileMenu({
   onItemClick,
 }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
+  const { subscription } = useSubscription();
+
+  const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
 
   const handleItemClick = (item: NavItem) => {
     if (item.onClick) {
@@ -84,6 +89,19 @@ export function MobileMenu({
               )}
             </button>
           ))}
+
+          {!isMaestroPlan && (
+            <button
+              onClick={() => {
+                onItemClick("Pricing");
+                setOpen(false);
+              }}
+              className="w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
+            >
+              <Crown className="h-4 w-4" />
+              <span className="ml-3">Mejorar Plan</span>
+            </button>
+          )}
         </div>
       </SheetContent>
     </Sheet>

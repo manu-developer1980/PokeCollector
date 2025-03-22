@@ -55,27 +55,7 @@ serve(async (req) => {
   try {
     const { user_id } = await req.json();
 
-    // 1. Verificar si el usuario ya tiene una suscripción
-    const { data: existingSubscription } = await supabaseAdmin
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", user_id)
-      .single();
-
-    if (existingSubscription) {
-      return new Response(
-        JSON.stringify({ message: "Subscription already exists" }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-          status: 200,
-        }
-      );
-    }
-
-    // 2. Obtener información del usuario
+    // 1. Obtener información del usuario
     const { data: userData, error: userError } = await supabaseAdmin
       .from("users")
       .select("email, full_name")
@@ -86,7 +66,7 @@ serve(async (req) => {
       throw new Error("User not found");
     }
 
-    // 3. Crear cliente en Stripe
+    // 2. Crear cliente en Stripe
     const customer = await stripe.customers.create({
       email: userData.email,
       name: userData.full_name,
@@ -95,21 +75,44 @@ serve(async (req) => {
       },
     });
 
-    // 4. Crear suscripción gratuita
-    const { error: subscriptionError } = await supabaseAdmin
-      .from("subscriptions")
-      .insert({
-        user_id,
-        plan_type: "aprendiz",
-        status: "active",
-        stripe_customer_id: customer.id,
-        stripe_price_id: "price_1R4KH1EoOyqILXNqxnOSjJHZ", // ID del plan gratuito
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
-        is_active: true,
-      });
+    // 3. Verificar si el usuario ya tiene una suscripción
+    const { data: existingSubscription, error: subscriptionError } =
+      await supabaseAdmin
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user_id)
+        .single();
 
-    if (subscriptionError) {
+    if (subscriptionError && subscriptionError.code !== "PGRST116") {
+      // PGRST116 = no data found
       throw subscriptionError;
+    }
+
+    const subscriptionData = {
+      stripe_customer_id: customer.id,
+      stripe_price_id: "price_1R4KH1EoOyqILXNqxnOSjJHZ", // ID del plan gratuito
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
+      plan_type: "aprendiz",
+      status: "active",
+    };
+
+    let result;
+    if (existingSubscription) {
+      // Actualizar suscripción existente
+      result = await supabaseAdmin
+        .from("subscriptions")
+        .update(subscriptionData)
+        .eq("user_id", user_id);
+    } else {
+      // Crear nueva suscripción
+      result = await supabaseAdmin.from("subscriptions").insert({
+        ...subscriptionData,
+        user_id,
+      });
+    }
+
+    if (result.error) {
+      throw result.error;
     }
 
     return new Response(

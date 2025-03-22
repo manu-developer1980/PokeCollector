@@ -11,7 +11,7 @@ import {
   getRarities,
   getCardById,
 } from "@/lib/api";
-import Sidebar from "../dashboard/layout/Sidebar";
+import Sidebar from "../../components/dashboard/layout/Sidebar";
 import SearchFilters from "../pokemon/SearchFilters";
 import CardGrid from "../pokemon/CardGrid";
 import CardDetail from "../pokemon/CardDetail";

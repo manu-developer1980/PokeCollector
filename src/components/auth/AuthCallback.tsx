@@ -71,12 +71,13 @@ export default function AuthCallback() {
               navigate("/dashboard");
             } catch (error) {
               console.error("Error initializing user:", error);
-              toast({
+              // Comentamos temporalmente el toast de error
+              /*toast({
                 title: "Error",
                 description:
                   "Hubo un problema al inicializar tu cuenta. Por favor, contacta a soporte.",
                 variant: "destructive",
-              });
+              });*/
               navigate("/login");
             }
           } else {
