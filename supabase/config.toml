@@ -16,10 +16,12 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 
-# Eliminamos la sección problemática [auth.external.email]
-
 [functions]
+[functions.initialize-user]
+verify_jwt = true
+
 [functions.create-checkout]
 verify_jwt = true
+
 [functions.stripe-webhook]
 verify_jwt = false

@@ -1,10 +1,11 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -37,13 +38,47 @@ export default function AuthCallback() {
 
           if (userError) {
             console.error("Error fetching user data:", userError);
-          } else {
-            console.log("User data:", userData);
           }
 
-          // Si el email está confirmado, redirigir al dashboard
+          // Si el email está confirmado, inicializar el usuario
           if (session.user.email_confirmed_at) {
-            navigate("/dashboard");
+            try {
+              // Llamar a la función edge initialize-user
+              const response = await fetch(
+                `${
+                  import.meta.env.VITE_SUPABASE_URL
+                }/functions/v1/initialize-user`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    user_id: session.user.id,
+                  }),
+                }
+              );
+
+              const data = await response.json();
+              console.log("Initialize user response:", data);
+
+              if (!response.ok) {
+                throw new Error(data.error || "Error initializing user");
+              }
+
+              // Si todo sale bien, redirigir al dashboard
+              navigate("/dashboard");
+            } catch (error) {
+              console.error("Error initializing user:", error);
+              toast({
+                title: "Error",
+                description:
+                  "Hubo un problema al inicializar tu cuenta. Por favor, contacta a soporte.",
+                variant: "destructive",
+              });
+              navigate("/login");
+            }
           } else {
             navigate("/login?message=please-verify-email");
           }
@@ -57,7 +92,7 @@ export default function AuthCallback() {
     };
 
     handleCallback();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
