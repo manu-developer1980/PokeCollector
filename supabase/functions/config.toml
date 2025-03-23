@@ -16,8 +16,10 @@ verify_jwt = true
 allowed_origins = ["http://localhost:5173", "http://localhost:3000", "https://poke-collector.netlify.app"]
 
 [functions.stripe-webhook]
-verify_jwt = false
+verify_jwt = true
 
 [functions.test-stripe-config]
 verify_jwt = true
+
+
 

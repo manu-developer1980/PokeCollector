@@ -52,27 +52,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (authError) {
-        console.error("Detailed auth error:", {
+        console.error("Signup error details:", {
           message: authError.message,
           status: authError.status,
           name: authError.name,
-          details: authError,
+          code: authError?.details?.code,
+          isAuthError: authError?.details?.__isAuthError,
         });
-
-        // Handle specific error cases
-        if (authError.message === "Database error saving new user") {
-          return {
-            error: {
-              message:
-                "Error temporal del servidor. Por favor, intenta en unos minutos.",
-              originalError: authError,
-            },
-          };
-        }
 
         return {
           error: {
             message: authError.message,
+            code: authError?.details?.code || "AUTH_ERROR",
             originalError: authError,
           },
         };
@@ -83,35 +74,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return {
           error: {
             message: "Error al crear el usuario",
+            code: "NO_USER_DATA",
           },
         };
       }
 
-      console.log("Signup successful, user created:", authData.user.id);
-
-      // Wait for trigger to complete
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Verify user creation
+      // Modificamos la consulta a la tabla users
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authData.user.id)
-        .single();
+        .maybeSingle();
 
       if (userError) {
-        console.error("Error verifying user creation:", userError);
-      } else {
-        console.log("User verified in database:", userData);
+        // Si el error es porque el usuario aún no existe en la tabla, lo creamos
+        if (userError.code === "PGRST116") {
+          const { error: insertError } = await supabase.from("users").insert([
+            {
+              id: authData.user.id,
+              email: email.trim().toLowerCase(),
+              full_name: fullName.trim(),
+            },
+          ]);
+
+          if (insertError) {
+            console.error("Error creating user in database:", insertError);
+            return {
+              error: {
+                message: "Error al crear el perfil de usuario",
+                code: "USER_CREATION_FAILED",
+                originalError: insertError,
+              },
+            };
+          }
+        } else {
+          console.error("Error verifying user creation:", userError);
+          return {
+            error: {
+              message: "Error al verificar la creación del usuario",
+              code: "VERIFICATION_ERROR",
+              originalError: userError,
+            },
+          };
+        }
       }
 
       return { data: authData, error: null };
     } catch (error: any) {
-      console.error("Unexpected error during signup:", error);
+      console.error("Unexpected signup error:", error);
       return {
         error: {
           message:
             "Error inesperado durante el registro. Por favor, intenta nuevamente.",
+          code: "UNEXPECTED_ERROR",
           originalError: error,
         },
       };

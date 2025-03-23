@@ -1,24 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@12.4.0?target=deno";
-import { corsHeaders } from "../_shared/cors.ts";
+import Stripe from "https://esm.sh/stripe@12.0.0";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const APRENDIZ_PRICE_ID = "price_1R4KH1EoOyqILXNqxnOSjJHZ";
 
 serve(async (req) => {
-  // Always add CORS headers
-  const headers = corsHeaders(req);
+  const corsHeaders = getCorsHeaders(req);
 
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers,
-    });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const { user_id } = await req.json();
+    console.log("📥 Iniciando inicialización para usuario:", user_id);
 
     if (!user_id) {
       throw new Error("user_id is required");
@@ -33,34 +29,45 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
 
-    // 1. Obtener información del usuario
-    const { data: userData, error: userDataError } = await supabase
-      .from("users")
-      .select("email")
-      .eq("id", user_id)
-      .single();
+    // 1. Obtener datos del usuario
+    const { data: authUser, error: authError } =
+      await supabase.auth.admin.getUserById(user_id);
 
-    if (userDataError) {
-      throw userDataError;
+    if (authError || !authUser.user) {
+      console.error("❌ Error al obtener datos de auth:", authError);
+      throw new Error("Usuario no encontrado en auth");
     }
 
-    // 2. Verificar si ya existe una suscripción
-    const { data: existingSub } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", user_id)
-      .single();
+    console.log("✅ Datos de usuario obtenidos:", authUser.user.email);
 
-    if (!existingSub) {
-      // 3. Crear cliente en Stripe
+    try {
+      // 1. Verificar si el usuario ya tiene una suscripción en Stripe
+      const { data: existingSubscription } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user_id)
+        .single();
+
+      if (existingSubscription?.stripe_customer_id) {
+        console.log("Usuario ya tiene suscripción en Stripe");
+        return new Response(
+          JSON.stringify({ message: "User already initialized" }),
+          { status: 200 }
+        );
+      }
+
+      // 2. Crear cliente en Stripe
+      console.log("🔄 Creando cliente en Stripe...");
       const customer = await stripe.customers.create({
-        email: userData.email,
+        email: authUser.user.email,
         metadata: {
           user_id: user_id,
         },
       });
+      console.log("✅ Cliente Stripe creado:", customer.id);
 
-      // 4. Crear suscripción en Stripe
+      // 3. Crear suscripción en Stripe
+      console.log("🔄 Creando suscripción en Stripe...");
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{ price: APRENDIZ_PRICE_ID }],
@@ -68,62 +75,60 @@ serve(async (req) => {
           user_id: user_id,
         },
       });
+      console.log("✅ Suscripción Stripe creada:", subscription.id);
 
-      // 5. Crear suscripción en la base de datos
-      const { error: subError } = await supabase.from("subscriptions").insert({
-        user_id: user_id,
-        plan_type: "aprendiz",
-        stripe_subscription_id: subscription.id,
-        stripe_customer_id: customer.id,
-        stripe_price_id: APRENDIZ_PRICE_ID,
-        status: subscription.status,
-        current_period_end: new Date(
-          subscription.current_period_end * 1000
-        ).toISOString(),
-        cancel_at_period_end: subscription.cancel_at_period_end,
-        is_active: subscription.status === "active",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+      // 4. Actualizar en Supabase
+      const { error: updateError } = await supabase
+        .from("subscriptions")
+        .upsert({
+          user_id: user_id,
+          stripe_customer_id: customer.id,
+          stripe_subscription_id: subscription.id,
+          stripe_price_id: APRENDIZ_PRICE_ID,
+          status: subscription.status,
+          plan_type: "aprendiz",
+          current_period_end: new Date(
+            subscription.current_period_end * 1000
+          ).toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          is_active: subscription.status === "active",
+        });
 
-      if (subError) {
-        console.error("Error creating subscription:", subError);
-        throw subError;
+      if (updateError) {
+        console.error("❌ Error al actualizar suscripción:", updateError);
+        throw updateError;
       }
-
-      console.log("✅ Successfully created subscription:", {
-        userId: user_id,
-        subscriptionId: subscription.id,
-        customerId: customer.id,
-      });
+    } catch (error) {
+      console.error("Error en initialize-user:", error);
+      throw error;
     }
 
     return new Response(
       JSON.stringify({
-        success: true,
-        message: "User initialized successfully",
+        message: "Usuario inicializado correctamente",
+        status: "success",
       }),
       {
         headers: {
-          ...headers,
+          ...corsHeaders,
           "Content-Type": "application/json",
         },
+        status: 200,
       }
     );
   } catch (error) {
-    console.error("Initialize user error:", error);
-
+    console.error("❌ Error en el proceso de inicialización:", error);
     return new Response(
       JSON.stringify({
-        error: error.message || "Error initializing user",
+        error: error.message || "Error al inicializar usuario",
         details: error,
       }),
       {
-        status: 400,
         headers: {
-          ...headers,
+          ...corsHeaders,
           "Content-Type": "application/json",
         },
+        status: 400,
       }
     );
   }

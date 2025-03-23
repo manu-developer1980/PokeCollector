@@ -22,12 +22,12 @@ CREATE TYPE subscription_plan_type AS ENUM ('aprendiz', 'entrenador', 'maestro')
 -- Create tables
 CREATE TABLE public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT,
+    email TEXT NOT NULL,
     full_name TEXT,
     has_seen_onboarding BOOLEAN DEFAULT false,
     level TEXT DEFAULT 'aprendiz',
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
 CREATE TABLE public.collections (
@@ -38,6 +38,29 @@ CREATE TABLE public.collections (
     updated_at TIMESTAMPTZ DEFAULT now(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     is_default BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE public.collection_cards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    collection_id UUID REFERENCES public.collections(id) ON DELETE CASCADE,
+    card_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    condition TEXT DEFAULT 'Near Mint',
+    is_foil BOOLEAN DEFAULT false,
+    is_first_edition BOOLEAN DEFAULT false,
+    notes TEXT,
+    date_added TIMESTAMPTZ DEFAULT now(),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE public.wishlist_cards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    card_id TEXT NOT NULL,
+    date_added TIMESTAMPTZ DEFAULT now(),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE public.subscriptions (
@@ -55,10 +78,36 @@ CREATE TABLE public.subscriptions (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE public.webhook_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_type TEXT NOT NULL,
+    event_data JSONB NOT NULL,
+    status TEXT DEFAULT 'pending',
+    processed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE public.subscription_changes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    old_plan subscription_plan_type,
+    new_plan subscription_plan_type,
+    change_date TIMESTAMPTZ DEFAULT now(),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON public.subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription_id ON public.subscriptions(stripe_subscription_id);
 CREATE INDEX IF NOT EXISTS users_email_idx ON public.users(email);
+CREATE INDEX IF NOT EXISTS idx_collection_cards_collection_id ON public.collection_cards(collection_id);
+CREATE INDEX IF NOT EXISTS idx_collection_cards_card_id ON public.collection_cards(card_id);
+CREATE INDEX IF NOT EXISTS idx_wishlist_cards_user_id ON public.wishlist_cards(user_id);
+CREATE INDEX IF NOT EXISTS idx_wishlist_cards_card_id ON public.wishlist_cards(card_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON public.webhook_events(status);
+CREATE INDEX IF NOT EXISTS idx_subscription_changes_user_id ON public.subscription_changes(user_id);
 
 -- Create functions
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -76,7 +125,7 @@ BEGIN
     _full_name := COALESCE(
         NEW.raw_user_meta_data->>'full_name',
         NEW.raw_user_meta_data->>'name',
-        split_part(NEW.email, '@', 1)
+        'Usuario ' || substr(NEW.id::text, 1, 8)
     );
 
     -- Add detailed logging
@@ -178,23 +227,55 @@ ALTER TABLE public.collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.collection_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wishlist_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscription_changes ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-CREATE POLICY "Enable email check" ON public.users
+-- RLS Policies for users table
+DROP POLICY IF EXISTS "Enable email check" ON public.users;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+DROP POLICY IF EXISTS "Enable insert for registration" ON public.users;
+DROP POLICY IF EXISTS "Users can read their own data" ON public.users;
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.users;
+
+CREATE POLICY "Enable insert for registration"
+    ON public.users
+    FOR INSERT
+    WITH CHECK (
+        auth.uid() = id 
+        OR auth.role() = 'service_role'
+        OR auth.role() = 'anon'
+    );
+
+CREATE POLICY "Users can view own profile"
+    ON public.users
     FOR SELECT
-    USING (true);
+    USING (
+        auth.uid() = id 
+        OR auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Users can view own profile" ON public.users
-    FOR SELECT
-    USING (auth.uid() = id OR auth.role() = 'service_role');
-
-CREATE POLICY "Users can update own profile" ON public.users
+CREATE POLICY "Users can update own profile"
+    ON public.users
     FOR UPDATE
     USING (auth.uid() = id);
 
-CREATE POLICY "Enable insert for registration" ON public.users
+-- RLS Policies for other tables
+CREATE POLICY "Users can view own wishlist cards" ON public.wishlist_cards
+    FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own wishlist cards" ON public.wishlist_cards
     FOR INSERT
-    WITH CHECK (auth.uid() = id OR auth.role() = 'service_role');
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own wishlist cards" ON public.wishlist_cards
+    FOR UPDATE
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own wishlist cards" ON public.wishlist_cards
+    FOR DELETE
+    USING (auth.uid() = user_id);
 
 -- Grant permissions
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
@@ -203,12 +284,16 @@ GRANT ALL ON public.collections TO authenticated;
 GRANT ALL ON public.collection_cards TO authenticated;
 GRANT ALL ON public.wishlist_cards TO authenticated;
 GRANT SELECT ON public.subscriptions TO authenticated;
+GRANT ALL ON public.webhook_events TO service_role;
+GRANT ALL ON public.subscription_changes TO service_role;
+GRANT SELECT ON public.subscription_changes TO authenticated;
 
 -- Enable realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collections;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collection_cards;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.wishlist_cards;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.subscription_changes;
 
 -- Function permissions
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
@@ -216,6 +301,20 @@ GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres;
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO service_role;
 GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO postgres;
+
+-- Trigger para actualizar updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 COMMIT;
 

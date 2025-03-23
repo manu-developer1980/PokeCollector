@@ -17,21 +17,7 @@ export default function AuthCallback() {
         setStatus("Procesando enlace de autenticación...");
         console.log("1. Iniciando proceso de autenticación");
 
-        // 1. Intentar obtener la sesión inicial
-        const { data: initialSession, error: initialError } =
-          await supabase.auth.getSession();
-
-        if (initialError) {
-          console.error("Error getting initial session:", initialError);
-        } else if (initialSession?.session) {
-          console.log(
-            "Sesión inicial encontrada:",
-            initialSession.session.user.id
-          );
-          return handleExistingSession(initialSession.session);
-        }
-
-        // 2. Procesar tokens de la URL
+        // 1. Verificar si hay tokens en la URL
         const hashParams = new URLSearchParams(
           window.location.hash.substring(1)
         );
@@ -62,27 +48,38 @@ export default function AuthCallback() {
           }
         }
 
+        // 2. Intentar obtener la sesión actual
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error("Error getting session:", sessionError);
+        } else if (session) {
+          console.log("Sesión existente encontrada");
+          return handleExistingSession(session);
+        }
+
         // 3. Intentos múltiples de obtener sesión
         setStatus("Verificando sesión...");
-        console.log("3. Intentando obtener sesión");
-
         let attempts = 0;
-        const maxAttempts = 8; // Aumentamos los intentos
-        const delay = 2000; // 2 segundos entre intentos
+        const maxAttempts = 5;
+        const delay = 1500;
 
         while (attempts < maxAttempts) {
           console.log(`Intento ${attempts + 1} de ${maxAttempts}`);
 
           const {
-            data: { session },
-            error: sessionError,
+            data: { session: retrySession },
+            error: retryError,
           } = await supabase.auth.getSession();
 
-          if (sessionError) {
-            console.error(`Error en intento ${attempts + 1}:`, sessionError);
-          } else if (session) {
-            console.log("Sesión obtenida:", session.user.id);
-            return handleExistingSession(session);
+          if (retryError) {
+            console.error(`Error en intento ${attempts + 1}:`, retryError);
+          } else if (retrySession) {
+            console.log("Sesión obtenida en reintento");
+            return handleExistingSession(retrySession);
           }
 
           attempts++;
@@ -92,20 +89,25 @@ export default function AuthCallback() {
           }
         }
 
-        // 4. Si llegamos aquí, intentar refrescar la sesión una última vez
+        // 4. Último intento con exchange
         try {
-          const {
-            data: { session },
-            error: refreshError,
-          } = await supabase.auth.refreshSession();
+          const queryParams = new URLSearchParams(window.location.search);
+          const code = queryParams.get("code");
 
-          if (session) {
-            console.log("Sesión obtenida después de refresh");
-            return handleExistingSession(session);
+          if (code) {
+            const {
+              data: { session: exchangeSession },
+              error: exchangeError,
+            } = await supabase.auth.exchangeCodeForSession(code);
+
+            if (exchangeError) throw exchangeError;
+            if (exchangeSession) {
+              console.log("Sesión obtenida por intercambio de código");
+              return handleExistingSession(exchangeSession);
+            }
           }
-          if (refreshError) throw refreshError;
         } catch (error) {
-          console.error("Error en refresh final:", error);
+          console.error("Error en intercambio de código:", error);
         }
 
         throw new Error("No se pudo establecer la sesión");
@@ -162,6 +164,8 @@ export default function AuthCallback() {
 
     const initializeUser = async (session: any) => {
       try {
+        setStatus("Inicializando usuario y suscripción...");
+
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/initialize-user`,
           {
@@ -169,16 +173,26 @@ export default function AuthCallback() {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${session.access_token}`,
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
             },
-            body: JSON.stringify({ user_id: session.user.id }),
+            credentials: "include",
+            mode: "cors",
+            body: JSON.stringify({
+              user_id: session.user.id,
+            }),
           }
         );
 
         if (!response.ok) {
-          console.error("Error en initialize-user:", await response.json());
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Error al inicializar usuario");
         }
+
+        const data = await response.json();
+        console.log("Usuario inicializado correctamente:", data);
       } catch (error) {
-        console.error("Error calling initialize-user:", error);
+        console.error("Error en initializeUser:", error);
+        throw error;
       }
     };
 

@@ -53,58 +53,80 @@ export default function SignUpForm() {
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    console.log("Iniciando registro...", data);
     setIsLoading(true);
 
     try {
-      if (!signUp || typeof signUp !== "function") {
-        throw new Error("Error de configuración de autenticación");
-      }
-
       const result = await signUp(data.email, data.password, data.fullName);
-      console.log("Resultado de signUp:", result);
 
       if (result?.error) {
-        console.log("Error detectado:", result.error);
+        console.error("Signup error:", {
+          code: result.error.code,
+          message: result.error.message,
+          details: result.error.originalError,
+        });
 
-        // Manejar diferentes tipos de errores
-        if (result.error.message === "Database error saving new user") {
-          toast({
-            title: "Error en el registro",
-            description:
-              "Hubo un problema al crear tu cuenta. Por favor, intenta nuevamente en unos momentos.",
-            variant: "destructive",
-          });
-          return;
+        switch (result.error.code) {
+          case "SERVER_ERROR":
+          case "MAX_RETRIES_EXCEEDED":
+            toast({
+              title: "Error del servidor",
+              description: result.error.message,
+              variant: "destructive",
+              duration: 5000,
+            });
+            break;
+
+          case "VERIFICATION_ERROR":
+            toast({
+              title: "Error de verificación",
+              description:
+                "No se pudo verificar tu cuenta. Por favor, intenta nuevamente.",
+              variant: "destructive",
+            });
+            break;
+
+          case "USER_CREATION_FAILED":
+            toast({
+              title: "Error de registro",
+              description:
+                "No se pudo crear la cuenta. Por favor, intenta nuevamente.",
+              variant: "destructive",
+            });
+            break;
+
+          case "AUTH_ERROR":
+            if (result.error.message.includes("already registered")) {
+              setExistingEmail(data.email);
+              setShowEmailExistsModal(true);
+              return;
+            }
+            toast({
+              title: "Error de autenticación",
+              description: result.error.message,
+              variant: "destructive",
+            });
+            break;
+
+          default:
+            toast({
+              title: "Error",
+              description: result.error.message,
+              variant: "destructive",
+            });
         }
-
-        if (result.error.message.includes("already registered")) {
-          setExistingEmail(data.email);
-          setShowEmailExistsModal(true);
-          return;
-        }
-
-        throw result.error;
+        return;
       }
 
-      if (!result?.data?.user) {
-        throw new Error("No se recibieron datos del usuario");
-      }
-
-      // Navegar a la página de confirmación
+      // Success path
       navigate("/confirm-signup", {
-        state: {
-          email: data.email,
-        },
+        state: { email: data.email },
         replace: true,
       });
-    } catch (error: any) {
-      console.error("Error completo:", error);
-
+    } catch (error) {
+      console.error("Unexpected error during signup:", error);
       toast({
-        title: "Error en el registro",
+        title: "Error inesperado",
         description:
-          error.message ||
           "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente.",
         variant: "destructive",
       });

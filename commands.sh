@@ -1,8 +1,4 @@
-# Supabase URL y claves
-supabase secrets set SUPABASE_URL=https://kiphglgoanmibjztwhmj.supabase.co
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcGhnbGdvYW5taWJqenR3aG1qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MTk0MzE0MiwiZXhwIjoyMDU3NTE5MTQyfQ.oIvSBVIXYWl5oGQ2QjeY5qZgkKvoz2ZTfOiqV_pNGkg
-
-# Stripe keys
-supabase secrets set STRIPE_PUBLISHABLE_KEY=pk_test_51R4K5iEoOyqILXNqHPZUMhJMWuTZvi31hyJTerMKSFMkM7eCsoH6NpLjrF3wqiOa60qRSxhz9eO5cTlE4XDG6KdV00ieJtH5yc
-supabase secrets set STRIPE_SECRET_KEY=sk_test_51R4K5iEoOyqILXNqWwd7bJrvr9t3wPc1qchOyzikxgdmvIwqYLm4gQst8VUekFBM5sfUog4Mof9xYJK4K1XCeluG00usJbLw0v
-supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_HeGIEW5iws4bL6nQUH1KGHUEbqu4wLD3
+curl -i --request POST 'https://kiphglgoanmibjztwhmj.supabase.co/functions/v1/initialize-user' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcGhnbGdvYW5taWJqenR3aG1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5NDMxNDIsImV4cCI6MjA1NzUxOTE0Mn0.RFfS5dQncY5NzaY-I8B8mMuei8haoOs69YhIrafO1rc' \
+  --header 'Content-Type: application/json' \
+  --data '{"user_id": "0fbf12d6-1c8b-4d7e-a681-74c1cad6b44f"}'
