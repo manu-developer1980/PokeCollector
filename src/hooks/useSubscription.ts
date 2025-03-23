@@ -13,12 +13,6 @@ export const useSubscription = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      console.log("[useSubscription] Auth state:", {
-        user: user?.id,
-        sessionUserId: session?.user?.id,
-        accessToken: session?.access_token?.substring(0, 20) + "...",
-        isAuthenticated: !!user && !!session,
-      });
     };
 
     getSession();
