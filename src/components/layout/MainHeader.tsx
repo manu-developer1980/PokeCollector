@@ -91,18 +91,21 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
             </Link>
           </div>
 
-          {/* Botones de autenticación */}
-          <div className="hidden sm:flex items-center gap-4">
-            {!user && (
-              <Button
-                variant="outline"
-                onClick={() => navigate("/login")}
-              >
-                <LogIn className="mr-2 h-4 w-4" />
-                Iniciar sesión
-              </Button>
-            )}
-            {user && (
+          {/* Botones de autenticación - visible en todas las pantallas cuando no hay sesión */}
+          {!user && (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/login")}
+              className="ml-auto"
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Entrar
+            </Button>
+          )}
+
+          {/* Botón de cerrar sesión - solo visible en desktop cuando hay sesión */}
+          {user && (
+            <div className="hidden sm:flex items-center gap-4">
               <Button
                 variant="outline"
                 onClick={handleSignOut}
@@ -111,8 +114,8 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
                 <LogOut className="mr-2 h-4 w-4" />
                 Cerrar sesión
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
