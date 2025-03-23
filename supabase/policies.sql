@@ -38,3 +38,35 @@ CREATE POLICY "Users can view own data" ON public.users
         OR auth.role() = 'service_role'
         OR auth.role() = 'authenticated'
     );
+
+-- Habilitar RLS para la tabla collections
+ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
+
+-- Política para INSERT
+CREATE POLICY "Users can create their own collections"
+ON collections
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Política para SELECT
+CREATE POLICY "Users can view their own collections"
+ON collections
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Política para UPDATE
+CREATE POLICY "Users can update their own collections"
+ON collections
+FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Política para DELETE
+CREATE POLICY "Users can delete their own collections"
+ON collections
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);
