@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface AccountSectionProps {
 export default function AccountSection({
   onSectionChange,
 }: AccountSectionProps) {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
@@ -100,12 +102,14 @@ export default function AccountSection({
     setIsLoading(true);
     try {
       // Primero obtenemos el token de acceso actual
-      const session = (await supabase.auth.getSession()).data.session;
-      if (!session?.access_token) {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
         throw new Error("No hay sesión activa");
       }
-
-      const accessToken = session.access_token;
 
       // Llamada a la función de eliminar usuario
       const response = await fetch(
@@ -113,33 +117,39 @@ export default function AccountSection({
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${session.access_token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ user_id: user.id }),
+          body: JSON.stringify({ user_id: user?.id }),
         }
       );
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al eliminar la cuenta");
+        console.error("Error response:", responseData);
+        throw new Error(responseData.message || "Error al eliminar la cuenta");
       }
 
-      // Primero navegamos a goodbye
+      // Si todo fue exitoso, navegamos a goodbye y cerramos sesión
       navigate("/goodbye", { replace: true });
-
-      // Luego hacemos el signOut
       await signOut();
     } catch (error: any) {
-      console.error("Error al eliminar la cuenta:", error);
+      console.error("Error detallado:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo eliminar la cuenta. Por favor, intenta de nuevo.",
+        title: "Error al eliminar la cuenta",
+        description: error.message || "Por favor, intenta de nuevo más tarde.",
         variant: "destructive",
       });
-      // Si hubo un error, intentamos hacer login de nuevo
-      await supabase.auth.refreshSession();
+
+      // Solo intentamos refrescar la sesión si hay un error de autenticación
+      if (error.status === 401 || error.status === 403) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          await signOut();
+          navigate("/login", { replace: true });
+        }
+      }
     } finally {
       setIsLoading(false);
     }

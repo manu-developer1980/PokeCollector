@@ -11,6 +11,11 @@ serve(async (req) => {
     return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
   };
 
+  console.log("Stripe Config Test:");
+  console.log("Publishable Key:", maskKey(publishableKey));
+  console.log("Secret Key:", maskKey(secretKey));
+  console.log("Webhook Secret:", maskKey(webhookSecret));
+
   return new Response(
     JSON.stringify({
       publishableKey: maskKey(publishableKey),

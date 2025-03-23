@@ -1,79 +1,79 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../supabase/supabase";
+import { useAuth } from "../../supabase/auth";
 
 export const useSubscription = () => {
+  const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchSubscription = useCallback(async () => {
-    try {
+  // Debug del estado de autenticación
+  useEffect(() => {
+    const getSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) {
-        setSubscription(null);
-        return null;
-      }
+      console.log("[useSubscription] Auth state:", {
+        user: user?.id,
+        sessionUserId: session?.user?.id,
+        accessToken: session?.access_token?.substring(0, 20) + "...",
+        isAuthenticated: !!user && !!session,
+      });
+    };
 
-      const { data, error: subscriptionError } = await supabase
+    getSession();
+  }, [user]);
+
+  const fetchSubscription = useCallback(async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!user?.id || !session) {
+      console.log("[useSubscription] No authenticated user:", {
+        userId: user?.id,
+        hasSession: !!session,
+      });
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
+        .eq("user_id", user.id)
         .single();
 
-      if (subscriptionError) {
-        if (subscriptionError.code === "PGRST116") {
-          setSubscription(null);
-          return null;
-        }
-        throw subscriptionError;
-      }
-
-      console.log("Fetched subscription:", data); // Añadir log para debug
-      setSubscription(data);
+      if (error) throw error;
       return data;
     } catch (error) {
-      console.error("Error fetching subscription:", error);
-      setError(error as Error);
+      console.error("[useSubscription] Error fetching subscription:", error);
       return null;
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
-  // Refrescar la suscripción cuando cambie
   useEffect(() => {
-    fetchSubscription();
+    let isMounted = true;
 
-    // Suscribirse a cambios en la tabla de subscriptions
-    const subscriptionChannel = supabase
-      .channel("subscription_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "subscriptions",
-        },
-        (payload) => {
-          console.log("Subscription change detected:", payload);
-          fetchSubscription();
-        }
-      )
-      .subscribe();
+    const loadSubscription = async () => {
+      setIsLoading(true);
+      const data = await fetchSubscription();
+      if (isMounted) {
+        setSubscription(data);
+        setIsLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      loadSubscription();
+    } else {
+      setSubscription(null);
+      setIsLoading(false);
+    }
 
     return () => {
-      subscriptionChannel.unsubscribe();
+      isMounted = false;
     };
-  }, [fetchSubscription]);
+  }, [user?.id, fetchSubscription]);
 
-  return {
-    subscription,
-    loading,
-    error,
-    refetchSubscription: fetchSubscription,
-  };
+  return { subscription, isLoading };
 };

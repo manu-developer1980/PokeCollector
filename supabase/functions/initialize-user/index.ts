@@ -1,124 +1,112 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@12.0.0";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-  "https://poke-collector.netlify.app",
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin =
-    origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "*",
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Max-Age": "86400",
-  };
-}
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-  apiVersion: "2023-10-16",
-});
-
-const supabaseAdmin = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
+const APRENDIZ_PRICE_ID = "price_1R4KH1EoOyqILXNqxnOSjJHZ";
 
 serve(async (req) => {
-  const origin = req.headers.get("origin");
-  const corsHeaders = getCorsHeaders(origin);
+  const corsHeaders = getCorsHeaders(req);
 
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders,
-    });
-  }
-
-  // Verify the request origin
-  if (!ALLOWED_ORIGINS.includes(origin ?? "")) {
-    return new Response(JSON.stringify({ error: "Invalid origin" }), {
-      status: 403,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const { user_id } = await req.json();
+    console.log("📥 Iniciando inicialización para usuario:", user_id);
 
-    // 1. Obtener información del usuario
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from("users")
-      .select("email, full_name")
-      .eq("id", user_id)
-      .single();
-
-    if (userError || !userData) {
-      throw new Error("User not found");
+    if (!user_id) {
+      throw new Error("user_id is required");
     }
 
-    // 2. Crear cliente en Stripe
-    const customer = await stripe.customers.create({
-      email: userData.email,
-      name: userData.full_name,
-      metadata: {
-        supabase_user_id: user_id,
-      },
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
+      apiVersion: "2023-10-16",
     });
 
-    // 3. Verificar si el usuario ya tiene una suscripción
-    const { data: existingSubscription, error: subscriptionError } =
-      await supabaseAdmin
+    // 1. Obtener datos del usuario
+    const { data: authUser, error: authError } =
+      await supabase.auth.admin.getUserById(user_id);
+
+    if (authError || !authUser.user) {
+      console.error("❌ Error al obtener datos de auth:", authError);
+      throw new Error("Usuario no encontrado en auth");
+    }
+
+    console.log("✅ Datos de usuario obtenidos:", authUser.user.email);
+
+    try {
+      // 1. Verificar si el usuario ya tiene una suscripción en Stripe
+      const { data: existingSubscription } = await supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", user_id)
         .single();
 
-    if (subscriptionError && subscriptionError.code !== "PGRST116") {
-      // PGRST116 = no data found
-      throw subscriptionError;
-    }
+      if (existingSubscription?.stripe_customer_id) {
+        console.log("Usuario ya tiene suscripción en Stripe");
+        return new Response(
+          JSON.stringify({ message: "User already initialized" }),
+          { status: 200 }
+        );
+      }
 
-    const subscriptionData = {
-      stripe_customer_id: customer.id,
-      stripe_price_id: "price_1R4KH1EoOyqILXNqxnOSjJHZ", // ID del plan gratuito
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
-      plan_type: "aprendiz",
-      status: "active",
-    };
-
-    let result;
-    if (existingSubscription) {
-      // Actualizar suscripción existente
-      result = await supabaseAdmin
-        .from("subscriptions")
-        .update(subscriptionData)
-        .eq("user_id", user_id);
-    } else {
-      // Crear nueva suscripción
-      result = await supabaseAdmin.from("subscriptions").insert({
-        ...subscriptionData,
-        user_id,
+      // 2. Crear cliente en Stripe
+      console.log("🔄 Creando cliente en Stripe...");
+      const customer = await stripe.customers.create({
+        email: authUser.user.email,
+        metadata: {
+          user_id: user_id,
+        },
       });
-    }
+      console.log("✅ Cliente Stripe creado:", customer.id);
 
-    if (result.error) {
-      throw result.error;
+      // 3. Crear suscripción en Stripe
+      console.log("🔄 Creando suscripción en Stripe...");
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{ price: APRENDIZ_PRICE_ID }],
+        metadata: {
+          user_id: user_id,
+        },
+      });
+      console.log("✅ Suscripción Stripe creada:", subscription.id);
+
+      // 4. Actualizar en Supabase
+      const { error: updateError } = await supabase
+        .from("subscriptions")
+        .upsert({
+          user_id: user_id,
+          stripe_customer_id: customer.id,
+          stripe_subscription_id: subscription.id,
+          stripe_price_id: APRENDIZ_PRICE_ID,
+          status: subscription.status,
+          plan_type: "aprendiz",
+          current_period_end: new Date(
+            subscription.current_period_end * 1000
+          ).toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          is_active: subscription.status === "active",
+        });
+
+      if (updateError) {
+        console.error("❌ Error al actualizar suscripción:", updateError);
+        throw updateError;
+      }
+    } catch (error) {
+      console.error("Error en initialize-user:", error);
+      throw error;
     }
 
     return new Response(
       JSON.stringify({
-        message: "User initialized successfully",
-        customer_id: customer.id,
+        message: "Usuario inicializado correctamente",
+        status: "success",
       }),
       {
         headers: {
@@ -129,13 +117,19 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
-      status: 400,
-    });
+    console.error("❌ Error en el proceso de inicialización:", error);
+    return new Response(
+      JSON.stringify({
+        error: error.message || "Error al inicializar usuario",
+        details: error,
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+        status: 400,
+      }
+    );
   }
 });

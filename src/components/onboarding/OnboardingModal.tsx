@@ -76,12 +76,16 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
   };
 
   return (
-    <Dialog open={shouldShowModal} onOpenChange={() => handleClose()}>
+    <Dialog
+      open={shouldShowModal}
+      onOpenChange={() => handleClose()}
+    >
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="sr-only">
           <DialogTitle>Guía de inicio - PokéCollector</DialogTitle>
           <DialogDescription>
-            Guía interactiva para comenzar a usar PokéCollector y gestionar tu colección de cartas Pokémon
+            Guía interactiva para comenzar a usar PokéCollector y gestionar tu
+            colección de cartas Pokémon
           </DialogDescription>
         </DialogHeader>
         <GetStartedGuide onClose={handleClose} />

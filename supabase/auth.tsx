@@ -38,68 +38,96 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      // Primero verificamos si el usuario ya existe
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("id, email")
-        .eq("email", email.trim().toLowerCase())
-        .single();
-
-      if (existingUser) {
-        return {
-          error: {
-            message: "Este email ya está registrado. Por favor inicia sesión.",
-          },
-        };
-      }
+      console.log("Starting signup process for:", email);
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
       if (authError) {
-        console.error("Error durante el registro:", authError);
-        return { error: authError };
-      }
+        console.error("Signup error details:", {
+          message: authError.message,
+          status: authError.status,
+          name: authError.name,
+          code: authError?.details?.code,
+          isAuthError: authError?.details?.__isAuthError,
+        });
 
-      if (!authData.user) {
-        return { error: new Error("No user data returned") };
-      }
-
-      // Log detallado del estado de verificación
-      console.log("Estado de verificación:", {
-        id: authData.user.id,
-        email: authData.user.email,
-        emailConfirmed: authData.user.email_confirmed_at,
-        confirmationSent: authData.user.confirmation_sent_at,
-        identities: authData.user.identities,
-        session: authData.session,
-      });
-
-      // Si el usuario necesita confirmar su email
-      if (!authData.user.email_confirmed_at) {
         return {
-          data: {
-            ...authData,
-            message: "Por favor revisa tu email para verificar tu cuenta.",
+          error: {
+            message: authError.message,
+            code: authError?.details?.code || "AUTH_ERROR",
+            originalError: authError,
           },
-          error: null,
         };
       }
 
+      if (!authData?.user) {
+        console.error("No user data received from signup");
+        return {
+          error: {
+            message: "Error al crear el usuario",
+            code: "NO_USER_DATA",
+          },
+        };
+      }
+
+      // Modificamos la consulta a la tabla users
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+
+      if (userError) {
+        // Si el error es porque el usuario aún no existe en la tabla, lo creamos
+        if (userError.code === "PGRST116") {
+          const { error: insertError } = await supabase.from("users").insert([
+            {
+              id: authData.user.id,
+              email: email.trim().toLowerCase(),
+              full_name: fullName.trim(),
+            },
+          ]);
+
+          if (insertError) {
+            console.error("Error creating user in database:", insertError);
+            return {
+              error: {
+                message: "Error al crear el perfil de usuario",
+                code: "USER_CREATION_FAILED",
+                originalError: insertError,
+              },
+            };
+          }
+        } else {
+          console.error("Error verifying user creation:", userError);
+          return {
+            error: {
+              message: "Error al verificar la creación del usuario",
+              code: "VERIFICATION_ERROR",
+              originalError: userError,
+            },
+          };
+        }
+      }
+
       return { data: authData, error: null };
-    } catch (error) {
-      console.error("Error inesperado durante el registro:", error);
+    } catch (error: any) {
+      console.error("Unexpected signup error:", error);
       return {
         error: {
-          message: "Error inesperado durante el registro",
+          message:
+            "Error inesperado durante el registro. Por favor, intenta nuevamente.",
+          code: "UNEXPECTED_ERROR",
+          originalError: error,
         },
       };
     }

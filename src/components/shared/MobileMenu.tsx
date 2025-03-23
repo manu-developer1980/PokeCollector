@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, Crown } from "lucide-react";
 import { useState } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useAuth } from "../../supabase/auth";
+import { useAuth } from "../../../supabase/auth";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -31,6 +31,8 @@ export function MobileMenu({
   activeItem,
   onItemClick,
 }: MobileMenuProps) {
+  // Hooks deben estar en el nivel superior y en el mismo orden siempre
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const { subscription } = useSubscription();
 
@@ -44,6 +46,9 @@ export function MobileMenu({
     }
     setOpen(false);
   };
+
+  // Si no hay usuario, no renderizamos el menú
+  if (!user) return null;
 
   return (
     <Sheet

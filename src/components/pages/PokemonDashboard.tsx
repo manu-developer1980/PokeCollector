@@ -50,6 +50,7 @@ import { PlanChangeDialog } from "@/components/subscription/PlanChangeDialog";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
+import { useUser } from "@/hooks/useUser";
 
 interface PolarSubscription {
   status: string;
@@ -67,39 +68,43 @@ const defaultNavItems = [
 ];
 
 export default function PokemonDashboard() {
-  // 1. Context hooks
+  // 1. Context Hooks
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { toast } = useToast();
   const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
+  const location = useLocation();
 
-  // 2. All useState declarations
+  // 2. ALL State declarations
   const [isLoading, setIsLoading] = useState(false);
-  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
-
-  // Actualizar para usar el estado de la navegación si existe, o "My Collection" por defecto
-  const [activeSection, setActiveSection] = useState(() => {
-    return location.state?.activeSection || "My Collection";
-  });
-
-  // Actualizar activeSection cuando cambie el estado de la ubicación
-  useEffect(() => {
-    if (location.state?.activeSection) {
-      setActiveSection(location.state.activeSection);
-    }
-  }, [location.state]);
-
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] =
     useState<Collection | null>(null);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null
   );
+  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
+    useState(false);
+  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
+    isOpen: false,
+    collectionId: "",
+    collectionName: "",
+  });
+  const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
+    name: "",
+    set: "",
+    type: "",
+    rarity: "",
+    page: 1,
+    pageSize: 20,
+  });
+  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
+  const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
+  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
   const [selectedCollectionCard, setSelectedCollectionCard] =
     useState<CollectionCard | null>(null);
   const [pendingQuickAddCard, setPendingQuickAddCard] =
@@ -108,45 +113,139 @@ export default function PokemonDashboard() {
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [rarities, setRarities] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [wishlistCards, setWishlistCards] = useState<PokemonCard[]>([]);
-  const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
-    q: "",
-    page: 1,
-    pageSize: 20,
-    orderBy: "name",
-  });
-  const [deleteConfirmationState, setDeleteConfirmationState] = useState({
-    isOpen: false,
-    collectionId: null as string | null,
-    collectionName: "",
-  });
-  const [realtimeChannel, setRealtimeChannel] =
-    useState<RealtimeChannel | null>(null);
-  const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
-  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
-  const [isCardDetailDialogOpen, setIsCardDetailDialogOpen] = useState(false);
-  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
-  const [isNoDefaultCollectionDialogOpen, setIsNoDefaultCollectionDialogOpen] =
-    useState(false);
-  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [activeSection, setActiveSection] = useState("Search Cards");
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
-  const [limitError, setLimitError] = useState({
-    message: "",
-    type: null as "cards" | "collections" | "wishlist" | null,
-  });
   const [isNoSubscriptionModalOpen, setIsNoSubscriptionModalOpen] =
     useState(false);
-  const [lastAttemptedAction, setLastAttemptedAction] = useState<string>("");
+  const [lastAttemptedAction, setLastAttemptedAction] = useState("");
+  const [limitError, setLimitError] = useState({ message: "", type: "" });
+  const [isPlanChangeDialogOpen, setIsPlanChangeDialogOpen] = useState(false);
+  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
 
-  // 3. All useRef declarations
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const cardsChannel = useRef<RealtimeChannel | null>(null);
+  // 3. Define getCollectionCards first
+  const getCollectionCards = useCallback(
+    async (collectionId: string): Promise<CollectionCard[]> => {
+      try {
+        const { data, error } = await supabase
+          .from("collection_cards")
+          .select(
+            `
+          id,
+          card_id,
+          quantity,
+          condition,
+          is_foil,
+          is_first_edition,
+          notes,
+          created_at
+        `
+          )
+          .eq("collection_id", collectionId);
 
-  // 4. Constants
-  const pageSize = 20;
+        if (error) throw error;
+
+        if (!data || data.length === 0) return [];
+
+        const cardsWithDetails = await Promise.all(
+          data.map(async (item) => {
+            const cardDetails = await getCardById(item.card_id);
+            if (!cardDetails) return null;
+            return {
+              ...cardDetails,
+              collectionCardId: item.id,
+              quantity: item.quantity,
+              condition: item.condition,
+              isFoil: item.is_foil,
+              isFirstEdition: item.is_first_edition,
+              notes: item.notes,
+              dateAdded: item.created_at,
+            };
+          })
+        );
+
+        return cardsWithDetails.filter(
+          (card): card is CollectionCard => card !== null
+        );
+      } catch (error) {
+        console.error("Error fetching collection cards:", error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar las cartas de la colección",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    [toast]
+  );
+
+  // 4. Then define getCollections which uses getCollectionCards
+  const getCollections = useCallback(async () => {
+    setIsCollectionLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("collections")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        setCollections([]);
+        return;
+      }
+
+      const collectionsWithCards = await Promise.all(
+        data.map(async (collection) => {
+          const cards = await getCollectionCards(collection.id);
+          return {
+            ...collection,
+            cards: cards || [],
+          };
+        })
+      );
+
+      setCollections(collectionsWithCards);
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+      toast({
+        title: "Error",
+        description:
+          "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCollectionLoading(false);
+    }
+  }, [user?.id, toast, getCollectionCards]);
+
+  // 4. Helper functions and other callbacks
+  const getSubscriptionStatus = useCallback(() => {
+    if (!subscription) return "free";
+    return subscription.status === "active" ? subscription.plan_type : "free";
+  }, [subscription]);
+
+  const checkOnboardingStatus = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("has_seen_onboarding")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      setShowOnboarding(!data?.has_seen_onboarding);
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+    }
+  }, [user]);
 
   // 5. All useCallback declarations
   const validateResourceLimit = useCallback(
@@ -347,7 +446,7 @@ export default function PokemonDashboard() {
     [user, toast, navigate, validateResourceLimit, fetchWishlist]
   );
 
-  // 6. Effects using useEffect
+  // 6. Effects
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -357,11 +456,7 @@ export default function PokemonDashboard() {
     const initializeDashboard = async () => {
       try {
         setIsLoading(true);
-
-        await supabase.from("profiles").upsert({
-          id: user.id,
-          has_completed_onboarding: true,
-        });
+        await Promise.all([getCollections(), checkOnboardingStatus()]);
       } catch (error) {
         console.error("Error initializing dashboard:", error);
       } finally {
@@ -370,9 +465,12 @@ export default function PokemonDashboard() {
     };
 
     initializeDashboard();
-  }, [user, navigate]);
+  }, [user, navigate, getCollections, checkOnboardingStatus]);
 
-  // Move all other useEffect hooks here
+  useEffect(() => {
+    setSubscriptionStatus(getSubscriptionStatus());
+  }, [subscription, getSubscriptionStatus]);
+
   useEffect(() => {
     const loadFilterData = async () => {
       try {
@@ -407,144 +505,6 @@ export default function PokemonDashboard() {
 
     loadFilterData();
   }, [toast]);
-
-  // Manejar la inicialización principal
-  useEffect(() => {
-    const initializeData = async () => {
-      try {
-        if (user) {
-          await Promise.all([getCollections(), checkOnboardingStatus()]);
-        }
-      } catch (error) {
-        console.error("Error initializing data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeData();
-  }, [user]);
-
-  const getCollections = async () => {
-    setIsCollectionLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("collections")
-        .select("*")
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        setCollections([]);
-        return;
-      }
-
-      const collectionsWithCards = await Promise.all(
-        data.map(async (collection) => {
-          const cards = await getCollectionCards(collection.id);
-          return {
-            ...collection,
-            cards: cards || [],
-          };
-        })
-      );
-
-      setCollections(collectionsWithCards);
-    } catch (error) {
-      console.error("Error fetching collections:", error);
-      toast({
-        title: "Error",
-        description:
-          "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCollectionLoading(false);
-    }
-  };
-
-  const getCollectionCards = async (collectionId: string) => {
-    try {
-      const { data: cardsData, error: cardsError } = await supabase
-        .from("collection_cards")
-        .select(
-          `
-          id,
-          card_id,
-          quantity,
-          condition,
-          is_foil,
-          is_first_edition,
-          notes,
-          date_added
-        `
-        )
-        .eq("collection_id", collectionId);
-
-      if (cardsError) throw cardsError;
-
-      const cardsWithDetails = await Promise.all(
-        cardsData.map(async (collectionCard) => {
-          const cardData = await getCardById(collectionCard.card_id);
-          return {
-            ...collectionCard,
-            name: cardData.name,
-            images: cardData.images,
-            set: cardData.set,
-            rarity: cardData.rarity,
-            types: cardData.types,
-            number: cardData.number,
-            cardmarket: cardData.cardmarket,
-          };
-        })
-      );
-
-      return cardsWithDetails;
-    } catch (error) {
-      console.error("Error fetching collection cards:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar las cartas de la colección",
-        variant: "destructive",
-      });
-      return [];
-    }
-  };
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("has_seen_onboarding")
-        .eq("id", user?.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      // Si no hay datos, creamos el registro
-      if (!data) {
-        const { error: insertError } = await supabase.from("users").insert([
-          {
-            id: user?.id,
-            has_seen_onboarding: false,
-            email: user?.email,
-          },
-        ]);
-
-        if (insertError) throw insertError;
-        setShowOnboarding(true);
-      } else {
-        // Solo mostramos el onboarding si el usuario no lo ha visto antes
-        if (!data.has_seen_onboarding) {
-          setShowOnboarding(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking onboarding status:", error);
-    }
-  };
 
   const handleCardClick = (card: PokemonCard) => {
     setSelectedCard(card);
@@ -1179,27 +1139,6 @@ export default function PokemonDashboard() {
       fetchWishlist();
     }
   }, [activeSection, user, fetchWishlist]);
-
-  const getSubscriptionStatus = () => {
-    if (!subscription) return "free";
-
-    if (subscription.status !== "active") return "free";
-
-    // Si está cancelado al final del período y es un downgrade a APRENDIZ
-    if (
-      subscription.cancel_at_period_end &&
-      subscription.plan_type === "aprendiz"
-    ) {
-      return "free";
-    }
-
-    // En cualquier otro caso, mantener el estado actual
-    return subscription.status === "active" ? "premium" : "free";
-  };
-
-  useEffect(() => {
-    setSubscriptionStatus(getSubscriptionStatus());
-  }, [subscription]);
 
   const handleRemoveFromWishlist = async (card: PokemonCard) => {
     try {
