@@ -267,10 +267,12 @@ const Dashboard = () => {
     if (!selectedCollection) return;
 
     try {
+      console.log("Dashboard - Updating card:", cardId, updates); // Nuevo log
+
       const { error } = await supabase
         .from("collection_cards")
         .update(updates)
-        .eq("card_id", cardId)
+        .eq("id", cardId) // Cambiado de card_id a id
         .eq("collection_id", selectedCollection.id);
 
       if (error) throw error;

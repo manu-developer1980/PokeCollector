@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +50,7 @@ const EditCardModal = ({
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    if (isOpen && card) {
+    if (card) {
       setQuantity(card.quantity);
       setCondition((card.condition as CardCondition) || "Near Mint");
       setIsFoil(card.is_foil || false);
@@ -61,13 +62,16 @@ const EditCardModal = ({
   const handleSubmit = () => {
     if (!card) return;
 
+    // Asegurarnos de usar el ID correcto de collection_cards
+    const collectionCardId = (card as CollectionCard).id;
+
     onUpdate({
-      id: card.id,
+      id: collectionCardId, // Usar el ID correcto de collection_cards
       quantity,
       condition,
-      isFoil,
-      isFirstEdition,
-      notes,
+      is_foil: isFoil,
+      is_first_edition: isFirstEdition,
+      notes: notes,
     });
 
     onClose();
@@ -83,6 +87,9 @@ const EditCardModal = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Carta - {card.name}</DialogTitle>
+          <DialogDescription>
+            Modifica los detalles de la carta en tu colección
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

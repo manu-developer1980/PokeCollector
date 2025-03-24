@@ -38,19 +38,78 @@ interface CardDetailProps {
   mode: "search" | "collection" | "wishlist";
 }
 
-const CardDetail = ({
+const CardDetail: React.FC<CardDetailProps> = ({
   card,
   isOpen,
   onClose,
+  mode = "search",
   onAddToCollection,
-  onAddToWishlist,
   onRemoveFromWishlist,
   onUpdate,
   onRemove,
-  mode,
-}: CardDetailProps) => {
+}) => {
   const [cardDetails, setCardDetails] = useState<PokemonCard | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [localCard, setLocalCard] = useState<CollectionCard | null>(null);
+
+  useEffect(() => {
+    const loadCardDetails = async () => {
+      if (!card) {
+        setCardDetails(null);
+        return;
+      }
+
+      try {
+        if (mode === "collection") {
+          const collectionCard = card as CollectionCard;
+          const cardId = collectionCard.card_id;
+
+          if (!cardId) {
+            console.warn("Missing card_id for collection card:", card);
+            return;
+          }
+
+          const details = await getCardById(cardId);
+          if (!details) {
+            console.error("No se pudieron cargar los detalles de la carta");
+            return;
+          }
+
+          setCardDetails({
+            ...details,
+            id: collectionCard.id,
+            collection_id: collectionCard.collection_id,
+            quantity: collectionCard.quantity,
+            condition: collectionCard.condition,
+            is_foil: collectionCard.is_foil,
+            is_first_edition: collectionCard.is_first_edition,
+            notes: collectionCard.notes,
+          });
+          setLocalCard(collectionCard);
+        } else {
+          const pokemonCard = card as PokemonCard;
+          const details = pokemonCard.id
+            ? await getCardById(pokemonCard.id)
+            : null;
+          if (!details && !pokemonCard) {
+            console.error("No se pudieron cargar los detalles de la carta");
+            return;
+          }
+          setCardDetails(details || pokemonCard);
+        }
+      } catch (error) {
+        console.error("Error loading card details:", error);
+        setCardDetails(null);
+      }
+    };
+
+    if (isOpen && card) {
+      loadCardDetails();
+    } else {
+      setCardDetails(null);
+      setLocalCard(null);
+    }
+  }, [card, isOpen, mode]);
 
   const handleRemove = (cardId: string) => {
     onRemove?.(cardId);
@@ -72,43 +131,37 @@ const CardDetail = ({
     onClose();
   };
 
-  useEffect(() => {
-    const loadCardDetails = async () => {
-      if (card?.id) {
-        try {
-          if (mode === "collection") {
-            const details = await getCardById((card as CollectionCard).card_id);
-            if (details) {
-              // Combinar los detalles de la API con los datos de la colección
-              setCardDetails({
-                ...details,
-                quantity: (card as CollectionCard).quantity,
-                condition: (card as CollectionCard).condition,
-                isFoil: (card as CollectionCard).isFoil,
-                isFirstEdition: (card as CollectionCard).isFirstEdition,
-                notes: (card as CollectionCard).notes,
-              });
-            }
-          } else if (mode === "wishlist") {
-            setCardDetails(card as PokemonCard);
-          } else {
-            const details = await getCardById(card.id);
-            setCardDetails(details);
-          }
-        } catch (error) {
-          console.error("Error loading card details:", error);
-        }
+  const handleUpdate = async (cardData: {
+    id: string;
+    quantity: number;
+    condition?: string;
+    is_foil?: boolean;
+    is_first_edition?: boolean;
+    notes?: string;
+  }) => {
+    if (!onUpdate || !localCard) return;
+
+    try {
+      const updatedCard = await onUpdate({
+        ...cardData,
+        id: localCard.id, // Usar el ID de collection_cards
+      });
+
+      if (updatedCard) {
+        setCardDetails((prev) => ({
+          ...prev!,
+          quantity: updatedCard.quantity,
+          condition: updatedCard.condition,
+          is_foil: updatedCard.is_foil,
+          is_first_edition: updatedCard.is_first_edition,
+          notes: updatedCard.notes,
+        }));
       }
-    };
-
-    if (isOpen && card) {
-      loadCardDetails();
-    } else {
-      setCardDetails(null);
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating card:", error);
     }
-  }, [card, isOpen, mode]); // Dependencias del useEffect
-
-  if (!card || !cardDetails) return null;
+  };
 
   const renderActions = () => {
     switch (mode) {
@@ -158,38 +211,21 @@ const CardDetail = ({
     }
   };
 
-  const handleUpdate = async (cardData: any) => {
-    if (!onUpdate || !card) return;
-
-    try {
-      await onUpdate({
-        id: (card as CollectionCard).id,
-        quantity: cardData.quantity,
-        condition: cardData.condition,
-        isFoil: cardData.isFoil,
-        isFirstEdition: cardData.isFirstEdition,
-        notes: cardData.notes,
-      });
-
-      // Después de la actualización, volvemos a cargar los detalles
-      if (mode === "collection" && card) {
-        const details = await getCardById((card as CollectionCard).card_id);
-        if (details) {
-          setCardDetails({
-            ...details,
-            quantity: cardData.quantity,
-            condition: cardData.condition,
-            isFoil: cardData.isFoil,
-            isFirstEdition: cardData.isFirstEdition,
-            notes: cardData.notes,
-          });
-        }
-      }
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Error updating card:", error);
-    }
-  };
+  // Agregar una validación temprana
+  if (!cardDetails) {
+    return (
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => !open && onClose()}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Cargando...</DialogTitle>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <>
@@ -213,7 +249,7 @@ const CardDetail = ({
                       cardDetails.rarity}
                   </Badge>
                 )}
-                {mode === "collection" && (
+                {mode === "collection" && card && (
                   <>
                     {(card as CollectionCard).quantity > 1 && (
                       <Badge
@@ -237,16 +273,6 @@ const CardDetail = ({
                         className="bg-yellow-50 text-yellow-700 text-xs shrink-0"
                       >
                         ✨
-                      </Badge>
-                    )}
-                    {(card as CollectionCard).condition && (
-                      <Badge
-                        variant="outline"
-                        className="bg-green-50 text-green-700 text-xs shrink-0"
-                      >
-                        {CONDITION_MAP[
-                          (card as CollectionCard).condition as CardCondition
-                        ] || (card as CollectionCard).condition}
                       </Badge>
                     )}
                   </>
@@ -277,7 +303,7 @@ const CardDetail = ({
             </div>
 
             <div className="flex-1 flex flex-col min-h-full">
-              {mode === "collection" && (
+              {mode === "collection" && localCard && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="font-medium">Detalles en Colección</h4>
@@ -292,23 +318,20 @@ const CardDetail = ({
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="text-gray-500">Cantidad:</div>
-                    <div>{(card as CollectionCard).quantity}</div>
+                    <div>{localCard.quantity}</div>
                     <div className="text-gray-500">Condición:</div>
                     <div>
-                      {CONDITION_MAP[
-                        (card as CollectionCard).condition as CardCondition
-                      ] || "Casi Perfecta"}
+                      {CONDITION_MAP[localCard.condition as CardCondition] ||
+                        "Casi Perfecta"}
                     </div>
                     <div className="text-gray-500">Foil/Holo:</div>
-                    <div>{(card as CollectionCard).is_foil ? "Sí" : "No"}</div>
+                    <div>{localCard.is_foil ? "Sí" : "No"}</div>
                     <div className="text-gray-500">Primera Edición:</div>
-                    <div>
-                      {(card as CollectionCard).is_first_edition ? "Sí" : "No"}
-                    </div>
-                    {(card as CollectionCard).notes && (
+                    <div>{localCard.is_first_edition ? "Sí" : "No"}</div>
+                    {localCard.notes && (
                       <>
                         <div className="text-gray-500">Notas:</div>
-                        <div>{(card as CollectionCard).notes}</div>
+                        <div>{localCard.notes}</div>
                       </>
                     )}
                   </div>
@@ -435,13 +458,12 @@ const CardDetail = ({
         </DialogContent>
       </Dialog>
 
-      {mode === "collection" && onUpdate && (
+      {isEditModalOpen && cardDetails && localCard && (
         <EditCardModal
-          card={card as CollectionCard}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
+          card={localCard} // Pasar la carta de la colección completa
           onUpdate={handleUpdate}
-          onRemove={handleRemove}
         />
       )}
     </>

@@ -87,15 +87,30 @@ export interface PokemonCardSearchResponse {
   totalCount: number;
 }
 
-export interface CollectionCard extends PokemonCard {
-  id: string; // ID único de la carta en la colección
-  collection_id: string; // ID de la colección a la que pertenece
-  pokemon_card_id: string; // ID de la carta de Pokémon original
+export interface CollectionCard {
+  id: string;
+  collection_id: string;
+  card_id: string;
   quantity: number;
-  condition?: string;
-  isFoil?: boolean;
-  isFirstEdition?: boolean;
-  notes?: string;
+  condition: string;
+  is_foil: boolean;
+  is_first_edition: boolean;
+  notes: string;
+  created_at?: string;
+  updated_at?: string;
+  name?: string;
+  images?: {
+    small: string;
+    large: string;
+  };
+  set?: {
+    id: string;
+    name: string;
+    images?: {
+      symbol: string;
+      logo: string;
+    };
+  };
 }
 
 export interface Collection {

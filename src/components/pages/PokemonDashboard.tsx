@@ -152,18 +152,20 @@ export default function PokemonDashboard() {
         if (!data || data.length === 0) return [];
 
         const cardsWithDetails = await Promise.all(
-          data.map(async (item) => {
-            const cardDetails = await getCardById(item.card_id);
+          data.map(async (collectionCard) => {
+            const cardDetails = await getCardById(collectionCard.card_id);
             if (!cardDetails) return null;
+
             return {
               ...cardDetails,
-              collectionCardId: item.id,
-              quantity: item.quantity,
-              condition: item.condition,
-              isFoil: item.is_foil,
-              isFirstEdition: item.is_first_edition,
-              notes: item.notes,
-              dateAdded: item.created_at,
+              id: collectionCard.id, // ID de collection_cards
+              card_id: collectionCard.card_id, // ID de la carta de Pokémon
+              quantity: collectionCard.quantity,
+              condition: collectionCard.condition,
+              is_foil: collectionCard.is_foil,
+              is_first_edition: collectionCard.is_first_edition,
+              notes: collectionCard.notes,
+              created_at: collectionCard.created_at,
             };
           })
         );
@@ -512,9 +514,18 @@ export default function PokemonDashboard() {
   };
 
   const handleAddToCollection = (card: PokemonCard) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para añadir cartas a tu colección.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedCard(card);
     setIsAddToCollectionOpen(true);
-    setIsCardDetailOpen(false); // Cerrar el modal de detalle
+    setIsCardDetailOpen(false); // Close the detail modal if it's open
   };
 
   const handleSaveToCollection = async (cardData: {
@@ -863,111 +874,130 @@ export default function PokemonDashboard() {
     id: string;
     quantity: number;
     condition?: string;
-    isFoil?: boolean;
-    isFirstEdition?: boolean;
+    is_foil?: boolean;
+    is_first_edition?: boolean;
     notes?: string;
   }) => {
-    if (!selectedCollection) return;
+    if (!selectedCollection) {
+      throw new Error("No hay una colección seleccionada");
+    }
 
     try {
-      console.log("Received card data for update:", cardData);
-
-      // Primero, verificar si la carta existe
-      const { data: existingCard, error: checkError } = await supabase
-        .from("collection_cards")
-        .select("*")
-        .eq("id", cardData.id)
-        .single();
-
-      if (checkError) {
-        console.error("Error checking card existence:", checkError);
-        throw new Error("Error verificando la existencia de la carta");
-      }
-
-      if (!existingCard) {
-        throw new Error(`No se encontró la carta con ID: ${cardData.id}`);
-      }
-
-      console.log("Existing card found:", existingCard);
-
-      // 1. Actualizar en Supabase
       const updateData = {
         quantity: cardData.quantity,
-        condition: cardData.condition || "Near Mint",
-        is_foil: cardData.isFoil ?? false,
-        is_first_edition: cardData.isFirstEdition ?? false,
-        notes: cardData.notes || "",
+        condition: cardData.condition,
+        is_foil: cardData.is_foil,
+        is_first_edition: cardData.is_first_edition,
+        notes: cardData.notes,
+        updated_at: new Date().toISOString(),
       };
 
-      console.log("Sending update to Supabase:", updateData);
-
+      // Obtener el card_id y actualizar en un solo paso
       const { data: updatedCard, error: updateError } = await supabase
         .from("collection_cards")
         .update(updateData)
         .eq("id", cardData.id)
-        .select()
+        .select("*")
         .single();
 
-      if (updateError) {
-        console.error("Error in update operation:", updateError);
-        throw updateError;
+      if (updateError) throw updateError;
+
+      // Si la actualización fue exitosa pero no tenemos los datos, al menos actualizamos los campos básicos
+      if (!updatedCard) {
+        // Actualizar el estado local con los datos que tenemos
+        setCollections((prevCollections) =>
+          prevCollections.map((collection) => {
+            if (collection.id === selectedCollection.id) {
+              return {
+                ...collection,
+                cards: collection.cards.map((card) =>
+                  card.id === cardData.id ? { ...card, ...updateData } : card
+                ),
+              };
+            }
+            return collection;
+          })
+        );
+
+        if (selectedCollection) {
+          setSelectedCollection((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              cards: prev.cards.map((card) =>
+                card.id === cardData.id ? { ...card, ...updateData } : card
+              ),
+            };
+          });
+        }
+
+        toast({
+          title: "Carta Actualizada",
+          description: "La carta ha sido actualizada correctamente.",
+        });
+
+        return { ...cardData, ...updateData };
       }
 
-      console.log("Updated card data:", updatedCard);
+      // Si tenemos los datos completos, actualizamos con toda la información
+      const cardDetails = await getCardById(updatedCard.card_id);
+      const completeUpdatedCard = cardDetails
+        ? {
+            ...cardDetails,
+            id: updatedCard.id,
+            collection_id: updatedCard.collection_id,
+            quantity: updatedCard.quantity,
+            condition: updatedCard.condition,
+            is_foil: updatedCard.is_foil,
+            is_first_edition: updatedCard.is_first_edition,
+            notes: updatedCard.notes,
+            created_at: updatedCard.created_at,
+            updated_at: updatedCard.updated_at,
+          }
+        : { ...updatedCard };
 
-      // Si no hay datos actualizados, usar una combinación de los datos existentes y nuevos
-      const finalCardData = updatedCard || {
-        ...existingCard,
-        ...updateData,
-        isFoil: updateData.is_foil,
-        isFirstEdition: updateData.is_first_edition,
-      };
-
-      // 3. Actualizar collections
-      setCollections((prevCollections) => {
-        return prevCollections.map((collection) => {
+      // Actualizar el estado local
+      setCollections((prevCollections) =>
+        prevCollections.map((collection) => {
           if (collection.id === selectedCollection.id) {
             return {
               ...collection,
               cards: collection.cards.map((card) =>
-                card.id === cardData.id ? { ...card, ...finalCardData } : card
+                card.id === cardData.id ? completeUpdatedCard : card
               ),
             };
           }
           return collection;
-        });
-      });
-
-      // 4. Actualizar selectedCollection
-      setSelectedCollection((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          cards: prev.cards.map((card) =>
-            card.id === cardData.id ? { ...card, ...finalCardData } : card
-          ),
-        };
-      });
-
-      // 5. Actualizar selectedCollectionCard
-      setSelectedCollectionCard((prev) =>
-        prev?.id === cardData.id ? { ...prev, ...finalCardData } : prev
+        })
       );
+
+      if (selectedCollection) {
+        setSelectedCollection((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            cards: prev.cards.map((card) =>
+              card.id === cardData.id ? completeUpdatedCard : card
+            ),
+          };
+        });
+      }
 
       toast({
         title: "Carta Actualizada",
         description: "La carta ha sido actualizada correctamente.",
       });
+
+      return completeUpdatedCard;
     } catch (error) {
       console.error("Error updating card:", error);
       toast({
         title: "Error",
         description:
-          error instanceof Error
-            ? error.message
-            : "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
+          "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 

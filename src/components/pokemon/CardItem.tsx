@@ -207,7 +207,7 @@ const CardItem = ({
             {actions === "collection" && (
               <>
                 {/* Badge de Cantidad */}
-                {card.quantity && card.quantity > 1 && (
+                {card.quantity > 1 && (
                   <Badge
                     variant="outline"
                     className="bg-blue-50 text-blue-700 text-xs shrink-0"
@@ -217,7 +217,7 @@ const CardItem = ({
                 )}
 
                 {/* Badge de Primera Edición */}
-                {card.isFirstEdition && (
+                {card.is_first_edition && (
                   <Badge
                     variant="outline"
                     className="bg-purple-50 text-purple-700 text-xs shrink-0"
@@ -228,7 +228,7 @@ const CardItem = ({
                 )}
 
                 {/* Badge de Foil */}
-                {card.isFoil && (
+                {card.is_foil && (
                   <Badge
                     variant="outline"
                     className="bg-yellow-50 text-yellow-700 text-xs shrink-0"

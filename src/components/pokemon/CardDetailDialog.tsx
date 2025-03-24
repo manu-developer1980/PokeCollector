@@ -148,7 +148,7 @@ const CardDetailDialog = ({
                         x{card.quantity}
                       </Badge>
                     )}
-                    {card.isFirstEdition && (
+                    {(card as CollectionCard).is_first_edition && (
                       <Badge
                         variant="outline"
                         className="bg-purple-50 text-purple-700 text-xs shrink-0"
@@ -156,7 +156,7 @@ const CardDetailDialog = ({
                         1st
                       </Badge>
                     )}
-                    {card.isFoil && (
+                    {(card as CollectionCard).is_foil && (
                       <Badge
                         variant="outline"
                         className="bg-yellow-50 text-yellow-700 text-xs shrink-0"

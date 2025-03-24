@@ -19,6 +19,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Collection, PokemonCard } from "@/types/pokemon";
+import { supabase } from "../../../supabase/supabase";
+import { toast } from "@/components/ui/use-toast";
 
 interface AddToCollectionDialogProps {
   card: PokemonCard | null;
@@ -43,35 +45,72 @@ const AddToCollectionDialog = ({
   onClose,
   onAddToCollection,
 }: AddToCollectionDialogProps) => {
-  const [collectionId, setCollectionId] = useState<string>(
-    collections[0]?.id || ""
-  );
+  const [selectedCollection, setSelectedCollection] =
+    useState<Collection | null>(collections[0] || null);
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState("Near Mint");
   const [isFoil, setIsFoil] = useState(false);
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [notes, setNotes] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
-    if (!card || !collectionId) return;
+  const handleAddToCollection = async () => {
+    if (!selectedCollection || !card) return;
 
-    onAddToCollection({
-      card,
-      collectionId,
-      quantity,
-      condition,
-      isFoil,
-      isFirstEdition,
-      notes,
-    });
+    try {
+      setIsLoading(true);
 
-    // Resetear formulario
-    setQuantity(1);
-    setCondition("Near Mint");
-    setIsFoil(false);
-    setIsFirstEdition(false);
-    setNotes("");
-    onClose();
+      const { data: existingCard, error: checkError } = await supabase
+        .from("collection_cards")
+        .select("*")
+        .eq("collection_id", selectedCollection.id)
+        .eq("card_id", card.id)
+        .single();
+
+      if (checkError && checkError.code !== "PGRST116") {
+        throw checkError;
+      }
+
+      if (existingCard) {
+        // Actualizar cantidad si ya existe
+        const { error: updateError } = await supabase
+          .from("collection_cards")
+          .update({ quantity: existingCard.quantity + quantity })
+          .eq("id", existingCard.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insertar nueva carta
+        const { error: insertError } = await supabase
+          .from("collection_cards")
+          .insert({
+            collection_id: selectedCollection.id,
+            card_id: card.id,
+            quantity: quantity,
+            condition: condition,
+            is_foil: isFoil,
+            is_first_edition: isFirstEdition,
+            notes: notes,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: "¡Éxito!",
+        description: "Carta añadida a la colección correctamente",
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error adding card to collection:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo añadir la carta a la colección",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!card) return null;
@@ -105,8 +144,12 @@ const AddToCollectionDialog = ({
             <div className="space-y-2">
               <Label htmlFor="collection">Colección</Label>
               <Select
-                value={collectionId}
-                onValueChange={setCollectionId}
+                value={selectedCollection?.id}
+                onValueChange={(id) =>
+                  setSelectedCollection(
+                    collections.find((c) => c.id === id) || null
+                  )
+                }
               >
                 <SelectTrigger id="collection">
                   <SelectValue placeholder="Seleccionar colección" />
@@ -210,10 +253,11 @@ const AddToCollectionDialog = ({
             Cancelar
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={handleAddToCollection}
             className="bg-red-600 hover:bg-red-700"
+            disabled={isLoading}
           >
-            Añadir a Colección
+            {isLoading ? "Añadiendo..." : "Añadir a Colección"}
           </Button>
         </DialogFooter>
       </DialogContent>

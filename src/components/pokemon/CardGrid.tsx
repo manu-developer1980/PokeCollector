@@ -11,6 +11,7 @@ interface CardGridProps {
   onRemove?: (card: PokemonCard) => void;
   isLoading?: boolean;
   actions?: "collection" | "wishlist" | "search";
+  showPrice?: boolean;
 }
 
 const CardGrid = ({
@@ -22,6 +23,7 @@ const CardGrid = ({
   onRemove,
   isLoading,
   actions = "search",
+  showPrice = false,
 }: CardGridProps) => {
   return (
     <div className="flex flex-wrap gap-4 justify-center">
@@ -34,7 +36,7 @@ const CardGrid = ({
           onAddToWishlist={onAddToWishlist}
           onRemove={onRemove}
           actions={actions}
-          showPrice={false}
+          showPrice={showPrice}
         />
       ))}
     </div>
