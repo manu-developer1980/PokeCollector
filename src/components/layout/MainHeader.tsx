@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
 import { Search, Database, Heart, LogIn, LogOut, User } from "lucide-react";
 import { MobileMenu } from "@/components/shared/MobileMenu";
+import LanguageSwitcher from "../LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 interface MainHeaderProps {
   showNavigation?: boolean;
@@ -11,6 +13,7 @@ interface MainHeaderProps {
 export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     try {
@@ -24,22 +27,22 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const navigationItems = [
     {
       icon: <Database size={18} />,
-      label: "Mi Colección",
+      label: t("collection.title"),
       id: "My Collection",
     },
     {
       icon: <Heart size={18} />,
-      label: "Lista de Deseos",
+      label: t("wishlist.title"),
       id: "Wishlist",
     },
     {
       icon: <Search size={18} />,
-      label: "Buscar Cartas",
+      label: t("search.cards"),
       id: "Search Cards",
     },
     {
       icon: <User size={18} />,
-      label: "Mi Cuenta",
+      label: t("account.title"),
       id: "Account",
     },
   ];
@@ -48,7 +51,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
     ...navigationItems,
     {
       icon: <LogOut size={18} />,
-      label: "Cerrar Sesión",
+      label: t("auth.logout"),
       id: "logout",
     },
   ];
@@ -86,7 +89,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
               className="ml-auto"
             >
               <LogIn className="mr-2 h-4 w-4" />
-              Entrar
+              {t("auth.login")}
             </Button>
           )}
 
@@ -99,10 +102,13 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Cerrar sesión
+                {t("auth.logout")}
               </Button>
             </div>
           )}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <LanguageSwitcher />
         </div>
       </div>
     </header>

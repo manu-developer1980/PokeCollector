@@ -68,6 +68,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  to="/rules"
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  Reglas
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >

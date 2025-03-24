@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collection } from "@/types/pokemon";
 import { Plus, Edit, Trash } from "lucide-react";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
 interface CollectionListProps {
   collections: Collection[];
@@ -25,23 +26,22 @@ const CollectionList = ({
   onDeleteCollection,
   isLoading = false,
 }: CollectionListProps) => {
+  const { t } = useTranslation();
+
   if (isLoading) {
-    return <LoadingSpinner message="Cargando colecciones..." />;
+    return <LoadingSpinner message={t("common.loading")} />;
   }
 
   if (collections.length === 0) {
     return (
       <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
         <CardContent className="p-6 text-center">
-          <p className="text-gray-500 mb-4">
-            No tienes colecciones aún. ¡Crea tu primera colección para empezar a
-            guardar tus cartas!
-          </p>
+          <p className="text-gray-500 mb-4">{t("collection.empty")}</p>
           <Button
             onClick={onCreateCollection}
             className="bg-red-600 hover:bg-red-700"
           >
-            <Plus className="h-4 w-4 mr-1" /> Crear Mi Primera Colección
+            <Plus className="h-4 w-4 mr-1" /> {t("collection.createFirst")}
           </Button>
         </CardContent>
       </Card>

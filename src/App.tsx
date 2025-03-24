@@ -16,6 +16,7 @@ import PokemonDashboard from "./components/pages/PokemonDashboard";
 import CheckoutPage from "./components/pages/checkout";
 import CheckoutSuccessPage from "./components/pages/checkout-success";
 import SearchPage from "./components/pages/SearchPage";
+import Rules from "./components/pages/Rules";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/auth/AuthCallback";
@@ -93,6 +94,14 @@ function AppRoutes() {
           element={
             <MainLayout>
               <SearchPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/rules"
+          element={
+            <MainLayout>
+              <Rules />
             </MainLayout>
           }
         />
