@@ -150,11 +150,22 @@ const CardDetail: React.FC<CardDetailProps> = ({
     try {
       const updatedCard = await onUpdate({
         ...cardData,
-        id: localCard.id, // Usar el ID de collection_cards
+        id: localCard.id,
       });
 
       if (updatedCard) {
+        // Actualizar cardDetails
         setCardDetails((prev) => ({
+          ...prev!,
+          quantity: updatedCard.quantity,
+          condition: updatedCard.condition,
+          is_foil: updatedCard.is_foil,
+          is_first_edition: updatedCard.is_first_edition,
+          notes: updatedCard.notes,
+        }));
+
+        // Actualizar localCard
+        setLocalCard((prev) => ({
           ...prev!,
           quantity: updatedCard.quantity,
           condition: updatedCard.condition,
@@ -255,17 +266,17 @@ const CardDetail: React.FC<CardDetailProps> = ({
                       cardDetails.rarity}
                   </Badge>
                 )}
-                {mode === "collection" && card && (
+                {mode === "collection" && localCard && (
                   <>
-                    {(card as CollectionCard).quantity > 1 && (
+                    {localCard.quantity > 1 && (
                       <Badge
                         variant="outline"
                         className="bg-blue-50 text-blue-700 text-xs shrink-0"
                       >
-                        x{(card as CollectionCard).quantity}
+                        x{localCard.quantity}
                       </Badge>
                     )}
-                    {(card as CollectionCard).is_first_edition && (
+                    {localCard.is_first_edition && (
                       <Badge
                         variant="outline"
                         className="bg-purple-50 text-purple-700 text-xs shrink-0"
@@ -273,7 +284,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                         1st
                       </Badge>
                     )}
-                    {(card as CollectionCard).is_foil && (
+                    {localCard.is_foil && (
                       <Badge
                         variant="outline"
                         className="bg-yellow-50 text-yellow-700 text-xs shrink-0"
@@ -281,8 +292,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                         ✨
                       </Badge>
                     )}
-                    {/* Añadir el badge de notas */}
-                    {(card as CollectionCard).notes && (
+                    {localCard.notes && (
                       <Badge
                         variant="outline"
                         className="bg-gray-50 text-gray-700 text-xs shrink-0 cursor-pointer hover:bg-gray-100"
