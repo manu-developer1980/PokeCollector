@@ -59,23 +59,10 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
+      <div className="w-full max-w-screen-xl mx-auto px-14 md:px-6 lg:px-8 flex h-14 items-center">
         <div className="flex items-center justify-between w-full gap-4">
           <div className="flex items-center gap-2 md:gap-4">
             {/* Solo mostrar el menú móvil si el usuario está autenticado */}
-            {user && (
-              <MobileMenu
-                items={mobileMenuItems}
-                activeItem=""
-                onItemClick={(id) => {
-                  if (id === "logout") {
-                    handleSignOut();
-                  } else {
-                    handleNavigation(id);
-                  }
-                }}
-              />
-            )}
 
             {/* Logo */}
             <Link

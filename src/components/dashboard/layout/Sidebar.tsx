@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LogOut } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../../../../supabase/auth";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -23,8 +24,21 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const { subscription } = useSubscription();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
+
+  // Cerrar el drawer cuando cambia el tamaño de la ventana a desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsDrawerOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -36,6 +50,9 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   };
 
   const handleItemClick = (item: NavItem) => {
+    // Cerrar el drawer en móvil después de hacer clic
+    setIsDrawerOpen(false);
+
     if (item.id === "logout") {
       handleSignOut();
     } else {
@@ -44,8 +61,46 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   };
 
   return (
-    <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-200 shrink-0">
-      <div className="flex flex-col h-[calc(100vh-4rem)] sticky top-16">
+    <>
+      {/* Botón de hamburguesa para móvil - con estilo en línea para top negativo */}
+      <div
+        className="md:hidden absolute left-4 z-50"
+        style={{ top: "8px" }}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+          className="mr-2"
+          aria-label={isDrawerOpen ? "Cerrar menú" : "Abrir menú"}
+        >
+          {isDrawerOpen ? <X size={20} /> : <Menu size={20} />}
+        </Button>
+      </div>
+
+      {/* Overlay para móvil */}
+      {isDrawerOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/30 z-40"
+          onClick={() => setIsDrawerOpen(false)}
+        />
+      )}
+
+      {/* Sidebar para desktop y drawer para móvil */}
+      <div
+        className={`
+          md:relative fixed top-14 left-0 z-50
+          md:flex md:flex-col w-64 bg-white border-r border-gray-200 shrink-0
+          md:h-[calc(100vh-4rem)] md:sticky md:top-16
+          h-[calc(100vh-3.5rem)]
+          transform transition-transform duration-300 ease-in-out
+          ${
+            isDrawerOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }
+        `}
+      >
         <div className="flex-1 p-4">
           <ScrollArea className="h-full">
             <div className="space-y-2">
@@ -73,7 +128,10 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
 
               {!isMaestroPlan && (
                 <button
-                  onClick={() => onItemClick("Pricing")}
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    onItemClick("Pricing");
+                  }}
                   className="w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
                 >
                   <Crown className="h-4 w-4" />
@@ -84,7 +142,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
           </ScrollArea>
         </div>
       </div>
-    </aside>
+    </>
   );
 };
 

@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Edit, Search, X } from "lucide-react";
 import { Collection, CollectionCard } from "@/types/pokemon";
-import { Search, ArrowLeft, Edit, X } from "lucide-react";
-import { navigateToSearch } from "@/lib/navigation";
+import { useState, useMemo } from "react";
 import CardGrid from "./CardGrid";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { useNavigate } from "react-router-dom";
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -17,6 +17,7 @@ interface CollectionDetailProps {
   onRemove: (cardId: string) => void;
   onCardClick: (card: CollectionCard) => void;
   isLoading?: boolean;
+  onSectionChange: (section: string) => void;
 }
 
 const CollectionDetail = ({
@@ -26,6 +27,7 @@ const CollectionDetail = ({
   onRemove,
   onCardClick,
   isLoading = false,
+  onSectionChange,
 }: CollectionDetailProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -35,6 +37,10 @@ const CollectionDetail = ({
       card.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [collection.cards, searchTerm]);
+
+  const handleSearchClick = () => {
+    onSectionChange("Search Cards");
+  };
 
   if (!collection.cards || collection.cards.length === 0) {
     return (
@@ -70,7 +76,7 @@ const CollectionDetail = ({
             </p>
             <Button
               className="bg-red-600 hover:bg-red-700"
-              onClick={() => navigateToSearch()}
+              onClick={handleSearchClick}
             >
               <Search className="h-4 w-4 mr-1" /> Buscar Cartas
             </Button>

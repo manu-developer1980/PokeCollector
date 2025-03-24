@@ -1266,6 +1266,9 @@ export default function PokemonDashboard() {
         onQuickAdd={handleQuickAddToCollection}
         onRemove={handleRemoveFromWishlist}
         isLoading={isWishlistLoading}
+        onSectionChange={(section: string) => {
+          setActiveSection(section);
+        }}
       />
     </div>
   );
@@ -1287,6 +1290,7 @@ export default function PokemonDashboard() {
             setSelectedCard(card);
             setIsCardDetailOpen(true);
           }}
+          onSectionChange={setActiveSection}
         />
       );
     }
@@ -1337,7 +1341,7 @@ export default function PokemonDashboard() {
     <>
       <div className="min-h-screen bg-background flex flex-col">
         <MainHeader showNavigation={false} />
-        <div className="flex-1 flex w-full max-w-[1400px] mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
+        <div className="flex-1 flex w-full max-w-screen-xl mx-auto bg-gradient-to-b from-yellow-50 to-red-50">
           {/* Sidebar solo visible en desktop */}
           <Sidebar
             items={defaultNavItems}

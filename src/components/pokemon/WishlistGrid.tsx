@@ -2,11 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { navigateToSearch } from "@/lib/navigation";
 import CardGrid from "./CardGrid";
-import { useState } from "react";
-import type { PokemonCard } from "@/types/pokemon";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import type { PokemonCard } from "@/types/pokemon";
+import { navigateToSearch } from "@/lib/navigation";
 
 interface WishlistGridProps {
   cards: PokemonCard[];
@@ -14,6 +13,7 @@ interface WishlistGridProps {
   onQuickAdd?: (card: PokemonCard) => void;
   onRemove?: (card: PokemonCard) => void;
   isLoading?: boolean;
+  onSectionChange: (section: string) => void;
 }
 
 const WishlistGrid = ({
@@ -22,8 +22,11 @@ const WishlistGrid = ({
   onQuickAdd,
   onRemove,
   isLoading,
+  onSectionChange,
 }: WishlistGridProps) => {
-  const navigate = useNavigate();
+  const handleSearchClick = () => {
+    onSectionChange("Search Cards");
+  };
 
   if (isLoading) {
     return <LoadingSpinner message="Cargando lista de deseos..." />;
@@ -39,7 +42,7 @@ const WishlistGrid = ({
           </p>
           <Button
             className="bg-red-600 hover:bg-red-700"
-            onClick={() => navigateToSearch(navigate)}
+            onClick={handleSearchClick}
           >
             <Search className="h-4 w-4 mr-1" /> Buscar Cartas
           </Button>
