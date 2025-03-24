@@ -1,10 +1,8 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "react-router-dom";
-import { Search, Database, Heart, ArrowRight } from "lucide-react";
+import { Search, Database, Heart } from "lucide-react";
 
 interface GetStartedGuideProps {
   onClose?: () => void;
@@ -17,49 +15,33 @@ const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
       description:
         "Explora miles de cartas Pokémon usando nuestras herramientas de búsqueda y filtrado.",
       icon: <Search className="h-6 w-6 text-blue-600" />,
-      action: "/dashboard",
-      actionText: "Buscar Cartas",
     },
     {
       title: "Construye tu Colección",
       description:
         "Añade cartas a tu colección con detalles como cantidad, condición y notas.",
       icon: <Database className="h-6 w-6 text-blue-600" />,
-      action: "/collection",
-      actionText: "Ir a Mi Colección",
     },
     {
       title: "Crear una Lista de Deseos",
       description:
         "Mantén un seguimiento de las cartas que deseas añadir a tu colección en el futuro.",
       icon: <Heart className="h-6 w-6 text-red-600" />,
-      action: "/wishlist",
-      actionText: "Iniciar Lista de Deseos",
     },
   ];
 
   return (
-    <Card className="w-full max-w-4xl mx-auto border-2 border-red-100 shadow-lg bg-gradient-to-br from-white to-red-50">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <img
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
-              alt="Pokeball"
-              className="h-6 w-6"
-            />
-            Comienza con PokéCollector
-          </CardTitle>
-          <Badge className="bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-            Guía de Nuevo Usuario
-          </Badge>
+    <Card className="border-0 shadow-none">
+      <CardContent className="pt-6">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            ¡Bienvenido a PokéCollector!
+          </h2>
+          <p className="text-gray-600">
+            Tu compañero perfecto para gestionar tu colección de cartas Pokémon.
+            Aquí tienes una breve guía de las principales funcionalidades:
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600 mb-6">
-          ¡Bienvenido a PokéCollector! Sigue estos sencillos pasos para comenzar
-          a gestionar tu colección de cartas Pokémon.
-        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {steps.map((step, index) => (
@@ -75,15 +57,6 @@ const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
                   {index + 1}. {step.title}
                 </h3>
                 <p className="text-gray-600 mb-4">{step.description}</p>
-                <Link to={step.action}>
-                  <Button
-                    variant="outline"
-                    className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    {step.actionText}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
               </CardContent>
             </Card>
           ))}
