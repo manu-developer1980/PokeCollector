@@ -1051,89 +1051,85 @@ export default function PokemonDashboard() {
   useEffect(() => {
     if (!user) return;
 
-    // Suscripción para cambios en las colecciones
-    const collectionsChannel = supabase
-      .channel("collections-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "collections",
-          filter: `user_id=eq.${user.id}`,
-        },
-        async (payload) => {
-          switch (payload.eventType) {
-            case "UPDATE": {
-              const updatedCollection = payload.new as Collection;
-              setCollections((prevCollections) =>
-                prevCollections.map((collection) =>
-                  collection.id === updatedCollection.id
-                    ? { ...collection, ...updatedCollection }
-                    : collection
-                )
-              );
+    let collectionsChannel: RealtimeChannel;
+    let cardsChannel: RealtimeChannel;
 
-              // Actualizar también selectedCollection si es necesario
-              if (selectedCollection?.id === updatedCollection.id) {
-                setSelectedCollection((prev) =>
-                  prev ? { ...prev, ...updatedCollection } : prev
-                );
-              }
-              break;
-            }
-            case "INSERT": {
-              const newCollection = payload.new as Collection;
-              setCollections((prev) => [
-                ...prev,
-                { ...newCollection, cards: [] },
-              ]);
-              break;
-            }
-            case "DELETE": {
-              const deletedCollection = payload.old as Collection;
-              setCollections((prev) =>
-                prev.filter(
-                  (collection) => collection.id !== deletedCollection.id
-                )
+    const setupSubscriptions = () => {
+      // Suscripción para cambios en las colecciones
+      collectionsChannel = supabase
+        .channel("collections-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "collections",
+            filter: `user_id=eq.${user.id}`,
+          },
+          async (payload) => {
+            await getCollections(); // Actualizar todas las colecciones
+          }
+        )
+        .subscribe();
+
+      // Suscripción para cambios en las cartas de la colección
+      cardsChannel = supabase
+        .channel("collection-cards-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "collection_cards",
+          },
+          async (payload) => {
+            await getCollections(); // Actualizar todas las colecciones
+
+            // Si hay una colección seleccionada, actualizar sus cartas
+            if (selectedCollection) {
+              const updatedCollection = await getCollectionWithCards(
+                selectedCollection.id
               );
-              if (selectedCollection?.id === deletedCollection.id) {
-                setSelectedCollection(null);
+              if (updatedCollection) {
+                setSelectedCollection(updatedCollection);
               }
-              break;
             }
           }
-        }
-      )
-      .subscribe();
-
-    // Suscripción para collection_cards
-    const cardsChannel = selectedCollection
-      ? supabase
-          .channel(`collection-${selectedCollection.id}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "collection_cards",
-              filter: `collection_id=eq.${selectedCollection.id}`,
-            },
-            async (payload) => {
-              // ... código existente para collection_cards ...
-            }
-          )
-          .subscribe()
-      : null;
-
-    // Cleanup
-    return () => {
-      collectionsChannel.unsubscribe();
-      if (cardsChannel) {
-        cardsChannel.unsubscribe();
-      }
+        )
+        .subscribe();
     };
-  }, [user, selectedCollection?.id]); // Dependencias actualizadas
+
+    setupSubscriptions();
+
+    // Cleanup function
+    return () => {
+      if (collectionsChannel) collectionsChannel.unsubscribe();
+      if (cardsChannel) cardsChannel.unsubscribe();
+    };
+  }, [user, selectedCollection]);
+
+  // Añadir función auxiliar para obtener una colección con sus cartas
+  const getCollectionWithCards = async (collectionId: string) => {
+    try {
+      const { data: collectionData, error: collectionError } = await supabase
+        .from("collections")
+        .select("*")
+        .eq("id", collectionId)
+        .single();
+
+      if (collectionError) throw collectionError;
+      if (!collectionData) return null;
+
+      const cards = await getCollectionCards(collectionId);
+      return {
+        ...collectionData,
+        cards: cards || [],
+      };
+    } catch (error) {
+      console.error("Error fetching collection with cards:", error);
+      return null;
+    }
+  };
 
   // Asegurarnos de que fetchWishlist se llama cuando se cambia a la pestaña de Lista de Deseos
   useEffect(() => {
