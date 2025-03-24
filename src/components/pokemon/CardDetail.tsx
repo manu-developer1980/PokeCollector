@@ -252,7 +252,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
           if (!open) onClose();
         }}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl h-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               <span className="flex items-center gap-2">
@@ -329,7 +329,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
               )}
             </div>
 
-            <div className="flex-1 flex flex-col min-h-full">
+            <div className="flex-1 flex flex-col ">
               {mode === "collection" && localCard && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-center mb-4">
