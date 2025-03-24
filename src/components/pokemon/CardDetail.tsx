@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CollectionCard, PokemonCard } from "@/types/pokemon";
-import { Edit2, Trash, Plus, Heart } from "lucide-react";
+import { Edit2, Trash, Plus, Heart, FileText } from "lucide-react";
 import EditCardModal from "./EditCardModal";
 import { getRarityBadgeStyle } from "@/lib/utils";
 import {
@@ -51,6 +51,12 @@ const CardDetail: React.FC<CardDetailProps> = ({
   const [cardDetails, setCardDetails] = useState<PokemonCard | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localCard, setLocalCard] = useState<CollectionCard | null>(null);
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+
+  const handleNotesClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsNotesModalOpen(true);
+  };
 
   useEffect(() => {
     const loadCardDetails = async () => {
@@ -275,6 +281,17 @@ const CardDetail: React.FC<CardDetailProps> = ({
                         ✨
                       </Badge>
                     )}
+                    {/* Añadir el badge de notas */}
+                    {(card as CollectionCard).notes && (
+                      <Badge
+                        variant="outline"
+                        className="bg-gray-50 text-gray-700 text-xs shrink-0 cursor-pointer hover:bg-gray-100"
+                        onClick={handleNotesClick}
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        Notas
+                      </Badge>
+                    )}
                   </>
                 )}
               </span>
@@ -454,6 +471,24 @@ const CardDetail: React.FC<CardDetailProps> = ({
               {/* Los botones siempre estarán al final */}
               {renderActions()}
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Notas */}
+      <Dialog
+        open={isNotesModalOpen}
+        onOpenChange={setIsNotesModalOpen}
+      >
+        <DialogContent className="mr-8 w-[280px] sm:w-[425px] rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Notas - {cardDetails.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">
+            {(card as CollectionCard).notes}
           </div>
         </DialogContent>
       </Dialog>
