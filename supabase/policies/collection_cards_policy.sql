@@ -12,9 +12,10 @@ FOR INSERT WITH CHECK (
 CREATE POLICY "Users can view their own collection cards" ON collection_cards
 FOR SELECT USING (
   EXISTS (
-    SELECT 1 FROM collections
-    WHERE collections.id = collection_id
-    AND collections.user_id = auth.uid()
+    SELECT 1 
+    FROM collections c
+    WHERE c.id = collection_cards.collection_id
+    AND c.user_id = auth.uid()
   )
 );
 
@@ -40,3 +41,7 @@ FOR DELETE USING (
 
 -- Habilitar RLS en la tabla
 ALTER TABLE collection_cards ENABLE ROW LEVEL SECURITY;
+
+-- Asegurarse de que los índices estén creados para mejor rendimiento
+CREATE INDEX IF NOT EXISTS idx_collection_cards_collection_id ON collection_cards(collection_id);
+CREATE INDEX IF NOT EXISTS idx_collection_cards_card_id ON collection_cards(card_id);

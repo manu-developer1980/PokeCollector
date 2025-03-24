@@ -11,6 +11,8 @@ import { PokemonCard, PokemonCardSearchParams } from "@/types/pokemon";
 import { searchCards } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import { supabase } from "../../../supabase/supabase";
+import { normalizeCardId } from "@/lib/utils";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -103,18 +105,51 @@ export default function SearchPage() {
     // Aquí iría la lógica para añadir a la colección cuando el usuario está autenticado
   };
 
-  const handleAddToWishlist = (card: PokemonCard) => {
+  const handleAddToWishlist = async (card: PokemonCard) => {
     if (!user) {
       setLastAction({ type: "wishlist", card });
       setIsAuthDialogOpen(true);
-      toast({
-        title: "Inicio de sesión requerido",
-        description:
-          "Necesitas iniciar sesión para añadir cartas a tu lista de deseos",
-      });
       return;
     }
-    // Aquí iría la lógica para añadir a la lista de deseos cuando el usuario está autenticado
+
+    try {
+      const normalizedCardId = normalizeCardId(card.id);
+
+      const { data: existingCard } = await supabase
+        .from("wishlist_cards")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("card_id", normalizedCardId)
+        .maybeSingle();
+
+      if (existingCard) {
+        toast({
+          title: "Ya en Lista de Deseos",
+          description: "Esta carta ya está en tu lista de deseos.",
+        });
+        return;
+      }
+
+      const { error } = await supabase.from("wishlist_cards").insert({
+        user_id: user.id,
+        card_id: normalizedCardId,
+        date_added: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Carta Añadida",
+        description: "La carta ha sido añadida a tu lista de deseos.",
+      });
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo añadir la carta a la lista de deseos.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAuthDialogClose = () => {

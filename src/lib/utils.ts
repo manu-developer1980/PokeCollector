@@ -23,3 +23,8 @@ export const getRarityBadgeStyle = (rarity: string) => {
       return "";
   }
 };
+
+export const normalizeCardId = (cardId: string): string => {
+  // Eliminar caracteres especiales y convertir a minúsculas
+  return cardId.toLowerCase().replace(/[^a-z0-9-]/g, "");
+};

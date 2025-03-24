@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -45,14 +45,37 @@ const AddToCollectionDialog = ({
   onClose,
   onAddToCollection,
 }: AddToCollectionDialogProps) => {
+  // Valores iniciales por defecto
+  const DEFAULT_VALUES = {
+    quantity: 1,
+    condition: "Near Mint",
+    isFoil: false,
+    isFirstEdition: false,
+    notes: "",
+  };
+
   const [selectedCollection, setSelectedCollection] =
     useState<Collection | null>(collections[0] || null);
-  const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState("Near Mint");
-  const [isFoil, setIsFoil] = useState(false);
-  const [isFirstEdition, setIsFirstEdition] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [quantity, setQuantity] = useState(DEFAULT_VALUES.quantity);
+  const [condition, setCondition] = useState(DEFAULT_VALUES.condition);
+  const [isFoil, setIsFoil] = useState(DEFAULT_VALUES.isFoil);
+  const [isFirstEdition, setIsFirstEdition] = useState(
+    DEFAULT_VALUES.isFirstEdition
+  );
+  const [notes, setNotes] = useState(DEFAULT_VALUES.notes);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Resetear el formulario cuando se abre el diálogo
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedCollection(collections[0] || null);
+      setQuantity(DEFAULT_VALUES.quantity);
+      setCondition(DEFAULT_VALUES.condition);
+      setIsFoil(DEFAULT_VALUES.isFoil);
+      setIsFirstEdition(DEFAULT_VALUES.isFirstEdition);
+      setNotes(DEFAULT_VALUES.notes);
+    }
+  }, [isOpen, collections]);
 
   const handleAddToCollection = async () => {
     if (!selectedCollection || !card) return;
@@ -60,38 +83,46 @@ const AddToCollectionDialog = ({
     try {
       setIsLoading(true);
 
-      const { data: existingCard, error: checkError } = await supabase
+      // Modificamos la consulta para evitar el error 406
+      const { data: existingCards, error: checkError } = await supabase
         .from("collection_cards")
-        .select("*")
-        .eq("collection_id", selectedCollection.id)
-        .eq("card_id", card.id)
-        .single();
+        .select("id, quantity")
+        .match({
+          collection_id: selectedCollection.id,
+          card_id: card.id,
+        });
 
-      if (checkError && checkError.code !== "PGRST116") {
-        throw checkError;
-      }
+      if (checkError) throw checkError;
+
+      const existingCard = existingCards?.[0];
 
       if (existingCard) {
-        // Actualizar cantidad si ya existe
         const { error: updateError } = await supabase
           .from("collection_cards")
-          .update({ quantity: existingCard.quantity + quantity })
+          .update({
+            quantity: existingCard.quantity + quantity,
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", existingCard.id);
 
         if (updateError) throw updateError;
       } else {
-        // Insertar nueva carta
+        // Crear objeto con solo los campos existentes en la tabla
+        const newCard = {
+          collection_id: selectedCollection.id,
+          card_id: card.id,
+          quantity,
+          condition,
+          is_foil: isFoil,
+          is_first_edition: isFirstEdition,
+          notes,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
         const { error: insertError } = await supabase
           .from("collection_cards")
-          .insert({
-            collection_id: selectedCollection.id,
-            card_id: card.id,
-            quantity: quantity,
-            condition: condition,
-            is_foil: isFoil,
-            is_first_edition: isFirstEdition,
-            notes: notes,
-          });
+          .insert(newCard);
 
         if (insertError) throw insertError;
       }
@@ -100,6 +131,19 @@ const AddToCollectionDialog = ({
         title: "¡Éxito!",
         description: "Carta añadida a la colección correctamente",
       });
+
+      // Notificar al componente padre
+      onAddToCollection({
+        card,
+        collectionId: selectedCollection.id,
+        quantity,
+        condition,
+        isFoil,
+        isFirstEdition,
+        notes,
+      });
+
+      // Limpiar el formulario y cerrar
       onClose();
     } catch (error) {
       console.error("Error adding card to collection:", error);

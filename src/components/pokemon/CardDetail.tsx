@@ -36,17 +36,20 @@ interface CardDetailProps {
   onUpdate?: (cardData: any) => void;
   onRemove?: (cardId: string) => void;
   mode: "search" | "collection" | "wishlist";
+  userPlan?: string;
 }
 
 const CardDetail: React.FC<CardDetailProps> = ({
   card,
   isOpen,
   onClose,
-  mode = "search",
   onAddToCollection,
+  onAddToWishlist,
   onRemoveFromWishlist,
   onUpdate,
   onRemove,
+  mode = "search",
+  userPlan = "aprendiz",
 }) => {
   const [cardDetails, setCardDetails] = useState<PokemonCard | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -123,13 +126,25 @@ const CardDetail: React.FC<CardDetailProps> = ({
   };
 
   const handleAddToCollection = (card: PokemonCard) => {
-    onAddToCollection?.(card);
-    onClose();
+    if (onAddToCollection && cardDetails) {
+      // Asegurarse de que cardDetails tenga toda la información necesaria
+      const completeCard: PokemonCard = {
+        ...cardDetails,
+        id: cardDetails.id,
+        name: cardDetails.name,
+        images: cardDetails.images,
+        set: cardDetails.set,
+      };
+      onAddToCollection(completeCard);
+      onClose();
+    }
   };
 
   const handleAddToWishlist = (card: PokemonCard) => {
-    onAddToWishlist?.(card);
-    onClose();
+    if (onAddToWishlist) {
+      onAddToWishlist(card);
+      onClose();
+    }
   };
 
   const handleRemoveFromWishlist = (card: PokemonCard) => {
@@ -188,13 +203,13 @@ const CardDetail: React.FC<CardDetailProps> = ({
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => handleAddToCollection(cardDetails)}
+              onClick={() => cardDetails && handleAddToCollection(cardDetails)}
             >
               <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleAddToWishlist(cardDetails)}
+              onClick={() => cardDetails && handleAddToWishlist(cardDetails)}
               className="w-full"
             >
               <Heart className="h-4 w-4 mr-2 text-red-500 fill-current" />{" "}
@@ -208,14 +223,16 @@ const CardDetail: React.FC<CardDetailProps> = ({
           <div className="flex flex-col gap-2 mt-auto pt-4">
             <Button
               variant="outline"
-              onClick={() => handleAddToCollection(cardDetails)}
+              onClick={() => cardDetails && handleAddToCollection(cardDetails)}
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
             </Button>
             <Button
               variant="destructive"
-              onClick={() => handleRemoveFromWishlist(card)}
+              onClick={() =>
+                cardDetails && handleRemoveFromWishlist(cardDetails)
+              }
               className="w-full"
             >
               <Trash className="h-4 w-4 mr-2" /> Eliminar de Lista de Deseos
@@ -419,7 +436,8 @@ const CardDetail: React.FC<CardDetailProps> = ({
                       </>
                     )}
 
-                    {cardDetails.tcgplayer?.prices &&
+                    {userPlan === "maestro" &&
+                      cardDetails.tcgplayer?.prices &&
                       Object.entries(cardDetails.tcgplayer.prices).some(
                         ([_, value]) => value?.market
                       ) && (

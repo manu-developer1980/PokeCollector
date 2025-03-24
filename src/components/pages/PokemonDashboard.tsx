@@ -51,6 +51,7 @@ import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLi
 import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
 import { useUser } from "@/hooks/useUser";
+import { normalizeCardId } from "@/lib/utils";
 
 interface PolarSubscription {
   status: string;
@@ -135,15 +136,15 @@ export default function PokemonDashboard() {
           .from("collection_cards")
           .select(
             `
-          id,
-          card_id,
-          quantity,
-          condition,
-          is_foil,
-          is_first_edition,
-          notes,
-          created_at
-        `
+            id,
+            card_id,
+            quantity,
+            condition,
+            is_foil,
+            is_first_edition,
+            notes,
+            created_at
+          `
           )
           .eq("collection_id", collectionId);
 
@@ -153,20 +154,36 @@ export default function PokemonDashboard() {
 
         const cardsWithDetails = await Promise.all(
           data.map(async (collectionCard) => {
-            const cardDetails = await getCardById(collectionCard.card_id);
-            if (!cardDetails) return null;
+            try {
+              // Normalizar el ID de la carta antes de buscarla
+              const normalizedCardId = normalizeCardId(collectionCard.card_id);
+              const cardDetails = await getCardById(normalizedCardId);
 
-            return {
-              ...cardDetails,
-              id: collectionCard.id, // ID de collection_cards
-              card_id: collectionCard.card_id, // ID de la carta de Pokémon
-              quantity: collectionCard.quantity,
-              condition: collectionCard.condition,
-              is_foil: collectionCard.is_foil,
-              is_first_edition: collectionCard.is_first_edition,
-              notes: collectionCard.notes,
-              created_at: collectionCard.created_at,
-            };
+              if (!cardDetails) {
+                console.warn(
+                  `Card details not found for ID: ${normalizedCardId}`
+                );
+                return null;
+              }
+
+              return {
+                ...cardDetails,
+                id: collectionCard.id,
+                card_id: normalizedCardId, // Usar el ID normalizado
+                quantity: collectionCard.quantity,
+                condition: collectionCard.condition,
+                is_foil: collectionCard.is_foil,
+                is_first_edition: collectionCard.is_first_edition,
+                notes: collectionCard.notes,
+                created_at: collectionCard.created_at,
+              };
+            } catch (error) {
+              console.error(
+                `Error fetching card details for ${collectionCard.card_id}:`,
+                error
+              );
+              return null;
+            }
           })
         );
 
@@ -174,16 +191,11 @@ export default function PokemonDashboard() {
           (card): card is CollectionCard => card !== null
         );
       } catch (error) {
-        console.error("Error fetching collection cards:", error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar las cartas de la colección",
-          variant: "destructive",
-        });
-        return [];
+        console.error("Error in getCollectionCards:", error);
+        throw error;
       }
     },
-    [toast]
+    []
   );
 
   // 4. Then define getCollections which uses getCollectionCards
@@ -540,109 +552,69 @@ export default function PokemonDashboard() {
     if (!subscription) return;
 
     try {
-      // Obtener el conteo actual de cartas en todas las colecciones del usuario
-      const { count } = await supabase
+      const normalizedCardId = normalizeCardId(cardData.card.id);
+
+      // Verificar si la carta existe en la colección
+      const { data: existingCard, error: checkError } = await supabase
         .from("collection_cards")
-        .select("*", { count: "exact", head: true })
-        .eq("collection_id", cardData.collectionId);
-
-      const currentCardCount = count || 0;
-
-      // Validar límites
-      const validation = validateSubscriptionLimits(
-        subscription.plan_type,
-        currentCardCount + cardData.quantity,
-        0 // No validamos colecciones aquí
-      );
-
-      if (!validation.valid) {
-        setLimitError({
-          message: validation.error || "",
-          type: "cards",
-        });
-        setIsLimitModalOpen(true);
-        return;
-      }
-
-      // Continuar con la lógica existente de guardar la carta
-      const { data: insertedCard, error } = await supabase
-        .from("collection_cards")
-        .insert({
-          card_id: cardData.card.id,
-          collection_id: cardData.collectionId,
-          quantity: cardData.quantity,
-          condition: cardData.condition,
-          is_foil: cardData.isFoil,
-          is_first_edition: cardData.isFirstEdition,
-          notes: cardData.notes,
-          date_added: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Crear el objeto de carta completo con los detalles de Pokemon
-      const newCard = {
-        ...insertedCard,
-        name: cardData.card.name,
-        images: cardData.card.images,
-        set: cardData.card.set,
-      };
-
-      // Actualizar el estado local de collections
-      setCollections((prevCollections) =>
-        prevCollections.map((collection) => {
-          if (collection.id === cardData.collectionId) {
-            return {
-              ...collection,
-              cards: [...collection.cards, newCard],
-            };
-          }
-          return collection;
-        })
-      );
-
-      // Actualizar selectedCollection si es la colección actual
-      if (selectedCollection?.id === cardData.collectionId) {
-        setSelectedCollection((prev) => ({
-          ...prev!,
-          cards: [...prev!.cards, newCard],
-        }));
-      }
-
-      // Verificar y eliminar de la lista de deseos si es necesario
-      const { data: wishlistCard, error: wishlistError } = await supabase
-        .from("wishlist_cards")
-        .select("id")
-        .eq("user_id", user?.id)
-        .eq("card_id", cardData.card.id)
+        .select("*")
+        .eq("collection_id", cardData.collectionId)
+        .eq("card_id", normalizedCardId)
         .maybeSingle();
 
-      if (wishlistError) {
-        console.error("Error checking wishlist:", wishlistError);
-      } else if (wishlistCard) {
-        await supabase
-          .from("wishlist_cards")
-          .delete()
-          .eq("id", wishlistCard.id);
-
-        setWishlistCards((prev) =>
-          prev.filter((card) => card.id !== cardData.card.id)
-        );
+      if (checkError && checkError.code !== "PGRST116") {
+        throw checkError;
       }
 
+      if (existingCard) {
+        // Actualizar carta existente
+        const { error: updateError } = await supabase
+          .from("collection_cards")
+          .update({
+            quantity: existingCard.quantity + cardData.quantity,
+            condition: cardData.condition || existingCard.condition,
+            is_foil: cardData.isFoil ?? existingCard.is_foil,
+            is_first_edition:
+              cardData.isFirstEdition ?? existingCard.is_first_edition,
+            notes: cardData.notes || existingCard.notes,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingCard.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insertar nueva carta
+        const { error: insertError } = await supabase
+          .from("collection_cards")
+          .insert({
+            collection_id: cardData.collectionId,
+            card_id: normalizedCardId,
+            quantity: cardData.quantity,
+            condition: cardData.condition,
+            is_foil: cardData.isFoil,
+            is_first_edition: cardData.isFirstEdition,
+            notes: cardData.notes,
+            name: cardData.card.name,
+            set_name: cardData.card.set?.name,
+            image_url:
+              cardData.card.images?.small || cardData.card.images?.large,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      // Actualizar la interfaz
+      await getCollections();
       setIsAddToCollectionOpen(false);
       toast({
         title: "Carta Añadida",
         description: "La carta ha sido añadida a tu colección.",
       });
     } catch (error) {
-      console.error("Error al añadir carta a la colección:", error);
+      console.error("Error saving to collection:", error);
       toast({
         title: "Error",
-        description:
-          "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
+        description: "No se pudo guardar la carta en la colección.",
         variant: "destructive",
       });
     }
@@ -1367,6 +1339,9 @@ export default function PokemonDashboard() {
     setActiveSection("Pricing");
   };
 
+  const planType = (subscription?.plan_type?.toUpperCase() ||
+    "APRENDIZ") as SubscriptionPlan;
+
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col">
@@ -1407,6 +1382,7 @@ export default function PokemonDashboard() {
             ? "wishlist"
             : "search"
         }
+        userPlan={planType.toLowerCase()}
       />
 
       <AddToCollectionDialog

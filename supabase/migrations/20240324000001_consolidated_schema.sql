@@ -316,5 +316,11 @@ CREATE TRIGGER update_users_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+-- Modificar la tabla collection_cards para incluir los campos faltantes
+ALTER TABLE public.collection_cards 
+    ADD COLUMN IF NOT EXISTS name TEXT,
+    ADD COLUMN IF NOT EXISTS set_name TEXT,
+    ADD COLUMN IF NOT EXISTS image_url TEXT;
+
 COMMIT;
 

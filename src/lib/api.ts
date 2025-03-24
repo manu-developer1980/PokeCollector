@@ -6,6 +6,7 @@ import {
   PokemonCardSet,
 } from "@/types/pokemon";
 import { PokemonCache } from "./cache";
+import { normalizeCardId } from "./utils";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
@@ -128,7 +129,8 @@ export async function getTypes(): Promise<string[]> {
 }
 
 export async function getCardById(id: string): Promise<PokemonCard | null> {
-  const cacheKey = PokemonCache.getCardKey(id);
+  const normalizedId = normalizeCardId(id);
+  const cacheKey = PokemonCache.getCardKey(normalizedId);
   const cachedCard = PokemonCache.get<PokemonCard>(cacheKey);
 
   if (cachedCard) {
@@ -136,18 +138,20 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
   }
 
   try {
-    // Volvemos a la URL original
-    const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+    const { data } = await api.get(
+      `/pokemon/cards/${normalizedId}`,
+      defaultConfig
+    );
 
     if (!data || !data.data) {
-      console.warn(`Invalid response format for card ${id}:`, data);
+      console.warn(`Invalid response format for card ${normalizedId}:`, data);
       return null;
     }
 
     PokemonCache.set(cacheKey, data.data);
     return data.data;
   } catch (error) {
-    console.error(`Failed to fetch card details for ${id}:`, error);
+    console.error(`Failed to fetch card details for ${normalizedId}:`, error);
     return null;
   }
 }
