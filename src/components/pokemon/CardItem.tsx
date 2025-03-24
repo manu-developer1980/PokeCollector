@@ -26,6 +26,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface CardItemProps {
@@ -300,6 +301,9 @@ const CardItem = ({
               <FileText className="h-5 w-5" />
               Notas - {card.name}
             </DialogTitle>
+            <DialogDescription>
+              Notas personales sobre esta carta
+            </DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">
             {card.notes}

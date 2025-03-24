@@ -6,32 +6,31 @@ import { useSubscription } from "@/hooks/useSubscription";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 const PLAN_NAMES = {
-  APRENDIZ: "Aprendiz",
-  ENTRENADOR: "Entrenador",
-  MAESTRO: "Maestro",
-};
+  aprendiz: "Aprendiz",
+  entrenador: "Entrenador",
+  maestro: "Maestro",
+} as const;
 
 export default function CheckoutSuccessPage() {
   const navigate = useNavigate();
-  const { subscription, refetchSubscription } = useSubscription();
-  const [isLoading, setIsLoading] = useState(true);
+  const { subscription, refetchSubscription, isLoading } = useSubscription();
   const [planName, setPlanName] = useState("");
 
   useEffect(() => {
-    const selectedPlanType = localStorage.getItem("selectedPlanType");
-    if (selectedPlanType) {
-      setPlanName(PLAN_NAMES[selectedPlanType] || selectedPlanType);
-    }
-
     const verifySubscription = async () => {
       try {
-        await refetchSubscription();
-        setIsLoading(false);
-        // Limpiar el plan guardado
+        const updatedSubscription = await refetchSubscription();
+
+        if (updatedSubscription?.plan_type) {
+          // Convertir a minúsculas para asegurar la coincidencia
+          const planType = updatedSubscription.plan_type.toLowerCase();
+          setPlanName(PLAN_NAMES[planType] || planType);
+        }
+
+        // Limpiar el localStorage después de procesar la suscripción
         localStorage.removeItem("selectedPlanType");
       } catch (error) {
         console.error("Error verificando suscripción:", error);
-        setIsLoading(false);
       }
     };
 

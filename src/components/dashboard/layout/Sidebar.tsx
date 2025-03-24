@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../../../../supabase/auth";
@@ -24,11 +24,21 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const { subscription } = useSubscription();
+
+  // Group all state declarations
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
+  // Callbacks after state
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  }, [signOut, navigate]);
 
-  // Cerrar el drawer cuando cambia el tamaño de la ventana a desktop
+  // Effects come last
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -40,14 +50,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
+  const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
 
   const handleItemClick = (item: NavItem) => {
     // Cerrar el drawer en móvil después de hacer clic

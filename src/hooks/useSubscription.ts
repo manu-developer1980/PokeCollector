@@ -7,26 +7,9 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Debug del estado de autenticación
-  useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-    };
-
-    getSession();
-  }, [user]);
-
   const fetchSubscription = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!user?.id || !session) {
-      console.log("[useSubscription] No authenticated user:", {
-        userId: user?.id,
-        hasSession: !!session,
-      });
+    if (!user) {
+      setIsLoading(false);
       return null;
     }
 
@@ -37,37 +20,31 @@ export const useSubscription = () => {
         .eq("user_id", user.id)
         .single();
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("[useSubscription] Error fetching subscription:", error);
-      return null;
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadSubscription = async () => {
-      setIsLoading(true);
-      const data = await fetchSubscription();
-      if (isMounted) {
-        setSubscription(data);
-        setIsLoading(false);
+      if (error) {
+        console.error("Error fetching subscription:", error);
+        return null;
       }
-    };
 
-    if (user?.id) {
-      loadSubscription();
-    } else {
-      setSubscription(null);
+      return data;
+    } finally {
       setIsLoading(false);
     }
+  }, [user]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id, fetchSubscription]);
+  const refetchSubscription = useCallback(async () => {
+    setIsLoading(true);
+    const data = await fetchSubscription();
+    setSubscription(data);
+    return data;
+  }, [fetchSubscription]);
 
-  return { subscription, isLoading };
+  useEffect(() => {
+    refetchSubscription();
+  }, [refetchSubscription]);
+
+  return {
+    subscription,
+    isLoading,
+    refetchSubscription,
+  };
 };
