@@ -18,13 +18,15 @@
     "success": "Éxito",
     "error": "Error",
     "warning": "Advertencia",
-    "info": "Información"
+    "info": "Información",
+    "understood": "Entendido"
   },
   "auth": {
     "login": "Iniciar sesión",
     "signup": "Registrarse",
     "logout": "Cerrar sesión",
     "email": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
     "forgotPassword": "¿Olvidaste tu contraseña?",
@@ -36,7 +38,51 @@
     "loginSuccess": "Inicio de sesión exitoso",
     "logoutSuccess": "Cierre de sesión exitoso",
     "resetPasswordSuccess": "Contraseña restablecida con éxito",
-    "emailConfirmSuccess": "Correo electrónico confirmado con éxito"
+    "emailConfirmSuccess": "Correo electrónico confirmado con éxito",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Tu nombre",
+    "createAccount": "Crear Cuenta",
+    "verifyEmail": "Verifica tu Email",
+    "verificationLinkSent": "Hemos enviado un enlace de verificación a:",
+    "checkInboxInstructions": "Por favor, revisa tu bandeja de entrada y sigue las instrucciones para completar tu registro.",
+    "openGmail": "Abrir Gmail",
+    "loggingIn": "Iniciando sesión...",
+    "registering": "Registrando usuario...",
+    "confirmEmail": {
+      "title": "Confirma tu email",
+      "description": "Tu cuenta aún no ha sido verificada. Hemos enviado un nuevo email de confirmación a:",
+      "checkInbox": "Por favor, revisa tu bandeja de entrada y carpeta de spam."
+    },
+    "errors": {
+      "invalidCredentials": "Email o contraseña incorrectos",
+      "loginError": "Error de inicio de sesión",
+      "initError": "Error al inicializar usuario",
+      "accountInitError": "Hubo un problema al inicializar tu cuenta.",
+      "loginProcessError": "Error durante el inicio de sesión",
+      "signupError": "Error de registro",
+      "verificationError": "Error de verificación",
+      "verificationErrorDesc": "No se pudo verificar tu cuenta. Por favor, intenta nuevamente.",
+      "registrationError": "Error de registro",
+      "registrationErrorDesc": "No se pudo crear la cuenta. Por favor, intenta nuevamente.",
+      "authError": "Error de autenticación",
+      "unexpectedError": "Error inesperado durante el registro",
+      "tryAgain": "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente."
+    },
+    "success": {
+      "welcome": "¡Bienvenido!",
+      "loginSuccess": "Has iniciado sesión correctamente.",
+      "userInitialized": "Usuario inicializado correctamente:"
+    },
+    "validation": {
+      "invalidEmail": "Email inválido",
+      "passwordLength": "La contraseña debe tener al menos 6 caracteres",
+      "nameRequired": "El nombre es requerido",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden"
+    },
+    "verifyNewEmail": "Verifica tu nuevo email",
+    "confirmationLinkSent": "Hemos enviado un enlace de confirmación a:",
+    "checkInboxForNewEmail": "Por favor, revisa tu bandeja de entrada y sigue las instrucciones para confirmar tu nuevo email.",
+    "backToAccount": "Volver a mi cuenta"
   },
   "navigation": {
     "dashboard": "Panel",
@@ -100,6 +146,7 @@
   },
   "search": {
     "title": "Buscar Cartas",
+    "cards": "Buscar Cartas",
     "placeholder": "Buscar por nombre, número o set",
     "filters": "Filtros",
     "noResults": "No se encontraron resultados",
@@ -130,17 +177,40 @@
     "upgradeNow": "Actualizar ahora"
   },
   "plans": {
-    "aprendiz": "Aprendiz",
-    "entrenador": "Entrenador",
-    "maestro": "Maestro",
-    "features": "Características",
-    "maxCards": "Máximo de cartas",
-    "maxCollections": "Máximo de colecciones",
-    "maxWishlist": "Máximo de cartas en lista de deseos",
-    "price": "Precio",
-    "perMonth": "por mes",
+    "aprendiz": {
+      "name": "Aprendiz",
+      "description": "Plan gratuito para comenzar",
+      "features": {
+        "0": "Hasta 50 cartas",
+        "1": "1 colección",
+        "2": "10 cartas en lista de deseos",
+        "3": "Búsqueda de cartas por nombre y tipo"
+      }
+    },
+    "entrenador": {
+      "name": "Entrenador",
+      "description": "Para coleccionistas serios",
+      "features": {
+        "0": "Hasta 500 cartas",
+        "1": "5 colecciones",
+        "2": "50 cartas en lista de deseos",
+        "3": "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más"
+      }
+    },
+    "maestro": {
+      "name": "Maestro",
+      "description": "Para coleccionistas profesionales",
+      "features": {
+        "0": "Todo lo de Entrenador",
+        "1": "Cartas ilimitadas",
+        "2": "Colecciones ilimitadas",
+        "3": "Lista de deseos ilimitada",
+        "4": "Soporte Prioritario"
+      }
+    },
+    "perMonth": "mes",
     "selectPlan": "Seleccionar plan",
-    "currentPlan": "Plan actual"
+    "currentPlan": "Plan Actual"
   },
   "account": {
     "title": "Mi Cuenta",
@@ -159,36 +229,103 @@
   },
   "landing": {
     "hero": {
-      "title": "Gestiona tu colección de cartas Pokémon",
-      "subtitle": "La manera más fácil de organizar, seguir y compartir tu colección de cartas Pokémon",
-      "cta": "Comenzar ahora"
+      "badge": "¡Hazte con todos!",
+      "title": "Gestiona tu Colección de Cartas Pokémon",
+      "subtitle": "Rastrea, organiza y muestra tu colección de Pokémon TCG con nuestras potentes herramientas de gestión.",
+      "cta": "Comenzar Ahora",
+      "cardAlt1": "Carta de Charizard",
+      "cardAlt2": "Carta de Pikachu",
+      "cardAlt3": "Carta de Mewtwo",
+      "cardAlt4": "Carta de Blastoise"
     },
     "features": {
-      "title": "Características",
-      "organize": {
-        "title": "Organiza tu colección",
-        "description": "Crea colecciones personalizadas y organiza tus cartas por set, tipo, rareza y más"
+      "badge": "Características",
+      "title": "Todo lo que Necesitas para tu Colección",
+      "subtitle": "PokéCollector te proporciona todas las herramientas necesarias para gestionar tu colección de cartas Pokémon.",
+      "search": {
+        "title": "Búsqueda de Cartas",
+        "description": "Busca y filtra entre miles de cartas Pokémon por set, tipo, rareza y más."
       },
-      "track": {
-        "title": "Sigue tu progreso",
-        "description": "Mantén un registro de las cartas que tienes y las que te faltan"
+      "collection": {
+        "title": "Gestión de Colección",
+        "description": "Añade cartas a tu colección, controla cantidades y organízalas como prefieras."
       },
-      "share": {
-        "title": "Comparte tu colección",
-        "description": "Comparte tu colección con amigos y la comunidad"
+      "wishlist": {
+        "title": "Lista de Deseos",
+        "description": "Mantén un registro de las cartas que deseas adquirir con nuestra función de lista de deseos."
+      },
+      "customCollections": {
+        "title": "Colecciones Personalizadas",
+        "description": "Crea y gestiona múltiples colecciones personalizadas para diferentes sets o temas."
+      },
+      "filtering": {
+        "title": "Filtrado Avanzado",
+        "description": "Filtra tu colección por set, tipo, rareza y más para encontrar exactamente lo que buscas."
+      },
+      "realtime": {
+        "title": "Actualizaciones en Tiempo Real",
+        "description": "Tu colección se sincroniza en todos tus dispositivos con actualizaciones en tiempo real."
       }
     },
-    "pricing": {
-      "title": "Planes y precios",
-      "subtitle": "Elige el plan que mejor se adapte a tus necesidades"
+    "cta": {
+      "title": "¿Listo para Iniciar tu Colección?",
+      "subtitle": "Únete a miles de coleccionistas de cartas Pokémon que ya están utilizando PokéCollector para gestionar sus colecciones.",
+      "pricingButton": "Ver Planes de Precio",
+      "exploreButton": "Explorar Cartas"
+    }
+  },
+  "pricing": {
+    "title": "Planes y Precios",
+    "subtitle": "Estos son nuestros planes para ti. Empieza con el gratuito y sube de nivel cuando lo necesites",
+    "startFreeButton": "Empezar Gratis",
+    "faqTitle": "Preguntas Frecuentes",
+    "popularBadge": "Popular",
+    "currentPlanToast": {
+      "title": "Plan actual",
+      "description": "Ya tienes este plan activo."
     },
-    "testimonials": {
-      "title": "Lo que dicen nuestros usuarios",
-      "subtitle": "Miles de coleccionistas confían en PokéCollector para gestionar sus colecciones"
-    },
+    "errorUpdatingPlan": "No se pudo actualizar el plan. Por favor, intenta de nuevo.",
     "faq": {
-      "title": "Preguntas frecuentes",
-      "subtitle": "Encuentra respuestas a las preguntas más comunes"
+      "freeplan": {
+        "question": "¿Qué incluye el plan gratuito?",
+        "answer": "El plan Aprendiz incluye todas las funciones básicas para empezar tu colección: hasta 50 cartas, una colección, 10 cartas en tu lista de deseos y búsqueda básica por nombre y tipo. Es perfecto para comenzar y familiarizarte con la plataforma."
+      },
+      "changePlan": {
+        "question": "¿Puedo cambiar de plan en cualquier momento?",
+        "answer": "Sí, puedes actualizar o cambiar tu plan en cualquier momento. Si actualizas a un plan superior, tendrás acceso inmediato a todas las nuevas funciones. Si decides bajar de plan, el cambio se aplicará al final del período de facturación actual."
+      },
+      "collections": {
+        "question": "¿Cómo funciona el sistema de colecciones?",
+        "answer": "Cada colección te permite organizar tus cartas Pokémon de la manera que prefieras. Puedes crear colecciones por set, por tipo, por rareza o cualquier otro criterio. Cada carta puede incluir detalles como su condición, notas personales y fecha de adquisición."
+      },
+      "payment": {
+        "question": "¿Qué métodos de pago aceptan?",
+        "answer": "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express) y PayPal. Todos los pagos se procesan de forma segura a través de Stripe."
+      },
+      "cancel": {
+        "question": "¿Puedo cancelar mi suscripción en cualquier momento?",
+        "answer": "Sí, puedes cancelar tu suscripción cuando quieras. No hay compromisos de permanencia. Al cancelar, mantendrás el acceso a las funciones premium hasta el final del período facturado."
+      },
+      "data": {
+        "question": "¿Qué pasa con mis datos si cancelo mi suscripción?",
+        "answer": "Si cancelas una suscripción premium y vuelves al plan gratuito, tus datos se mantendrán guardados, pero solo podrás acceder a las limitaciones del plan gratuito. Podrás volver a acceder a todos tus datos al reactivar tu suscripción."
+      },
+      "wishlist": {
+        "question": "¿Cómo funciona la lista de deseos?",
+        "answer": "La lista de deseos te permite guardar las cartas que te gustaría adquirir en el futuro. Puedes añadir notas, establecer prioridades y recibir notificaciones cuando actualicemos información sobre esas cartas."
+      },
+      "share": {
+        "question": "¿Puedo compartir mi colección con otros usuarios?",
+        "answer": "Sí, puedes compartir tu colección con otros usuarios mediante un enlace público. Tú controlas qué información es visible para otros coleccionistas y puedes desactivar la visibilidad en cualquier momento."
+      },
+      "database": {
+        "question": "¿Cómo mantienen actualizada la base de datos de cartas?",
+        "answer": "Nuestra base de datos se actualiza regularmente con los últimos lanzamientos de cartas Pokémon. Trabajamos con fuentes oficiales y bases de datos reconocidas para garantizar que tengas acceso a la información más precisa y actualizada."
+      },
+      "support": {
+        "question": "¿Ofrecen soporte técnico?",
+        "answer": "Sí, ofrecemos soporte técnico por email para todos los usuarios. Los usuarios de planes premium tienen acceso a soporte prioritario con tiempos de respuesta garantizados."
+      }
     }
   },
   "errors": {
@@ -199,5 +336,51 @@
     "validation": "Error de validación",
     "network": "Error de red",
     "server": "Error del servidor"
+  },
+  "onboarding": {
+    "title": "Guía de inicio - PokéCollector",
+    "description": "Guía interactiva para comenzar a usar PokéCollector y gestionar tu colección de cartas Pokémon",
+    "welcome": "¡Bienvenido a PokéCollector!",
+    "intro": "Tu compañero perfecto para gestionar tu colección de cartas Pokémon. Aquí tienes una breve guía de las principales funcionalidades:",
+    "startButton": "Comenzar a Coleccionar",
+    "steps": {
+      "search": {
+        "title": "Buscar Cartas",
+        "description": "Explora miles de cartas Pokémon usando nuestras herramientas de búsqueda y filtrado."
+      },
+      "collection": {
+        "title": "Construye tu Colección",
+        "description": "Añade cartas a tu colección con detalles como cantidad, condición y notas."
+      },
+      "wishlist": {
+        "title": "Crear una Lista de Deseos",
+        "description": "Mantén un seguimiento de las cartas que deseas añadir a tu colección en el futuro."
+      }
+    }
+  },
+  "footer": {
+    "description": "La herramienta definitiva para gestionar tu colección de cartas Pokémon TCG, para coleccionistas de todos los niveles.",
+    "features": {
+      "title": "Características",
+      "cardSearch": "Búsqueda de Cartas",
+      "collectionManagement": "Gestión de Colección",
+      "wishlist": "Lista de Deseos"
+    },
+    "resources": {
+      "title": "Recursos",
+      "guides": "Guías",
+      "rules": "Reglas",
+      "blog": "Blog",
+      "tutorials": "Tutoriales"
+    },
+    "company": {
+      "title": "Compañía",
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "copyright": "Todos los derechos reservados.",
+    "disclaimer": "Pokémon y los nombres de los personajes Pokémon son marcas registradas de Nintendo. Este sitio no está afiliado con Nintendo ni con The Pokémon Company."
   }
 }

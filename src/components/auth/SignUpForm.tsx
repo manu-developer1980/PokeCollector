@@ -19,22 +19,26 @@ import {
 } from "@/components/ui/form";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import EmailExistsModal from "./EmailExistsModal";
+// Añadir esta importación
+import { useTranslation } from "react-i18next";
 
-const formSchema = z
-  .object({
-    email: z.string().email("Email inválido"),
-    fullName: z.string().min(1, "El nombre es requerido"),
-    password: z
-      .string()
-      .min(6, "La contraseña debe tener al menos 6 caracteres"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
-  });
+const formSchema = (t: any) =>
+  z
+    .object({
+      email: z.string().email(t("auth.validation.invalidEmail")),
+      fullName: z.string().min(1, t("auth.validation.nameRequired")),
+      password: z.string().min(6, t("auth.validation.passwordLength")),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.validation.passwordsDoNotMatch"),
+      path: ["confirmPassword"],
+    });
 
 export default function SignUpForm() {
+  // Añadir esta línea
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailExistsModal, setShowEmailExistsModal] = useState(false);
@@ -42,8 +46,8 @@ export default function SignUpForm() {
   const { toast } = useToast();
   const { signUp } = useAuth();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<ReturnType<typeof formSchema>>>({
+    resolver: zodResolver(formSchema(t)),
     defaultValues: {
       email: "",
       fullName: "",
@@ -59,7 +63,7 @@ export default function SignUpForm() {
       const result = await signUp(data.email, data.password, data.fullName);
 
       if (result?.error) {
-        console.error("Signup error:", {
+        console.error(t("auth.errors.signupError"), {
           code: result.error.code,
           message: result.error.message,
           details: result.error.originalError,
@@ -69,7 +73,7 @@ export default function SignUpForm() {
           case "SERVER_ERROR":
           case "MAX_RETRIES_EXCEEDED":
             toast({
-              title: "Error del servidor",
+              title: t("errors.server"),
               description: result.error.message,
               variant: "destructive",
               duration: 5000,
@@ -78,18 +82,16 @@ export default function SignUpForm() {
 
           case "VERIFICATION_ERROR":
             toast({
-              title: "Error de verificación",
-              description:
-                "No se pudo verificar tu cuenta. Por favor, intenta nuevamente.",
+              title: t("auth.errors.verificationError"),
+              description: t("auth.errors.verificationErrorDesc"),
               variant: "destructive",
             });
             break;
 
           case "USER_CREATION_FAILED":
             toast({
-              title: "Error de registro",
-              description:
-                "No se pudo crear la cuenta. Por favor, intenta nuevamente.",
+              title: t("auth.errors.registrationError"),
+              description: t("auth.errors.registrationErrorDesc"),
               variant: "destructive",
             });
             break;
@@ -101,7 +103,7 @@ export default function SignUpForm() {
               return;
             }
             toast({
-              title: "Error de autenticación",
+              title: t("auth.errors.authError"),
               description: result.error.message,
               variant: "destructive",
             });
@@ -109,7 +111,7 @@ export default function SignUpForm() {
 
           default:
             toast({
-              title: "Error",
+              title: t("errors.generic"),
               description: result.error.message,
               variant: "destructive",
             });
@@ -123,11 +125,10 @@ export default function SignUpForm() {
         replace: true,
       });
     } catch (error) {
-      console.error("Unexpected error during signup:", error);
+      console.error(t("auth.errors.unexpectedError"), error);
       toast({
-        title: "Error inesperado",
-        description:
-          "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente.",
+        title: t("auth.errors.unexpectedError"),
+        description: t("auth.errors.tryAgain"),
         variant: "destructive",
       });
     } finally {
@@ -139,7 +140,9 @@ export default function SignUpForm() {
     <AuthLayout>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Crear Cuenta</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            {t("auth.createAccount")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -152,12 +155,12 @@ export default function SignUpForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("auth.email")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         autoComplete="email"
-                        placeholder="tu@email.com"
+                        placeholder={t("auth.emailPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -170,10 +173,10 @@ export default function SignUpForm() {
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre completo</FormLabel>
+                    <FormLabel>{t("auth.fullName")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Tu nombre"
+                        placeholder={t("auth.fullNamePlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -186,7 +189,7 @@ export default function SignUpForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <FormLabel>{t("auth.password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -203,7 +206,7 @@ export default function SignUpForm() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirmar Contraseña</FormLabel>
+                    <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -222,22 +225,22 @@ export default function SignUpForm() {
               >
                 {isLoading ? (
                   <LoadingSpinner
-                    message="Registrando usuario..."
+                    message={t("auth.registering")}
                     compact
                   />
                 ) : (
-                  "Registrarse"
+                  t("auth.signup")
                 )}
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            ¿Ya tienes una cuenta?{" "}
+            {t("auth.alreadyHaveAccount")}{" "}
             <Link
               to="/login"
               className="text-blue-600 hover:underline"
             >
-              Inicia Sesión
+              {t("auth.login")}
             </Link>
           </div>
         </CardContent>

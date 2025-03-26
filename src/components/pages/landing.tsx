@@ -11,8 +11,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
+import { useTranslation } from "react-i18next";
 
 export default function LandingPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   return (
@@ -24,22 +26,21 @@ export default function LandingPage() {
             <div className="lg:w-1/2 space-y-8">
               <div>
                 <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-                  ¡Hazte con todos!
+                  {t("landing.hero.badge")}
                 </Badge>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900">
-                  Gestiona tu Colección de Cartas Pokémon
+                  {t("landing.hero.title")}
                 </h1>
               </div>
               <p className="text-lg md:text-xl text-gray-600">
-                Rastrea, organiza y muestra tu colección de Pokémon TCG con
-                nuestras potentes herramientas de gestión.
+                {t("landing.hero.subtitle")}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
-                  Comenzar Ahora
+                  {t("landing.hero.cta")}
                 </Link>
                 <Link to="/search">
                   <Button
@@ -48,7 +49,7 @@ export default function LandingPage() {
                     className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 w-full sm:w-auto"
                   >
                     <Search className="mr-2 h-4 w-4" />
-                    Explorar Cartas
+                    {t("search.title")}
                   </Button>
                 </Link>
               </div>
@@ -57,22 +58,22 @@ export default function LandingPage() {
               <div className="grid grid-cols-2 gap-4 transform rotate-3">
                 <img
                   src="https://images.pokemontcg.io/sv3/1_hires.png"
-                  alt="Charizard Card"
+                  alt={t("landing.hero.cardAlt1")}
                   className="rounded-lg shadow-xl transform -rotate-6 hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pokemontcg.io/sv2/1_hires.png"
-                  alt="Pikachu Card"
+                  alt={t("landing.hero.cardAlt2")}
                   className="rounded-lg shadow-xl transform rotate-6 hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pokemontcg.io/sv3pt5/1_hires.png"
-                  alt="Mewtwo Card"
+                  alt={t("landing.hero.cardAlt3")}
                   className="rounded-lg shadow-xl transform rotate-3 hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pokemontcg.io/sv3/2_hires.png"
-                  alt="Blastoise Card"
+                  alt={t("landing.hero.cardAlt4")}
                   className="rounded-lg shadow-xl transform -rotate-3 hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -86,14 +87,13 @@ export default function LandingPage() {
         <div className="container px-4 mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-              Características
+              {t("landing.features.badge")}
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
-              Todo lo que Necesitas para tu Colección
+              {t("landing.features.title")}
             </h2>
             <p className="text-gray-600 max-w-[700px] mx-auto">
-              PokéCollector te proporciona todas las herramientas necesarias
-              para gestionar tu colección de cartas Pokémon.
+              {t("landing.features.subtitle")}
             </p>
           </div>
 
@@ -104,11 +104,10 @@ export default function LandingPage() {
                   <Search className="h-6 w-6 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Búsqueda de Cartas
+                  {t("landing.features.search.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Busca y filtra entre miles de cartas Pokémon por set, tipo,
-                  rareza y más.
+                  {t("landing.features.search.description")}
                 </p>
               </CardContent>
             </Card>
@@ -119,11 +118,10 @@ export default function LandingPage() {
                   <Database className="h-6 w-6 text-green-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Gestión de Colección
+                  {t("landing.features.collection.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Añade cartas a tu colección, controla cantidades y organízalas
-                  como prefieras.
+                  {t("landing.features.collection.description")}
                 </p>
               </CardContent>
             </Card>
@@ -134,11 +132,10 @@ export default function LandingPage() {
                   <Heart className="h-6 w-6 text-purple-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Lista de Deseos
+                  {t("landing.features.wishlist.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Mantén un registro de las cartas que deseas adquirir con
-                  nuestra función de lista de deseos.
+                  {t("landing.features.wishlist.description")}
                 </p>
               </CardContent>
             </Card>
@@ -149,11 +146,10 @@ export default function LandingPage() {
                   <FolderPlus className="h-6 w-6 text-yellow-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Colecciones Personalizadas
+                  {t("landing.features.customCollections.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Crea y gestiona múltiples colecciones personalizadas para
-                  diferentes sets o temas.
+                  {t("landing.features.customCollections.description")}
                 </p>
               </CardContent>
             </Card>
@@ -164,11 +160,10 @@ export default function LandingPage() {
                   <ListFilter className="h-6 w-6 text-red-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Filtrado Avanzado
+                  {t("landing.features.filtering.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Filtra tu colección por set, tipo, rareza y más para encontrar
-                  exactamente lo que buscas.
+                  {t("landing.features.filtering.description")}
                 </p>
               </CardContent>
             </Card>
@@ -179,11 +174,10 @@ export default function LandingPage() {
                   <Zap className="h-6 w-6 text-indigo-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  Actualizaciones en Tiempo Real
+                  {t("landing.features.realtime.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Tu colección se sincroniza en todos tus dispositivos con
-                  actualizaciones en tiempo real.
+                  {t("landing.features.realtime.description")}
                 </p>
               </CardContent>
             </Card>
@@ -197,18 +191,17 @@ export default function LandingPage() {
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-200 max-w-4xl mx-auto">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-                ¿Listo para Iniciar tu Colección?
+                {t("landing.cta.title")}
               </h2>
               <p className="text-lg md:text-xl mb-8 text-gray-600">
-                Únete a miles de coleccionistas de cartas Pokémon que ya están
-                utilizando PokéCollector para gestionar sus colecciones.
+                {t("landing.cta.subtitle")}
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
-                  Ver Planes de Precio
+                  {t("landing.cta.pricingButton")}
                 </Link>
                 <Link to="/search">
                   <Button
@@ -216,7 +209,7 @@ export default function LandingPage() {
                     size="lg"
                     className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 w-full sm:w-auto"
                   >
-                    Explorar Cartas
+                    {t("landing.cta.exploreButton")}
                   </Button>
                 </Link>
               </div>

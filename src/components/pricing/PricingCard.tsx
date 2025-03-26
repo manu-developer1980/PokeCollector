@@ -15,6 +15,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { DowngradeWarningModal } from "@/components/subscription/DowngradeWarningModal";
 import type { SubscriptionPlan } from "@/lib/stripe";
+// Añadir esta importación
+import { useTranslation } from "react-i18next";
 
 interface PricingCardProps {
   plan: PlanFeature;
@@ -29,6 +31,9 @@ export function PricingCard({
   onSelectPlan,
   isCurrentPlan,
 }: PricingCardProps) {
+  // Añadir esta línea
+  const { t } = useTranslation();
+
   const { user } = useAuth();
   const { subscription } = useSubscription();
   const navigate = useNavigate();
@@ -67,8 +72,8 @@ export function PricingCard({
     // Si es el plan actual, no hacemos nada
     if (isCurrentPlan) {
       toast({
-        title: "Plan actual",
-        description: "Ya tienes este plan activo.",
+        title: t("pricing.currentPlanToast.title"),
+        description: t("pricing.currentPlanToast.description"),
         variant: "default",
       });
       return;
@@ -94,9 +99,8 @@ export function PricingCard({
     } catch (error) {
       console.error("Error updating plan:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo actualizar el plan. Por favor, intenta de nuevo.",
+        title: t("errors.generic"),
+        description: t("pricing.errorUpdatingPlan"),
         variant: "destructive",
       });
     }
@@ -117,17 +121,23 @@ export function PricingCard({
           <div className="absolute -top-4 left-1/2 -translate-x-1/2">
             <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">
               <Crown className="w-4 h-4" />
-              Popular
+              {t("pricing.popularBadge")}
             </span>
           </div>
         )}
 
         <CardHeader className="text-center">
-          <h3 className="text-2xl font-bold">{plan.name}</h3>
-          <p className="text-muted-foreground">{plan.description}</p>
+          <h3 className="text-2xl font-bold">
+            {t(`plans.${plan.name.toLowerCase()}.name`)}
+          </h3>
+          <p className="text-muted-foreground">
+            {t(`plans.${plan.name.toLowerCase()}.description`)}
+          </p>
           <div className="mt-4">
             <span className="text-4xl font-bold">{plan.price}€</span>
-            <span className="text-muted-foreground">/mes</span>
+            <span className="text-muted-foreground">
+              /{t("plans.perMonth")}
+            </span>
           </div>
         </CardHeader>
 
@@ -139,7 +149,9 @@ export function PricingCard({
                 className="flex items-center gap-2"
               >
                 <Check className="w-5 h-5 text-primary" />
-                <span>{feature}</span>
+                <span>
+                  {t(`plans.${plan.name.toLowerCase()}.features.${index}`)}
+                </span>
               </li>
             ))}
           </ul>
@@ -149,7 +161,7 @@ export function PricingCard({
           <CardFooter>
             {isCurrentPlan ? (
               <div className="w-full px-4 py-2 bg-green-100 text-green-800 rounded-md text-center font-medium shadow-sm">
-                Plan Actual
+                {t("plans.currentPlan")}
               </div>
             ) : (
               <Button
@@ -157,7 +169,7 @@ export function PricingCard({
                 variant={isPopular ? "default" : "outline"}
                 onClick={handleSelectPlan}
               >
-                Seleccionar plan
+                {t("plans.selectPlan")}
               </Button>
             )}
           </CardFooter>

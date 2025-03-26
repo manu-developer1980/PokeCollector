@@ -9,6 +9,7 @@ import {
 import GetStartedGuide from "./GetStartedGuide";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
+import { useTranslation } from "react-i18next";
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface OnboardingModalProps {
 }
 
 const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [shouldShowModal, setShouldShowModal] = useState(isOpen);
 
@@ -50,7 +52,7 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
         setShouldShowModal(!data?.has_seen_onboarding);
       }
     } catch (error) {
-      console.error("Error checking onboarding status:", error);
+      console.error(t("errors.generic"), error);
     }
   };
 
@@ -68,7 +70,7 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
 
       if (error) throw error;
     } catch (error) {
-      console.error("Error updating onboarding status:", error);
+      console.error(t("errors.generic"), error);
     } finally {
       setShouldShowModal(false);
       onClose();
@@ -82,11 +84,8 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
     >
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="sr-only">
-          <DialogTitle>Guía de inicio - PokéCollector</DialogTitle>
-          <DialogDescription>
-            Guía interactiva para comenzar a usar PokéCollector y gestionar tu
-            colección de cartas Pokémon
-          </DialogDescription>
+          <DialogTitle>{t("onboarding.title")}</DialogTitle>
+          <DialogDescription>{t("onboarding.description")}</DialogDescription>
         </DialogHeader>
         <GetStartedGuide onClose={handleClose} />
       </DialogContent>

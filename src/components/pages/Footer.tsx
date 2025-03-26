@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import footerEs from "../../i18n/locales/footer/es.json";
+import footerEn from "../../i18n/locales/footer/en.json";
 
 export default function Footer() {
+  const { i18n } = useTranslation();
+
+  // Seleccionar las traducciones según el idioma actual
+  const footerTranslations = i18n.language === "es" ? footerEs : footerEn;
+
   return (
     <footer className="bg-white border-t border-gray-200 py-12">
       <div className="container px-4 mx-auto">
@@ -18,14 +26,13 @@ export default function Footer() {
               PokéCollector
             </Link>
             <p className="text-gray-600 mb-4">
-              La herramienta definitiva para gestionar tu colección de cartas
-              Pokémon TCG, para coleccionistas de todos los niveles.
+              {footerTranslations.description}
             </p>
           </div>
 
           <div>
             <h3 className="font-medium text-lg mb-4 text-gray-900">
-              Características
+              {footerTranslations.features.title}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -33,7 +40,7 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Búsqueda de Cartas
+                  {footerTranslations.features.cardSearch}
                 </Link>
               </li>
               <li>
@@ -41,7 +48,7 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Gestión de Colección
+                  {footerTranslations.features.collectionManagement}
                 </Link>
               </li>
               <li>
@@ -49,21 +56,23 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Lista de Deseos
+                  {footerTranslations.features.wishlist}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-medium text-lg mb-4 text-gray-900">Recursos</h3>
+            <h3 className="font-medium text-lg mb-4 text-gray-900">
+              {footerTranslations.resources.title}
+            </h3>
             <ul className="space-y-3">
               <li>
                 <Link
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Guías
+                  {footerTranslations.resources.guides}
                 </Link>
               </li>
               <li>
@@ -71,7 +80,7 @@ export default function Footer() {
                   to="/rules"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Reglas
+                  {footerTranslations.resources.rules}
                 </Link>
               </li>
               <li>
@@ -79,7 +88,7 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Blog
+                  {footerTranslations.resources.blog}
                 </Link>
               </li>
               <li>
@@ -87,21 +96,23 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Tutoriales
+                  {footerTranslations.resources.tutorials}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-medium text-lg mb-4 text-gray-900">Compañía</h3>
+            <h3 className="font-medium text-lg mb-4 text-gray-900">
+              {footerTranslations.company.title}
+            </h3>
             <ul className="space-y-3">
               <li>
                 <Link
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Acerca de
+                  {footerTranslations.company.about}
                 </Link>
               </li>
               <li>
@@ -109,7 +120,7 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Contacto
+                  {footerTranslations.company.contact}
                 </Link>
               </li>
               <li>
@@ -117,7 +128,7 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Política de Privacidad
+                  {footerTranslations.company.privacy}
                 </Link>
               </li>
               <li>
@@ -125,7 +136,7 @@ export default function Footer() {
                   to="#"
                   className="text-gray-600 hover:text-red-600"
                 >
-                  Términos de Servicio
+                  {footerTranslations.company.terms}
                 </Link>
               </li>
             </ul>
@@ -134,14 +145,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center text-gray-600">
           <p>
-            © {new Date().getFullYear()} PokéCollector. Todos los derechos
-            reservados.
+            © {new Date().getFullYear()} PokéCollector.{" "}
+            {footerTranslations.copyright}
           </p>
-          <p className="mt-2 text-sm">
-            Pokémon y los nombres de los personajes Pokémon son marcas
-            registradas de Nintendo. Este sitio no está afiliado con Nintendo ni
-            con The Pokémon Company.
-          </p>
+          <p className="mt-2 text-sm">{footerTranslations.disclaimer}</p>
         </div>
       </div>
     </footer>
