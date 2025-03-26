@@ -24,15 +24,6 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
     }
   };
 
-  // En lugar de usar t() directamente, podemos crear un objeto con las traducciones:
-  const translations = {
-    collection: "Colección",
-    wishlist: "Lista de deseos",
-    search: "Buscar cartas",
-    account: "Mi cuenta",
-    logout: "Cerrar sesión",
-  };
-
   const navigationItems = [
     {
       icon: <Database size={18} />,
@@ -41,17 +32,17 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
     },
     {
       icon: <Heart size={18} />,
-      label: translations.wishlist,
+      label: t("navigation.wishlist"),
       id: "Wishlist",
     },
     {
       icon: <Search size={18} />,
-      label: translations.search,
+      label: t("navigation.search"),
       id: "Search Cards",
     },
     {
       icon: <User size={18} />,
-      label: translations.account,
+      label: t("navigation.account"),
       id: "Account",
     },
   ];
@@ -71,11 +62,9 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="w-full max-w-screen-xl mx-auto px-14 md:px-6 lg:px-8 flex h-14 items-center">
+      <div className="w-full max-w-screen-xl mx-auto  pl-16 px-0 md:px-6 lg:px-8 flex h-14 items-center">
         <div className="flex items-center justify-between w-full gap-4">
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Solo mostrar el menú móvil si el usuario está autenticado */}
-
             {/* Logo */}
             <Link
               to={user ? "/dashboard" : "/"}
@@ -90,28 +79,30 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
             </Link>
           </div>
 
-          {/* Botones de autenticación - visible en todas las pantallas cuando no hay sesión */}
+          {/* Botón de inicio de sesión - solo icono */}
           {!user && (
             <Button
               variant="outline"
               onClick={() => navigate("/login")}
               className="ml-auto"
+              size="icon"
+              aria-label={t("auth.login")}
             >
-              <LogIn className="mr-2 h-4 w-4" />
-              {t("auth.login")}
+              <LogIn className="h-4 w-4" />
             </Button>
           )}
 
-          {/* Botón de cerrar sesión - solo visible en desktop cuando hay sesión */}
+          {/* Botón de cerrar sesión - solo icono */}
           {user && (
-            <div className="hidden sm:flex items-center gap-4">
+            <div className="sm:flex items-center gap-4">
               <Button
                 variant="outline"
                 onClick={handleSignOut}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                size="icon"
+                aria-label={t("auth.logout")}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                {t("auth.logout")}
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           )}

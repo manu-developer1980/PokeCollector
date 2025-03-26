@@ -1342,8 +1342,7 @@ export default function PokemonDashboard() {
         return renderWishlistContent();
       case "Account":
         return renderAccountContent();
-      case "Subscription":
-        return <SubscriptionManagement onSectionChange={setActiveSection} />;
+
       case "Pricing":
         return <PricingPage />;
       default:

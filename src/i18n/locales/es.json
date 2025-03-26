@@ -5,7 +5,7 @@
     "back": "Volver",
     "edit": "Editar",
     "delete": "Eliminar",
-    "save": "Guardar",
+    "save": "Guardar Cambios",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "add": "Añadir",
@@ -59,7 +59,7 @@
       "invalidCredentials": "Email o contraseña incorrectos",
       "loginError": "Error de inicio de sesión",
       "initError": "Error al inicializar usuario",
-      "accountInitError": "Hubo un problema al inicializar tu cuenta.",
+      "accountInitError": "Hubo hubo un problema al inicializar tu cuenta.",
       "loginProcessError": "Error durante el inicio de sesión",
       "signupError": "Error de registro",
       "verificationError": "Error de verificación",
@@ -163,6 +163,7 @@
     "price": "Precio",
     "quantity": "Cantidad",
     "notes": "Notas",
+    "personalNotes": "Notas personales sobre esta carta",
     "addToCollection": "Añadir a la colección",
     "addToWishlist": "Añadir a la lista de deseos",
     "removeFromCollection": "Eliminar de la colección",
@@ -245,37 +246,40 @@
     "viewPlans": "Ver Planes",
     "upgradePlan": "Mejorar Plan"
   },
+  "pricing": {
+    "title": "Planes y Precios",
+    "subtitle": "Estos son nuestros planes para ti. Empieza con el gratuito y sube de nivel cuando lo necesites",
+    "startFree": "Empezar Gratis",
+    "popular": "Popular",
+    "currentPlan": "Plan actual",
+    "alreadyActive": "Ya tienes este plan activo.",
+    "updateError": "No se pudo actualizar el plan. Por favor, intenta de nuevo."
+  },
   "plans": {
-    "aprendiz": {
-      "name": "Aprendiz",
-      "description": "Plan gratuito para comenzar",
-      "features": {
-        "0": "Hasta 50 cartas",
-        "1": "1 colección",
-        "2": "10 cartas en lista de deseos",
-        "3": "Búsqueda de cartas por nombre y tipo"
-      }
+    "aprendiz": "Aprendiz",
+    "entrenador": "Entrenador",
+    "maestro": "Maestro",
+    "aprendizDescription": "Plan gratuito para comenzar",
+    "entrenadorDescription": "Para coleccionistas serios",
+    "maestroDescription": "Para coleccionistas profesionales",
+    "aprendizFeatures": {
+      "0": "Hasta 50 cartas",
+      "1": "1 colección",
+      "2": "10 cartas en lista de deseos",
+      "3": "Búsqueda de cartas por nombre y tipo"
     },
-    "entrenador": {
-      "name": "Entrenador",
-      "description": "Para coleccionistas serios",
-      "features": {
-        "0": "Hasta 500 cartas",
-        "1": "5 colecciones",
-        "2": "50 cartas en lista de deseos",
-        "3": "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más"
-      }
+    "entrenadorFeatures": {
+      "0": "Hasta 500 cartas",
+      "1": "5 colecciones",
+      "2": "50 cartas en lista de deseos",
+      "3": "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más"
     },
-    "maestro": {
-      "name": "Maestro",
-      "description": "Para coleccionistas profesionales",
-      "features": {
-        "0": "Todo lo de Entrenador",
-        "1": "Cartas ilimitadas",
-        "2": "Colecciones ilimitadas",
-        "3": "Lista de deseos ilimitada",
-        "4": "Soporte Prioritario"
-      }
+    "maestroFeatures": {
+      "0": "Todo lo de Entrenador",
+      "1": "Cartas ilimitadas",
+      "2": "Colecciones ilimitadas",
+      "3": "Lista de deseos ilimitada",
+      "4": "Soporte Prioritario"
     },
     "perMonth": "mes",
     "selectPlan": "Seleccionar plan",
@@ -499,6 +503,33 @@
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú"
   },
+  "card": {
+    "details": "Detalles de la carta",
+    "name": "Nombre",
+    "number": "Número",
+    "set": "Set",
+    "rarity": "Rareza",
+    "type": "Tipo",
+    "supertype": "Supertipo",
+    "subtype": "Subtipo",
+    "condition": "Condición",
+    "price": "Precio",
+    "quantity": "Cantidad",
+    "notes": "Notas",
+    "addToCollection": "Añadir a la colección",
+    "addToWishlist": "Añadir a la lista de deseos",
+    "removeFromCollection": "Eliminar de la colección",
+    "removeFromWishlist": "Eliminar de la lista de deseos",
+    "abilities": "Habilidades",
+    "attacks": "Ataques",
+    "rules": "Reglas",
+    "weaknesses": "Debilidades",
+    "resistances": "Resistencias",
+    "retreatCost": "Coste de retirada",
+    "foil": "Foil/Holo",
+    "firstEdition": "Primera Edición",
+    "conditionNearMint": "Casi Perfecta"
+  },
   "pokemonTypes": {
     "colorless": "Incoloro",
     "darkness": "Oscuridad",
@@ -512,6 +543,13 @@
     "psychic": "Psíquico",
     "water": "Agua"
   },
+  "cardConditions": {
+    "nearmint": "Casi Perfecta",
+    "excellent": "Excelente",
+    "good": "Buena",
+    "played": "Jugada",
+    "poor": "Pobre"
+  },
   "cardSupertypes": {
     "energy": "Energía",
     "pokemon": "Pokémon",
@@ -521,75 +559,29 @@
     "basic": "Básico",
     "stage1": "Fase 1",
     "stage2": "Fase 2",
-    "gx": "GX",
     "ex": "EX",
+    "gx": "GX",
     "mega": "Mega",
-    "tagteam": "Equipo",
+    "rapidstrike": "Golpe Rápido",
+    "singlestrike": "Golpe Único",
+    "tagteam": "Equipo Tag",
+    "v": "V",
     "vmax": "VMAX",
     "vstar": "VSTAR",
-    "v": "V",
     "item": "Objeto",
-    "supporter": "Partidario",
+    "supporter": "Ayudante",
     "stadium": "Estadio",
     "tool": "Herramienta",
     "special": "Especial",
-    "rapid": "Rápido",
-    "single": "Individual",
+    "break": "BREAK",
+    "legend": "Leyenda",
+    "restored": "Restaurada",
+    "levelup": "Nivel Superior",
     "fusion": "Fusión",
     "radiant": "Radiante",
-    "legend": "Leyenda",
-    "restored": "Restaurado",
-    "levelup": "Nivel Superior",
-    "break": "BREAK",
-    "ace": "AS"
-  },
-  "cardRarities": {
-    "common": "Común",
-    "uncommon": "Poco común",
-    "rare": "Rara",
-    "rareHolo": "Rara Holo",
-    "rareUltra": "Rara Ultra",
-    "rareSecret": "Rara Secreta",
-    "rareRainbow": "Rara Arcoíris",
-    "rareHoloEX": "Rara Holo EX",
-    "rareHoloGX": "Rara Holo GX",
-    "rareHoloV": "Rara Holo V",
-    "rareHoloVMAX": "Rara Holo VMAX",
-    "rareHoloVSTAR": "Rara Holo VSTAR",
-    "rarePrism": "Rara Prisma",
-    "rareShinyStar": "Rara Brillante",
-    "amazingRare": "Rara Asombrosa",
-    "classic": "Clásica",
-    "promo": "Promocional",
-    "illustrator": "Ilustrador"
-  },
-  "cardConditions": {
-    "mint": "Perfecta",
-    "nearMint": "Casi Perfecta",
-    "excellent": "Excelente",
-    "good": "Buena",
-    "lightPlayed": "Poco Usada",
-    "played": "Usada",
-    "poor": "Deteriorada"
-  },
-  "cardFinishes": {
-    "regular": "Regular",
-    "foil": "Foil",
-    "holo": "Holo",
-    "reverseHolo": "Holo Reverso"
-  },
-  "cardEditions": {
-    "first": "1ª Edición",
-    "unlimited": "Ilimitada",
-    "limited": "Limitada"
-  },
-  "card": {
-    "firstEdition": "1ª Edición",
-    "foil": "Foil",
-    "notes": "Notas",
-    "personalNotes": "Notas personales sobre esta carta"
+    "ancient": "Antigua"
   },
   "collection": {
-    "addToDefault": "Añadir a colección por defecto"
+    "collectionDetails": "Detalles en tu colección"
   }
 }

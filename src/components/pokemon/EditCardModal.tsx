@@ -20,34 +20,34 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { CollectionCard } from "@/types/pokemon";
 import { CONDITION_MAP, CardCondition } from "@/lib/constants";
+import { useTranslation } from "react-i18next";
 
 interface EditCardModalProps {
   card: CollectionCard | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (cardData: {
+  onSave: (cardData: {
     id: string;
     quantity: number;
     condition?: string;
-    isFoil?: boolean;
-    isFirstEdition?: boolean;
+    is_foil?: boolean;
+    is_first_edition?: boolean;
     notes?: string;
   }) => void;
-  onRemove: (cardId: string) => void;
 }
 
 const EditCardModal = ({
   card,
   isOpen,
   onClose,
-  onUpdate,
-  onRemove,
+  onSave,
 }: EditCardModalProps) => {
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState<CardCondition>("Near Mint");
   const [isFoil, setIsFoil] = useState(false);
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [notes, setNotes] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (card) {
@@ -65,7 +65,7 @@ const EditCardModal = ({
     // Asegurarnos de usar el ID correcto de collection_cards
     const collectionCardId = (card as CollectionCard).id;
 
-    onUpdate({
+    onSave({
       id: collectionCardId, // Usar el ID correcto de collection_cards
       quantity,
       condition,
@@ -86,16 +86,16 @@ const EditCardModal = ({
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar Carta - {card.name}</DialogTitle>
-          <DialogDescription>
-            Modifica los detalles de la carta en tu colección
-          </DialogDescription>
+          <DialogTitle>
+            {t("card.edit")} - {card.name}
+          </DialogTitle>
+          <DialogDescription>{t("card.editDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="quantity">Cantidad</Label>
+              <Label htmlFor="quantity">{t("card.quantity")}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -105,7 +105,7 @@ const EditCardModal = ({
               />
             </div>
             <div>
-              <Label htmlFor="condition">Condición</Label>
+              <Label htmlFor="condition">{t("card.condition")}</Label>
               <Select
                 value={condition}
                 onValueChange={(value) => setCondition(value as CardCondition)}
@@ -119,7 +119,9 @@ const EditCardModal = ({
                       key={key}
                       value={key}
                     >
-                      {value}
+                      {t(`cardConditions.${key.toLowerCase()}`, {
+                        defaultValue: value,
+                      })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -138,7 +140,7 @@ const EditCardModal = ({
                 htmlFor="foil"
                 className="text-sm"
               >
-                Foil/Holo
+                {t("card.foil")}
               </Label>
             </div>
             <div className="flex items-center space-x-2">
@@ -153,19 +155,19 @@ const EditCardModal = ({
                 htmlFor="firstEdition"
                 className="text-sm"
               >
-                Primera Edición
+                {t("card.firstEdition")}
               </Label>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="notes">Notas</Label>
+            <Label htmlFor="notes">{t("card.notes")}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="h-20"
-              placeholder="Añade notas sobre la carta..."
+              placeholder={t("card.notesPlaceholder")}
             />
           </div>
 
@@ -174,13 +176,13 @@ const EditCardModal = ({
               variant="outline"
               onClick={onClose}
             >
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSubmit}
               className="bg-red-600 hover:bg-red-700"
             >
-              Guardar Cambios
+              {t("common.save")}
             </Button>
             <div className="space-x-2"></div>
           </div>

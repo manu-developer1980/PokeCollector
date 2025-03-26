@@ -10,12 +10,10 @@ import { useAuth } from "../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { PlanFeature } from "@/lib/stripe";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { DowngradeWarningModal } from "@/components/subscription/DowngradeWarningModal";
 import type { SubscriptionPlan } from "@/lib/stripe";
-// Añadir esta importación
 import { useTranslation } from "react-i18next";
 
 interface PricingCardProps {
@@ -31,12 +29,11 @@ export function PricingCard({
   onSelectPlan,
   isCurrentPlan,
 }: PricingCardProps) {
-  // Añadir esta línea
   const { t } = useTranslation();
-
   const { user } = useAuth();
   const { subscription } = useSubscription();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
   const [targetPlan, setTargetPlan] = useState<string | null>(null);
 
@@ -49,15 +46,6 @@ export function PricingCard({
 
     const normalizedCurrent = current.toUpperCase();
     const normalizedTarget = target.toUpperCase();
-
-    console.log("Checking downgrade:", {
-      normalizedCurrent,
-      normalizedTarget,
-      currentValue: planHierarchy[normalizedCurrent],
-      targetValue: planHierarchy[normalizedTarget],
-      isDowngrade:
-        planHierarchy[normalizedTarget] < planHierarchy[normalizedCurrent],
-    });
 
     return planHierarchy[normalizedTarget] < planHierarchy[normalizedCurrent];
   };
@@ -72,8 +60,8 @@ export function PricingCard({
     // Si es el plan actual, no hacemos nada
     if (isCurrentPlan) {
       toast({
-        title: t("pricing.currentPlanToast.title"),
-        description: t("pricing.currentPlanToast.description"),
+        title: t("pricing.currentPlan"),
+        description: t("pricing.alreadyActive"),
         variant: "default",
       });
       return;
@@ -83,10 +71,8 @@ export function PricingCard({
     const currentPlanType = (
       subscription?.plan_type || "APRENDIZ"
     ).toUpperCase();
-    console.log("Current plan type:", currentPlanType);
 
     if (isPlanDowngrade(currentPlanType, plan.name)) {
-      console.log("Showing downgrade warning");
       setShowDowngradeWarning(true);
       setTargetPlan(plan.id);
       return;
@@ -95,16 +81,19 @@ export function PricingCard({
     // Permitir el cambio de plan
     try {
       await onSelectPlan(plan.id);
-      // Eliminamos el toast de aquí ya que se mostrará en PlanChangeDialog
     } catch (error) {
       console.error("Error updating plan:", error);
       toast({
-        title: t("errors.generic"),
-        description: t("pricing.errorUpdatingPlan"),
+        title: t("common.error"),
+        description: t("pricing.updateError"),
         variant: "destructive",
       });
     }
   };
+
+  // Determinar el nombre y descripción del plan según el idioma
+  const planName = t(`plans.${plan.name.toLowerCase()}`);
+  const planDescription = t(`plans.${plan.name.toLowerCase()}Description`);
 
   return (
     <>
@@ -121,18 +110,14 @@ export function PricingCard({
           <div className="absolute -top-4 left-1/2 -translate-x-1/2">
             <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">
               <Crown className="w-4 h-4" />
-              {t("pricing.popularBadge")}
+              {t("pricing.popular")}
             </span>
           </div>
         )}
 
         <CardHeader className="text-center">
-          <h3 className="text-2xl font-bold">
-            {t(`plans.${plan.name.toLowerCase()}.name`)}
-          </h3>
-          <p className="text-muted-foreground">
-            {t(`plans.${plan.name.toLowerCase()}.description`)}
-          </p>
+          <h3 className="text-2xl font-bold">{planName}</h3>
+          <p className="text-muted-foreground">{planDescription}</p>
           <div className="mt-4">
             <span className="text-4xl font-bold">{plan.price}€</span>
             <span className="text-muted-foreground">
@@ -150,7 +135,9 @@ export function PricingCard({
               >
                 <Check className="w-5 h-5 text-primary" />
                 <span>
-                  {t(`plans.${plan.name.toLowerCase()}.features.${index}`)}
+                  {t(`plans.${plan.name.toLowerCase()}Features.${index}`, {
+                    defaultValue: feature,
+                  })}
                 </span>
               </li>
             ))}
