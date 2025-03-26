@@ -52,6 +52,10 @@ import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSub
 import PricingPage from "./pricing";
 import { useUser } from "@/hooks/useUser";
 import { normalizeCardId } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+
+// Eliminar esta línea que está causando el error
+// const { t } = useTranslation();
 
 interface PolarSubscription {
   status: string;
@@ -60,21 +64,35 @@ interface PolarSubscription {
   cancel_at_period_end: boolean;
 }
 
-const defaultNavItems = [
-  { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
-  { icon: <Heart size={18} />, label: "Lista de Deseos", id: "Wishlist" },
-  { icon: <Search size={18} />, label: "Buscar Cartas", id: "Search Cards" },
-  { icon: <User size={18} />, label: "Mi Cuenta", id: "Account" },
-  // No es necesario añadirlo a la navegación lateral, ya que se accede desde Account
-];
-
 export default function PokemonDashboard() {
+  // Mover la llamada a useTranslation dentro del componente
+  const { t } = useTranslation();
   // 1. Context Hooks
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
   const location = useLocation();
+
+  // Definir los elementos de navegación dentro del componente
+  const defaultNavItems = [
+    {
+      icon: <Database size={18} />,
+      label: t("navigation.collection"),
+      id: "My Collection",
+    },
+    {
+      icon: <Heart size={18} />,
+      label: t("navigation.wishlist"),
+      id: "Wishlist",
+    },
+    {
+      icon: <Search size={18} />,
+      label: t("navigation.search"),
+      id: "Search Cards",
+    },
+    { icon: <User size={18} />, label: t("navigation.account"), id: "Account" },
+  ];
 
   // 2. ALL State declarations
   const [isLoading, setIsLoading] = useState(false);
@@ -1253,7 +1271,7 @@ export default function PokemonDashboard() {
   const renderWishlistContent = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Lista de Deseos</h2>
+        <h2 className="text-3xl font-bold">{t("wishlist.title")}</h2>
       </div>
       <WishlistGrid
         cards={wishlistCards}
@@ -1296,7 +1314,9 @@ export default function PokemonDashboard() {
     return (
       <>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold">Mis Colecciones</h2>
+          <h2 className="text-3xl font-bold">
+            {t("collection.myCollections")}
+          </h2>
         </div>
 
         <CollectionList

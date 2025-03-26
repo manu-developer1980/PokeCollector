@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -21,6 +22,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
+  const { t } = useTranslation();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const { subscription } = useSubscription();
@@ -75,7 +77,9 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
           size="icon"
           onClick={() => setIsDrawerOpen(!isDrawerOpen)}
           className="mr-2"
-          aria-label={isDrawerOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-label={
+            isDrawerOpen ? t("sidebar.closeMenu") : t("sidebar.openMenu")
+          }
         >
           {isDrawerOpen ? <X size={20} /> : <Menu size={20} />}
         </Button>
@@ -138,7 +142,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
                   className="w-full flex items-center px-3 py-2 text-sm rounded-lg transition-colors bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600"
                 >
                   <Crown className="h-4 w-4" />
-                  <span className="ml-3">Mejorar Plan</span>
+                  <span className="ml-3">{t("subscription.upgradePlan")}</span>
                 </button>
               )}
             </div>

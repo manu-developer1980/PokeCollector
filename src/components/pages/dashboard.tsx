@@ -10,6 +10,8 @@ import CardDetail from "../pokemon/CardDetail";
 import { Collection, CollectionCard } from "@/types/pokemon";
 import { Database, Heart, Search } from "lucide-react";
 import MainHeader from "../layout/MainHeader";
+// Añadir esta importación
+import { useTranslation } from "react-i18next";
 
 const defaultNavItems = [
   { icon: <Database size={18} />, label: "Colecciones", id: "My Collection" },
@@ -18,6 +20,9 @@ const defaultNavItems = [
 ];
 
 const Dashboard = () => {
+  // Añadir esta línea
+  const { t } = useTranslation();
+
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -69,8 +74,8 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error fetching collections:", error);
       toast({
-        title: "Error",
-        description: "Failed to load your collections. Please try again.",
+        title: t("common.error"),
+        description: t("collection.errors.loadFailed"),
         variant: "destructive",
       });
     }
@@ -81,8 +86,8 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from("collections")
         .insert({
-          name: "Mi Colección",
-          description: "Mi colección de cartas Pokémon",
+          name: t("collection.defaultName"),
+          description: t("collection.defaultDescription"),
           user_id: user?.id,
           is_default: true,
         })
@@ -94,9 +99,8 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error creating default collection:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo crear la colección por defecto. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("collection.errors.createDefaultFailed"),
         variant: "destructive",
       });
     }
@@ -168,10 +172,8 @@ const Dashboard = () => {
       }
 
       toast({
-        title: id ? "Colección actualizada" : "Colección creada",
-        description: `La colección "${name}" ha sido ${
-          id ? "actualizada" : "creada"
-        } exitosamente.`,
+        title: id ? t("collection.updated") : t("collection.created"),
+        description: t("collection.saveSuccess", { name }),
       });
 
       setIsCollectionDialogOpen(false);
@@ -181,16 +183,14 @@ const Dashboard = () => {
       // Mensaje de error específico para violación de restricción única
       if (error.code === "23P01") {
         toast({
-          title: "Error",
-          description:
-            "Ya existe una colección predeterminada. Por favor, desmarca la colección predeterminada actual antes de establecer otra.",
+          title: t("common.error"),
+          description: t("collection.errors.defaultExists"),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Error",
-          description:
-            "No se pudo guardar la colección. Por favor, intenta de nuevo.",
+          title: t("common.error"),
+          description: t("collection.errors.saveFailed"),
           variant: "destructive",
         });
       }
@@ -214,8 +214,8 @@ const Dashboard = () => {
       if (error) throw error;
 
       toast({
-        title: "Colección Eliminada",
-        description: "La colección ha sido eliminada.",
+        title: t("collection.deleted"),
+        description: t("collection.deleteSuccess"),
       });
 
       fetchCollections();
@@ -223,9 +223,8 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error deleting collection:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo eliminar la colección. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("collection.errors.deleteFailed"),
         variant: "destructive",
       });
     }
@@ -244,17 +243,16 @@ const Dashboard = () => {
       if (error) throw error;
 
       toast({
-        title: "Carta Eliminada",
-        description: "La carta ha sido eliminada de tu colección.",
+        title: t("card.removed"),
+        description: t("card.removeSuccess"),
       });
 
       fetchCollections();
     } catch (error) {
       console.error("Error removing card:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("card.errors.removeFailed"),
         variant: "destructive",
       });
     }
@@ -278,17 +276,16 @@ const Dashboard = () => {
       if (error) throw error;
 
       toast({
-        title: "Carta Actualizada",
-        description: "La carta ha sido actualizada.",
+        title: t("card.updated"),
+        description: t("card.updateSuccess"),
       });
 
       fetchCollections();
     } catch (error) {
       console.error("Error updating card:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("card.errors.updateFailed"),
         variant: "destructive",
       });
     }
@@ -302,11 +299,9 @@ const Dashboard = () => {
         <main className="flex-1 w-full p-6 pt-16 bg-background">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">
-              Mi Colección de Pokémon
+              {t("dashboard.title")}
             </h1>
-            <p className="text-gray-600">
-              Gestiona tu colección de cartas Pokémon
-            </p>
+            <p className="text-gray-600">{t("dashboard.subtitle")}</p>
           </div>
 
           <div>

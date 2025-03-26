@@ -12,13 +12,12 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import { Crown } from "lucide-react";
-import { toPlanType } from "@/types/subscription";
+import { useTranslation } from "react-i18next";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
@@ -27,6 +26,7 @@ interface AccountSectionProps {
 export default function AccountSection({
   onSectionChange,
 }: AccountSectionProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -57,13 +57,13 @@ export default function AccountSection({
       setShowPasswordInstructions(true);
 
       toast({
-        title: "Email enviado",
-        description: "Revisa tu bandeja de entrada para cambiar tu contraseña.",
+        title: t("account.passwordResetEmailSent"),
+        description: t("account.checkInbox"),
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: "No se pudo enviar el email de recuperación.",
+        title: t("common.error"),
+        description: t("account.passwordResetError"),
         variant: "destructive",
       });
     } finally {
@@ -84,13 +84,13 @@ export default function AccountSection({
 
       setIsEditingName(false);
       toast({
-        title: "Nombre actualizado",
-        description: "Tu nombre ha sido actualizado correctamente.",
+        title: t("account.nameUpdated"),
+        description: t("account.nameUpdatedSuccess"),
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: "No se pudo actualizar el nombre.",
+        title: t("common.error"),
+        description: t("account.nameUpdateError"),
         variant: "destructive",
       });
     } finally {
@@ -108,7 +108,7 @@ export default function AccountSection({
       } = await supabase.auth.getSession();
 
       if (sessionError || !session?.access_token) {
-        throw new Error("No hay sesión activa");
+        throw new Error(t("account.noActiveSession"));
       }
 
       // Llamada a la función de eliminar usuario
@@ -128,7 +128,7 @@ export default function AccountSection({
 
       if (!response.ok) {
         console.error("Error response:", responseData);
-        throw new Error(responseData.message || "Error al eliminar la cuenta");
+        throw new Error(responseData.message || t("account.deleteError"));
       }
 
       // Si todo fue exitoso, navegamos a goodbye y cerramos sesión
@@ -137,8 +137,8 @@ export default function AccountSection({
     } catch (error: any) {
       console.error("Error detallado:", error);
       toast({
-        title: "Error al eliminar la cuenta",
-        description: error.message || "Por favor, intenta de nuevo más tarde.",
+        title: t("account.deleteAccountError"),
+        description: error.message || t("common.tryAgainLater"),
         variant: "destructive",
       });
 
@@ -155,23 +155,18 @@ export default function AccountSection({
     }
   };
 
-  const getCurrentPlan = () => {
-    if (!subscription || subscription.status !== "active") {
-      return PLAN_FEATURES.APRENDIZ;
-    }
-    // Convertir el plan_type de la base de datos al formato correcto
-    const planType = toPlanType(subscription.plan_type);
-    return PLAN_FEATURES[planType];
-  };
-
-  const currentPlan = getCurrentPlan();
+  // Asegurarnos de que planType sea una clave válida para PLAN_FEATURES
+  const rawPlanType = subscription?.plan_type || "APRENDIZ";
+  const planType = rawPlanType.toUpperCase() as keyof typeof PLAN_FEATURES;
+  // Proporcionar un valor por defecto si no existe
+  const planFeatures = PLAN_FEATURES[planType] || PLAN_FEATURES.APRENDIZ;
 
   return (
     <>
       {/* Sección de Perfil */}
       <Card>
         <CardHeader>
-          <CardTitle>Perfil</CardTitle>
+          <CardTitle>{t("account.profile")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-4">
@@ -188,27 +183,27 @@ export default function AccountSection({
                     disabled={isLoading}
                     size="sm"
                   >
-                    Guardar
+                    {t("common.save")}
                   </Button>
                   <Button
                     variant="ghost"
                     onClick={() => setIsEditingName(false)}
                     size="sm"
                   >
-                    Cancelar
+                    {t("common.cancel")}
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
                   <h3 className="text-xl font-semibold">
-                    {user?.user_metadata?.full_name || "Sin nombre"}
+                    {user?.user_metadata?.full_name || t("account.noName")}
                   </h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsEditingName(true)}
                   >
-                    Editar
+                    {t("common.edit")}
                   </Button>
                 </div>
               )}
@@ -222,21 +217,21 @@ export default function AccountSection({
       <div className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Plan Actual</CardTitle>
+            <CardTitle>{t("subscription.currentPlan")}</CardTitle>
             <CardDescription>
               {subscription?.status === "active"
-                ? "Tu suscripción está activa"
-                : "No tienes una suscripción activa"}
+                ? t("subscription.active")
+                : t("subscription.inactive")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex justify-between items-center">
-                <span className="font-medium">Plan</span>
-                <span>{currentPlan.name}</span>
+                <span className="font-medium">{t("subscription.plan")}</span>
+                <span>{t(`plans.${planType.toLowerCase()}.name`)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-medium">Estado</span>
+                <span className="font-medium">{t("subscription.status")}</span>
                 <span
                   className={
                     subscription?.status === "active"
@@ -244,12 +239,16 @@ export default function AccountSection({
                       : "text-yellow-600"
                   }
                 >
-                  {subscription?.status === "active" ? "Activo" : "Inactivo"}
+                  {subscription?.status === "active"
+                    ? t("subscription.statusActive")
+                    : t("subscription.statusInactive")}
                 </span>
               </div>
               {subscription?.current_period_end && (
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Próxima facturación</span>
+                  <span className="font-medium">
+                    {t("subscription.nextBilling")}
+                  </span>
                   <span>
                     {new Date(
                       subscription.current_period_end
@@ -265,8 +264,8 @@ export default function AccountSection({
             >
               <Crown className="h-4 w-4 mr-2" />
               {subscription?.status === "active"
-                ? "Cambiar Plan"
-                : "Ver Planes"}
+                ? t("subscription.changePlan")
+                : t("subscription.viewPlans")}
             </Button>
           </CardContent>
         </Card>
@@ -276,34 +275,38 @@ export default function AccountSection({
       <div className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Estadísticas</CardTitle>
-            <CardDescription>Uso actual de tu cuenta</CardDescription>
+            <CardTitle>{t("account.statistics")}</CardTitle>
+            <CardDescription>{t("account.currentUsage")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex justify-between items-center">
-                <span className="font-medium">Cartas en colecciones</span>
+                <span className="font-medium">
+                  {t("account.cardsInCollections")}
+                </span>
                 <span>
                   {stats?.cardsCount || 0} /{" "}
-                  {currentPlan.maxCards === -1 ? "∞" : currentPlan.maxCards}
+                  {planFeatures?.maxCards === -1
+                    ? "∞"
+                    : planFeatures?.maxCards || 50}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-medium">Colecciones</span>
+                <span className="font-medium">{t("account.collections")}</span>
                 <span>
                   {stats?.collectionsCount || 0} /{" "}
-                  {currentPlan.maxCollections === -1
+                  {planFeatures?.maxCollections === -1
                     ? "∞"
-                    : currentPlan.maxCollections}
+                    : planFeatures?.maxCollections || 1}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-medium">Lista de deseos</span>
+                <span className="font-medium">{t("account.wishlist")}</span>
                 <span>
                   {stats?.wishlistCount || 0} /{" "}
-                  {currentPlan.maxWishlist === -1
+                  {planFeatures?.maxWishlist === -1
                     ? "∞"
-                    : currentPlan.maxWishlist}
+                    : planFeatures?.maxWishlist || 10}
                 </span>
               </div>
             </div>
@@ -315,7 +318,7 @@ export default function AccountSection({
       <div className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Seguridad</CardTitle>
+            <CardTitle>{t("account.security")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
@@ -324,7 +327,7 @@ export default function AccountSection({
               onClick={() => setShowPasswordConfirm(true)}
               disabled={isLoading}
             >
-              Cambiar contraseña
+              {t("account.changePassword")}
             </Button>
           </CardContent>
         </Card>
@@ -334,9 +337,11 @@ export default function AccountSection({
       <div className="mt-6">
         <Card className="border-red-200">
           <CardHeader>
-            <CardTitle className="text-red-600">Zona de Peligro</CardTitle>
+            <CardTitle className="text-red-600">
+              {t("account.dangerZone")}
+            </CardTitle>
             <CardDescription>
-              Las acciones en esta sección son irreversibles
+              {t("account.dangerZoneDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -346,7 +351,7 @@ export default function AccountSection({
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isLoading}
             >
-              Eliminar cuenta
+              {t("account.deleteAccount")}
             </Button>
           </CardContent>
         </Card>
@@ -357,8 +362,8 @@ export default function AccountSection({
         isOpen={showPasswordConfirm}
         onClose={() => setShowPasswordConfirm(false)}
         onConfirm={handlePasswordReset}
-        title="Cambiar contraseña"
-        description="Te enviaremos un email con instrucciones para cambiar tu contraseña. ¿Deseas continuar?"
+        title={t("account.changePassword")}
+        description={t("account.passwordResetConfirmation")}
       />
 
       {/* Modal de instrucciones enviadas */}
@@ -366,9 +371,9 @@ export default function AccountSection({
         isOpen={showPasswordInstructions}
         onClose={() => setShowPasswordInstructions(false)}
         onConfirm={() => setShowPasswordInstructions(false)}
-        title="Instrucciones enviadas"
-        description="Hemos enviado un email con las instrucciones para cambiar tu contraseña. Por favor, revisa tu bandeja de entrada."
-        confirmText="Entendido"
+        title={t("account.instructionsSent")}
+        description={t("account.passwordResetInstructions")}
+        confirmText={t("common.understood")}
         showCancel={false}
       />
 
@@ -377,9 +382,9 @@ export default function AccountSection({
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteAccount}
-        title="Eliminar cuenta"
-        description="¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible y perderás todas tus colecciones y datos."
-        confirmText="Eliminar cuenta"
+        title={t("account.deleteAccount")}
+        description={t("account.deleteAccountConfirmation")}
+        confirmText={t("account.deleteAccount")}
         confirmVariant="destructive"
       />
     </>

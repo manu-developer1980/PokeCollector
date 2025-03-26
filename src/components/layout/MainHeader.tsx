@@ -24,25 +24,34 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
     }
   };
 
+  // En lugar de usar t() directamente, podemos crear un objeto con las traducciones:
+  const translations = {
+    collection: "Colección",
+    wishlist: "Lista de deseos",
+    search: "Buscar cartas",
+    account: "Mi cuenta",
+    logout: "Cerrar sesión",
+  };
+
   const navigationItems = [
     {
       icon: <Database size={18} />,
-      label: t("collection.title"),
+      label: t("navigation.collection"),
       id: "My Collection",
     },
     {
       icon: <Heart size={18} />,
-      label: t("wishlist.title"),
+      label: translations.wishlist,
       id: "Wishlist",
     },
     {
       icon: <Search size={18} />,
-      label: t("search.cards"),
+      label: translations.search,
       id: "Search Cards",
     },
     {
       icon: <User size={18} />,
-      label: t("account.title"),
+      label: translations.account,
       id: "Account",
     },
   ];

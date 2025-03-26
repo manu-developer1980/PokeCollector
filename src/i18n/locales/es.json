@@ -19,7 +19,9 @@
     "error": "Error",
     "warning": "Advertencia",
     "info": "Información",
-    "understood": "Entendido"
+    "understood": "Entendido",
+    "unknownCard": "¿Quién es ese Pokémon?",
+    "tryAgainLater": "Por favor, intenta de nuevo más tarde"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -82,7 +84,17 @@
     "verifyNewEmail": "Verifica tu nuevo email",
     "confirmationLinkSent": "Hemos enviado un enlace de confirmación a:",
     "checkInboxForNewEmail": "Por favor, revisa tu bandeja de entrada y sigue las instrucciones para confirmar tu nuevo email.",
-    "backToAccount": "Volver a mi cuenta"
+    "backToAccount": "Volver a mi cuenta",
+    "dialog": {
+      "title": "Únete a PokéCollector",
+      "description": "Para gestionar tu colección y lista de deseos, necesitas tener una cuenta. ¡Es gratis y solo toma un minuto! Podrás:",
+      "benefits": {
+        "collection": "Crear y gestionar tu colección de cartas",
+        "wishlist": "Guardar cartas en tu lista de deseos",
+        "tracking": "Hacer seguimiento de tus cartas favoritas"
+      }
+    },
+    "createAccount": "Crear cuenta"
   },
   "navigation": {
     "dashboard": "Panel",
@@ -99,13 +111,19 @@
     "subtitle": "Gestiona tu colección de cartas Pokémon",
     "description": "La mejor manera de organizar y gestionar tu colección de cartas Pokémon"
   },
+  "dashboard": {
+    "title": "Mi Colección de Pokémon",
+    "subtitle": "Gestiona tu colección de cartas Pokémon"
+  },
   "collection": {
+    "myCollections": "Mis Colecciones",
     "title": "Mi Colección",
     "default": "Predeterminada",
     "create": "Crear Colección",
     "edit": "Editar Colección",
     "delete": "Eliminar Colección",
-    "empty": "No tienes colecciones aún. ¡Crea tu primera colección para empezar a guardar tus cartas!",
+    "empty": "No tienes colecciones aún",
+    "emptyDescription": "Crea tu primera colección para empezar a guardar tus cartas.",
     "createFirst": "Crear Mi Primera Colección",
     "cards": "cartas",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta colección?",
@@ -116,7 +134,21 @@
     "cardRemoved": "Carta eliminada de la colección",
     "collectionCreated": "Colección creada con éxito",
     "collectionUpdated": "Colección actualizada con éxito",
-    "collectionDeleted": "Colección eliminada con éxito"
+    "collectionDeleted": "Colección eliminada con éxito",
+    "defaultName": "Mi Colección",
+    "defaultDescription": "Mi colección de cartas Pokémon",
+    "updated": "Colección actualizada",
+    "created": "Colección creada",
+    "deleted": "Colección eliminada",
+    "saveSuccess": "La colección \"{name}\" ha sido guardada exitosamente.",
+    "deleteSuccess": "La colección ha sido eliminada.",
+    "errors": {
+      "loadFailed": "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
+      "createDefaultFailed": "No se pudo crear la colección por defecto. Por favor, intenta de nuevo.",
+      "defaultExists": "Ya existe una colección predeterminada. Por favor, desmarca la colección predeterminada actual antes de establecer otra.",
+      "saveFailed": "No se pudo guardar la colección. Por favor, intenta de nuevo.",
+      "deleteFailed": "No se pudo eliminar la colección. Por favor, intenta de nuevo."
+    }
   },
   "card": {
     "details": "Detalles de la carta",
@@ -134,15 +166,28 @@
     "addToCollection": "Añadir a la colección",
     "addToWishlist": "Añadir a la lista de deseos",
     "removeFromCollection": "Eliminar de la colección",
-    "removeFromWishlist": "Eliminar de la lista de deseos"
+    "removeFromWishlist": "Eliminar de la lista de deseos",
+    "removed": "Carta eliminada",
+    "updated": "Carta actualizada",
+    "removeSuccess": "La carta ha sido eliminada de tu colección.",
+    "updateSuccess": "La carta ha sido actualizada.",
+    "errors": {
+      "removeFailed": "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+      "updateFailed": "No se pudo actualizar la carta. Por favor, intenta de nuevo."
+    }
   },
   "wishlist": {
     "title": "Lista de Deseos",
+    "loading": "Cargando lista de deseos...",
     "empty": "Tu lista de deseos está vacía",
-    "addCard": "Añadir carta a la lista de deseos",
-    "removeCard": "Eliminar carta de la lista de deseos",
-    "cardAdded": "Carta añadida a la lista de deseos",
-    "cardRemoved": "Carta eliminada de la lista de deseos"
+    "emptyDescription": "Añade cartas a tu lista de deseos para seguir las que quieres conseguir",
+    "searchCards": "Buscar cartas para añadir",
+    "cardRemoved": "Carta eliminada",
+    "removeSuccess": "La carta ha sido eliminada de tu lista de deseos",
+    "errors": {
+      "loadFailed": "No se pudo cargar la lista de deseos",
+      "removeFailed": "No se pudo eliminar la carta de la lista de deseos"
+    }
   },
   "search": {
     "title": "Buscar Cartas",
@@ -153,7 +198,16 @@
     "clearFilters": "Limpiar filtros",
     "applyFilters": "Aplicar filtros",
     "searchResults": "Resultados de búsqueda",
-    "loadMore": "Cargar más"
+    "loadMore": "Cargar más",
+    "nameSearchPlaceholder": "Buscar por nombre...",
+    "sortBy": "Ordenar por",
+    "sortNameAsc": "Nombre (A-Z)",
+    "sortNameDesc": "Nombre (Z-A)",
+    "sortNumberAsc": "Número (Menor a Mayor)",
+    "sortNumberDesc": "Número (Mayor a Menor)",
+    "searchCards": "Buscar Cartas",
+    "searching": "Buscando cartas...",
+    "cards": "Buscar Cartas"
   },
   "filters": {
     "name": "Nombre",
@@ -161,10 +215,16 @@
     "type": "Tipo",
     "rarity": "Rareza",
     "supertype": "Supertipo",
-    "subtype": "Subtipo"
+    "subtype": "Subtipo",
+    "pokemonType": "Tipo de Pokémon",
+    "allTypes": "Todos los tipos",
+    "allRarities": "Todas las rarezas",
+    "allSupertypes": "Todos los supertipos",
+    "allSubtypes": "Todos los subtipos"
   },
   "subscription": {
     "title": "Gestión de Suscripción",
+    "description": "Gestiona tu plan y uso",
     "currentPlan": "Plan actual",
     "changePlan": "Cambiar plan",
     "cancelPlan": "Cancelar plan",
@@ -174,7 +234,16 @@
     "billingHistory": "Historial de facturación",
     "planDetails": "Detalles del plan",
     "limitReached": "Has alcanzado el límite de tu plan",
-    "upgradeNow": "Actualizar ahora"
+    "upgradeNow": "Actualizar ahora",
+    "active": "Tu suscripción está activa",
+    "inactive": "No tienes una suscripción activa",
+    "plan": "Plan",
+    "status": "Estado",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "nextBilling": "Próxima facturación",
+    "viewPlans": "Ver Planes",
+    "upgradePlan": "Mejorar Plan"
   },
   "plans": {
     "aprendiz": {
@@ -225,7 +294,50 @@
     "changePassword": "Cambiar contraseña",
     "emailChanged": "Correo electrónico cambiado con éxito",
     "passwordChanged": "Contraseña cambiada con éxito",
-    "profileUpdated": "Perfil actualizado con éxito"
+    "profileUpdated": "Perfil actualizado con éxito",
+    "noName": "Sin nombre",
+    "nameUpdated": "Nombre actualizado",
+    "nameUpdatedSuccess": "Tu nombre ha sido actualizado correctamente",
+    "nameUpdateError": "No se pudo actualizar el nombre",
+    "passwordResetEmailSent": "Email enviado",
+    "checkInbox": "Revisa tu bandeja de entrada para cambiar tu contraseña",
+    "passwordResetError": "No se pudo enviar el email de recuperación",
+    "noActiveSession": "No hay sesión activa",
+    "deleteError": "Error al eliminar la cuenta",
+    "deleteAccountError": "Error al eliminar la cuenta",
+    "statistics": "Estadísticas",
+    "currentUsage": "Uso actual de tu cuenta",
+    "cardsInCollections": "Cartas en colecciones",
+    "collections": "Colecciones",
+    "wishlist": "Lista de deseos",
+    "security": "Seguridad",
+    "dangerZone": "Zona de Peligro",
+    "dangerZoneDescription": "Las acciones en esta sección son irreversibles",
+    "passwordResetConfirmation": "Te enviaremos un email con instrucciones para cambiar tu contraseña. ¿Deseas continuar?",
+    "instructionsSent": "Instrucciones enviadas",
+    "passwordResetInstructions": "Hemos enviado un email con las instrucciones para cambiar tu contraseña. Por favor, revisa tu bandeja de entrada.",
+    "deleteAccountConfirmation": "¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible y perderás todas tus colecciones y datos.",
+    "email": "Correo electrónico",
+    "name": "Nombre",
+    "notSet": "No establecido",
+    "emailSent": "Correo enviado",
+    "checkInboxPassword": "Revisa tu bandeja de entrada para cambiar tu contraseña",
+    "changePasswordDescription": "Te enviaremos un correo electrónico con un enlace para cambiar tu contraseña",
+    "sendResetEmail": "Enviar correo de restablecimiento",
+    "checkEmail": "Revisa tu correo",
+    "passwordEmailSent": "Hemos enviado un correo a {{email}} con instrucciones para cambiar tu contraseña",
+    "permanentlyDelete": "Eliminar permanentemente",
+    "accountDeleted": "Cuenta eliminada",
+    "accountDeleteSuccess": "Tu cuenta ha sido eliminada correctamente",
+    "nameUpdated": "Nombre actualizado",
+    "nameUpdateSuccess": "Tu nombre ha sido actualizado correctamente",
+    "dangerZone": "Zona de peligro",
+    "dangerDescription": "Acciones irreversibles para tu cuenta",
+    "errors": {
+      "resetEmailFailed": "No se pudo enviar el correo de restablecimiento",
+      "nameUpdateFailed": "No se pudo actualizar el nombre",
+      "deleteFailed": "No se pudo eliminar la cuenta"
+    }
   },
   "landing": {
     "hero": {
@@ -382,5 +494,102 @@
     },
     "copyright": "Todos los derechos reservados.",
     "disclaimer": "Pokémon y los nombres de los personajes Pokémon son marcas registradas de Nintendo. Este sitio no está afiliado con Nintendo ni con The Pokémon Company."
+  },
+  "sidebar": {
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "pokemonTypes": {
+    "colorless": "Incoloro",
+    "darkness": "Oscuridad",
+    "dragon": "Dragón",
+    "fairy": "Hada",
+    "fighting": "Lucha",
+    "fire": "Fuego",
+    "grass": "Planta",
+    "lightning": "Eléctrico",
+    "metal": "Metal",
+    "psychic": "Psíquico",
+    "water": "Agua"
+  },
+  "cardSupertypes": {
+    "energy": "Energía",
+    "pokemon": "Pokémon",
+    "trainer": "Entrenador"
+  },
+  "cardSubtypes": {
+    "basic": "Básico",
+    "stage1": "Fase 1",
+    "stage2": "Fase 2",
+    "gx": "GX",
+    "ex": "EX",
+    "mega": "Mega",
+    "tagteam": "Equipo",
+    "vmax": "VMAX",
+    "vstar": "VSTAR",
+    "v": "V",
+    "item": "Objeto",
+    "supporter": "Partidario",
+    "stadium": "Estadio",
+    "tool": "Herramienta",
+    "special": "Especial",
+    "rapid": "Rápido",
+    "single": "Individual",
+    "fusion": "Fusión",
+    "radiant": "Radiante",
+    "legend": "Leyenda",
+    "restored": "Restaurado",
+    "levelup": "Nivel Superior",
+    "break": "BREAK",
+    "ace": "AS"
+  },
+  "cardRarities": {
+    "common": "Común",
+    "uncommon": "Poco común",
+    "rare": "Rara",
+    "rareHolo": "Rara Holo",
+    "rareUltra": "Rara Ultra",
+    "rareSecret": "Rara Secreta",
+    "rareRainbow": "Rara Arcoíris",
+    "rareHoloEX": "Rara Holo EX",
+    "rareHoloGX": "Rara Holo GX",
+    "rareHoloV": "Rara Holo V",
+    "rareHoloVMAX": "Rara Holo VMAX",
+    "rareHoloVSTAR": "Rara Holo VSTAR",
+    "rarePrism": "Rara Prisma",
+    "rareShinyStar": "Rara Brillante",
+    "amazingRare": "Rara Asombrosa",
+    "classic": "Clásica",
+    "promo": "Promocional",
+    "illustrator": "Ilustrador"
+  },
+  "cardConditions": {
+    "mint": "Perfecta",
+    "nearMint": "Casi Perfecta",
+    "excellent": "Excelente",
+    "good": "Buena",
+    "lightPlayed": "Poco Usada",
+    "played": "Usada",
+    "poor": "Deteriorada"
+  },
+  "cardFinishes": {
+    "regular": "Regular",
+    "foil": "Foil",
+    "holo": "Holo",
+    "reverseHolo": "Holo Reverso"
+  },
+  "cardEditions": {
+    "first": "1ª Edición",
+    "unlimited": "Ilimitada",
+    "limited": "Limitada"
+  },
+  "card": {
+    "firstEdition": "1ª Edición",
+    "foil": "Foil",
+    "notes": "Notas",
+    "personalNotes": "Notas personales sobre esta carta"
+  },
+  "collection": {
+    "addToDefault": "Añadir a colección por defecto"
   }
 }

@@ -1,99 +1,111 @@
+// Tipos de Pokémon
 export const POKEMON_TYPES_MAP = {
-  colorless: "Incoloro",
-  darkness: "Oscuridad",
-  dragon: "Dragón",
-  fairy: "Hada",
-  fighting: "Lucha",
-  fire: "Fuego",
-  grass: "Planta",
-  lightning: "Eléctrico",
+  colorless: "Colorless",
+  darkness: "Darkness",
+  dragon: "Dragon",
+  fairy: "Fairy",
+  fighting: "Fighting",
+  fire: "Fire",
+  grass: "Grass",
+  lightning: "Lightning",
   metal: "Metal",
-  psychic: "Psíquico",
-  water: "Agua",
-} as const;
-
-export type CardRarity = 
-  | "Common"
-  | "Uncommon"
-  | "Rare"
-  | "Rare Holo"
-  | "Rare Ultra"
-  | "Rare Secret"
-  | "Rare Rainbow"
-  | "Rare Shining"
-  | "Amazing Rare"
-  | "Promo"
-  | "Classic Collection";
-
-export const RARITY_MAP: Record<CardRarity, string> = {
-  "Common": "Común",
-  "Uncommon": "Poco común",
-  "Rare": "Rara",
-  "Rare Holo": "Rara Holo",
-  "Rare Ultra": "Ultra Rara",
-  "Rare Secret": "Secreta Rara",
-  "Rare Rainbow": "Arcoíris Rara",
-  "Rare Shining": "Brillante Rara",
-  "Amazing Rare": "Rara Asombrosa",
-  "Promo": "Promocional",
-  "Classic Collection": "Colección Clásica"
+  psychic: "Psychic",
+  water: "Water",
 };
 
-export const CONDITION_MAP = {
-  Mint: "Perfecta",
-  "Near Mint": "Casi Perfecta",
-  Excellent: "Excelente",
-  Good: "Buena",
-  "Light Played": "Poco Usada",
-  Played: "Usada",
-  Poor: "Deteriorada",
-} as const;
+export type PokemonType = keyof typeof POKEMON_TYPES_MAP | "all";
 
+// Supertipos de cartas
 export const SUPERTYPE_MAP = {
-  Pokémon: "Pokémon",
-  Trainer: "Entrenador",
-  Energy: "Energía",
-} as const;
+  energy: "Energy",
+  pokemon: "Pokémon",
+  trainer: "Trainer",
+};
 
+export type CardSupertype = keyof typeof SUPERTYPE_MAP;
+
+// Subtipos de cartas
 export const SUBTYPE_MAP = {
-  BREAK: "BREAK",
-  Baby: "Bebé",
-  Basic: "Básico",
-  EX: "EX",
-  GX: "GX",
-  LEGEND: "LEYENDA",
-  "Level-Up": "Nivel-Up",
-  MEGA: "MEGA",
-  Restored: "Restaurada",
-  "Stage 1": "Fase 1",
-  "Stage 2": "Fase 2",
-  "TAG TEAM": "EQUIPO TAG",
-  "Team Plasma": "Equipo Plasma",
-  V: "V",
-  VMAX: "VMAX",
-  VSTAR: "VSTAR",
-  Item: "Objeto",
-  "Pokémon Tool": "Herramienta Pokémon",
-  Stadium: "Estadio",
-  Supporter: "Apoyo",
-  "Technical Machine": "Máquina Técnica",
-  Special: "Especial",
-  "Basic Energy": "Energía Básica",
-  "Special Energy": "Energía Especial",
-} as const;
+  basic: "Basic",
+  stage1: "Stage 1",
+  stage2: "Stage 2",
+  gx: "GX",
+  ex: "EX",
+  mega: "Mega",
+  tagteam: "Tag Team",
+  vmax: "VMAX",
+  vstar: "VSTAR",
+  v: "V",
+  item: "Item",
+  supporter: "Supporter",
+  stadium: "Stadium",
+  tool: "Tool",
+  special: "Special",
+  rapid: "Rapid Strike",
+  single: "Single Strike",
+  fusion: "Fusion Strike",
+  radiant: "Radiant",
+  legend: "Legend",
+  restored: "Restored",
+  levelup: "Level-Up",
+  break: "BREAK",
+  ace: "ACE SPEC",
+};
 
+export type CardSubtype = keyof typeof SUBTYPE_MAP;
+
+// Rarezas de cartas
+export const RARITY_MAP = {
+  common: "Common",
+  uncommon: "Uncommon",
+  rare: "Rare",
+  rareHolo: "Rare Holo",
+  rareUltra: "Rare Ultra",
+  rareSecret: "Rare Secret",
+  rareRainbow: "Rare Rainbow",
+  rareHoloEX: "Rare Holo EX",
+  rareHoloGX: "Rare Holo GX",
+  rareHoloV: "Rare Holo V",
+  rareHoloVMAX: "Rare Holo VMAX",
+  rareHoloVSTAR: "Rare Holo VSTAR",
+  rarePrism: "Rare Prism",
+  rareShinyStar: "Rare Shiny Star",
+  amazingRare: "Amazing Rare",
+  classic: "Classic Collection",
+  promo: "Promo",
+  illustrator: "Illustrator Rare",
+};
+
+export type CardRarity = keyof typeof RARITY_MAP;
+
+// Condiciones de las cartas
+export const CONDITION_MAP = {
+  mint: "Mint",
+  nearMint: "Near Mint",
+  excellent: "Excellent",
+  good: "Good",
+  lightPlayed: "Light Played",
+  played: "Played",
+  poor: "Poor",
+};
+
+export type CardCondition = keyof typeof CONDITION_MAP;
+
+// Acabados de las cartas
 export const FINISH_MAP = {
+  regular: "Regular",
   foil: "Foil",
   holo: "Holo",
-  "non-foil": "Normal",
-} as const;
+  reverseHolo: "Reverse Holo",
+};
 
+export type CardFinish = keyof typeof FINISH_MAP;
+
+// Ediciones de las cartas
 export const EDITION_MAP = {
-  first: "1ª Edición",
-  unlimited: "Ilimitada",
-} as const;
+  first: "1st Edition",
+  unlimited: "Unlimited",
+  limited: "Limited",
+};
 
-export type PokemonType = keyof typeof POKEMON_TYPES_MAP | "all";
-export type CardCondition = keyof typeof CONDITION_MAP;
-export type CardSupertype = keyof typeof SUPERTYPE_MAP;
-export type CardSubtype = keyof typeof SUBTYPE_MAP;
+export type CardEdition = keyof typeof EDITION_MAP;

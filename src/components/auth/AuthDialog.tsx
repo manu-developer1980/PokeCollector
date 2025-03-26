@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { UserPlus, LogIn } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ interface AuthDialogProps {
 }
 
 const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -35,14 +38,13 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Únete a PokéCollector</DialogTitle>
+          <DialogTitle>{t("auth.dialog.title")}</DialogTitle>
           <DialogDescription>
-            Para gestionar tu colección y lista de deseos, necesitas tener una
-            cuenta. ¡Es gratis y solo toma un minuto! Podrás:
+            {t("auth.dialog.description")}
             <ul className="mt-2 list-disc list-inside space-y-1">
-              <li>Crear y gestionar tu colección de cartas</li>
-              <li>Guardar cartas en tu lista de deseos</li>
-              <li>Hacer seguimiento de tus cartas favoritas</li>
+              <li>{t("auth.dialog.benefits.collection")}</li>
+              <li>{t("auth.dialog.benefits.wishlist")}</li>
+              <li>{t("auth.dialog.benefits.tracking")}</li>
             </ul>
           </DialogDescription>
         </DialogHeader>
@@ -53,14 +55,14 @@ const AuthDialog = ({ isOpen, onClose }: AuthDialogProps) => {
             className="bg-red-600 hover:bg-red-700"
           >
             <UserPlus className="mr-2 h-4 w-4" />
-            Crear cuenta
+            {t("auth.createAccount")}
           </Button>
           <Button
             variant="outline"
             onClick={handleLogin}
           >
             <LogIn className="mr-2 h-4 w-4" />
-            Iniciar sesión
+            {t("auth.login")}
           </Button>
         </div>
       </DialogContent>

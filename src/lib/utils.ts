@@ -28,3 +28,18 @@ export const normalizeCardId = (cardId: string): string => {
   // Eliminar caracteres especiales y convertir a minúsculas
   return cardId.toLowerCase().replace(/[^a-z0-9-]/g, "");
 };
+
+/**
+ * Normaliza una cadena para usarla como clave de traducción
+ * Elimina espacios, guiones y convierte a camelCase
+ */
+export function normalizeTranslationKey(key: string): string {
+  if (!key) return "";
+
+  // Eliminar espacios y guiones, convertir a camelCase
+  return key
+    .replace(/\s+/g, "")
+    .replace(/-/g, "")
+    .replace(/\./g, "")
+    .toLowerCase();
+}

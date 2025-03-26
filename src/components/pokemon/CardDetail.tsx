@@ -13,6 +13,7 @@ import { CollectionCard, PokemonCard } from "@/types/pokemon";
 import { Edit2, Trash, Plus, Heart, FileText } from "lucide-react";
 import EditCardModal from "./EditCardModal";
 import { getRarityBadgeStyle } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import {
   POKEMON_TYPES_MAP,
   RARITY_MAP,
@@ -55,7 +56,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localCard, setLocalCard] = useState<CollectionCard | null>(null);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
-
+  const { t } = useTranslation();
   const handleNotesClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsNotesModalOpen(true);
@@ -387,72 +388,71 @@ const CardDetail: React.FC<CardDetailProps> = ({
                   <h3 className="text-sm font-medium mb-1">
                     Detalles de la Carta
                   </h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    {cardDetails.types?.length > 0 && (
-                      <>
-                        <div className="text-gray-500">Tipo</div>
-                        <div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    {cardDetails.types && cardDetails.types.length > 0 && (
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {t("card.type")}
+                        </p>
+                        <p className="font-medium">
                           {cardDetails.types
-                            .map(
-                              (type) =>
-                                POKEMON_TYPES_MAP[
-                                  type.toLowerCase() as PokemonType
-                                ] || type
+                            .map((type) =>
+                              t(`pokemonTypes.${type.toLowerCase()}`)
                             )
                             .join(", ")}
-                        </div>
-                      </>
+                        </p>
+                      </div>
                     )}
 
-                    {cardDetails.hp && (
-                      <>
-                        <div className="text-gray-500">PS</div>
-                        <div>{cardDetails.hp}</div>
-                      </>
+                    {cardDetails.rarity && (
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {t("card.rarity")}
+                        </p>
+                        <p className="font-medium">
+                          {t(
+                            `cardRarities.${normalizeTranslationKey(
+                              cardDetails.rarity
+                            )}`,
+                            cardDetails.rarity
+                          )}
+                        </p>
+                      </div>
                     )}
 
                     {cardDetails.supertype && (
-                      <>
-                        <div className="text-gray-500">Supertipo</div>
-                        <div>
-                          {SUPERTYPE_MAP[
-                            cardDetails.supertype as CardSupertype
-                          ] || cardDetails.supertype}
-                        </div>
-                      </>
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {t("card.supertype")}
+                        </p>
+                        <p className="font-medium">
+                          {t(
+                            `cardSupertypes.${cardDetails.supertype.toLowerCase()}`,
+                            cardDetails.supertype
+                          )}
+                        </p>
+                      </div>
                     )}
 
-                    {cardDetails.subtypes?.length > 0 && (
-                      <>
-                        <div className="text-gray-500">Subtipos</div>
+                    {cardDetails.subtypes &&
+                      cardDetails.subtypes.length > 0 && (
                         <div>
-                          {cardDetails.subtypes
-                            .map(
-                              (subtype) =>
-                                SUBTYPE_MAP[subtype as CardSubtype] || subtype
-                            )
-                            .join(", ")}
+                          <p className="text-sm text-gray-500">
+                            {t("card.subtype")}
+                          </p>
+                          <p className="font-medium">
+                            {cardDetails.subtypes
+                              .map((subtype) =>
+                                t(
+                                  `cardSubtypes.${normalizeTranslationKey(
+                                    subtype
+                                  )}`,
+                                  subtype
+                                )
+                              )
+                              .join(", ")}
+                          </p>
                         </div>
-                      </>
-                    )}
-
-                    {userPlan === "maestro" &&
-                      cardDetails.tcgplayer?.prices &&
-                      Object.entries(cardDetails.tcgplayer.prices).some(
-                        ([_, value]) => value?.market
-                      ) && (
-                        <>
-                          <div className="text-gray-500">Precio de Mercado</div>
-                          <div>
-                            {Object.entries(cardDetails.tcgplayer.prices)
-                              .filter(([_, value]) => value?.market)
-                              .map(([key, value]) => (
-                                <div key={key}>
-                                  {key}: ${value.market.toFixed(2)}
-                                </div>
-                              ))}
-                          </div>
-                        </>
                       )}
                   </div>
                 </div>
