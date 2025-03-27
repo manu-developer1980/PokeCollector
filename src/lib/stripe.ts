@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 // Definimos los tipos de suscripción
 export const SUBSCRIPTION_PLANS = {
   APRENDIZ: "price_1R4KH1EoOyqILXNqxnOSjJHZ",
-  ENTRENADOR: "price_1R4KHZEoOyqILXNqxnOSjJHZ",
-  MAESTRO: "price_1R4KHzEoOyqILXNqxnOSjJHZ",
+  ENTRENADOR: "price_1R4KGgEoOyqILXNqf6Z2vjqQ",
+  MAESTRO: "price_1R4KHlEoOyqILXNqqX7gkWWJ",
 } as const;
 
 export type SubscriptionPlan = keyof typeof SUBSCRIPTION_PLANS;
