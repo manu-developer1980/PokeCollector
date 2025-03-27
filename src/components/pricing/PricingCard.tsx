@@ -92,7 +92,7 @@ export function PricingCard({
   };
 
   // Determinar el nombre y descripción del plan según el idioma
-  const planName = t(`plans.${plan.name.toLowerCase()}`);
+  const planName = t(`plans.${plan.name.toLowerCase()}.name`);
   const planDescription = t(`plans.${plan.name.toLowerCase()}Description`);
 
   return (

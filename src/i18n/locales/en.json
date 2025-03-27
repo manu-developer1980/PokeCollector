@@ -9,6 +9,30 @@
     "rules": "Rules",
     "subscription": "Subscription"
   },
+  "common": {
+    "loading": "Loading...",
+    "search": "Search",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "add": "Add",
+    "remove": "Remove",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "understood": "Understood",
+    "tryAgainLater": "Please try again later",
+    "openMenu": "Open menu"
+  },
   "collection": {
     "title": "My Collection",
     "myCollections": "My Collections",
@@ -48,7 +72,8 @@
     "sortNameAsc": "Name (A-Z)",
     "sortNameDesc": "Name (Z-A)",
     "sortNumberAsc": "Number (Low to High)",
-    "sortNumberDesc": "Number (High to Low)"
+    "sortNumberDesc": "Number (High to Low)",
+    "description": "Search through thousands of cards and find the ones you need for your collection"
   },
   "filters": {
     "pokemonType": "Pokémon Type",
@@ -88,6 +113,104 @@
     "firstEdition": "First Edition",
     "conditionNearMint": "Near Mint"
   },
+  "subscription": {
+    "upgradePlan": "Upgrade Plan",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "viewPlans": "View Plans",
+    "title": "Subscription Management",
+    "description": "Manage your plan and usage",
+    "currentPlan": "Current plan",
+    "changePlan": "Change plan",
+    "cancelPlan": "Cancel plan",
+    "renewalDate": "Renewal date",
+    "paymentMethod": "Payment method",
+    "updatePayment": "Update payment method",
+    "billingHistory": "Billing history",
+    "planDetails": "Plan details",
+    "limitReached": "You have reached your plan limit",
+    "upgradeNow": "Upgrade now",
+    "active": "Your subscription is active",
+    "inactive": "You don't have an active subscription",
+    "plan": "Plan",
+    "status": "Status",
+    "successTitle": "Congratulations, you are now a {{planName}} Pokémon Trainer!",
+    "successDescription": "Your subscription has been processed successfully.",
+    "verifying": "Verifying subscription...",
+    "nextBilling": "Next billing",
+    "goToDashboard": "Go to Dashboard"
+  },
+  "pricing": {
+    "title": "Plans & Pricing",
+    "subtitle": "These are our plans for you. Start with the free one and level up when you need it",
+    "startFree": "Start Free",
+    "popular": "Popular",
+    "currentPlan": "Current plan",
+    "alreadyActive": "You already have this plan active.",
+    "updateError": "Could not update plan. Please try again."
+  },
+  "plans": {
+    "aprendiz": {
+      "name": "Apprentice"
+    },
+    "entrenador": {
+      "name": "Trainer"
+    },
+    "maestro": {
+      "name": "Master"
+    },
+    "aprendizDescription": "Free plan to get started",
+    "entrenadorDescription": "For serious collectors",
+    "maestroDescription": "For professional collectors",
+    "aprendizFeatures": {
+      "0": "Up to 50 cards",
+      "1": "1 collection",
+      "2": "10 cards in wishlist",
+      "3": "Card search by name and type"
+    },
+    "entrenadorFeatures": {
+      "0": "Up to 500 cards",
+      "1": "5 collections",
+      "2": "50 cards in wishlist",
+      "3": "Advanced card search by name, type, subtype, rarity and more"
+    },
+    "maestroFeatures": {
+      "0": "Everything in Trainer",
+      "1": "Unlimited cards",
+      "2": "Unlimited collections",
+      "3": "Unlimited wishlist",
+      "4": "Priority Support"
+    },
+    "descriptions": {
+      "aprendiz": "Free plan to get started",
+      "entrenador": "For serious collectors",
+      "maestro": "For professional collectors"
+    },
+    "featuresList": {
+      "aprendiz": [
+        "Up to 50 cards",
+        "1 collection",
+        "10 cards in wishlist",
+        "Card search by name and type"
+      ],
+      "entrenador": [
+        "Up to 500 cards",
+        "5 collections",
+        "50 cards in wishlist",
+        "Advanced card search by name, type, subtype, rarity and more"
+      ],
+      "maestro": [
+        "Everything in Trainer",
+        "Unlimited cards",
+        "Unlimited collections",
+        "Unlimited wishlist",
+        "Priority Support"
+      ]
+    },
+    "perMonth": "month",
+    "selectPlan": "Select plan",
+    "currentPlan": "Current Plan"
+  },
   "account": {
     "title": "My Account",
     "profile": "Profile",
@@ -123,53 +246,131 @@
     "passwordResetConfirmation": "We will send you an email with instructions to change your password. Do you want to continue?",
     "instructionsSent": "Instructions sent",
     "passwordResetInstructions": "We have sent an email with instructions to change your password. Please check your inbox.",
-    "deleteAccountConfirmation": "Are you sure you want to delete your account? This action is irreversible and you will lose all your collections and data."
+    "deleteAccountConfirmation": "Are you sure you want to delete your account? This action is irreversible and you will lose all your collections and data.",
+    "email": "Email",
+    "name": "Name",
+    "notSet": "Not set",
+    "emailSent": "Email sent",
+    "checkInboxPassword": "Check your inbox to change your password",
+    "changePasswordDescription": "We'll send you an email with a link to change your password",
+    "sendResetEmail": "Send reset email",
+    "checkEmail": "Check your email",
+    "passwordEmailSent": "We've sent an email to {{email}} with instructions to change your password",
+    "permanentlyDelete": "Permanently delete",
+    "accountDeleted": "Account deleted",
+    "accountDeleteSuccess": "Your account has been successfully deleted",
+    "dangerDescription": "Irreversible actions for your account",
+    "errors": {
+      "resetEmailFailed": "Could not send reset email",
+      "nameUpdateFailed": "Could not update name",
+      "deleteFailed": "Could not delete account"
+    }
   },
-  "subscription": {
-    "title": "Subscription Management",
-    "currentPlan": "Current plan",
-    "changePlan": "Change plan",
-    "cancelPlan": "Cancel plan",
-    "renewalDate": "Renewal date",
-    "paymentMethod": "Payment method",
-    "updatePayment": "Update payment method",
-    "billingHistory": "Billing history",
-    "planDetails": "Plan details",
-    "limitReached": "You have reached your plan limit",
-    "upgradeNow": "Upgrade now",
-    "active": "Your subscription is active",
-    "inactive": "You don't have an active subscription",
-    "plan": "Plan",
-    "status": "Status",
-    "statusActive": "Active",
-    "statusInactive": "Inactive",
-    "nextBilling": "Next billing",
-    "viewPlans": "View Plans",
-    "upgradePlan": "Upgrade Plan"
+  "landing": {
+    "hero": {
+      "badge": "Gotta catch 'em all!",
+      "title": "Manage your Pokémon Card Collection",
+      "subtitle": "Track, organize, and showcase your Pokémon TCG collection with our powerful management tools.",
+      "cta": "Get Started Now",
+      "cardAlt1": "Charizard Card",
+      "cardAlt2": "Pikachu Card",
+      "cardAlt3": "Mewtwo Card",
+      "cardAlt4": "Blastoise Card"
+    },
+    "features": {
+      "badge": "Features",
+      "title": "Everything You Need for Your Collection",
+      "subtitle": "PokéCollector provides you with all the tools you need to manage your Pokémon card collection.",
+      "search": {
+        "title": "Card Search",
+        "description": "Search and filter through thousands of Pokémon cards by set, type, rarity, and more."
+      },
+      "collection": {
+        "title": "Collection Management",
+        "description": "Add cards to your collection, track quantities, and organize them however you prefer."
+      },
+      "wishlist": {
+        "title": "Wishlist",
+        "description": "Keep track of cards you want to acquire with our wishlist feature."
+      },
+      "customCollections": {
+        "title": "Custom Collections",
+        "description": "Create and manage multiple custom collections for different sets or themes."
+      },
+      "filtering": {
+        "title": "Advanced Filtering",
+        "description": "Filter your collection by set, type, rarity, and more to find exactly what you're looking for."
+      },
+      "realtime": {
+        "title": "Real-time Updates",
+        "description": "Your collection syncs across all your devices with real-time updates."
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Collection?",
+      "subtitle": "Join thousands of Pokémon card collectors who are already using PokéCollector to manage their collections.",
+      "pricingButton": "View Pricing Plans",
+      "exploreButton": "Explore Cards"
+    }
   },
-  "common": {
-    "loading": "Loading...",
-    "search": "Search",
-    "back": "Back",
-    "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "add": "Add",
-    "remove": "Remove",
-    "create": "Create",
-    "update": "Update",
-    "close": "Close",
-    "yes": "Yes",
-    "no": "No",
-    "success": "Success",
-    "error": "Error",
-    "warning": "Warning",
-    "info": "Information",
-    "understood": "Understood",
-    "tryAgainLater": "Please try again later",
-    "openMenu": "Open menu"
+  "errors": {
+    "generic": "An error has occurred",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "validation": "Validation error",
+    "network": "Network error",
+    "server": "Server error"
+  },
+  "onboarding": {
+    "title": "Getting Started - PokéCollector",
+    "description": "Interactive guide to start using PokéCollector and manage your Pokémon card collection",
+    "welcome": "Welcome to PokéCollector!",
+    "intro": "Your perfect companion for managing your Pokémon card collection. Here's a brief guide to the main features:",
+    "startButton": "Start Collecting",
+    "steps": {
+      "search": {
+        "title": "Search Cards",
+        "description": "Explore thousands of Pokémon cards using our search and filtering tools."
+      },
+      "collection": {
+        "title": "Build Your Collection",
+        "description": "Add cards to your collection with details like quantity, condition, and notes."
+      },
+      "wishlist": {
+        "title": "Create a Wishlist",
+        "description": "Keep track of cards you want to add to your collection in the future."
+      }
+    }
+  },
+  "footer": {
+    "description": "The ultimate tool for managing your Pokémon TCG card collection, for collectors of all levels.",
+    "features": {
+      "title": "Features",
+      "cardSearch": "Card Search",
+      "collectionManagement": "Collection Management",
+      "wishlist": "Wishlist"
+    },
+    "resources": {
+      "title": "Resources",
+      "guides": "Guides",
+      "rules": "Rules",
+      "blog": "Blog",
+      "tutorials": "Tutorials"
+    },
+    "company": {
+      "title": "Company",
+      "about": "About",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "copyright": "All rights reserved.",
+    "disclaimer": "Pokémon and Pokémon character names are trademarks of Nintendo. This site is not affiliated with Nintendo or The Pokémon Company."
+  },
+  "sidebar": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "pokemonTypes": {
     "colorless": "Colorless",
@@ -185,9 +386,11 @@
     "water": "Water"
   },
   "cardConditions": {
+    "mint": "Mint",
     "nearmint": "Near Mint",
     "excellent": "Excellent",
     "good": "Good",
+    "lightplayed": "Light Played",
     "played": "Played",
     "poor": "Poor"
   },
@@ -197,69 +400,48 @@
     "trainer": "Trainer"
   },
   "cardSubtypes": {
+    "acespec": "ACE SPEC",
+    "ancient": "Ancient",
+    "baby": "Baby",
     "basic": "Basic",
+    "break": "BREAK",
+    "eternamax": "Eternamax",
+    "ex": "EX",
+    "fusion": "Fusion",
+    "fusionStrike": "Fusion Strike",
+    "future": "Future",
+    "goldenrodGameCorner": "Goldenrod Game Corner",
+    "gx": "GX",
+    "item": "Item",
+    "legend": "LEGEND",
+    "levelup": "Level-Up",
+    "mega": "MEGA",
+    "pokemontool": "Pokémon Tool",
+    "pokemontoolF": "Pokémon Tool F",
+    "prime": "Prime",
+    "prismstar": "Prism Star",
+    "radiant": "Radiant",
+    "rapidstrike": "Rapid Strike",
+    "restored": "Restored",
+    "rocketsSecretMachine": "Rocket's Secret Machine",
+    "singlestrike": "Single Strike",
+    "sp": "SP",
+    "special": "Special",
+    "stadium": "Stadium",
     "stage1": "Stage 1",
     "stage2": "Stage 2",
-    "ex": "EX",
-    "gx": "GX",
-    "mega": "Mega",
-    "rapidstrike": "Rapid Strike",
-    "singlestrike": "Single Strike",
-    "tagteam": "Tag Team",
+    "star": "Star",
+    "supporter": "Supporter",
+    "tagteam": "TAG TEAM",
+    "teamplasma": "Team Plasma",
+    "technicalmachine": "Technical Machine",
+    "tera": "Tera",
+    "tool": "Tool",
+    "ultrabeast": "Ultra Beast",
     "v": "V",
     "vmax": "VMAX",
     "vstar": "VSTAR",
-    "item": "Item",
-    "supporter": "Supporter",
-    "stadium": "Stadium",
-    "tool": "Tool",
-    "special": "Special",
-    "break": "BREAK",
-    "legend": "Legend",
-    "restored": "Restored",
-    "levelup": "Level-Up",
-    "fusion": "Fusion",
-    "radiant": "Radiant",
-    "ancient": "Ancient"
-  },
-  "pricing": {
-    "title": "Plans & Pricing",
-    "subtitle": "These are our plans for you. Start with the free one and level up when you need it",
-    "startFree": "Start Free",
-    "popular": "Popular",
-    "currentPlan": "Current plan",
-    "alreadyActive": "You already have this plan active.",
-    "updateError": "Could not update plan. Please try again."
-  },
-  "plans": {
-    "aprendiz": "Apprentice",
-    "entrenador": "Trainer",
-    "maestro": "Master",
-    "aprendizDescription": "Free plan to get started",
-    "entrenadorDescription": "For serious collectors",
-    "maestroDescription": "For professional collectors",
-    "aprendizFeatures": {
-      "0": "Up to 50 cards",
-      "1": "1 collection",
-      "2": "10 cards in wishlist",
-      "3": "Card search by name and type"
-    },
-    "entrenadorFeatures": {
-      "0": "Up to 500 cards",
-      "1": "5 collections",
-      "2": "50 cards in wishlist",
-      "3": "Advanced card search by name, type, subtype, rarity and more"
-    },
-    "maestroFeatures": {
-      "0": "Everything in Trainer",
-      "1": "Unlimited cards",
-      "2": "Unlimited collections",
-      "3": "Unlimited wishlist",
-      "4": "Priority Support"
-    },
-    "perMonth": "month",
-    "selectPlan": "Select plan",
-    "currentPlan": "Current Plan"
+    "vunion": "V-UNION"
   },
   "cardRarities": {
     "common": "Common",
@@ -274,26 +456,42 @@
     "rareholovmax": "Rare Holo VMAX",
     "rareholovstar": "Rare Holo VSTAR",
     "rareprism": "Rare Prism",
+    "rareprismstar": "Rare Prism Star",
     "rareshinystar": "Rare Shiny Star",
     "amazingrare": "Amazing Rare",
     "classic": "Classic Collection",
     "promo": "Promo",
     "illustrator": "Illustrator Rare",
+    "illustrationrare": "Illustration Rare",
     "shinyrare": "Shiny Rare",
     "trainergalleryrareholo": "Trainer Gallery Rare Holo",
-    "rareholobreak": "Rare Holo BREAK",
+    "rarehololvx": "Rare Holo LV.X",
+    "ultrarare": "Ultra Rare",
+    "doublerare": "Double Rare",
+    "rarehologx": "Rare Holo GX",
+    "shinyultrarare": "Shiny Ultra Rare",
+    "specialillustrationrare": "Special Illustration Rare",
     "rareholostar": "Rare Holo Star",
-    "rarehololegend": "Rare Holo Legend",
-    "rareholoex": "Rare Holo EX",
-    "rareholotagteam": "Rare Holo Tag Team",
-    "rareholofusion": "Rare Holo Fusion",
-    "rareholoradiant": "Rare Holo Radiant",
-    "rareholoancient": "Rare Holo Ancient",
-    "rareholoex-full": "Rare Holo EX Full",
-    "rareholoex-fullart": "Rare Holo EX Full Art",
-    "rareholov-fullart": "Rare Holo V Full Art",
-    "rareholovmax-fullart": "Rare Holo VMAX Full Art",
-    "rareholovstar-fullart": "Rare Holo VSTAR Full Art",
-    "rareholotagteam-fullart": "Rare Holo Tag Team Full Art"
+    "rareshiny": "Rare Shiny",
+    "acespecrare": "ACE SPEC Rare",
+    "hyperrare": "Hyper Rare",
+    "legend": "LEGEND",
+    "radiantrare": "Radiant Rare",
+    "rareace": "Rare ACE",
+    "rarebreak": "Rare BREAK",
+    "rareprime": "Rare Prime",
+    "rareshining": "Rare Shining",
+    "rareshinygx": "Rare Shiny GX"
+  },
+  "checkout": {
+    "confirmSubscription": "Confirm subscription",
+    "selectedPlan": "Selected plan:",
+    "price": "Price:",
+    "perMonth": "/month",
+    "continueToPayment": "Continue to payment",
+    "processingPayment": "Processing payment...",
+    "error": "Payment processing error",
+    "errorDescription": "Error connecting to payment service. Please try again.",
+    "noCheckoutUrl": "No checkout URL received"
   }
 }
