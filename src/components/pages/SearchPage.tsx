@@ -13,10 +13,12 @@ import { useToast } from "@/components/ui/use-toast";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { supabase } from "../../../supabase/supabase";
 import { normalizeCardId } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function SearchPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) {
@@ -62,9 +64,8 @@ export default function SearchPage() {
       } catch (error) {
         console.error("Error loading filter data:", error);
         toast({
-          title: "Error",
-          description:
-            "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
+          title: t("common.error"),
+          description: t("errors.generic"),
           variant: "destructive",
         });
       }
@@ -96,9 +97,8 @@ export default function SearchPage() {
       setLastAction({ type: "collection", card });
       setIsAuthDialogOpen(true);
       toast({
-        title: "Inicio de sesión requerido",
-        description:
-          "Necesitas iniciar sesión para añadir cartas a tu colección",
+        title: t("auth.login"),
+        description: t("auth.dialog.description"),
       });
       return;
     }
@@ -124,8 +124,8 @@ export default function SearchPage() {
 
       if (existingCard) {
         toast({
-          title: "Ya en Lista de Deseos",
-          description: "Esta carta ya está en tu lista de deseos.",
+          title: t("wishlist.cardAlreadyExists"),
+          description: t("wishlist.cardAlreadyExistsDescription"),
         });
         return;
       }
@@ -139,14 +139,14 @@ export default function SearchPage() {
       if (error) throw error;
 
       toast({
-        title: "Carta Añadida",
-        description: "La carta ha sido añadida a tu lista de deseos.",
+        title: t("common.success"),
+        description: t("wishlist.cardAdded"),
       });
     } catch (error) {
       console.error("Error adding to wishlist:", error);
       toast({
-        title: "Error",
-        description: "No se pudo añadir la carta a la lista de deseos.",
+        title: t("common.error"),
+        description: t("wishlist.errors.addFailed"),
         variant: "destructive",
       });
     }
@@ -161,10 +161,12 @@ export default function SearchPage() {
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-red-50">
       <div className="container pt-24">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Explorar Cartas Pokémon</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("search.title")}</h1>
           <p className="text-gray-600">
-            Busca entre miles de cartas y encuentra las que necesitas para tu
-            colección
+            {t(
+              "search.description",
+              "Busca entre miles de cartas y encuentra las que necesitas para tu colección"
+            )}
           </p>
         </div>
 
@@ -182,7 +184,9 @@ export default function SearchPage() {
             onAddToWishlist={handleAddToWishlist}
           >
             {isSearching ? (
-              <div></div>
+              <div className="flex justify-center items-center py-20">
+                <LoadingSpinner />
+              </div>
             ) : (
               <CardGrid
                 cards={searchResults}

@@ -1,0 +1,25 @@
+{
+  "description": "The ultimate tool for managing your Pokémon TCG collection, for collectors of all levels.",
+  "features": {
+    "title": "Features",
+    "cardSearch": "Card Search",
+    "collectionManagement": "Collection Management",
+    "wishlist": "Wishlist"
+  },
+  "resources": {
+    "title": "Resources",
+    "guides": "Guides",
+    "rules": "Rules",
+    "blog": "Blog",
+    "tutorials": "Tutorials"
+  },
+  "company": {
+    "title": "Company",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "copyright": "All rights reserved.",
+  "disclaimer": "Pokémon and Pokémon character names are trademarks of Nintendo. This site is not affiliated with Nintendo or The Pokémon Company."
+}

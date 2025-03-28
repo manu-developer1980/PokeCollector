@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import type { Subscription } from "@/hooks/useSubscription";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
 interface CheckoutFlowProps {
   isOpen: boolean;
@@ -33,12 +33,23 @@ export function CheckoutFlow({
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const selectedPlan = Object.values(PLAN_FEATURES).find(
     (plan) => plan.id === planId
   );
 
+  // Obtener el nombre traducido del plan
+  const getPlanTranslatedName = () => {
+    if (!selectedPlan) return "";
+
+    // Convertir el nombre del plan a minúsculas para usarlo como clave
+    const planKey = selectedPlan.name.toLowerCase();
+    return t(`plans.${planKey}.name`);
+  };
+
   const handleCheckout = async () => {
+    setIsLoading(true);
     try {
       const requestData = {
         priceId: planId,
@@ -66,19 +77,19 @@ export function CheckoutFlow({
       }
 
       if (!data?.url) {
-        throw new Error("No se recibió la URL de checkout");
+        throw new Error(t("checkout.noCheckoutUrl"));
       }
 
       window.location.href = data.url;
     } catch (error) {
       console.error("Error completo:", error);
       toast({
-        title: "Error al procesar el pago",
-        description:
-          "Error al conectar con el servicio de pagos. Por favor, intenta nuevamente.",
+        title: t("checkout.error"),
+        description: t("checkout.errorDescription"),
         variant: "destructive",
         duration: 5000,
       });
+      setIsLoading(false);
     }
   };
 
@@ -89,20 +100,22 @@ export function CheckoutFlow({
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Confirmar suscripción</DialogTitle>
+          <DialogTitle>{t("checkout.confirmSubscription")}</DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium">Plan seleccionado:</h4>
-              <p className="text-2xl font-bold">{selectedPlan?.name}</p>
+              <h4 className="font-medium">{t("checkout.selectedPlan")}</h4>
+              <p className="text-2xl font-bold">{getPlanTranslatedName()}</p>
             </div>
             <div>
-              <h4 className="font-medium">Precio:</h4>
+              <h4 className="font-medium">{t("checkout.price")}</h4>
               <p className="text-2xl">
-                {selectedPlan?.price}€
-                <span className="text-base text-muted-foreground">/mes</span>
+                {selectedPlan?.price || 0}€
+                <span className="text-base text-muted-foreground">
+                  {t("checkout.perMonth")}
+                </span>
               </p>
             </div>
           </div>
@@ -113,7 +126,7 @@ export function CheckoutFlow({
             variant="outline"
             onClick={onClose}
           >
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleCheckout}
@@ -121,10 +134,10 @@ export function CheckoutFlow({
           >
             {isLoading ? (
               <>
-                <LoadingSpinner message="Procesando pago..." />
+                <LoadingSpinner message={t("checkout.processingPayment")} />
               </>
             ) : (
-              "Continuar al pago"
+              t("checkout.continueToPayment")
             )}
           </Button>
         </DialogFooter>

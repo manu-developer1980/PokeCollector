@@ -15,7 +15,6 @@ export default function AuthCallback() {
     const handleCallback = async () => {
       try {
         setStatus("Procesando enlace de autenticación...");
-        console.log("1. Iniciando proceso de autenticación");
 
         // 1. Verificar si hay tokens en la URL
         const hashParams = new URLSearchParams(
@@ -27,7 +26,6 @@ export default function AuthCallback() {
 
         if (accessToken && refreshToken) {
           setStatus("Estableciendo sesión con tokens...");
-          console.log("2. Tokens encontrados en URL, tipo:", type);
 
           try {
             const {

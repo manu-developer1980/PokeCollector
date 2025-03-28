@@ -1,0 +1,25 @@
+{
+  "description": "La herramienta definitiva para gestionar tu colección de cartas Pokémon TCG, para coleccionistas de todos los niveles.",
+  "features": {
+    "title": "Características",
+    "cardSearch": "Búsqueda de Cartas",
+    "collectionManagement": "Gestión de Colección",
+    "wishlist": "Lista de Deseos"
+  },
+  "resources": {
+    "title": "Recursos",
+    "guides": "Guías",
+    "rules": "Reglas",
+    "blog": "Blog",
+    "tutorials": "Tutoriales"
+  },
+  "company": {
+    "title": "Compañía",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio"
+  },
+  "copyright": "Todos los derechos reservados.",
+  "disclaimer": "Pokémon y los nombres de los personajes Pokémon son marcas registradas de Nintendo. Este sitio no está afiliado con Nintendo ni con The Pokémon Company."
+}

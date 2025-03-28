@@ -1,10 +1,23 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collection } from "@/types/pokemon";
-import { Plus, Edit, Trash } from "lucide-react";
+import { Plus, Edit, Trash, Database, MoreVertical } from "lucide-react";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface CollectionListProps {
   collections: Collection[];
@@ -16,118 +29,131 @@ interface CollectionListProps {
   isLoading?: boolean;
 }
 
-const CollectionList = ({
+export default function CollectionList({
   collections,
   selectedCollection,
   onCollectionSelect,
   onCreateCollection,
   onEditCollection,
   onDeleteCollection,
-  isLoading = false,
-}: CollectionListProps) => {
+  isLoading,
+}: CollectionListProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
-    return <LoadingSpinner message="Cargando colecciones..." />;
+    return <LoadingSpinner message={t("common.loading")} />;
   }
 
   if (collections.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
-        <CardContent className="p-6 text-center">
-          <p className="text-gray-500 mb-4">
-            No tienes colecciones aún. ¡Crea tu primera colección para empezar a
-            guardar tus cartas!
-          </p>
-          <Button
-            onClick={onCreateCollection}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <Plus className="h-4 w-4 mr-1" /> Crear Mi Primera Colección
+      <div className="text-center py-12">
+        <Database className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-lg font-medium text-gray-900">
+          {t("collection.empty")}
+        </h3>
+        <p className="mt-1 text-sm text-gray-500">
+          {t("collection.emptyDescription")}
+        </p>
+        <div className="mt-6">
+          <Button onClick={onCreateCollection}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("collection.createFirst")}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          onClick={onCreateCollection}
-          className="bg-red-600 hover:bg-red-700"
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {collections.map((collection) => (
+        <Card
+          key={collection.id}
+          className={`cursor-pointer hover:shadow-md transition-shadow ${
+            selectedCollection?.id === collection.id
+              ? "border-2 border-red-500"
+              : ""
+          }`}
+          onClick={() => onCollectionSelect(collection)}
         >
-          <Plus className="h-4 w-4 mr-1" /> Nueva Colección
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {collections.map((collection) => (
-          <Card
-            key={collection.id}
-            className={`hover:shadow-md transition-shadow ${
-              selectedCollection?.id === collection.id
-                ? "ring-2 ring-red-500"
-                : ""
-            }`}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <div
-                  className="cursor-pointer flex-grow"
-                  onClick={() => onCollectionSelect(collection)}
-                >
-                  <CardTitle className="text-base">{collection.name}</CardTitle>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-xl">
+                  {collection.name}
                   {collection.is_default && (
                     <Badge
                       variant="outline"
-                      className="bg-blue-50 text-blue-700 text-xs"
+                      className="ml-2 bg-blue-50 text-blue-700 border-blue-200"
                     >
-                      Predeterminada
+                      {t("collection.default")}
                     </Badge>
                   )}
-                </div>
-                <div className="flex gap-2">
+                </CardTitle>
+                {collection.description && (
+                  <CardDescription className="mt-1">
+                    {collection.description}
+                  </CardDescription>
+                )}
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t("common.openMenu")}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
                       onEditCollection(collection);
                     }}
                   >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  {!collection.is_default && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteCollection(collection.id);
-                      }}
-                    >
-                      <Trash className="h-4 w-4 text-red-500" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {collection.description && (
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {collection.description}
-                </p>
-              )}
-              <div className="mt-2">
-                <Badge variant="collection">
-                  {collection.cards?.length || 0} cartas
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                    <Edit className="mr-2 h-4 w-4" />
+                    {t("common.edit")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteCollection(collection.id);
+                    }}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    {t("common.delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>
+                {collection.cards.length} {t("collection.cards")}
+              </span>
+              <span>
+                {new Date(collection.created_at).toLocaleDateString()}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+      <Card
+        className="cursor-pointer border-dashed border-2 hover:border-red-500 hover:bg-red-50 transition-colors flex items-center justify-center"
+        onClick={onCreateCollection}
+      >
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <Plus className="h-12 w-12 text-gray-400" />
+          <p className="mt-2 font-medium text-gray-900">
+            {t("collection.create")}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default CollectionList;
+}

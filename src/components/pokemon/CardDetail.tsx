@@ -13,6 +13,7 @@ import { CollectionCard, PokemonCard } from "@/types/pokemon";
 import { Edit2, Trash, Plus, Heart, FileText } from "lucide-react";
 import EditCardModal from "./EditCardModal";
 import { getRarityBadgeStyle } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import {
   POKEMON_TYPES_MAP,
   RARITY_MAP,
@@ -25,6 +26,17 @@ import {
   type CardSupertype,
   type CardSubtype,
 } from "@/lib/constants";
+
+// Función para normalizar claves de traducción
+const normalizeTranslationKey = (key: string): string => {
+  if (!key) return "";
+
+  // Elimina espacios y convierte a minúsculas
+  return key
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^a-z0-9]/g, ""); // Elimina caracteres especiales
+};
 
 interface CardDetailProps {
   card: PokemonCard | CollectionCard | null;
@@ -55,6 +67,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localCard, setLocalCard] = useState<CollectionCard | null>(null);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const { t } = useTranslation();
 
   const handleNotesClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -205,15 +218,15 @@ const CardDetail: React.FC<CardDetailProps> = ({
               className="w-full"
               onClick={() => cardDetails && handleAddToCollection(cardDetails)}
             >
-              <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
+              <Plus className="h-4 w-4 mr-2" /> {t("card.addToCollection")}
             </Button>
             <Button
               variant="outline"
               onClick={() => cardDetails && handleAddToWishlist(cardDetails)}
               className="w-full"
             >
-              <Heart className="h-4 w-4 mr-2 text-red-500 fill-current" />{" "}
-              Añadir a Lista de Deseos
+              <Heart className="h-4 w-4 mr-2 text-red-500 fill-current" />
+              {t("card.addToWishlist")}
             </Button>
           </div>
         );
@@ -226,7 +239,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
               onClick={() => cardDetails && handleAddToCollection(cardDetails)}
               className="w-full"
             >
-              <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
+              <Plus className="h-4 w-4 mr-2" /> {t("card.addToCollection")}
             </Button>
             <Button
               variant="destructive"
@@ -235,7 +248,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
               }
               className="w-full"
             >
-              <Trash className="h-4 w-4 mr-2" /> Eliminar de Lista de Deseos
+              <Trash className="h-4 w-4 mr-2" /> {t("card.removeFromWishlist")}
             </Button>
           </div>
         );
@@ -254,7 +267,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Cargando...</DialogTitle>
+            <DialogTitle>{t("common.loading")}</DialogTitle>
           </DialogHeader>
         </DialogContent>
       </Dialog>
@@ -279,8 +292,16 @@ const CardDetail: React.FC<CardDetailProps> = ({
                     variant="outline"
                     className={getRarityBadgeStyle(cardDetails.rarity)}
                   >
-                    {RARITY_MAP[cardDetails.rarity as CardRarity] ||
-                      cardDetails.rarity}
+                    {t(
+                      `cardRarities.${normalizeTranslationKey(
+                        cardDetails.rarity
+                      )}`,
+                      {
+                        defaultValue:
+                          RARITY_MAP[cardDetails.rarity as CardRarity] ||
+                          cardDetails.rarity,
+                      }
+                    )}
                   </Badge>
                 )}
                 {mode === "collection" && localCard && (
@@ -316,7 +337,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                         onClick={handleNotesClick}
                       >
                         <FileText className="h-3 w-3 mr-1" />
-                        Notas
+                        {t("card.notes")}
                       </Badge>
                     )}
                   </>
@@ -341,7 +362,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                   className="hover:font-bold w-full"
                   onClick={() => handleRemove(card.id)}
                 >
-                  <Trash className="h-4 w-4 mr-2" /> Eliminar
+                  <Trash className="h-4 w-4 mr-2" /> {t("common.remove")}
                 </Button>
               )}
             </div>
@@ -350,31 +371,50 @@ const CardDetail: React.FC<CardDetailProps> = ({
               {mode === "collection" && localCard && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium">Detalles en Colección</h4>
+                    <h4 className="font-medium">
+                      {t("collection.collectionDetails")}
+                    </h4>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setIsEditModalOpen(true)}
                       className="gap-2"
                     >
-                      <Edit2 className="h-4 w-4" /> Editar
+                      <Edit2 className="h-4 w-4" /> {t("common.edit")}
                     </Button>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="text-gray-500">Cantidad:</div>
+                    <div className="text-gray-500">{t("card.quantity")}:</div>
                     <div>{localCard.quantity}</div>
-                    <div className="text-gray-500">Condición:</div>
+                    <div className="text-gray-500">{t("card.condition")}:</div>
                     <div>
-                      {CONDITION_MAP[localCard.condition as CardCondition] ||
-                        "Casi Perfecta"}
+                      {t(
+                        `cardConditions.${normalizeTranslationKey(
+                          localCard.condition
+                        )}`,
+                        {
+                          defaultValue:
+                            CONDITION_MAP[
+                              localCard.condition as CardCondition
+                            ] || t("card.conditionNearMint"),
+                        }
+                      )}
                     </div>
-                    <div className="text-gray-500">Foil/Holo:</div>
-                    <div>{localCard.is_foil ? "Sí" : "No"}</div>
-                    <div className="text-gray-500">Primera Edición:</div>
-                    <div>{localCard.is_first_edition ? "Sí" : "No"}</div>
+                    <div className="text-gray-500">{t("card.foil")}:</div>
+                    <div>
+                      {localCard.is_foil ? t("common.yes") : t("common.no")}
+                    </div>
+                    <div className="text-gray-500">
+                      {t("card.firstEdition")}:
+                    </div>
+                    <div>
+                      {localCard.is_first_edition
+                        ? t("common.yes")
+                        : t("common.no")}
+                    </div>
                     {localCard.notes && (
                       <>
-                        <div className="text-gray-500">Notas:</div>
+                        <div className="text-gray-500">{t("card.notes")}:</div>
                         <div>{localCard.notes}</div>
                       </>
                     )}
@@ -384,100 +424,150 @@ const CardDetail: React.FC<CardDetailProps> = ({
 
               <div className="flex-1 space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium mb-1">
-                    Detalles de la Carta
+                  <h3 className="text-lg font-medium mb-1">
+                    {t("card.details")}
                   </h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    {cardDetails.types?.length > 0 && (
-                      <>
-                        <div className="text-gray-500">Tipo</div>
-                        <div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    {cardDetails.types && cardDetails.types.length > 0 && (
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {t("card.type")}
+                        </p>
+                        <p className="font-medium">
                           {cardDetails.types
-                            .map(
-                              (type) =>
-                                POKEMON_TYPES_MAP[
-                                  type.toLowerCase() as PokemonType
-                                ] || type
+                            .map((type) =>
+                              t(`pokemonTypes.${type.toLowerCase()}`, {
+                                defaultValue:
+                                  POKEMON_TYPES_MAP[type as PokemonType] ||
+                                  type,
+                              })
                             )
                             .join(", ")}
-                        </div>
-                      </>
-                    )}
-
-                    {cardDetails.hp && (
-                      <>
-                        <div className="text-gray-500">PS</div>
-                        <div>{cardDetails.hp}</div>
-                      </>
+                        </p>
+                      </div>
                     )}
 
                     {cardDetails.supertype && (
-                      <>
-                        <div className="text-gray-500">Supertipo</div>
-                        <div>
-                          {SUPERTYPE_MAP[
-                            cardDetails.supertype as CardSupertype
-                          ] || cardDetails.supertype}
-                        </div>
-                      </>
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {t("card.supertype")}
+                        </p>
+                        <p className="font-medium">
+                          {t(
+                            `cardSupertypes.${cardDetails.supertype.toLowerCase()}`,
+                            { defaultValue: cardDetails.supertype }
+                          )}
+                        </p>
+                      </div>
                     )}
 
-                    {cardDetails.subtypes?.length > 0 && (
-                      <>
-                        <div className="text-gray-500">Subtipos</div>
+                    {cardDetails.subtypes &&
+                      cardDetails.subtypes.length > 0 && (
                         <div>
-                          {cardDetails.subtypes
-                            .map(
-                              (subtype) =>
-                                SUBTYPE_MAP[subtype as CardSubtype] || subtype
-                            )
-                            .join(", ")}
+                          <p className="text-sm text-gray-500">
+                            {t("card.subtype")}
+                          </p>
+                          <p className="font-medium">
+                            {cardDetails.subtypes
+                              .map((subtype) =>
+                                t(
+                                  `cardSubtypes.${subtype
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "")}`,
+                                  { defaultValue: subtype }
+                                )
+                              )
+                              .join(", ")}
+                          </p>
                         </div>
-                      </>
-                    )}
-
-                    {userPlan === "maestro" &&
-                      cardDetails.tcgplayer?.prices &&
-                      Object.entries(cardDetails.tcgplayer.prices).some(
-                        ([_, value]) => value?.market
-                      ) && (
-                        <>
-                          <div className="text-gray-500">Precio de Mercado</div>
-                          <div>
-                            {Object.entries(cardDetails.tcgplayer.prices)
-                              .filter(([_, value]) => value?.market)
-                              .map(([key, value]) => (
-                                <div key={key}>
-                                  {key}: ${value.market.toFixed(2)}
-                                </div>
-                              ))}
-                          </div>
-                        </>
                       )}
+
+                    {cardDetails.rarity && (
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {t("card.rarity")}
+                        </p>
+                        <p className="font-medium">
+                          {t(
+                            `cardRarities.${cardDetails.rarity
+                              .toLowerCase()
+                              .replace(/\s+/g, "")}`,
+                            { defaultValue: cardDetails.rarity }
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {cardDetails.attacks?.length > 0 && (
+                {cardDetails.abilities && cardDetails.abilities.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium mb-1">Ataques</h3>
+                    <h3 className="text-sm font-medium mb-1">
+                      {t("card.abilities")}
+                    </h3>
+                    <div className="space-y-2">
+                      {cardDetails.abilities.map((ability, index) => (
+                        <div
+                          key={index}
+                          className="p-2 bg-gray-50 rounded-md"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{ability.name}</span>
+                            {ability.type && (
+                              <Badge
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700"
+                              >
+                                {ability.type}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm mt-1">{ability.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {cardDetails.attacks && cardDetails.attacks.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium mb-1">
+                      {t("card.attacks")}
+                    </h3>
                     <div className="space-y-2">
                       {cardDetails.attacks.map((attack, index) => (
                         <div
                           key={index}
-                          className="text-sm"
+                          className="p-2 bg-gray-50 rounded-md"
                         >
-                          <div className="font-medium">{attack.name}</div>
-                          {attack.text && (
-                            <div className="text-gray-500">{attack.text}</div>
-                          )}
-                          <div className="text-gray-500">
-                            {attack.damage && `Daño: ${attack.damage}`}
-                            {attack.damage &&
-                              attack.convertedEnergyCost &&
-                              " · "}
-                            {attack.convertedEnergyCost &&
-                              `Coste: ${attack.convertedEnergyCost}`}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{attack.name}</span>
+                              {attack.damage && (
+                                <span className="text-red-600 font-bold">
+                                  {attack.damage}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center">
+                              {attack.cost &&
+                                attack.cost.map((type, i) => (
+                                  <span
+                                    key={i}
+                                    className="inline-block w-5 h-5 mr-1"
+                                  >
+                                    <img
+                                      src={`/images/energy/${type.toLowerCase()}.png`}
+                                      alt={type}
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </span>
+                                ))}
+                            </div>
                           </div>
+                          {attack.text && (
+                            <p className="text-sm mt-1">{attack.text}</p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -486,18 +576,96 @@ const CardDetail: React.FC<CardDetailProps> = ({
 
                 {cardDetails.rules && cardDetails.rules.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium mb-1">Reglas</h3>
-                    <div className="text-sm text-gray-700">
+                    <h3 className="text-sm font-medium mb-1">
+                      {t("card.rules")}
+                    </h3>
+                    <div className="space-y-2">
                       {cardDetails.rules.map((rule, index) => (
-                        <p key={index}>{rule}</p>
+                        <p
+                          key={index}
+                          className="text-sm p-2 bg-gray-50 rounded-md"
+                        >
+                          {rule}
+                        </p>
                       ))}
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Los botones siempre estarán al final */}
-              {renderActions()}
+                {cardDetails.weaknesses &&
+                  cardDetails.weaknesses.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium mb-1">
+                        {t("card.weaknesses")}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {cardDetails.weaknesses.map((weakness, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-red-50 text-red-700"
+                          >
+                            <img
+                              src={`/images/energy/${weakness.type.toLowerCase()}.png`}
+                              alt={weakness.type}
+                              className="w-4 h-4 mr-1"
+                            />
+                            {weakness.value}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {cardDetails.resistances &&
+                  cardDetails.resistances.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium mb-1">
+                        {t("card.resistances")}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {cardDetails.resistances.map((resistance, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-green-50 text-green-700"
+                          >
+                            <img
+                              src={`/images/energy/${resistance.type.toLowerCase()}.png`}
+                              alt={resistance.type}
+                              className="w-4 h-4 mr-1"
+                            />
+                            {resistance.value}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {cardDetails.retreatCost &&
+                  cardDetails.retreatCost.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium mb-1">
+                        {t("card.retreatCost")}
+                      </h3>
+                      <div className="flex items-center">
+                        {cardDetails.retreatCost.map((type, index) => (
+                          <img
+                            key={index}
+                            src={`/images/energy/${type.toLowerCase()}.png`}
+                            alt={type}
+                            className="w-5 h-5 mr-1"
+                          />
+                        ))}
+                        <span className="ml-2">
+                          ({cardDetails.retreatCost.length})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                {renderActions()}
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -521,12 +689,12 @@ const CardDetail: React.FC<CardDetailProps> = ({
         </DialogContent>
       </Dialog>
 
-      {isEditModalOpen && cardDetails && localCard && (
+      {mode === "collection" && localCard && (
         <EditCardModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          card={localCard} // Pasar la carta de la colección completa
-          onUpdate={handleUpdate}
+          card={localCard}
+          onSave={handleUpdate}
         />
       )}
     </>

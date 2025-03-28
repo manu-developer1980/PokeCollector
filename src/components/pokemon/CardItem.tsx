@@ -28,6 +28,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
+import { normalizeTranslationKey } from "@/lib/utils";
 
 interface CardItemProps {
   card: CollectionCard;
@@ -36,7 +38,7 @@ interface CardItemProps {
   onQuickAdd?: (card: CollectionCard) => void;
   onAddToWishlist?: (card: CollectionCard) => void;
   actions?: "collection" | "wishlist" | "search";
-  showPrice?: boolean; // Añadido showPrice como prop opcional
+  showPrice?: boolean;
 }
 
 const CardItem = ({
@@ -48,24 +50,28 @@ const CardItem = ({
   actions,
   showPrice = false,
 }: CardItemProps) => {
+  const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
 
   const handleImageError = () => setImageError(true);
 
   const handleAction = (e: React.MouseEvent, action: () => void) => {
-    e.stopPropagation(); // Evita que el clic se propague al contenedor padre
+    e.stopPropagation();
     action();
   };
 
   const handleNotesClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevenir que se abra el CardDetail
+    e.stopPropagation();
     setIsNotesModalOpen(true);
   };
 
   const translateType = (type: string) => {
     const normalizedType = type.toLowerCase() as PokemonType;
-    return POKEMON_TYPES_MAP[normalizedType] || type;
+    return t(
+      `pokemonTypes.${normalizedType}`,
+      POKEMON_TYPES_MAP[normalizedType] || type
+    );
   };
 
   const renderTypes = () => {
@@ -106,7 +112,9 @@ const CardItem = ({
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400 rounded-lg">
                 <div className="text-center">
                   <div className="mb-2">❓</div>
-                  <div className="text-sm">Who's that Pokémon?</div>
+                  <div className="text-sm">
+                    {t("common.unknownCard", "Who's that Pokémon?")}
+                  </div>
                 </div>
               </div>
             )}
@@ -129,7 +137,12 @@ const CardItem = ({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Añadir a colección por defecto</p>
+                        <p>
+                          {t(
+                            "collection.addToDefault",
+                            "Añadir a colección por defecto"
+                          )}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -148,7 +161,9 @@ const CardItem = ({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Añadir a lista de deseos</p>
+                          <p>
+                            {t("wishlist.addCard", "Añadir a lista de deseos")}
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -163,7 +178,7 @@ const CardItem = ({
                       size="sm"
                       className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
                       onClick={(e) => handleAction(e, () => onQuickAdd(card))}
-                      title="Añadir a Colección"
+                      title={t("collection.addCard", "Añadir a Colección")}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -173,7 +188,10 @@ const CardItem = ({
                       size="sm"
                       className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
                       onClick={(e) => handleAction(e, () => onRemove(card))}
-                      title="Eliminar de Lista de Deseos"
+                      title={t(
+                        "wishlist.removeCard",
+                        "Eliminar de Lista de Deseos"
+                      )}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -186,6 +204,7 @@ const CardItem = ({
                   size="sm"
                   className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
                   onClick={(e) => handleAction(e, () => onRemove(card.id))}
+                  title={t("collection.removeCard", "Eliminar de Colección")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -215,7 +234,10 @@ const CardItem = ({
                     card.rarity
                   )} shrink-0`}
                 >
-                  {RARITY_MAP[card.rarity as CardRarity] || card.rarity}
+                  {t(
+                    `cardRarities.${normalizeTranslationKey(card.rarity)}`,
+                    RARITY_MAP[card.rarity as CardRarity] || card.rarity
+                  )}
                 </Badge>
               )}
 
@@ -237,7 +259,7 @@ const CardItem = ({
                     <Badge
                       variant="outline"
                       className="bg-purple-50 text-purple-700 text-xs shrink-0"
-                      tooltip="1ª Edición"
+                      tooltip={t("card.firstEdition", "1ª Edición")}
                     >
                       1st
                     </Badge>
@@ -248,7 +270,7 @@ const CardItem = ({
                     <Badge
                       variant="outline"
                       className="bg-yellow-50 text-yellow-700 text-xs shrink-0"
-                      tooltip="Foil"
+                      tooltip={t("card.foil", "Foil")}
                     >
                       ✨
                     </Badge>
@@ -260,8 +282,13 @@ const CardItem = ({
                       variant="outline"
                       className="bg-green-50 text-green-700 text-xs shrink-0"
                     >
-                      {CONDITION_MAP[card.condition as CardCondition] ||
-                        card.condition}
+                      {t(
+                        `cardConditions.${normalizeTranslationKey(
+                          card.condition
+                        )}`,
+                        CONDITION_MAP[card.condition as CardCondition] ||
+                          card.condition
+                      )}
                     </Badge>
                   )}
 
@@ -273,7 +300,7 @@ const CardItem = ({
                       onClick={handleNotesClick}
                     >
                       <FileText className="h-3 w-3 mr-1" />
-                      Notas
+                      {t("card.notes", "Notas")}
                     </Badge>
                   )}
                 </>
@@ -299,10 +326,10 @@ const CardItem = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Notas - {card.name}
+              {t("card.notes", "Notas")} - {card.name}
             </DialogTitle>
             <DialogDescription>
-              Notas personales sobre esta carta
+              {t("card.personalNotes", "Notas personales sobre esta carta")}
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">

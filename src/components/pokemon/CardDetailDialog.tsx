@@ -25,7 +25,9 @@ import {
   type CardSubtype,
 } from "@/lib/constants";
 import { getRarityBadgeStyle } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
+const { t } = useTranslation();
 interface CardDetailDialogProps {
   card: PokemonCard | CollectionCard;
   isOpen: boolean;

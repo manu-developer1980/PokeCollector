@@ -1,0 +1,773 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "search": "Buscar",
+    "back": "Volver",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar Cambios",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "add": "Añadir",
+    "remove": "Eliminar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "success": "Éxito",
+    "error": "Error",
+    "warning": "Advertencia",
+    "info": "Información",
+    "understood": "Entendido",
+    "tryAgainLater": "Por favor, intenta de nuevo más tarde",
+    "openMenu": "Abrir menú",
+    "verifying": "Verificando..."
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "resetPassword": "Restablecer contraseña",
+    "confirmEmail": {
+      "title": "Confirma tu email",
+      "description": "Tu cuenta aún no ha sido verificada. Hemos enviado un nuevo email de confirmación a:",
+      "checkInbox": "Por favor, revisa tu bandeja de entrada y carpeta de spam."
+    },
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "signupSuccess": "Registro exitoso. Por favor, verifica tu correo electrónico.",
+    "loginSuccess": "Inicio de sesión exitoso",
+    "logoutSuccess": "Cierre de sesión exitoso",
+    "resetPasswordSuccess": "Contraseña restablecida con éxito",
+    "emailConfirmSuccess": "Correo electrónico confirmado con éxito",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Tu nombre",
+    "createAccount": "Crear Cuenta",
+    "verifyEmail": "Verifica tu Email",
+    "verificationLinkSent": "Hemos enviado un enlace de verificación a:",
+    "checkInboxInstructions": "Por favor, revisa tu bandeja de entrada y sigue las instrucciones para completar tu registro.",
+    "openGmail": "Abrir Gmail",
+    "loggingIn": "Iniciando sesión...",
+    "registering": "Registrando usuario...",
+    "verifyNewEmail": "Verifica tu nuevo email",
+    "confirmationLinkSent": "Hemos enviado un enlace de confirmación a:",
+    "checkInboxForNewEmail": "Por favor, revisa tu bandeja de entrada y sigue las instrucciones para confirmar tu nuevo email.",
+    "backToAccount": "Volver a mi cuenta",
+    "dialog": {
+      "title": "Únete a PokéCollector",
+      "description": "Para gestionar tu colección y lista de deseos, necesitas tener una cuenta. ¡Es gratis y solo toma un minuto! Podrás:",
+      "benefits": {
+        "collection": "Crear y gestionar tu colección de cartas",
+        "wishlist": "Guardar cartas en tu lista de deseos",
+        "tracking": "Hacer seguimiento de tus cartas favoritas"
+      }
+    },
+
+    "newPassword": "Nueva Contraseña",
+    "passwordChanged": "Tu contraseña ha sido actualizada correctamente",
+    "processingReset": "Enviando instrucciones...",
+    "errors": {
+      "passwordsDoNotMatch": "Las contraseñas no coinciden",
+      "invalidPassword": "Contraseña inválida"
+    },
+    "errors": {
+      "invalidCredentials": "Email o contraseña incorrectos",
+      "loginError": "Error de inicio de sesión",
+      "initError": "Error al inicializar usuario",
+      "accountInitError": "Hubo hubo un problema al inicializar tu cuenta.",
+      "loginProcessError": "Error durante el inicio de sesión",
+      "signupError": "Error de registro",
+      "verificationError": "Error de verificación",
+      "verificationErrorDesc": "No se pudo verificar tu cuenta. Por favor, intenta nuevamente.",
+      "registrationError": "Error de registro",
+      "registrationErrorDesc": "No se pudo crear la cuenta. Por favor, intenta nuevamente.",
+      "authError": "Error de autenticación",
+      "unexpectedError": "Error inesperado durante el registro",
+      "tryAgain": "Ha ocurrido un error durante el registro. Por favor, intenta nuevamente."
+    },
+    "success": {
+      "welcome": "¡Bienvenido!",
+      "loginSuccess": "Has iniciado sesión correctamente.",
+      "userInitialized": "Usuario inicializado correctamente:"
+    },
+    "validation": {
+      "invalidEmail": "Email inválido",
+      "passwordLength": "La contraseña debe tener al menos 6 caracteres",
+      "nameRequired": "El nombre es requerido",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden"
+    }
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "collection": "Colección",
+    "wishlist": "Lista de deseos",
+    "search": "Buscar",
+    "account": "Cuenta",
+    "pricing": "Precios",
+    "rules": "Reglas",
+    "subscription": "Suscripción"
+  },
+  "app": {
+    "title": "PokéCollector",
+    "subtitle": "Gestiona tu colección de cartas Pokémon",
+    "description": "La mejor manera de organizar y gestionar tu colección de cartas Pokémon"
+  },
+  "dashboard": {
+    "title": "Mi Colección de Pokémon",
+    "subtitle": "Gestiona tu colección de cartas Pokémon"
+  },
+  "collection": {
+    "addToDefault": "Añadir a colección por defecto",
+    "myCollections": "Mis Colecciones",
+    "title": "Mi Colección",
+    "default": "Predeterminada",
+    "create": "Crear Colección",
+    "edit": "Editar Colección",
+    "delete": "Eliminar Colección",
+    "empty": "No tienes colecciones aún",
+    "emptyDescription": "Crea tu primera colección para empezar a guardar tus cartas.",
+    "createFirst": "Crear Mi Primera Colección",
+    "cards": "cartas",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta colección?",
+    "deleteWarning": "Esta acción no se puede deshacer y eliminará todas las cartas de esta colección.",
+    "addCard": "Añadir Carta",
+    "removeCard": "Eliminar Carta",
+    "cardAdded": "Carta añadida a la colección",
+    "cardRemoved": "Carta eliminada de la colección",
+    "collectionCreated": "Colección creada con éxito",
+    "collectionUpdated": "Colección actualizada con éxito",
+    "collectionDeleted": "Colección eliminada con éxito",
+    "defaultName": "Mi Colección",
+    "defaultDescription": "Mi colección de cartas Pokémon",
+    "updated": "Colección actualizada",
+    "created": "Colección creada",
+    "deleted": "Colección eliminada",
+    "saveSuccess": "La colección \"{name}\" ha sido guardada exitosamente.",
+    "deleteSuccess": "La colección ha sido eliminada.",
+    "collectionDetails": "Detalles en tu colección",
+    "errors": {
+      "loadFailed": "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
+      "createDefaultFailed": "No se pudo crear la colección por defecto. Por favor, intenta de nuevo.",
+      "defaultExists": "Ya existe una colección predeterminada. Por favor, desmarca la colección predeterminada actual antes de establecer otra.",
+      "saveFailed": "No se pudo guardar la colección. Por favor, intenta de nuevo.",
+      "deleteFailed": "No se pudo eliminar la colección. Por favor, intenta de nuevo."
+    }
+  },
+  "card": {
+    "details": "Detalles de la carta",
+    "name": "Nombre",
+    "number": "Número",
+    "set": "Set",
+    "rarity": "Rareza",
+    "type": "Tipo",
+    "supertype": "Supertipo",
+    "subtype": "Subtipo",
+    "condition": "Condición",
+    "price": "Precio",
+    "quantity": "Cantidad",
+    "notes": "Notas",
+    "personalNotes": "Notas personales sobre esta carta",
+    "addToCollection": "Añadir a la colección",
+    "addToWishlist": "Añadir a la lista de deseos",
+    "removeFromCollection": "Eliminar de la colección",
+    "removeFromWishlist": "Eliminar de la lista de deseos",
+    "removed": "Carta eliminada",
+    "updated": "Carta actualizada",
+    "removeSuccess": "La carta ha sido eliminada de tu colección.",
+    "updateSuccess": "La carta ha sido actualizada.",
+    "abilities": "Habilidades",
+    "attacks": "Ataques",
+    "rules": "Reglas",
+    "weaknesses": "Debilidades",
+    "resistances": "Resistencias",
+    "retreatCost": "Coste de retirada",
+    "foil": "Foil/Holo",
+    "firstEdition": "Primera Edición",
+    "conditionNearMint": "Casi Perfecta",
+    "edit": "Editar carta",
+    "editDescription": "Modifica los detalles de esta carta en tu colección",
+    "notesPlaceholder": "Añade notas personales sobre esta carta (opcional)",
+    "errors": {
+      "removeFailed": "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+      "updateFailed": "No se pudo actualizar la carta. Por favor, intenta de nuevo."
+    }
+  },
+  "wishlist": {
+    "addCard": "Añadir a lista de deseos",
+    "removeCard": "Eliminar de lista de deseos",
+    "title": "Lista de Deseos",
+    "loading": "Cargando lista de deseos...",
+    "empty": "Tu lista de deseos está vacía",
+    "emptyDescription": "Añade cartas a tu lista de deseos para seguir las que quieres conseguir",
+    "searchCards": "Buscar cartas para añadir",
+    "cardRemoved": "Carta eliminada",
+    "removeSuccess": "La carta ha sido eliminada de tu lista de deseos",
+    "errors": {
+      "loadFailed": "No se pudo cargar la lista de deseos",
+      "removeFailed": "No se pudo eliminar la carta de la lista de deseos"
+    }
+  },
+  "search": {
+    "title": "Buscar Cartas",
+    "cards": "Buscar Cartas",
+    "placeholder": "Buscar por nombre, número o set",
+    "filters": "Filtros",
+    "noResults": "No se encontraron resultados",
+    "clearFilters": "Limpiar filtros",
+    "applyFilters": "Aplicar filtros",
+    "searchResults": "Resultados de búsqueda",
+    "loadMore": "Cargar más",
+    "nameSearchPlaceholder": "Buscar por nombre...",
+    "sortBy": "Ordenar por",
+    "sortNameAsc": "Nombre (A-Z)",
+    "sortNameDesc": "Nombre (Z-A)",
+    "sortNumberAsc": "Número (Menor a Mayor)",
+    "sortNumberDesc": "Número (Mayor a Menor)",
+    "searchCards": "Buscar Cartas",
+    "searching": "Buscando cartas...",
+    "description": "Busca entre miles de cartas y encuentra las que necesitas para tu colección"
+  },
+  "filters": {
+    "name": "Nombre",
+    "set": "Set",
+    "type": "Tipo",
+    "rarity": "Rareza",
+    "supertype": "Supertipo",
+    "subtype": "Subtipo",
+    "pokemonType": "Tipo de Pokémon",
+    "allTypes": "Todos los tipos",
+    "allRarities": "Todas las rarezas",
+    "allSupertypes": "Todos los supertipos",
+    "allSubtypes": "Todos los subtipos"
+  },
+  "subscription": {
+    "title": "Gestión de Suscripción",
+    "description": "Gestiona tu plan y uso",
+    "currentPlan": "Plan actual",
+    "changePlan": "Cambiar plan",
+    "cancelPlan": "Cancelar plan",
+    "renewalDate": "Fecha de renovación",
+    "paymentMethod": "Método de pago",
+    "updatePayment": "Actualizar método de pago",
+    "billingHistory": "Historial de facturación",
+    "planDetails": "Detalles del plan",
+    "limitReached": "Has alcanzado el límite de tu plan",
+    "upgradeNow": "Actualizar ahora",
+    "active": "Tu suscripción está activa",
+    "inactive": "No tienes una suscripción activa",
+    "plan": "Plan",
+    "status": "Estado",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "nextBilling": "Próximo cobro",
+    "changePlan": "Cambiar plan",
+    "viewPlans": "Ver Planes",
+    "upgradePlan": "Mejorar Plan",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "viewPlans": "Ver Planes",
+    "title": "Gestión de Suscripción",
+    "description": "Gestiona tu plan y uso",
+    "currentPlan": "Plan actual",
+    "changePlan": "Cambiar plan",
+    "cancelPlan": "Cancelar plan",
+    "renewalDate": "Fecha de renovación",
+    "paymentMethod": "Método de pago",
+    "updatePayment": "Actualizar método de pago",
+    "billingHistory": "Historial de facturación",
+    "planDetails": "Detalles del plan",
+    "limitReached": "Has alcanzado el límite de tu plan",
+    "upgradeNow": "Actualizar ahora",
+    "active": "Tu suscripción está activa",
+    "inactive": "No tienes una suscripción activa",
+    "plan": "Plan",
+    "status": "Estado",
+    "successTitle": "¡Felicidades, ahora eres un {{planName}} Pokémon!",
+    "successDescription": "Tu suscripción ha sido procesada con éxito.",
+    "verifying": "Verificando suscripción...",
+    "nextBilling": "Próximo cobro",
+    "goToDashboard": "Ir al Panel"
+  },
+  "pricing": {
+    "title": "Planes y Precios",
+    "subtitle": "Estos son nuestros planes para ti. Empieza con el gratuito y sube de nivel cuando lo necesites",
+    "startFree": "Empezar Gratis",
+    "startFreeButton": "Empezar Gratis",
+    "popular": "Popular",
+    "popularBadge": "Popular",
+    "currentPlan": "Plan actual",
+    "alreadyActive": "Ya tienes este plan activo.",
+    "updateError": "No se pudo actualizar el plan. Por favor, intenta de nuevo.",
+    "faqTitle": "Preguntas Frecuentes",
+    "currentPlanToast": {
+      "title": "Plan actual",
+      "description": "Ya tienes este plan activo."
+    },
+    "errorUpdatingPlan": "No se pudo actualizar el plan. Por favor, intenta de nuevo.",
+    "faq": {
+      "freeplan": {
+        "question": "¿Qué incluye el plan gratuito?",
+        "answer": "El plan Aprendiz incluye todas las funciones básicas para empezar tu colección: hasta 50 cartas, una colección, 10 cartas en tu lista de deseos y búsqueda básica por nombre y tipo. Es perfecto para comenzar y familiarizarte con la plataforma."
+      },
+      "changePlan": {
+        "question": "¿Puedo cambiar de plan en cualquier momento?",
+        "answer": "Sí, puedes actualizar o cambiar tu plan en cualquier momento. Si actualizas a un plan superior, tendrás acceso inmediato a todas las nuevas funciones. Si decides bajar de plan, el cambio se aplicará al final del período de facturación actual."
+      },
+      "collections": {
+        "question": "¿Cómo funciona el sistema de colecciones?",
+        "answer": "Cada colección te permite organizar tus cartas Pokémon de la manera que prefieras. Puedes crear colecciones por set, por tipo, por rareza o cualquier otro criterio. Cada carta puede incluir detalles como su condición, notas personales y fecha de adquisición."
+      },
+      "payment": {
+        "question": "¿Qué métodos de pago aceptan?",
+        "answer": "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express) y PayPal. Todos los pagos se procesan de forma segura a través de Stripe."
+      },
+      "cancel": {
+        "question": "¿Puedo cancelar mi suscripción en cualquier momento?",
+        "answer": "Sí, puedes cancelar tu suscripción cuando quieras. No hay compromisos de permanencia. Al cancelar, mantendrás el acceso a las funciones premium hasta el final del período facturado."
+      },
+      "data": {
+        "question": "¿Qué pasa con mis datos si cancelo mi suscripción?",
+        "answer": "Si cancelas una suscripción premium y vuelves al plan gratuito, tus datos se mantendrán guardados, pero solo podrás acceder a las limitaciones del plan gratuito. Podrás volver a acceder a todos tus datos al reactivar tu suscripción."
+      },
+      "wishlist": {
+        "question": "¿Cómo funciona la lista de deseos?",
+        "answer": "La lista de deseos te permite guardar las cartas que te gustaría adquirir en el futuro. Puedes añadir notas, establecer prioridades y recibir notificaciones cuando actualicemos información sobre esas cartas."
+      },
+      "share": {
+        "question": "¿Puedo compartir mi colección con otros usuarios?",
+        "answer": "Sí, puedes compartir tu colección con otros usuarios mediante un enlace público. Tú controlas qué información es visible para otros coleccionistas y puedes desactivar la visibilidad en cualquier momento."
+      },
+      "database": {
+        "question": "¿Cómo mantienen actualizada la base de datos de cartas?",
+        "answer": "Nuestra base de datos se actualiza regularmente con los últimos lanzamientos de cartas Pokémon. Trabajamos con fuentes oficiales y bases de datos reconocidas para garantizar que tengas acceso a la información más precisa y actualizada."
+      },
+      "support": {
+        "question": "¿Ofrecen soporte técnico?",
+        "answer": "Sí, ofrecemos soporte técnico por email para todos los usuarios. Los usuarios de planes premium tienen acceso a soporte prioritario con tiempos de respuesta garantizados."
+      }
+    },
+    "perMonth": "mes",
+    "selectPlan": "Seleccionar plan",
+    "maestroFeatures": {
+      "0": "Todo lo de Entrenador",
+      "1": "Cartas ilimitadas",
+      "2": "Colecciones ilimitadas",
+      "3": "Lista de deseos ilimitada",
+      "4": "Soporte Prioritario"
+    }
+  },
+  "plans": {
+    "perMonth": "/mes",
+    "selectPlan": "Seleccionar plan",
+    "currentPlan": "Plan Actual",
+    "aprendiz": "Aprendiz",
+    "entrenador": "Entrenador",
+    "maestro": "Maestro",
+    "descriptions": {
+      "aprendiz": "Plan gratuito para comenzar",
+      "entrenador": "Para coleccionistas serios",
+      "maestro": "Para coleccionistas profesionales"
+    },
+    "featuresList": {
+      "aprendiz": [
+        "Hasta 50 cartas",
+        "1 colección",
+        "10 cartas en lista de deseos",
+        "Búsqueda de cartas por nombre y tipo"
+      ],
+      "entrenador": [
+        "Hasta 500 cartas",
+        "5 colecciones",
+        "50 cartas en lista de deseos",
+        "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más"
+      ],
+      "maestro": [
+        "Todo lo de Entrenador",
+        "Cartas ilimitadas",
+        "Colecciones ilimitadas",
+        "Lista de deseos ilimitada",
+        "Soporte Prioritario"
+      ]
+    }
+  },
+  "account": {
+    "title": "Mi Cuenta",
+    "subtitle": "Gestiona tu información personal y suscripción",
+    "profile": "Perfil",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "updateProfile": "Actualizar perfil",
+    "subscription": "Suscripción",
+    "currentPlan": "Plan actual",
+    "managePlan": "Gestionar plan",
+    "security": "Seguridad",
+    "changePassword": "Cambiar contraseña",
+    "resetPassword": "Restablecer contraseña",
+    "resetPasswordDescription": "Te enviaremos un correo electrónico con un enlace para restablecer tu contraseña",
+    "resetPasswordButton": "Enviar correo de restablecimiento",
+    "resetPasswordSuccess": "Correo de restablecimiento enviado correctamente",
+    "dangerZone": "Zona de peligro",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteAccountDescription": "Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.",
+    "deleteAccountButton": "Eliminar mi cuenta",
+    "deleteAccountConfirm": "¿Estás seguro de que quieres eliminar tu cuenta?",
+    "deleteAccountWarning": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y todos tus datos.",
+    "accountDeleteSuccess": "Tu cuenta ha sido eliminada correctamente",
+    "dangerDescription": "Acciones irreversibles para tu cuenta",
+    "errors": {
+      "resetEmailFailed": "No se pudo enviar el correo de restablecimiento",
+      "nameUpdateFailed": "No se pudo actualizar el nombre",
+      "deleteFailed": "No se pudo eliminar la cuenta"
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "¡Hazte con todos!",
+      "title": "Gestiona tu Colección de Cartas Pokémon",
+      "subtitle": "Rastrea, organiza y muestra tu colección de Pokémon TCG con nuestras potentes herramientas de gestión.",
+      "cta": "Comenzar Ahora",
+      "cardAlt1": "Carta de Charizard",
+      "cardAlt2": "Carta de Pikachu",
+      "cardAlt3": "Carta de Mewtwo",
+      "cardAlt4": "Carta de Blastoise"
+    },
+    "features": {
+      "badge": "Características",
+      "title": "Todo lo que Necesitas para tu Colección",
+      "subtitle": "PokéCollector te proporciona todas las herramientas necesarias para gestionar tu colección de cartas Pokémon.",
+      "search": {
+        "title": "Búsqueda de Cartas",
+        "description": "Busca y filtra entre miles de cartas Pokémon por set, tipo, rareza y más."
+      },
+      "collection": {
+        "title": "Gestión de Colección",
+        "description": "Añade cartas a tu colección, controla cantidades y organízalas como prefieras."
+      },
+      "wishlist": {
+        "title": "Lista de Deseos",
+        "description": "Mantén un registro de las cartas que deseas adquirir con nuestra función de lista de deseos."
+      },
+      "customCollections": {
+        "title": "Colecciones Personalizadas",
+        "description": "Crea y gestiona múltiples colecciones personalizadas para diferentes sets o temas."
+      },
+      "filtering": {
+        "title": "Filtrado Avanzado",
+        "description": "Filtra tu colección por set, tipo, rareza y más para encontrar exactamente lo que buscas."
+      },
+      "realtime": {
+        "title": "Actualizaciones en Tiempo Real",
+        "description": "Tu colección se sincroniza en todos tus dispositivos con actualizaciones en tiempo real."
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Comenzar tu Colección?",
+      "subtitle": "Únete a miles de coleccionistas de cartas Pokémon que ya están usando PokéCollector para gestionar sus colecciones.",
+      "pricingButton": "Ver Planes de Precios",
+      "exploreButton": "Explorar Cartas"
+    }
+  },
+  "errors": {
+    "generic": "Ha ocurrido un error",
+    "notFound": "No encontrado",
+    "unauthorized": "No autorizado",
+    "forbidden": "Prohibido",
+    "validation": "Error de validación",
+    "network": "Error de red",
+    "server": "Error del servidor"
+  },
+  "onboarding": {
+    "title": "Guía de inicio - PokéCollector",
+    "description": "Guía interactiva para comenzar a usar PokéCollector y gestionar tu colección de cartas Pokémon",
+    "welcome": "¡Bienvenido a PokéCollector!",
+    "intro": "Tu compañero perfecto para gestionar tu colección de cartas Pokémon. Aquí tienes una breve guía de las principales funcionalidades:",
+    "startButton": "Comenzar a Coleccionar",
+    "steps": {
+      "search": {
+        "title": "Buscar Cartas",
+        "description": "Explora miles de cartas Pokémon usando nuestras herramientas de búsqueda y filtrado."
+      },
+      "collection": {
+        "title": "Construye tu Colección",
+        "description": "Añade cartas a tu colección con detalles como cantidad, condición y notas."
+      },
+      "wishlist": {
+        "title": "Crear una Lista de Deseos",
+        "description": "Mantén un seguimiento de las cartas que deseas añadir a tu colección en el futuro."
+      }
+    }
+  },
+  "footer": {
+    "description": "La herramienta definitiva para gestionar tu colección de cartas Pokémon TCG, para coleccionistas de todos los niveles.",
+    "features": {
+      "title": "Características",
+      "cardSearch": "Búsqueda de Cartas",
+      "collectionManagement": "Gestión de Colección",
+      "wishlist": "Lista de Deseos"
+    },
+    "resources": {
+      "title": "Recursos",
+      "guides": "Guías",
+      "rules": "Reglas",
+      "blog": "Blog",
+      "tutorials": "Tutoriales"
+    },
+    "company": {
+      "title": "Compañía",
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "copyright": "Todos los derechos reservados.",
+    "disclaimer": "Pokémon y los nombres de personajes de Pokémon son marcas registradas de Nintendo. Este sitio no está afiliado con Nintendo o The Pokémon Company."
+  },
+
+  "collection": {
+    "addToDefault": "Añadir a colección por defecto",
+    "myCollections": "Mis Colecciones",
+    "title": "Mi Colección",
+    "default": "Predeterminada",
+    "create": "Crear Colección",
+    "edit": "Editar Colección",
+    "delete": "Eliminar Colección",
+    "empty": "No tienes colecciones aún",
+    "emptyDescription": "Crea tu primera colección para empezar a guardar tus cartas.",
+    "createFirst": "Crear Mi Primera Colección",
+    "cards": "cartas",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta colección?",
+    "deleteWarning": "Esta acción no se puede deshacer y eliminará todas las cartas de esta colección.",
+    "addCard": "Añadir Carta",
+    "removeCard": "Eliminar Carta",
+    "cardAdded": "Carta añadida a la colección",
+    "cardRemoved": "Carta eliminada de la colección",
+    "collectionCreated": "Colección creada con éxito",
+    "collectionUpdated": "Colección actualizada con éxito",
+    "collectionDeleted": "Colección eliminada con éxito",
+    "defaultName": "Mi Colección",
+    "defaultDescription": "Mi colección de cartas Pokémon",
+    "updated": "Colección actualizada",
+    "created": "Colección creada",
+    "deleted": "Colección eliminada",
+    "saveSuccess": "La colección \"{name}\" ha sido guardada exitosamente.",
+    "deleteSuccess": "La colección ha sido eliminada.",
+    "collectionDetails": "Detalles en tu colección",
+    "errors": {
+      "loadFailed": "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
+      "createDefaultFailed": "No se pudo crear la colección por defecto. Por favor, intenta de nuevo.",
+      "defaultExists": "Ya existe una colección predeterminada. Por favor, desmarca la colección predeterminada actual antes de establecer otra.",
+      "saveFailed": "No se pudo guardar la colección. Por favor, intenta de nuevo.",
+      "deleteFailed": "No se pudo eliminar la colección. Por favor, intenta de nuevo."
+    }
+  },
+  "wishlist": {
+    "addCard": "Añadir a lista de deseos",
+    "removeCard": "Eliminar de lista de deseos",
+    "title": "Lista de Deseos",
+    "loading": "Cargando lista de deseos...",
+    "empty": "Tu lista de deseos está vacía",
+    "emptyDescription": "Añade cartas a tu lista de deseos para seguir las que quieres conseguir",
+    "searchCards": "Buscar cartas para añadir",
+    "cardRemoved": "Carta eliminada",
+    "removeSuccess": "La carta ha sido eliminada de tu lista de deseos",
+    "errors": {
+      "loadFailed": "No se pudo cargar la lista de deseos",
+      "removeFailed": "No se pudo eliminar la carta de la lista de deseos"
+    }
+  },
+  "cardRarities": {
+    "common": "Común",
+    "uncommon": "Poco común",
+    "rare": "Rara",
+    "shinyrare": "Rara Brillante",
+    "trainergalleryrareholo": "Galería Entrenador Rara Holo",
+    "Common": "Común",
+    "Uncommon": "Poco común",
+    "Rare": "Rara",
+    "RareHolo": "Rara Holo",
+    "RareUltra": "Rara Ultra",
+    "rareultra": "Rara Ultra",
+    "RareSecret": "Rara Secreta",
+    "RareRainbow": "Rara Arcoíris",
+    "RareHoloEX": "Rara Holo EX",
+    "RareHoloV": "Rara Holo V",
+    "RareHoloVMAX": "Rara Holo VMAX",
+    "RareHoloVSTAR": "Rara Holo VSTAR",
+    "RarePrism": "Rara Prisma",
+    "RarePrismStar": "Rara Prisma Estrella",
+    "RareShinyGX": "Rara Brillante GX",
+    "AmazingRare": "Rara Asombrosa",
+    "ClassicCollection": "Colección Clásica",
+    "Promo": "Promocional",
+    "IllustratorRare": "Rara Ilustrador",
+    "IllustrationRare": "Ilustración Rara",
+    "ShinyRare": "Rara Brillante",
+    "TrainerGalleryRareHolo": "Galería Entrenador Rara Holo",
+    "RareHoloLV.X": "Rara Holo LV.X",
+    "UltraRare": "Ultra Rara",
+    "DoubleRare": "Doble Rara",
+    "RareHoloGX": "Rara Holo GX",
+    "ShinyUltraRare": "Ultra Rara Brillante",
+    "SpecialIllustrationRare": "Ilustración Rara Especial",
+    "RareHoloStar": "Rara Holo Estrella",
+    "RareShiny": "Rara Brillante",
+    "ACESPECRare": "Rara ACE SPEC",
+    "HyperRare": "Hiper Rara",
+    "LEGEND": "LEYENDA",
+    "RadiantRare": "Rara Radiante",
+    "RareACE": "Rara ACE",
+    "RareBREAK": "Rara BREAK",
+    "RarePrime": "Rara Prime",
+    "RareShining": "Rara Brillante"
+  },
+  "sidebar": {
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "subscription": {
+    "upgradePlan": "Mejorar Plan",
+    "currentPlan": "Plan actual",
+    "active": "Tu suscripción está activa",
+    "inactive": "No tienes una suscripción activa",
+    "plan": "Plan",
+    "status": "Estado",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "nextBilling": "Próximo cobro",
+    "changePlan": "Cambiar plan",
+    "viewPlans": "Ver Planes"
+  },
+  "pokemonTypes": {
+    "colorless": "Incoloro",
+    "darkness": "Oscuridad",
+    "dragon": "Dragón",
+    "fairy": "Hada",
+    "fighting": "Lucha",
+    "fire": "Fuego",
+    "grass": "Planta",
+    "lightning": "Rayo",
+    "metal": "Metal",
+    "psychic": "Psíquico",
+    "water": "Agua"
+  },
+  "cardSupertypes": {
+    "energy": "Energía",
+    "pokemon": "Pokémon",
+    "pokémon": "Pokémon",
+    "trainer": "Entrenador"
+  },
+  "cardSubtypes": {
+    "acespec": "ACE SPEC",
+    "ancient": "Antigua",
+    "baby": "Bebé",
+    "basic": "Básico",
+    "break": "BREAK",
+    "eternamax": "Eternamax",
+    "ex": "EX",
+    "fusion": "Fusión",
+    "fusionStrike": "Golpe Fusión",
+    "future": "Futuro",
+    "goldenrodGameCorner": "Rincón de Juegos de Ciudad Trigal",
+    "gx": "GX",
+    "item": "Objeto",
+    "legend": "Leyenda",
+    "levelup": "Nivel-Superior",
+    "mega": "MEGA",
+    "pokemontool": "Herramienta Pokémon",
+    "pokemontoolF": "Herramienta Pokémon F",
+    "prime": "Prime",
+    "prismstar": "Prisma Estrella",
+    "radiant": "Radiante",
+    "rapidstrike": "Golpe Rápido",
+    "restored": "Restaurada",
+    "rocketsSecretMachine": "Máquina Secreta del Team Rocket",
+    "singlestrike": "Golpe Único",
+    "sp": "SP",
+    "special": "Especial",
+    "stadium": "Estadio",
+    "stage1": "Fase 1",
+    "stage2": "Fase 2",
+    "star": "Estrella",
+    "supporter": "Apoyo",
+    "tagteam": "Equipo TAG",
+    "teamplasma": "Equipo Plasma",
+    "technicalmachine": "Máquina Técnica",
+    "tera": "Tera",
+    "tool": "Herramienta",
+    "ultrabeast": "Ultraente",
+    "v": "V",
+    "vmax": "VMAX",
+    "vstar": "VSTAR",
+    "vunion": "V-UNION",
+    "rapid": "Golpe Rápido",
+    "single": "Golpe Único",
+    "ace": "ACE SPEC"
+  },
+  "cardFinishes": {
+    "regular": "Regular",
+    "foil": "Foil",
+    "holo": "Holo",
+    "reverseHolo": "Holo Reverso"
+  },
+  "cardEditions": {
+    "first": "Primera Edición",
+    "unlimited": "Ilimitada",
+    "limited": "Limitada"
+  },
+  "cardConditions": {
+    "mint": "Perfecta",
+    "nearmint": "Casi Perfecta",
+    "excellent": "Excelente",
+    "good": "Buena",
+    "lightplayed": "Poco Usada",
+    "played": "Usada",
+    "poor": "Deteriorada"
+  },
+  "checkout": {
+    "confirmSubscription": "Confirmar suscripción",
+    "selectedPlan": "Plan seleccionado:",
+    "price": "Precio:",
+    "perMonth": "/mes",
+    "continueToPayment": "Continuar al pago",
+    "processingPayment": "Procesando pago...",
+    "error": "Error al procesar el pago",
+    "errorDescription": "Error al conectar con el servicio de pagos. Por favor, intenta nuevamente.",
+    "noCheckoutUrl": "No se recibió la URL de checkout"
+  },
+  "account": {
+    "statistics": "Estadísticas",
+    "currentUsage": "Uso Actual",
+    "cardsInCollections": "Cartas en Colecciones",
+    "collections": "Colecciones",
+    "wishlist": "Elementos en Lista de Deseos"
+  },
+  "toasts": {
+    "loginSuccess": "Inicio de sesión exitoso",
+    "logoutSuccess": "Cierre de sesión exitoso",
+    "registerSuccess": "Registro exitoso",
+    "passwordResetEmailSent": "Correo de restablecimiento de contraseña enviado",
+    "passwordChanged": "Contraseña cambiada exitosamente",
+    "nameUpdated": "Nombre actualizado exitosamente",
+    "accountDeleted": "Cuenta eliminada exitosamente",
+    "collectionCreated": "Colección creada exitosamente",
+    "collectionUpdated": "Colección actualizada exitosamente",
+    "collectionDeleted": "Colección eliminada exitosamente",
+    "cardAdded": "Carta añadida a la colección",
+    "cardRemoved": "Carta eliminada de la colección",
+    "cardUpdated": "Carta actualizada en la colección",
+    "wishlistAdded": "Carta añadida a la lista de deseos",
+    "wishlistRemoved": "Carta eliminada de la lista de deseos",
+    "subscriptionUpdated": "Suscripción actualizada exitosamente",
+    "subscriptionCancelled": "Suscripción cancelada exitosamente",
+    "error": "Ha ocurrido un error",
+    "networkError": "Error de red. Por favor, verifica tu conexión",
+    "unauthorized": "No autorizado. Por favor, inicia sesión nuevamente",
+    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente"
+  }
+}

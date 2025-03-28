@@ -13,8 +13,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useTranslation } from "react-i18next";
 
 export default function PricingPage() {
+  const { t } = useTranslation();
+
   const { user } = useAuth();
   const { subscription, loading } = useSubscription();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -27,70 +30,59 @@ export default function PricingPage() {
   const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
 
   const handleSelectPlan = (planId: string) => {
-    setSelectedPlanId(planId);
-    setIsCheckoutOpen(true);
+    // Ya no necesitamos guardar el ID del plan ni abrir el modal
+    // El PricingCard ahora maneja directamente la redirección a Stripe
   };
 
   const faqs = [
     {
-      question: "¿Qué incluye el plan gratuito?",
-      answer:
-        "El plan Aprendiz incluye todas las funciones básicas para empezar tu colección: hasta 50 cartas, una colección, 10 cartas en tu lista de deseos y búsqueda básica por nombre y tipo. Es perfecto para comenzar y familiarizarte con la plataforma.",
+      question: t("pricing.faq.freeplan.question"),
+      answer: t("pricing.faq.freeplan.answer"),
     },
     {
-      question: "¿Puedo cambiar de plan en cualquier momento?",
-      answer:
-        "Sí, puedes actualizar o cambiar tu plan en cualquier momento. Si actualizas a un plan superior, tendrás acceso inmediato a todas las nuevas funciones. Si decides bajar de plan, el cambio se aplicará al final del período de facturación actual.",
+      question: t("pricing.faq.changePlan.question"),
+      answer: t("pricing.faq.changePlan.answer"),
     },
     {
-      question: "¿Cómo funciona el sistema de colecciones?",
-      answer:
-        "Cada colección te permite organizar tus cartas Pokémon de la manera que prefieras. Puedes crear colecciones por set, por tipo, por rareza o cualquier otro criterio. Cada carta puede incluir detalles como su condición, notas personales y fecha de adquisición.",
+      question: t("pricing.faq.collections.question"),
+      answer: t("pricing.faq.collections.answer"),
     },
     {
-      question: "¿Qué métodos de pago aceptan?",
-      answer:
-        "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express) y PayPal. Todos los pagos se procesan de forma segura a través de Stripe.",
+      question: t("pricing.faq.payment.question"),
+      answer: t("pricing.faq.payment.answer"),
     },
     {
-      question: "¿Puedo cancelar mi suscripción en cualquier momento?",
-      answer:
-        "Sí, puedes cancelar tu suscripción cuando quieras. No hay compromisos de permanencia. Al cancelar, mantendrás el acceso a las funciones premium hasta el final del período facturado.",
+      question: t("pricing.faq.cancel.question"),
+      answer: t("pricing.faq.cancel.answer"),
     },
     {
-      question: "¿Qué pasa con mis datos si cancelo mi suscripción?",
-      answer:
-        "Si cancelas una suscripción premium y vuelves al plan gratuito, tus datos se mantendrán guardados, pero solo podrás acceder a las limitaciones del plan gratuito. Podrás volver a acceder a todos tus datos al reactivar tu suscripción.",
+      question: t("pricing.faq.data.question"),
+      answer: t("pricing.faq.data.answer"),
     },
     {
-      question: "¿Cómo funciona la lista de deseos?",
-      answer:
-        "La lista de deseos te permite guardar las cartas que te gustaría adquirir en el futuro. Puedes añadir notas, establecer prioridades y recibir notificaciones cuando actualicemos información sobre esas cartas.",
+      question: t("pricing.faq.wishlist.question"),
+      answer: t("pricing.faq.wishlist.answer"),
     },
     {
-      question: "¿Puedo compartir mi colección con otros usuarios?",
-      answer:
-        "Sí, puedes compartir tu colección con otros usuarios mediante un enlace público. Tú controlas qué información es visible para otros coleccionistas y puedes desactivar la visibilidad en cualquier momento.",
+      question: t("pricing.faq.share.question"),
+      answer: t("pricing.faq.share.answer"),
     },
     {
-      question: "¿Cómo mantienen actualizada la base de datos de cartas?",
-      answer:
-        "Nuestra base de datos se actualiza regularmente con los últimos lanzamientos de cartas Pokémon. Trabajamos con fuentes oficiales y bases de datos reconocidas para garantizar que tengas acceso a la información más precisa y actualizada.",
+      question: t("pricing.faq.database.question"),
+      answer: t("pricing.faq.database.answer"),
     },
     {
-      question: "¿Ofrecen soporte técnico?",
-      answer:
-        "Sí, ofrecemos soporte técnico por email para todos los usuarios. Los usuarios de planes premium tienen acceso a soporte prioritario con tiempos de respuesta garantizados.",
+      question: t("pricing.faq.support.question"),
+      answer: t("pricing.faq.support.answer"),
     },
   ];
 
   return (
     <div className="container py-12 space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Planes y Precios</h1>
+        <h1 className="text-4xl font-bold">{t("pricing.title")}</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Estos son nuestros planes para ti. Empieza con el gratuito y sube de
-          nivel cuando lo necesites
+          {t("pricing.subtitle")}
         </p>
       </div>
       {!user && (
@@ -100,7 +92,7 @@ export default function PricingPage() {
               size="lg"
               className="px-8 py-6 text-lg"
             >
-              Empezar Gratis
+              {t("pricing.startFreeButton")}
             </Button>
           </Link>
         </div>
@@ -124,25 +116,17 @@ export default function PricingPage() {
               size="lg"
               className="px-8 py-6 text-lg"
             >
-              Empezar Gratis
+              {t("pricing.startFreeButton")}
             </Button>
           </Link>
         </div>
       )}
 
-      {selectedPlanId && (
-        <CheckoutFlow
-          isOpen={isCheckoutOpen}
-          onClose={() => setIsCheckoutOpen(false)}
-          planId={selectedPlanId}
-          currentSubscription={subscription}
-        />
-      )}
-
+      {/* Eliminar el componente CheckoutFlow */}
       {!user && (
         <div className="mt-16 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-8">
-            Preguntas Frecuentes
+            {t("pricing.faqTitle")}
           </h2>
           <Accordion
             type="single"

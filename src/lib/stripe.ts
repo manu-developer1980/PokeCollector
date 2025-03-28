@@ -1,19 +1,13 @@
-export type SubscriptionPlan = "APRENDIZ" | "ENTRENADOR" | "MAESTRO";
+import { useTranslation } from "react-i18next";
 
-// También podrías necesitar una versión en minúsculas para la base de datos
-export type DatabasePlanType = "aprendiz" | "entrenador" | "maestro";
-
-// Función helper para convertir entre formatos
-export const normalizeSubscriptionPlan = (plan: string): SubscriptionPlan => {
-  return plan.toUpperCase() as SubscriptionPlan;
-};
-
-// Planes de suscripción con IDs de Stripe
+// Definimos los tipos de suscripción
 export const SUBSCRIPTION_PLANS = {
   APRENDIZ: "price_1R4KH1EoOyqILXNqxnOSjJHZ",
   ENTRENADOR: "price_1R4KGgEoOyqILXNqf6Z2vjqQ",
   MAESTRO: "price_1R4KHlEoOyqILXNqqX7gkWWJ",
-};
+} as const;
+
+export type SubscriptionPlan = keyof typeof SUBSCRIPTION_PLANS;
 
 // Interfaz para las características del plan
 export interface PlanFeature {
@@ -25,10 +19,57 @@ export interface PlanFeature {
   maxCards: number;
   maxCollections: number;
   maxWishlist: number;
-  hasAdvancedSearch: boolean;
+  hasAdvancedSearch?: boolean;
 }
 
-// Características de cada plan
+// Hook para obtener las características del plan con traducciones
+export const usePlanFeatures = () => {
+  const { t } = useTranslation();
+
+  return {
+    APRENDIZ: {
+      name: t("plans.aprendiz"),
+      description: t("plans.descriptions.aprendiz"),
+      price: 0,
+      id: SUBSCRIPTION_PLANS.APRENDIZ,
+      features: t("plans.featuresList.aprendiz", {
+        returnObjects: true,
+      }) as string[],
+      maxCards: 50,
+      maxCollections: 2,
+      maxWishlist: 10,
+      hasAdvancedSearch: false,
+    },
+    ENTRENADOR: {
+      name: t("plans.entrenador"),
+      description: t("plans.descriptions.entrenador"),
+      price: 5,
+      id: SUBSCRIPTION_PLANS.ENTRENADOR,
+      features: t("plans.featuresList.entrenador", {
+        returnObjects: true,
+      }) as string[],
+      maxCards: 200,
+      maxCollections: 5,
+      maxWishlist: 50,
+      hasAdvancedSearch: true,
+    },
+    MAESTRO: {
+      name: t("plans.maestro"),
+      description: t("plans.descriptions.maestro"),
+      price: 10,
+      id: SUBSCRIPTION_PLANS.MAESTRO,
+      features: t("plans.featuresList.maestro", {
+        returnObjects: true,
+      }) as string[],
+      maxCards: 1000,
+      maxCollections: 20,
+      maxWishlist: 200,
+      hasAdvancedSearch: true,
+    },
+  };
+};
+
+// Para uso fuera de componentes (donde no se puede usar hooks)
 export const PLAN_FEATURES = {
   APRENDIZ: {
     name: "Aprendiz",
@@ -44,6 +85,7 @@ export const PLAN_FEATURES = {
     maxCards: 50,
     maxCollections: 2,
     maxWishlist: 10,
+    hasAdvancedSearch: false,
   },
   ENTRENADOR: {
     name: "Entrenador",
@@ -59,6 +101,7 @@ export const PLAN_FEATURES = {
     maxCards: 200,
     maxCollections: 5,
     maxWishlist: 50,
+    hasAdvancedSearch: true,
   },
   MAESTRO: {
     name: "Maestro",
@@ -75,14 +118,6 @@ export const PLAN_FEATURES = {
     maxCards: 1000,
     maxCollections: 20,
     maxWishlist: 200,
+    hasAdvancedSearch: true,
   },
 } as const;
-
-export const getFeaturesByPriceId = (
-  priceId: string
-): PlanFeature | undefined => {
-  const planKey = Object.entries(SUBSCRIPTION_PLANS).find(
-    ([_, id]) => id === priceId
-  )?.[0] as SubscriptionPlan;
-  return planKey ? PLAN_FEATURES[planKey] : undefined;
-};

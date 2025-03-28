@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -6,28 +8,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import { PokemonCardSearchParams } from "@/types/pokemon";
+import { PokemonCardSearchParams, PokemonCard } from "@/types/pokemon";
+import { Loader2, Search, Filter, X } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { SubscriptionPlan } from "@/lib/stripe";
+import { useTranslation } from "react-i18next";
+import LoadingSpinner from "../ui/LoaderSpinner";
 import PaginationControls from "./PaginationControls";
 import {
-  POKEMON_TYPES_MAP,
   SUPERTYPE_MAP,
   SUBTYPE_MAP,
-  RARITY_MAP,
-  type PokemonType,
-  type CardSupertype,
-  type CardSubtype,
-  type CardRarity,
-} from "@/lib/constants";
-import { Loading } from "@/stories/button.stories";
-import LoadingSpinner from "../ui/LoaderSpinner";
-import { useSubscription } from "@/hooks/useSubscription";
-import { SubscriptionPlan } from "@/types/subscription";
+  POKEMON_TYPES_MAP,
+  PokemonType,
+  CardSupertype,
+  CardSubtype,
+} from "../../lib/constants";
 
 interface SearchFiltersProps {
-  onSearch: (params: PokemonCardSearchParams) => void;
+  sets?: { id: string; name: string }[];
+  types?: string[];
+  rarities?: string[];
+  searchParams?: PokemonCardSearchParams;
+  onSearchParamsChange?: (params: Partial<PokemonCardSearchParams>) => void;
+  onSearch?: (params: PokemonCardSearchParams) => void;
   isLoading?: boolean;
   totalCount?: number;
   currentPage?: number;
@@ -35,9 +38,6 @@ interface SearchFiltersProps {
   children?: React.ReactNode;
   onAddToCollection?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
-  sets?: string[];
-  types?: string[];
-  rarities?: string[];
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
@@ -53,6 +53,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   onAddToCollection,
   onAddToWishlist,
 }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState<PokemonType>("all");
   const [supertype, setSupertype] = useState<CardSupertype | "all">("all");
@@ -135,7 +136,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Buscar por nombre..."
+                placeholder={t("search.nameSearchPlaceholder")}
                 className="pl-9 w-full bg-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -155,16 +156,16 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onValueChange={(value: PokemonType) => setType(value)}
             >
               <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Tipo de Pokémon" />
+                <SelectValue placeholder={t("filters.pokemonType")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                {Object.entries(POKEMON_TYPES_MAP).map(([value, label]) => (
+                <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
+                {Object.entries(POKEMON_TYPES_MAP).map(([value, _]) => (
                   <SelectItem
                     key={value}
                     value={value}
                   >
-                    {label}
+                    {t(`pokemonTypes.${value}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -179,16 +180,23 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 onValueChange={setSelectedRarity}
               >
                 <SelectTrigger className="w-full bg-white">
-                  <SelectValue placeholder="Rareza" />
+                  <SelectValue placeholder={t("filters.rarity")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas las rarezas</SelectItem>
+                  <SelectItem value="all">
+                    {t("filters.allRarities")}
+                  </SelectItem>
                   {rarities.map((rarity) => (
                     <SelectItem
                       key={rarity}
                       value={rarity}
                     >
-                      {RARITY_MAP[rarity as CardRarity] || rarity}
+                      {t(
+                        `cardRarities.${rarity
+                          .replace(/\s+/g, "")
+                          .replace(/-/g, "")}`,
+                        rarity
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -207,16 +215,18 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   }
                 >
                   <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Supertipo" />
+                    <SelectValue placeholder={t("filters.supertype")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los supertipos</SelectItem>
-                    {Object.entries(SUPERTYPE_MAP).map(([value, label]) => (
+                    <SelectItem value="all">
+                      {t("filters.allSupertypes")}
+                    </SelectItem>
+                    {Object.entries(SUPERTYPE_MAP).map(([value, _]) => (
                       <SelectItem
                         key={value}
                         value={value}
                       >
-                        {label}
+                        {t(`cardSupertypes.${value}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -231,16 +241,23 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   }
                 >
                   <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Filtrar por subtipo" />
+                    <SelectValue placeholder={t("filters.subtype")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los subtipos</SelectItem>
-                    {Object.entries(SUBTYPE_MAP).map(([value, label]) => (
+                    <SelectItem value="all">
+                      {t("filters.allSubtypes")}
+                    </SelectItem>
+                    {Object.entries(SUBTYPE_MAP).map(([value, _]) => (
                       <SelectItem
                         key={value}
                         value={value}
                       >
-                        {label}
+                        {t(
+                          `cardSubtypes.${value
+                            .replace(/\s+/g, "")
+                            .replace(/-/g, "")}`,
+                          value
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -256,66 +273,59 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onValueChange={setSortBy}
             >
               <SelectTrigger className="w-full bg-white">
-                <SelectValue placeholder="Ordenar por" />
+                <SelectValue placeholder={t("search.sortBy")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name_asc">Nombre (A-Z)</SelectItem>
-                <SelectItem value="name_desc">Nombre (Z-A)</SelectItem>
-                <SelectItem value="number_asc">Número (Menor-Mayor)</SelectItem>
+                <SelectItem value="name_asc">
+                  {t("search.sortNameAsc")}
+                </SelectItem>
+                <SelectItem value="name_desc">
+                  {t("search.sortNameDesc")}
+                </SelectItem>
+                <SelectItem value="number_asc">
+                  {t("search.sortNumberAsc")}
+                </SelectItem>
                 <SelectItem value="number_desc">
-                  Número (Mayor-Menor)
+                  {t("search.sortNumberDesc")}
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Botón de búsqueda */}
-          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-auto min-w-[120px]">
             <Button
+              className="w-full"
               onClick={() => handleSearch(1)}
-              className="w-full bg-red-600 hover:bg-red-700"
               disabled={isLoading}
             >
-              Buscar Cartas
+              <Search className="mr-2 h-4 w-4" />
+              {t("search.searchCards")}
             </Button>
           </div>
         </div>
-      </div>
-      {/* Resultados y paginación */}
-      <div className="mt-8">
-        {isLoading ? (
-          <LoadingSpinner message="Buscando cartas..." />
-        ) : (
-          <>
-            {/* Paginación Superior */}
-            {shouldShowPagination && (
-              <div className="w-full overflow-x-auto mb-6">
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  pageSize={pageSize}
-                  totalCount={totalCount}
-                  onPageChange={handleSearch}
-                />
-              </div>
-            )}
 
-            {/* Resultados */}
-            <div className="space-y-6 w-full">{children}</div>
+        {/* Resultados de búsqueda */}
+        <div className="mt-4">
+          {isLoading ? (
+            <LoadingSpinner
+              message={t("search.searching")}
+              compact
+            />
+          ) : (
+            children
+          )}
+        </div>
 
-            {/* Paginación Inferior */}
-            {shouldShowPagination && (
-              <div className="w-full overflow-x-auto mt-6">
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  pageSize={pageSize}
-                  totalCount={totalCount}
-                  onPageChange={handleSearch}
-                />
-              </div>
-            )}
-          </>
+        {/* Paginación */}
+        {shouldShowPagination && (
+          <div className="mt-6">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => handleSearch(page)}
+            />
+          </div>
         )}
       </div>
     </div>

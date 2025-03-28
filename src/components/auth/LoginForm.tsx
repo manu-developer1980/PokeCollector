@@ -22,13 +22,17 @@ import {
 import OnboardingModal from "../onboarding/OnboardingModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
-const formSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-});
+const formSchema = (t: any) =>
+  z.object({
+    email: z.string().email(t("auth.validation.invalidEmail")),
+    password: z.string().min(6, t("auth.validation.passwordLength")),
+  });
 
 export default function LoginForm() {
+  const { t } = useTranslation();
+
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showConfirmEmail, setShowConfirmEmail] = useState(false);
@@ -41,8 +45,8 @@ export default function LoginForm() {
   const searchParams = new URLSearchParams(location.search);
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<ReturnType<typeof formSchema>>>({
+    resolver: zodResolver(formSchema(t)),
     defaultValues: {
       email: "",
       password: "",
@@ -60,7 +64,7 @@ export default function LoginForm() {
       if (error) throw error;
       return !data?.has_seen_onboarding;
     } catch (error) {
-      console.error("Error checking onboarding status:", error);
+      console.error(t("errors.generic"), error);
       return false;
     }
   };
@@ -91,12 +95,12 @@ export default function LoginForm() {
 
         const mensajeError =
           result.error.message === "Invalid login credentials"
-            ? "Email o contraseña incorrectos"
+            ? t("auth.errors.invalidCredentials")
             : result.error.message;
 
         form.setError("root", { message: mensajeError });
         toast({
-          title: "Error de inicio de sesión",
+          title: t("auth.errors.loginError"),
           description: mensajeError,
           variant: "destructive",
         });
@@ -126,12 +130,12 @@ export default function LoginForm() {
 
           if (!response.ok) {
             const errorData = await response.json();
-            console.error("Error initializing user:", errorData);
-            throw new Error(errorData.error || "Error initializing user");
+            console.error(t("auth.errors.initError"), errorData);
+            throw new Error(errorData.error || t("auth.errors.initError"));
           }
 
           const data = await response.json();
-          console.log("Usuario inicializado correctamente:", data);
+          console.log(t("auth.success.userInitialized"), data);
 
           const needsOnboarding = await checkOnboardingStatus(
             result.data.user.id
@@ -142,26 +146,25 @@ export default function LoginForm() {
           }
 
           toast({
-            title: "¡Bienvenido!",
-            description: "Has iniciado sesión correctamente.",
+            title: t("auth.success.welcome"),
+            description: t("auth.success.loginSuccess"),
           });
 
           navigate(redirectTo || "/dashboard");
         } catch (error) {
-          console.error("Error during user initialization:", error);
+          console.error(t("auth.errors.initError"), error);
           toast({
-            title: "Error",
-            description: "Hubo un problema al inicializar tu cuenta.",
+            title: t("errors.generic"),
+            description: t("auth.errors.accountInitError"),
             variant: "destructive",
           });
         }
       }
     } catch (error) {
-      console.error("Error durante el inicio de sesión:", error);
+      console.error(t("auth.errors.loginProcessError"), error);
       toast({
-        title: "Error de inicio de sesión",
-        description:
-          "Ha ocurrido un error inesperado. Por favor, intente nuevamente.",
+        title: t("auth.errors.loginError"),
+        description: t("errors.generic"),
         variant: "destructive",
       });
     } finally {
@@ -182,7 +185,9 @@ export default function LoginForm() {
     <AuthLayout>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Iniciar Sesión</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            {t("auth.login")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -195,10 +200,10 @@ export default function LoginForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("auth.email")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="tu@email.com"
+                        placeholder={t("auth.emailPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -211,7 +216,7 @@ export default function LoginForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <FormLabel>{t("auth.password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -235,11 +240,11 @@ export default function LoginForm() {
               >
                 {isLoading ? (
                   <LoadingSpinner
-                    message="Iniciando sesión..."
+                    message={t("auth.loggingIn")}
                     compact
                   />
                 ) : (
-                  "Iniciar Sesión"
+                  t("auth.login")
                 )}
               </Button>
             </form>
@@ -249,16 +254,16 @@ export default function LoginForm() {
               to="/forgot-password"
               className="text-blue-600 hover:underline"
             >
-              ¿Olvidaste tu contraseña?
+              {t("auth.forgotPassword")}
             </Link>
           </div>
           <div className="mt-4 text-center text-sm">
-            ¿No tienes una cuenta?{" "}
+            {t("auth.dontHaveAccount")}{" "}
             <Link
               to="/signup"
               className="text-blue-600 hover:underline"
             >
-              Regístrate
+              {t("auth.signup")}
             </Link>
           </div>
         </CardContent>
@@ -270,20 +275,15 @@ export default function LoginForm() {
       <ConfirmDialog
         isOpen={showConfirmEmail}
         onClose={() => setShowConfirmEmail(false)}
-        title="Confirma tu email"
+        title={t("auth.confirmEmail.title")}
         description={
           <>
-            <p>
-              Tu cuenta aún no ha sido verificada. Hemos enviado un nuevo email
-              de confirmación a:
-            </p>
+            <p>{t("auth.confirmEmail.description")}</p>
             <p className="font-semibold mt-2">{emailToConfirm}</p>
-            <p className="mt-2">
-              Por favor, revisa tu bandeja de entrada y carpeta de spam.
-            </p>
+            <p className="mt-2">{t("auth.confirmEmail.checkInbox")}</p>
           </>
         }
-        confirmLabel="Entendido"
+        confirmLabel={t("common.understood")}
         onConfirm={() => {
           setShowConfirmEmail(false);
           navigate("/confirm-signup", {

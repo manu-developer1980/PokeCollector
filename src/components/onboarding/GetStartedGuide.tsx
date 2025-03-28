@@ -3,29 +3,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Search, Database, Heart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface GetStartedGuideProps {
   onClose?: () => void;
 }
 
 const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
+  const { t } = useTranslation();
+
   const steps = [
     {
-      title: "Buscar Cartas",
-      description:
-        "Explora miles de cartas Pokémon usando nuestras herramientas de búsqueda y filtrado.",
+      title: t("onboarding.steps.search.title"),
+      description: t("onboarding.steps.search.description"),
       icon: <Search className="h-6 w-6 text-blue-600" />,
     },
     {
-      title: "Construye tu Colección",
-      description:
-        "Añade cartas a tu colección con detalles como cantidad, condición y notas.",
+      title: t("onboarding.steps.collection.title"),
+      description: t("onboarding.steps.collection.description"),
       icon: <Database className="h-6 w-6 text-blue-600" />,
     },
     {
-      title: "Crear una Lista de Deseos",
-      description:
-        "Mantén un seguimiento de las cartas que deseas añadir a tu colección en el futuro.",
+      title: t("onboarding.steps.wishlist.title"),
+      description: t("onboarding.steps.wishlist.description"),
       icon: <Heart className="h-6 w-6 text-red-600" />,
     },
   ];
@@ -35,12 +35,9 @@ const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
       <CardContent className="pt-6">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            ¡Bienvenido a PokéCollector!
+            {t("onboarding.welcome")}
           </h2>
-          <p className="text-gray-600">
-            Tu compañero perfecto para gestionar tu colección de cartas Pokémon.
-            Aquí tienes una breve guía de las principales funcionalidades:
-          </p>
+          <p className="text-gray-600">{t("onboarding.intro")}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -69,7 +66,7 @@ const GetStartedGuide = ({ onClose }: GetStartedGuideProps) => {
             onClick={onClose}
             className="bg-red-600 hover:bg-red-700 px-8"
           >
-            Comenzar a Coleccionar
+            {t("onboarding.startButton")}
           </Button>
         </div>
       </CardContent>
