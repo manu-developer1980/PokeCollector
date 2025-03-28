@@ -201,7 +201,7 @@ export default function LandingPage() {
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
-                  {t("landing.cta.pricingButton")}
+                  {t("landing.hero.cta")}
                 </Link>
                 <Link to="/search">
                   <Button

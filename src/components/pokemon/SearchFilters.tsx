@@ -304,7 +304,17 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             </Button>
           </div>
         </div>
-
+        {shouldShowPagination && (
+          <div className="mt-6">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              onPageChange={(page) => handleSearch(page)}
+            />
+          </div>
+        )}
         {/* Resultados de búsqueda */}
         <div className="mt-4">
           {isLoading ? (
@@ -323,6 +333,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             <PaginationControls
               currentPage={currentPage}
               totalPages={totalPages}
+              pageSize={pageSize}
+              totalCount={totalCount}
               onPageChange={(page) => handleSearch(page)}
             />
           </div>
