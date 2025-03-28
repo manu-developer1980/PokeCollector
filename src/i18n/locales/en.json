@@ -191,14 +191,24 @@
   "account": {
     "title": "My Account",
     "profile": "Profile",
-    "settings": "Settings",
-    "subscription": "Subscription",
-    "deleteAccount": "Delete account",
-    "confirmDelete": "Are you sure you want to delete your account?",
-    "deleteWarning": "This action cannot be undone and will delete all your data.",
+    "security": "Security",
+    "deleteAccount": "Delete Account",
+    "changePassword": "Change Password",
+    "dangerZone": "Danger Zone",
+    "dangerZoneDescription": "Actions in this section are irreversible and may result in data loss",
+    "passwordResetConfirmation": "We'll send you an email with instructions to change your password. Do you want to continue?",
+    "instructionsSent": "Instructions Sent",
+    "passwordResetInstructions": "We've sent you an email with instructions to change your password. Please check your inbox.",
+    "deleteAccountConfirmation": "Are you sure you want to delete your account? This action is irreversible and you will lose all your collections and data.",
+    "deleteAccountDescription": "Once you delete your account, there is no going back. Please be certain.",
+    "settings": {
+      "title": "Account Settings",
+      "profile": "Profile",
+      "security": "Security & Privacy",
+      "preferences": "Preferences"
+    },
     "updateProfile": "Update profile",
     "changeEmail": "Change email",
-    "changePassword": "Change password",
     "emailChanged": "Email changed successfully",
     "passwordChanged": "Password changed successfully",
     "profileUpdated": "Profile updated successfully",
@@ -238,9 +248,9 @@
     "accountDeleteSuccess": "Your account has been successfully deleted",
     "dangerDescription": "Irreversible actions for your account",
     "errors": {
-      "resetEmailFailed": "Could not send reset email",
-      "nameUpdateFailed": "Could not update name",
-      "deleteFailed": "Could not delete account"
+      "resetEmailFailed": "Failed to send reset email",
+      "nameUpdateFailed": "Failed to update name",
+      "deleteFailed": "Failed to delete account"
     }
   },
   "landing": {
@@ -529,5 +539,16 @@
     "networkError": "Network error. Please check your connection",
     "unauthorized": "Unauthorized. Please log in again",
     "sessionExpired": "Your session has expired. Please log in again"
+  },
+  "pagination": {
+    "showing": "Showing",
+    "of": "of",
+    "results": "results",
+    "previous": "Previous",
+    "next": "Next",
+    "morePages": "More pages",
+    "goToPage": "Go to page",
+    "goToPreviousPage": "Go to previous page",
+    "goToNextPage": "Go to next page"
   }
 }
