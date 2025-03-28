@@ -31,7 +31,8 @@
     "info": "Information",
     "understood": "Understood",
     "tryAgainLater": "Please try again later",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "verifying": "Verifying..."
   },
   "collection": {
     "title": "My Collection",
@@ -150,37 +151,9 @@
     "updateError": "Could not update plan. Please try again."
   },
   "plans": {
-    "aprendiz": {
-      "name": "Apprentice"
-    },
-    "entrenador": {
-      "name": "Trainer"
-    },
-    "maestro": {
-      "name": "Master"
-    },
-    "aprendizDescription": "Free plan to get started",
-    "entrenadorDescription": "For serious collectors",
-    "maestroDescription": "For professional collectors",
-    "aprendizFeatures": {
-      "0": "Up to 50 cards",
-      "1": "1 collection",
-      "2": "10 cards in wishlist",
-      "3": "Card search by name and type"
-    },
-    "entrenadorFeatures": {
-      "0": "Up to 500 cards",
-      "1": "5 collections",
-      "2": "50 cards in wishlist",
-      "3": "Advanced card search by name, type, subtype, rarity and more"
-    },
-    "maestroFeatures": {
-      "0": "Everything in Trainer",
-      "1": "Unlimited cards",
-      "2": "Unlimited collections",
-      "3": "Unlimited wishlist",
-      "4": "Priority Support"
-    },
+    "aprendiz": "Apprentice",
+    "entrenador": "Trainer",
+    "maestro": "Master",
     "descriptions": {
       "aprendiz": "Free plan to get started",
       "entrenador": "For serious collectors",
@@ -207,9 +180,13 @@
         "Priority Support"
       ]
     },
-    "perMonth": "month",
+    "perMonth": "/month",
     "selectPlan": "Select plan",
-    "currentPlan": "Current Plan"
+    "currentPlan": "Current Plan",
+    "startFree": "Start Free",
+    "popular": "Popular",
+    "alreadyActive": "You already have this plan active.",
+    "updateError": "Could not update plan. Please try again."
   },
   "account": {
     "title": "My Account",
@@ -444,44 +421,43 @@
     "vunion": "V-UNION"
   },
   "cardRarities": {
-    "common": "Common",
-    "uncommon": "Uncommon",
-    "rare": "Rare",
-    "rareholo": "Rare Holo",
-    "rareultra": "Rare Ultra",
-    "raresecret": "Rare Secret",
-    "rarerainbow": "Rare Rainbow",
-    "rareholoex": "Rare Holo EX",
-    "rareholov": "Rare Holo V",
-    "rareholovmax": "Rare Holo VMAX",
-    "rareholovstar": "Rare Holo VSTAR",
-    "rareprism": "Rare Prism",
-    "rareprismstar": "Rare Prism Star",
-    "rareshinystar": "Rare Shiny Star",
-    "amazingrare": "Amazing Rare",
-    "classic": "Classic Collection",
-    "promo": "Promo",
-    "illustrator": "Illustrator Rare",
-    "illustrationrare": "Illustration Rare",
-    "shinyrare": "Shiny Rare",
-    "trainergalleryrareholo": "Trainer Gallery Rare Holo",
-    "rarehololvx": "Rare Holo LV.X",
-    "ultrarare": "Ultra Rare",
-    "doublerare": "Double Rare",
-    "rarehologx": "Rare Holo GX",
-    "shinyultrarare": "Shiny Ultra Rare",
-    "specialillustrationrare": "Special Illustration Rare",
-    "rareholostar": "Rare Holo Star",
-    "rareshiny": "Rare Shiny",
-    "acespecrare": "ACE SPEC Rare",
-    "hyperrare": "Hyper Rare",
-    "legend": "LEGEND",
-    "radiantrare": "Radiant Rare",
-    "rareace": "Rare ACE",
-    "rarebreak": "Rare BREAK",
-    "rareprime": "Rare Prime",
-    "rareshining": "Rare Shining",
-    "rareshinygx": "Rare Shiny GX"
+    "Common": "Common",
+    "Uncommon": "Uncommon",
+    "Rare": "Rare",
+    "RareHolo": "Rare Holo",
+    "RareUltra": "Rare Ultra",
+    "RareSecret": "Rare Secret",
+    "RareRainbow": "Rare Rainbow",
+    "RareHoloEX": "Rare Holo EX",
+    "RareHoloV": "Rare Holo V",
+    "RareHoloVMAX": "Rare Holo VMAX",
+    "RareHoloVSTAR": "Rare Holo VSTAR",
+    "RarePrism": "Rare Prism",
+    "RarePrismStar": "Rare Prism Star",
+    "RareShinyGX": "Rare Shiny GX",
+    "AmazingRare": "Amazing Rare",
+    "ClassicCollection": "Classic Collection",
+    "Promo": "Promo",
+    "IllustratorRare": "Illustrator Rare",
+    "IllustrationRare": "Illustration Rare",
+    "ShinyRare": "Shiny Rare",
+    "TrainerGalleryRareHolo": "Trainer Gallery Rare Holo",
+    "RareHoloLV.X": "Rare Holo LV.X",
+    "UltraRare": "Ultra Rare",
+    "DoubleRare": "Double Rare",
+    "RareHoloGX": "Rare Holo GX",
+    "ShinyUltraRare": "Shiny Ultra Rare",
+    "SpecialIllustrationRare": "Special Illustration Rare",
+    "RareHoloStar": "Rare Holo Star",
+    "RareShiny": "Rare Shiny",
+    "ACESPECRare": "ACE SPEC Rare",
+    "HyperRare": "Hyper Rare",
+    "LEGEND": "LEGEND",
+    "RadiantRare": "Radiant Rare",
+    "RareACE": "Rare ACE",
+    "RareBREAK": "Rare BREAK",
+    "RarePrime": "Rare Prime",
+    "RareShining": "Rare Shining"
   },
   "checkout": {
     "confirmSubscription": "Confirm subscription",

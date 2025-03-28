@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import AuthLayout from "./AuthLayout";
 import { supabase } from "../../../supabase/supabase";
+import { useTranslation } from "react-i18next";
 
 const validatePassword = (password: string) => {
   const minLength = password.length >= 8;
@@ -32,6 +33,7 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +41,8 @@ export default function ResetPassword() {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Error",
-        description: "Las contraseñas no coinciden",
+        title: t("auth.errors.passwordsDoNotMatch"),
+        description: t("auth.validation.passwordsDoNotMatch"),
         variant: "destructive",
       });
       setIsLoading(false);
@@ -50,9 +52,8 @@ export default function ResetPassword() {
     const validation = validatePassword(password);
     if (!validation.isValid) {
       toast({
-        title: "Contraseña inválida",
-        description:
-          "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número",
+        title: t("auth.errors.invalidPassword"),
+        description: t("auth.validation.passwordRequirements"),
         variant: "destructive",
       });
       return;
@@ -66,15 +67,15 @@ export default function ResetPassword() {
       if (error) throw error;
 
       toast({
-        title: "¡Éxito!",
-        description: "Tu contraseña ha sido actualizada correctamente.",
+        title: t("common.success"),
+        description: t("auth.passwordChanged"),
       });
 
       navigate("/login");
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Ha ocurrido un error. Intenta de nuevo.",
+        title: t("common.error"),
+        description: error.message || t("common.tryAgainLater"),
         variant: "destructive",
       });
     } finally {
@@ -87,7 +88,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            Cambiar Contraseña
+            {t("auth.resetPassword")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -96,7 +97,7 @@ export default function ResetPassword() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="password">Nueva Contraseña</Label>
+              <Label htmlFor="password">{t("auth.newPassword")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -108,7 +109,9 @@ export default function ResetPassword() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+              <Label htmlFor="confirmPassword">
+                {t("auth.confirmPassword")}
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -125,9 +128,9 @@ export default function ResetPassword() {
               disabled={isLoading}
             >
               {isLoading && (
-                <LoadingSpinner message="Enviando instrucciones..." />
+                <LoadingSpinner message={t("auth.processingReset")} />
               )}
-              Cambiar Contraseña
+              {t("auth.resetPassword")}
             </Button>
           </form>
         </CardContent>

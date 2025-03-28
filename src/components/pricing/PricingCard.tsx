@@ -147,8 +147,8 @@ export function PricingCard({
   };
 
   // Determinar el nombre y descripción del plan según el idioma
-  const planName = t(`plans.${plan.name.toLowerCase()}.name`);
-  const planDescription = t(`plans.${plan.name.toLowerCase()}Description`);
+  const planName = t(`plans.${plan.name.toLowerCase()}`);
+  const planDescription = t(`plans.descriptions.${plan.name.toLowerCase()}`);
 
   return (
     <>
@@ -190,7 +190,7 @@ export function PricingCard({
               >
                 <Check className="w-5 h-5 text-primary" />
                 <span>
-                  {t(`plans.${plan.name.toLowerCase()}Features.${index}`, {
+                  {t(`plans.featuresList.${plan.name.toLowerCase()}.${index}`, {
                     defaultValue: feature,
                   })}
                 </span>

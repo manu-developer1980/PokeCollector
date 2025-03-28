@@ -235,7 +235,7 @@ export default function AccountSection({
             <div className="grid gap-4">
               <div className="flex justify-between items-center">
                 <span className="font-medium">{t("subscription.plan")}</span>
-                <span>{t(`plans.${planType.toLowerCase()}.name`)}</span>
+                <span>{t(`plans.${planType.toLowerCase()}`)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">{t("subscription.status")}</span>

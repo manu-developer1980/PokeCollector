@@ -20,9 +20,9 @@
     "warning": "Advertencia",
     "info": "Información",
     "understood": "Entendido",
-    "unknownCard": "¿Quién es ese Pokémon?",
     "tryAgainLater": "Por favor, intenta de nuevo más tarde",
-    "openMenu": "Abrir menú"
+    "openMenu": "Abrir menú",
+    "verifying": "Verificando..."
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -67,6 +67,14 @@
         "wishlist": "Guardar cartas en tu lista de deseos",
         "tracking": "Hacer seguimiento de tus cartas favoritas"
       }
+    },
+
+    "newPassword": "Nueva Contraseña",
+    "passwordChanged": "Tu contraseña ha sido actualizada correctamente",
+    "processingReset": "Enviando instrucciones...",
+    "errors": {
+      "passwordsDoNotMatch": "Las contraseñas no coinciden",
+      "invalidPassword": "Contraseña inválida"
     },
     "errors": {
       "invalidCredentials": "Email o contraseña incorrectos",
@@ -259,7 +267,32 @@
     "statusInactive": "Inactivo",
     "nextBilling": "Próximo cobro",
     "changePlan": "Cambiar plan",
-    "viewPlans": "Ver Planes"
+    "viewPlans": "Ver Planes",
+    "upgradePlan": "Mejorar Plan",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "viewPlans": "Ver Planes",
+    "title": "Gestión de Suscripción",
+    "description": "Gestiona tu plan y uso",
+    "currentPlan": "Plan actual",
+    "changePlan": "Cambiar plan",
+    "cancelPlan": "Cancelar plan",
+    "renewalDate": "Fecha de renovación",
+    "paymentMethod": "Método de pago",
+    "updatePayment": "Actualizar método de pago",
+    "billingHistory": "Historial de facturación",
+    "planDetails": "Detalles del plan",
+    "limitReached": "Has alcanzado el límite de tu plan",
+    "upgradeNow": "Actualizar ahora",
+    "active": "Tu suscripción está activa",
+    "inactive": "No tienes una suscripción activa",
+    "plan": "Plan",
+    "status": "Estado",
+    "successTitle": "¡Felicidades, ahora eres un Entrenador Pokémon {{planName}}!",
+    "successDescription": "Tu suscripción ha sido procesada con éxito.",
+    "verifying": "Verificando suscripción...",
+    "nextBilling": "Próximo cobro",
+    "goToDashboard": "Ir al Panel"
   },
   "pricing": {
     "title": "Planes y Precios",
@@ -333,37 +366,9 @@
     "perMonth": "/mes",
     "selectPlan": "Seleccionar plan",
     "currentPlan": "Plan Actual",
-    "aprendiz": {
-      "name": "Aprendiz"
-    },
-    "entrenador": {
-      "name": "Entrenador"
-    },
-    "maestro": {
-      "name": "Maestro"
-    },
-    "aprendizDescription": "Plan gratuito para comenzar",
-    "entrenadorDescription": "Para coleccionistas serios",
-    "maestroDescription": "Para coleccionistas profesionales",
-    "aprendizFeatures": {
-      "0": "Hasta 50 cartas",
-      "1": "1 colección",
-      "2": "10 cartas en lista de deseos",
-      "3": "Búsqueda de cartas por nombre y tipo"
-    },
-    "entrenadorFeatures": {
-      "0": "Hasta 500 cartas",
-      "1": "5 colecciones",
-      "2": "50 cartas en lista de deseos",
-      "3": "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más"
-    },
-    "maestroFeatures": {
-      "0": "Todo lo de Entrenador",
-      "1": "Cartas ilimitadas",
-      "2": "Colecciones ilimitadas",
-      "3": "Lista de deseos ilimitada",
-      "4": "Soporte Prioritario"
-    },
+    "aprendiz": "Aprendiz",
+    "entrenador": "Entrenador",
+    "maestro": "Maestro",
     "descriptions": {
       "aprendiz": "Plan gratuito para comenzar",
       "entrenador": "Para coleccionistas serios",
@@ -389,10 +394,7 @@
         "Lista de deseos ilimitada",
         "Soporte Prioritario"
       ]
-    },
-    "perMonth": "mes",
-    "selectPlan": "Seleccionar plan",
-    "currentPlan": "Plan Actual"
+    }
   },
   "account": {
     "title": "Mi Cuenta",
@@ -580,44 +582,43 @@
     }
   },
   "cardRarities": {
-    "common": "Común",
-    "uncommon": "Poco común",
-    "rare": "Rara",
-    "rareholo": "Rara Holo",
-    "rareultra": "Rara Ultra",
-    "raresecret": "Rara Secreta",
-    "rarerainbow": "Rara Arcoíris",
-    "rareholoex": "Rara Holo EX",
-    "rareholov": "Rara Holo V",
-    "rareholovmax": "Rara Holo VMAX",
-    "rareholovstar": "Rara Holo VSTAR",
-    "rareprism": "Rara Prisma",
-    "rareprismstar": "Rara Prisma Estrella",
-    "rareshinystar": "Rara Brillante Estrella",
-    "amazingrare": "Rara Asombrosa",
-    "classic": "Colección Clásica",
-    "promo": "Promocional",
-    "illustrator": "Rara Ilustrador",
-    "illustrationrare": "Ilustración Rara",
-    "shinyrare": "Rara Brillante",
-    "trainergalleryrareholo": "Galería Entrenador Rara Holo",
-    "rarehololvx": "Rara Holo LV.X",
-    "ultrarare": "Ultra Rara",
-    "doublerare": "Doble Rara",
-    "rarehologx": "Rara Holo GX",
-    "shinyultrarare": "Ultra Rara Brillante",
-    "specialillustrationrare": "Ilustración Rara Especial",
-    "rareholostar": "Rara Holo Estrella",
-    "rareshiny": "Rara Brillante",
-    "acespecrare": "Rara ACE SPEC",
-    "hyperrare": "Hiper Rara",
-    "legend": "LEYENDA",
-    "radiantrare": "Rara Radiante",
-    "rareace": "Rara ACE",
-    "rarebreak": "Rara BREAK",
-    "rareprime": "Rara Prime",
-    "rareshining": "Rara Brillante",
-    "rareshinygx": "Rara Brillante GX"
+    "Common": "Común",
+    "Uncommon": "Poco común",
+    "Rare": "Rara",
+    "RareHolo": "Rara Holo",
+    "RareUltra": "Rara Ultra",
+    "RareSecret": "Rara Secreta",
+    "RareRainbow": "Rara Arcoíris",
+    "RareHoloEX": "Rara Holo EX",
+    "RareHoloV": "Rara Holo V",
+    "RareHoloVMAX": "Rara Holo VMAX",
+    "RareHoloVSTAR": "Rara Holo VSTAR",
+    "RarePrism": "Rara Prisma",
+    "RarePrismStar": "Rara Prisma Estrella",
+    "RareShinyGX": "Rara Brillante GX",
+    "AmazingRare": "Rara Asombrosa",
+    "ClassicCollection": "Colección Clásica",
+    "Promo": "Promocional",
+    "IllustratorRare": "Rara Ilustrador",
+    "IllustrationRare": "Ilustración Rara",
+    "ShinyRare": "Rara Brillante",
+    "TrainerGalleryRareHolo": "Galería Entrenador Rara Holo",
+    "RareHoloLV.X": "Rara Holo LV.X",
+    "UltraRare": "Ultra Rara",
+    "DoubleRare": "Doble Rara",
+    "RareHoloGX": "Rara Holo GX",
+    "ShinyUltraRare": "Ultra Rara Brillante",
+    "SpecialIllustrationRare": "Ilustración Rara Especial",
+    "RareHoloStar": "Rara Holo Estrella",
+    "RareShiny": "Rara Brillante",
+    "ACESPECRare": "Rara ACE SPEC",
+    "HyperRare": "Hiper Rara",
+    "LEGEND": "LEYENDA",
+    "RadiantRare": "Rara Radiante",
+    "RareACE": "Rara ACE",
+    "RareBREAK": "Rara BREAK",
+    "RarePrime": "Rara Prime",
+    "RareShining": "Rara Brillante"
   },
   "sidebar": {
     "openMenu": "Abrir menú",
