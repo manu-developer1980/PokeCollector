@@ -16,11 +16,13 @@ import { useTranslation } from "react-i18next";
 import LoadingSpinner from "../ui/LoaderSpinner";
 import PaginationControls from "./PaginationControls";
 import {
+  SUPERTYPE_MAP,
+  SUBTYPE_MAP,
   POKEMON_TYPES_MAP,
-  type PokemonType,
-  type CardSupertype,
-  type CardSubtype,
-} from "@/lib/constants";
+  PokemonType,
+  CardSupertype,
+  CardSubtype,
+} from "../../lib/constants";
 
 interface SearchFiltersProps {
   sets?: { id: string; name: string }[];

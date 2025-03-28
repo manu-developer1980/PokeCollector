@@ -288,7 +288,7 @@
     "inactive": "No tienes una suscripción activa",
     "plan": "Plan",
     "status": "Estado",
-    "successTitle": "¡Felicidades, ahora eres un Entrenador Pokémon {{planName}}!",
+    "successTitle": "¡Felicidades, ahora eres un {{planName}} Pokémon!",
     "successDescription": "Tu suscripción ha sido procesada con éxito.",
     "verifying": "Verificando suscripción...",
     "nextBilling": "Próximo cobro",
@@ -582,11 +582,17 @@
     }
   },
   "cardRarities": {
+    "common": "Común",
+    "uncommon": "Poco común",
+    "rare": "Rara",
+    "shinyrare": "Rara Brillante",
+    "trainergalleryrareholo": "Galería Entrenador Rara Holo",
     "Common": "Común",
     "Uncommon": "Poco común",
     "Rare": "Rara",
     "RareHolo": "Rara Holo",
     "RareUltra": "Rara Ultra",
+    "rareultra": "Rara Ultra",
     "RareSecret": "Rara Secreta",
     "RareRainbow": "Rara Arcoíris",
     "RareHoloEX": "Rara Holo EX",
@@ -698,7 +704,10 @@
     "v": "V",
     "vmax": "VMAX",
     "vstar": "VSTAR",
-    "vunion": "V-UNION"
+    "vunion": "V-UNION",
+    "rapid": "Golpe Rápido",
+    "single": "Golpe Único",
+    "ace": "ACE SPEC"
   },
   "cardFinishes": {
     "regular": "Regular",
