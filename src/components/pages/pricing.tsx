@@ -30,8 +30,8 @@ export default function PricingPage() {
   const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
 
   const handleSelectPlan = (planId: string) => {
-    setSelectedPlanId(planId);
-    setIsCheckoutOpen(true);
+    // Ya no necesitamos guardar el ID del plan ni abrir el modal
+    // El PricingCard ahora maneja directamente la redirección a Stripe
   };
 
   const faqs = [
@@ -122,15 +122,7 @@ export default function PricingPage() {
         </div>
       )}
 
-      {selectedPlanId && (
-        <CheckoutFlow
-          isOpen={isCheckoutOpen}
-          onClose={() => setIsCheckoutOpen(false)}
-          planId={selectedPlanId}
-          currentSubscription={subscription}
-        />
-      )}
-
+      {/* Eliminar el componente CheckoutFlow */}
       {!user && (
         <div className="mt-16 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-8">

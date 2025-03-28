@@ -297,23 +297,23 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onClick={() => handleSearch(1)}
               disabled={isLoading}
             >
-              {isLoading ? (
-                <LoadingSpinner
-                  message={t("search.searching")}
-                  compact
-                />
-              ) : (
-                <>
-                  <Search className="mr-2 h-4 w-4" />
-                  {t("search.searchCards")}
-                </>
-              )}
+              <Search className="mr-2 h-4 w-4" />
+              {t("search.searchCards")}
             </Button>
           </div>
         </div>
 
         {/* Resultados de búsqueda */}
-        <div className="mt-4">{children}</div>
+        <div className="mt-4">
+          {isLoading ? (
+            <LoadingSpinner
+              message={t("search.searching")}
+              compact
+            />
+          ) : (
+            children
+          )}
+        </div>
 
         {/* Paginación */}
         {shouldShowPagination && (

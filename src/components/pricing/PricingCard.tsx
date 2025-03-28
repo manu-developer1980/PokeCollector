@@ -15,6 +15,7 @@ import { useState } from "react";
 import { DowngradeWarningModal } from "@/components/subscription/DowngradeWarningModal";
 import type { SubscriptionPlan } from "@/lib/stripe";
 import { useTranslation } from "react-i18next";
+import { supabase } from "../../../supabase/supabase";
 
 interface PricingCardProps {
   plan: PlanFeature;
@@ -78,15 +79,69 @@ export function PricingCard({
       return;
     }
 
-    // Permitir el cambio de plan
+    // Ir directamente al checkout de Stripe
     try {
-      await onSelectPlan(plan.id);
+      // Añadir logs para depuración
+      console.log("Plan seleccionado:", plan);
+
+      const requestData = {
+        priceId: plan.id,
+        customerEmail: user.email,
+        metadata: {
+          user_id: user.id,
+          plan_name: plan.name,
+        },
+        successUrl: `${window.location.origin}/checkout-success`,
+        cancelUrl: `${window.location.origin}/dashboard`,
+      };
+
+      console.log("Datos de la solicitud:", requestData);
+
+      // Verificar si hay un token de autenticación válido
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        console.error("No hay sesión de autenticación activa");
+        throw new Error("No hay sesión de autenticación");
+      }
+
+      // Llamar a la función Edge con manejo de errores mejorado
+      const { data, error } = await supabase.functions.invoke(
+        "create-stripe-checkout",
+        {
+          body: requestData,
+        }
+      );
+
+      if (error) {
+        console.error("Checkout error:", error);
+        // Mostrar más detalles del error
+        console.error("Error completo:", JSON.stringify(error, null, 2));
+        throw new Error(
+          `Error en checkout: ${error.message || "Error desconocido"}`
+        );
+      }
+
+      if (!data) {
+        console.error("No se recibieron datos de la respuesta");
+        throw new Error("No se recibieron datos de la respuesta");
+      }
+
+      console.log("Respuesta de Stripe:", data);
+
+      if (!data?.url) {
+        console.error("URL de checkout no encontrada en la respuesta", data);
+        throw new Error(t("checkout.noCheckoutUrl"));
+      }
+
+      // Redirigir directamente a la URL de Stripe
+      window.location.href = data.url;
     } catch (error) {
       console.error("Error updating plan:", error);
       toast({
         title: t("common.error"),
-        description: t("pricing.updateError"),
+        description: error.message || t("pricing.updateError"),
         variant: "destructive",
+        duration: 5000,
       });
     }
   };

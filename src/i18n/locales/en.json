@@ -493,5 +493,28 @@
     "error": "Payment processing error",
     "errorDescription": "Error connecting to payment service. Please try again.",
     "noCheckoutUrl": "No checkout URL received"
+  },
+  "toasts": {
+    "loginSuccess": "Successfully logged in",
+    "logoutSuccess": "Successfully logged out",
+    "registerSuccess": "Registration successful",
+    "passwordResetEmailSent": "Password reset email sent",
+    "passwordChanged": "Password changed successfully",
+    "nameUpdated": "Name updated successfully",
+    "accountDeleted": "Account deleted successfully",
+    "collectionCreated": "Collection created successfully",
+    "collectionUpdated": "Collection updated successfully",
+    "collectionDeleted": "Collection deleted successfully",
+    "cardAdded": "Card added to collection",
+    "cardRemoved": "Card removed from collection",
+    "cardUpdated": "Card updated in collection",
+    "wishlistAdded": "Card added to wishlist",
+    "wishlistRemoved": "Card removed from wishlist",
+    "subscriptionUpdated": "Subscription updated successfully",
+    "subscriptionCancelled": "Subscription cancelled successfully",
+    "error": "An error occurred",
+    "networkError": "Network error. Please check your connection",
+    "unauthorized": "Unauthorized. Please log in again",
+    "sessionExpired": "Your session has expired. Please log in again"
   }
 }

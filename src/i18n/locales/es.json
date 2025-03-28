@@ -729,5 +729,35 @@
     "error": "Error al procesar el pago",
     "errorDescription": "Error al conectar con el servicio de pagos. Por favor, intenta nuevamente.",
     "noCheckoutUrl": "No se recibió la URL de checkout"
+  },
+  "account": {
+    "statistics": "Estadísticas",
+    "currentUsage": "Uso Actual",
+    "cardsInCollections": "Cartas en Colecciones",
+    "collections": "Colecciones",
+    "wishlist": "Elementos en Lista de Deseos"
+  },
+  "toasts": {
+    "loginSuccess": "Inicio de sesión exitoso",
+    "logoutSuccess": "Cierre de sesión exitoso",
+    "registerSuccess": "Registro exitoso",
+    "passwordResetEmailSent": "Correo de restablecimiento de contraseña enviado",
+    "passwordChanged": "Contraseña cambiada exitosamente",
+    "nameUpdated": "Nombre actualizado exitosamente",
+    "accountDeleted": "Cuenta eliminada exitosamente",
+    "collectionCreated": "Colección creada exitosamente",
+    "collectionUpdated": "Colección actualizada exitosamente",
+    "collectionDeleted": "Colección eliminada exitosamente",
+    "cardAdded": "Carta añadida a la colección",
+    "cardRemoved": "Carta eliminada de la colección",
+    "cardUpdated": "Carta actualizada en la colección",
+    "wishlistAdded": "Carta añadida a la lista de deseos",
+    "wishlistRemoved": "Carta eliminada de la lista de deseos",
+    "subscriptionUpdated": "Suscripción actualizada exitosamente",
+    "subscriptionCancelled": "Suscripción cancelada exitosamente",
+    "error": "Ha ocurrido un error",
+    "networkError": "Error de red. Por favor, verifica tu conexión",
+    "unauthorized": "No autorizado. Por favor, inicia sesión nuevamente",
+    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente"
   }
 }

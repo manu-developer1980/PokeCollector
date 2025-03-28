@@ -18,6 +18,7 @@ import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import { Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Progress } from "@/components/ui/progress";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
@@ -84,13 +85,14 @@ export default function AccountSection({
 
       setIsEditingName(false);
       toast({
-        title: t("account.nameUpdated"),
-        description: t("account.nameUpdatedSuccess"),
+        title: t("toasts.nameUpdated"),
+        variant: "success",
       });
     } catch (error: any) {
+      console.error("Error updating name:", error);
       toast({
-        title: t("common.error"),
-        description: t("account.nameUpdateError"),
+        title: t("toasts.error"),
+        description: t("account.errors.nameUpdateFailed"),
         variant: "destructive",
       });
     } finally {
@@ -137,8 +139,12 @@ export default function AccountSection({
     } catch (error: any) {
       console.error("Error detallado:", error);
       toast({
-        title: t("account.deleteAccountError"),
-        description: error.message || t("common.tryAgainLater"),
+        title: t("toasts.accountDeleted"),
+        variant: "success",
+      });
+      toast({
+        title: t("toasts.error"),
+        description: error.message || t("account.errors.deleteFailed"),
         variant: "destructive",
       });
 
@@ -213,8 +219,9 @@ export default function AccountSection({
         </CardContent>
       </Card>
 
-      {/* Sección de Plan Actual */}
-      <div className="mt-6">
+      {/* Sección de Plan y Estadísticas en la misma fila */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Sección de Plan Actual */}
         <Card>
           <CardHeader>
             <CardTitle>{t("subscription.currentPlan")}</CardTitle>
@@ -269,45 +276,92 @@ export default function AccountSection({
             </Button>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Sección de Estadísticas */}
-      <div className="mt-6">
+        {/* Sección de Estadísticas */}
         <Card>
           <CardHeader>
             <CardTitle>{t("account.statistics")}</CardTitle>
             <CardDescription>{t("account.currentUsage")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">
-                  {t("account.cardsInCollections")}
-                </span>
-                <span>
-                  {stats?.cardsCount || 0} /{" "}
-                  {planFeatures?.maxCards === -1
-                    ? "∞"
-                    : planFeatures?.maxCards || 50}
-                </span>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">
+                    {t("account.cardsInCollections")}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {stats?.cardsCount || 0} /{" "}
+                    {planFeatures?.maxCards === -1
+                      ? "∞"
+                      : planFeatures?.maxCards || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    planFeatures?.maxCards === -1
+                      ? 0
+                      : Math.min(
+                          100,
+                          ((stats?.cardsCount || 0) /
+                            (planFeatures?.maxCards || 50)) *
+                            100
+                        )
+                  }
+                  className="h-2"
+                />
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{t("account.collections")}</span>
-                <span>
-                  {stats?.collectionsCount || 0} /{" "}
-                  {planFeatures?.maxCollections === -1
-                    ? "∞"
-                    : planFeatures?.maxCollections || 1}
-                </span>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">
+                    {t("account.collections")}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {stats?.collectionsCount || 0} /{" "}
+                    {planFeatures?.maxCollections === -1
+                      ? "∞"
+                      : planFeatures?.maxCollections || 1}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    planFeatures?.maxCollections === -1
+                      ? 0
+                      : Math.min(
+                          100,
+                          ((stats?.collectionsCount || 0) /
+                            (planFeatures?.maxCollections || 1)) *
+                            100
+                        )
+                  }
+                  className="h-2"
+                />
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{t("account.wishlist")}</span>
-                <span>
-                  {stats?.wishlistCount || 0} /{" "}
-                  {planFeatures?.maxWishlist === -1
-                    ? "∞"
-                    : planFeatures?.maxWishlist || 10}
-                </span>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">{t("account.wishlist")}</span>
+                  <span className="text-muted-foreground">
+                    {stats?.wishlistCount || 0} /{" "}
+                    {planFeatures?.maxWishlist === -1
+                      ? "∞"
+                      : planFeatures?.maxWishlist || 10}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    planFeatures?.maxWishlist === -1
+                      ? 0
+                      : Math.min(
+                          100,
+                          ((stats?.wishlistCount || 0) /
+                            (planFeatures?.maxWishlist || 10)) *
+                            100
+                        )
+                  }
+                  className="h-2"
+                />
               </div>
             </div>
           </CardContent>
