@@ -1,0 +1,47 @@
+{
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "remember_me": "Remember me",
+    "forgot_password": "Forgot password?",
+    "submit": "Login",
+    "or": "Or",
+    "google": "Continue with Google",
+    "no_account": "Don't have an account?",
+    "sign_up": "Sign up"
+  },
+  "register": {
+    "title": "Create Account",
+    "name": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "terms": "I agree to the Terms and Conditions",
+    "submit": "Register",
+    "or": "Or",
+    "google": "Register with Google",
+    "have_account": "Already have an account?",
+    "sign_in": "Sign in"
+  },
+  "forgot_password": {
+    "title": "Recover Password",
+    "email": "Email",
+    "submit": "Send Instructions",
+    "back_to_login": "Back to Login"
+  },
+  "reset_password": {
+    "title": "Reset Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password",
+    "submit": "Reset Password"
+  },
+  "errors": {
+    "invalid_credentials": "Invalid credentials",
+    "email_required": "Email is required",
+    "password_required": "Password is required",
+    "password_mismatch": "Passwords do not match",
+    "email_exists": "This email is already registered",
+    "terms_required": "You must accept the terms and conditions"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "title": "Lista de Deseos",
+  "stats": {
+    "total_cards": "Total de Cartas: {{count}}",
+    "estimated_value": "Valor Estimado: {{value}}"
+  },
+  "actions": {
+    "add_card": "Añadir Carta",
+    "clear_all": "Limpiar Todo",
+    "share": "Compartir Lista"
+  },
+  "filters": {
+    "title": "Filtros",
+    "search": "Buscar en mi lista de deseos",
+    "set": "Expansión",
+    "type": "Tipo",
+    "rarity": "Rareza",
+    "price_range": "Rango de Precio",
+    "apply": "Aplicar",
+    "clear": "Limpiar"
+  },
+  "sort": {
+    "title": "Ordenar por",
+    "name": "Nombre",
+    "date_added": "Fecha de adición",
+    "price": "Precio",
+    "priority": "Prioridad"
+  },
+  "view": {
+    "grid": "Cuadrícula",
+    "list": "Lista"
+  },
+  "empty": {
+    "title": "Lista de Deseos Vacía",
+    "message": "Aún no has añadido cartas a tu lista de deseos",
+    "add_first": "Añade tu primera carta",
+    "browse": "Explorar cartas populares"
+  },
+  "card_actions": {
+    "add_to_collection": "Añadir a Colección",
+    "remove": "Eliminar",
+    "set_priority": "Establecer Prioridad",
+    "price_alert": "Alerta de Precio"
+  },
+  "priority": {
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja"
+  },
+  "price_alert": {
+    "title": "Alerta de Precio",
+    "current_price": "Precio Actual: {{price}}",
+    "target_price": "Precio Objetivo",
+    "notify_me": "Notificarme cuando el precio baje a",
+    "save": "Guardar Alerta",
+    "cancel": "Cancelar"
+  },
+  "share": {
+    "title": "Compartir Lista de Deseos",
+    "public_link": "Enlace Público",
+    "copy": "Copiar Enlace",
+    "copied": "¡Enlace copiado!",
+    "privacy": "Tu colección permanecerá privada"
+  }
+}

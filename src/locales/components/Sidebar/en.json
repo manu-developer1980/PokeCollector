@@ -1,0 +1,26 @@
+{
+  "menu": {
+    "dashboard": "Dashboard",
+    "collection": "My Collection",
+    "wishlist": "Wishlist",
+    "search": "Search Cards",
+    "stats": "Statistics",
+    "settings": "Settings"
+  },
+  "collection": {
+    "title": "My Collection",
+    "total_cards": "Total Cards: {{count}}",
+    "total_value": "Total Value: {{value}}"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "total_cards": "Wished Cards: {{count}}",
+    "estimated_value": "Estimated Value: {{value}}"
+  },
+  "filters": {
+    "title": "Quick Filters",
+    "recent": "Recently Added",
+    "high_value": "High Value",
+    "favorites": "Favorites"
+  }
+}

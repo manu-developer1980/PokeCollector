@@ -1,0 +1,34 @@
+{
+  "welcome": "Bienvenido, {{name}}",
+  "summary": {
+    "title": "Resumen de Colección",
+    "total_cards": "Total de Cartas",
+    "total_value": "Valor Total",
+    "unique_sets": "Expansiones Únicas",
+    "completion": "Porcentaje de Completado"
+  },
+  "recent": {
+    "title": "Añadidas Recientemente",
+    "view_all": "Ver Todas",
+    "empty": "No has añadido cartas recientemente"
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "by_type": "Por Tipo",
+    "by_rarity": "Por Rareza",
+    "by_set": "Por Expansión",
+    "value_trend": "Tendencia de Valor"
+  },
+  "wishlist": {
+    "title": "Lista de Deseos",
+    "view_all": "Ver Toda",
+    "empty": "Tu lista de deseos está vacía"
+  },
+  "tips": {
+    "title": "Consejos",
+    "complete_profile": "Completa tu perfil",
+    "add_cards": "Añade tus primeras cartas",
+    "create_collection": "Crea una colección personalizada",
+    "explore_sets": "Explora expansiones populares"
+  }
+}

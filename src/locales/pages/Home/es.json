@@ -1,0 +1,44 @@
+{
+  "hero": {
+    "badge": "¡Hazte con todos!",
+    "title": "Gestiona tu Colección de Cartas Pokémon",
+    "description": "Rastrea, organiza y muestra tu colección de Pokémon TCG con nuestras potentes herramientas de gestión.",
+    "start_now": "Comenzar Ahora",
+    "explore_cards": "Explorar Cartas"
+  },
+  "features": {
+    "badge": "Características",
+    "title": "Todo lo que Necesitas para tu Colección",
+    "description": "PokéCollector te proporciona todas las herramientas necesarias para gestionar tu colección de cartas Pokémon.",
+    "card_search": {
+      "title": "Búsqueda de Cartas",
+      "description": "Busca y filtra entre miles de cartas Pokémon por set, tipo, rareza y más."
+    },
+    "collection_management": {
+      "title": "Gestión de Colección",
+      "description": "Añade cartas a tu colección, controla cantidades y organízalas como prefieras."
+    },
+    "wishlist": {
+      "title": "Lista de Deseos",
+      "description": "Mantén un registro de las cartas que deseas adquirir con nuestra función de lista de deseos."
+    },
+    "custom_collections": {
+      "title": "Colecciones Personalizadas",
+      "description": "Crea y gestiona múltiples colecciones personalizadas para diferentes sets o temas."
+    },
+    "advanced_filtering": {
+      "title": "Filtrado Avanzado",
+      "description": "Filtra tu colección por set, tipo, rareza y más para encontrar exactamente lo que buscas."
+    },
+    "realtime_updates": {
+      "title": "Actualizaciones en Tiempo Real",
+      "description": "Tu colección se sincroniza en todos tus dispositivos con actualizaciones en tiempo real."
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Iniciar tu Colección?",
+    "description": "Únete a miles de coleccionistas de cartas Pokémon que ya están utilizando PokéCollector para gestionar sus colecciones.",
+    "pricing": "Ver Planes de Precio",
+    "explore": "Explorar Cartas"
+  }
+}

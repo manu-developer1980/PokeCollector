@@ -1,0 +1,44 @@
+{
+  "hero": {
+    "badge": "Gotta catch 'em all!",
+    "title": "Manage Your Pokémon Card Collection",
+    "description": "Track, organize, and showcase your Pokémon TCG collection with our powerful management tools.",
+    "start_now": "Start Now",
+    "explore_cards": "Explore Cards"
+  },
+  "features": {
+    "badge": "Features",
+    "title": "Everything You Need for Your Collection",
+    "description": "PokéCollector provides you with all the tools you need to manage your Pokémon card collection.",
+    "card_search": {
+      "title": "Card Search",
+      "description": "Search and filter through thousands of Pokémon cards by set, type, rarity, and more."
+    },
+    "collection_management": {
+      "title": "Collection Management",
+      "description": "Add cards to your collection, track quantities, and organize them however you prefer."
+    },
+    "wishlist": {
+      "title": "Wishlist",
+      "description": "Keep track of cards you want to acquire with our wishlist feature."
+    },
+    "custom_collections": {
+      "title": "Custom Collections",
+      "description": "Create and manage multiple custom collections for different sets or themes."
+    },
+    "advanced_filtering": {
+      "title": "Advanced Filtering",
+      "description": "Filter your collection by set, type, rarity, and more to find exactly what you're looking for."
+    },
+    "realtime_updates": {
+      "title": "Real-time Updates",
+      "description": "Your collection syncs across all your devices with real-time updates."
+    }
+  },
+  "cta": {
+    "title": "Ready to Start Your Collection?",
+    "description": "Join thousands of Pokémon card collectors who are already using PokéCollector to manage their collections.",
+    "pricing": "View Pricing Plans",
+    "explore": "Explore Cards"
+  }
+}

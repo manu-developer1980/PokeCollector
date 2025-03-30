@@ -1,0 +1,26 @@
+{
+  "title": "Detalles de la carta",
+  "buttons": {
+    "add_to_collection": "Añadir a colección",
+    "add_to_wishlist": "Añadir a lista de deseos",
+    "remove_from_wishlist": "Quitar de lista de deseos",
+    "edit": "Editar",
+    "remove": "Eliminar",
+    "close": "Cerrar"
+  },
+  "fields": {
+    "name": "Nombre",
+    "set": "Expansión",
+    "rarity": "Rareza",
+    "type": "Tipo",
+    "subtype": "Subtipo",
+    "hp": "Puntos de vida",
+    "artist": "Artista",
+    "price": "Precio",
+    "quantity": "Cantidad",
+    "condition": "Estado",
+    "notes": "Notas",
+    "is_foil": "Foil",
+    "is_first_edition": "Primera edición"
+  }
+}

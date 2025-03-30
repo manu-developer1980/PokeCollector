@@ -1,0 +1,93 @@
+{
+  "common": {
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "back": "Volver",
+    "next": "Siguiente"
+  },
+  "confirmation": {
+    "title": "Confirmar Acción",
+    "message": "¿Estás seguro de que quieres continuar?",
+    "confirm": "Sí, continuar",
+    "cancel": "No, cancelar"
+  },
+  "delete": {
+    "title": "Confirmar Eliminación",
+    "message": "¿Estás seguro de que quieres eliminar esto? Esta acción no se puede deshacer.",
+    "confirm": "Sí, eliminar",
+    "cancel": "No, cancelar"
+  },
+  "error": {
+    "title": "Error",
+    "generic": "Ha ocurrido un error",
+    "try_again": "Intentar de nuevo",
+    "contact_support": "Contactar soporte"
+  },
+  "success": {
+    "title": "Éxito",
+    "generic": "Operación completada con éxito",
+    "close": "Cerrar"
+  },
+  "card_edit": {
+    "title": "Editar Carta",
+    "quantity": "Cantidad",
+    "condition": "Estado",
+    "is_foil": "Foil",
+    "is_first_edition": "Primera Edición",
+    "notes": "Notas",
+    "save": "Guardar Cambios",
+    "cancel": "Cancelar"
+  },
+  "card_add": {
+    "title": "Añadir a Colección",
+    "quantity": "Cantidad",
+    "condition": "Estado",
+    "is_foil": "Foil",
+    "is_first_edition": "Primera Edición",
+    "notes": "Notas (opcional)",
+    "collection": "Colección",
+    "add": "Añadir Carta",
+    "cancel": "Cancelar"
+  },
+  "collection_create": {
+    "title": "Crear Nueva Colección",
+    "name": "Nombre",
+    "description": "Descripción (opcional)",
+    "icon": "Icono",
+    "color": "Color",
+    "create": "Crear Colección",
+    "cancel": "Cancelar"
+  },
+  "collection_edit": {
+    "title": "Editar Colección",
+    "name": "Nombre",
+    "description": "Descripción",
+    "icon": "Icono",
+    "color": "Color",
+    "save": "Guardar Cambios",
+    "cancel": "Cancelar",
+    "delete": "Eliminar Colección"
+  },
+  "image_preview": {
+    "title": "Vista Previa de Imagen",
+    "download": "Descargar",
+    "close": "Cerrar"
+  },
+  "share": {
+    "title": "Compartir",
+    "link": "Enlace",
+    "copy": "Copiar Enlace",
+    "copied": "¡Enlace copiado!",
+    "social": "Redes Sociales",
+    "close": "Cerrar"
+  },
+  "filter": {
+    "title": "Filtros",
+    "apply": "Aplicar",
+    "clear": "Limpiar",
+    "close": "Cerrar"
+  }
+}

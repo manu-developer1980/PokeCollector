@@ -1,0 +1,47 @@
+{
+  "login": {
+    "title": "Iniciar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "remember_me": "Recordarme",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "submit": "Iniciar Sesión",
+    "or": "O",
+    "google": "Continuar con Google",
+    "no_account": "¿No tienes una cuenta?",
+    "sign_up": "Regístrate"
+  },
+  "register": {
+    "title": "Crear Cuenta",
+    "name": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirm_password": "Confirmar Contraseña",
+    "terms": "Acepto los Términos y Condiciones",
+    "submit": "Registrarse",
+    "or": "O",
+    "google": "Registrarse con Google",
+    "have_account": "¿Ya tienes una cuenta?",
+    "sign_in": "Inicia Sesión"
+  },
+  "forgot_password": {
+    "title": "Recuperar Contraseña",
+    "email": "Correo Electrónico",
+    "submit": "Enviar Instrucciones",
+    "back_to_login": "Volver a Iniciar Sesión"
+  },
+  "reset_password": {
+    "title": "Restablecer Contraseña",
+    "new_password": "Nueva Contraseña",
+    "confirm_password": "Confirmar Contraseña",
+    "submit": "Restablecer Contraseña"
+  },
+  "errors": {
+    "invalid_credentials": "Credenciales inválidas",
+    "email_required": "El correo electrónico es obligatorio",
+    "password_required": "La contraseña es obligatoria",
+    "password_mismatch": "Las contraseñas no coinciden",
+    "email_exists": "Este correo electrónico ya está registrado",
+    "terms_required": "Debes aceptar los términos y condiciones"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "title": "Wishlist",
+  "stats": {
+    "total_cards": "Total Cards: {{count}}",
+    "estimated_value": "Estimated Value: {{value}}"
+  },
+  "actions": {
+    "add_card": "Add Card",
+    "clear_all": "Clear All",
+    "share": "Share List"
+  },
+  "filters": {
+    "title": "Filters",
+    "search": "Search in my wishlist",
+    "set": "Set",
+    "type": "Type",
+    "rarity": "Rarity",
+    "price_range": "Price Range",
+    "apply": "Apply",
+    "clear": "Clear"
+  },
+  "sort": {
+    "title": "Sort by",
+    "name": "Name",
+    "date_added": "Date added",
+    "price": "Price",
+    "priority": "Priority"
+  },
+  "view": {
+    "grid": "Grid",
+    "list": "List"
+  },
+  "empty": {
+    "title": "Empty Wishlist",
+    "message": "You haven't added any cards to your wishlist yet",
+    "add_first": "Add your first card",
+    "browse": "Browse popular cards"
+  },
+  "card_actions": {
+    "add_to_collection": "Add to Collection",
+    "remove": "Remove",
+    "set_priority": "Set Priority",
+    "price_alert": "Price Alert"
+  },
+  "priority": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "price_alert": {
+    "title": "Price Alert",
+    "current_price": "Current Price: {{price}}",
+    "target_price": "Target Price",
+    "notify_me": "Notify me when price drops to",
+    "save": "Save Alert",
+    "cancel": "Cancel"
+  },
+  "share": {
+    "title": "Share Wishlist",
+    "public_link": "Public Link",
+    "copy": "Copy Link",
+    "copied": "Link copied!",
+    "privacy": "Your collection will remain private"
+  }
+}

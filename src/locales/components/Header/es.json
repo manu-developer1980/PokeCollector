@@ -1,0 +1,25 @@
+{
+  "title": "PokeCollector",
+  "navigation": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "collection": "Mi Colección",
+    "wishlist": "Lista de Deseos",
+    "search": "Buscar",
+    "settings": "Configuración"
+  },
+  "user": {
+    "profile": "Mi Perfil",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión"
+  },
+  "search": {
+    "placeholder": "Buscar cartas...",
+    "button": "Buscar"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "No tienes notificaciones",
+    "mark_all_read": "Marcar todas como leídas"
+  }
+}

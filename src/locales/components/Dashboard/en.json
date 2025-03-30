@@ -1,0 +1,34 @@
+{
+  "welcome": "Welcome, {{name}}",
+  "summary": {
+    "title": "Collection Summary",
+    "total_cards": "Total Cards",
+    "total_value": "Total Value",
+    "unique_sets": "Unique Sets",
+    "completion": "Completion Percentage"
+  },
+  "recent": {
+    "title": "Recently Added",
+    "view_all": "View All",
+    "empty": "You haven't added any cards recently"
+  },
+  "stats": {
+    "title": "Statistics",
+    "by_type": "By Type",
+    "by_rarity": "By Rarity",
+    "by_set": "By Set",
+    "value_trend": "Value Trend"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "view_all": "View All",
+    "empty": "Your wishlist is empty"
+  },
+  "tips": {
+    "title": "Tips",
+    "complete_profile": "Complete your profile",
+    "add_cards": "Add your first cards",
+    "create_collection": "Create a custom collection",
+    "explore_sets": "Explore popular sets"
+  }
+}

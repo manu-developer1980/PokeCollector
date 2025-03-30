@@ -1,0 +1,70 @@
+{
+  "title": "Search Cards",
+  "search_bar": {
+    "placeholder": "Search by name, number or text",
+    "button": "Search",
+    "advanced": "Advanced Search"
+  },
+  "filters": {
+    "title": "Filters",
+    "set": "Set",
+    "type": "Type",
+    "subtype": "Subtype",
+    "supertype": "Supertype",
+    "rarity": "Rarity",
+    "energy_type": "Energy Type",
+    "hp_range": "HP Range",
+    "price_range": "Price Range",
+    "artist": "Artist",
+    "apply": "Apply Filters",
+    "clear": "Clear Filters",
+    "save": "Save Filters",
+    "load": "Load Saved Filters"
+  },
+  "sort": {
+    "title": "Sort by",
+    "name_asc": "Name (A-Z)",
+    "name_desc": "Name (Z-A)",
+    "number_asc": "Number (Low to High)",
+    "number_desc": "Number (High to Low)",
+    "release_date": "Release Date",
+    "price_asc": "Price (Low to High)",
+    "price_desc": "Price (High to Low)"
+  },
+  "results": {
+    "count": "{{count}} results found",
+    "no_results": "No results found",
+    "suggestions": "Suggestions:",
+    "check_spelling": "Check your spelling",
+    "fewer_filters": "Use fewer filters",
+    "try_different": "Try different terms"
+  },
+  "pagination": {
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {{current}} of {{total}}",
+    "per_page": "Per page:"
+  },
+  "advanced_search": {
+    "title": "Advanced Search",
+    "name": "Name",
+    "text": "Card Text",
+    "ability": "Ability",
+    "attack": "Attack",
+    "retreat_cost": "Retreat Cost",
+    "weakness": "Weakness",
+    "resistance": "Resistance",
+    "exact_match": "Exact match",
+    "search": "Search",
+    "cancel": "Cancel"
+  },
+  "saved_searches": {
+    "title": "Saved Searches",
+    "save_current": "Save current search",
+    "name": "Search name",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "no_saved": "No saved searches"
+  }
+}

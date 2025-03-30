@@ -1,0 +1,70 @@
+{
+  "title": "Buscar Cartas",
+  "search_bar": {
+    "placeholder": "Buscar por nombre, número o texto",
+    "button": "Buscar",
+    "advanced": "Búsqueda Avanzada"
+  },
+  "filters": {
+    "title": "Filtros",
+    "set": "Expansión",
+    "type": "Tipo",
+    "subtype": "Subtipo",
+    "supertype": "Supertipo",
+    "rarity": "Rareza",
+    "energy_type": "Tipo de Energía",
+    "hp_range": "Rango de HP",
+    "price_range": "Rango de Precio",
+    "artist": "Artista",
+    "apply": "Aplicar Filtros",
+    "clear": "Limpiar Filtros",
+    "save": "Guardar Filtros",
+    "load": "Cargar Filtros Guardados"
+  },
+  "sort": {
+    "title": "Ordenar por",
+    "name_asc": "Nombre (A-Z)",
+    "name_desc": "Nombre (Z-A)",
+    "number_asc": "Número (Menor a Mayor)",
+    "number_desc": "Número (Mayor a Menor)",
+    "release_date": "Fecha de Lanzamiento",
+    "price_asc": "Precio (Menor a Mayor)",
+    "price_desc": "Precio (Mayor a Menor)"
+  },
+  "results": {
+    "count": "{{count}} resultados encontrados",
+    "no_results": "No se encontraron resultados",
+    "suggestions": "Sugerencias:",
+    "check_spelling": "Verifica la ortografía",
+    "fewer_filters": "Usa menos filtros",
+    "try_different": "Prueba términos diferentes"
+  },
+  "pagination": {
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "page": "Página {{current}} de {{total}}",
+    "per_page": "Por página:"
+  },
+  "advanced_search": {
+    "title": "Búsqueda Avanzada",
+    "name": "Nombre",
+    "text": "Texto de la Carta",
+    "ability": "Habilidad",
+    "attack": "Ataque",
+    "retreat_cost": "Coste de Retirada",
+    "weakness": "Debilidad",
+    "resistance": "Resistencia",
+    "exact_match": "Coincidencia exacta",
+    "search": "Buscar",
+    "cancel": "Cancelar"
+  },
+  "saved_searches": {
+    "title": "Búsquedas Guardadas",
+    "save_current": "Guardar búsqueda actual",
+    "name": "Nombre de la búsqueda",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "no_saved": "No hay búsquedas guardadas"
+  }
+}

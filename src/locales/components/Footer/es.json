@@ -1,0 +1,38 @@
+{
+  "copyright": "© {{year}} PokeCollector. Todos los derechos reservados.",
+  "links": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "terms": "Términos de Servicio",
+    "privacy": "Política de Privacidad",
+    "contact": "Contacto",
+    "faq": "Preguntas Frecuentes",
+    "blog": "Blog",
+    "help": "Ayuda"
+  },
+  "social": {
+    "follow_us": "Síguenos",
+    "twitter": "Twitter",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "discord": "Discord"
+  },
+  "newsletter": {
+    "title": "Suscríbete a nuestro boletín",
+    "placeholder": "Tu correo electrónico",
+    "subscribe": "Suscribirse",
+    "success": "¡Gracias por suscribirte!",
+    "error": "Error al suscribirse. Inténtalo de nuevo."
+  },
+  "language": {
+    "select": "Seleccionar idioma"
+  },
+  "app": {
+    "download": "Descarga nuestra app",
+    "android": "Android",
+    "ios": "iOS"
+  },
+  "legal": {
+    "disclaimer": "Pokémon y todas las imágenes relacionadas son marcas registradas y propiedad de Nintendo, Creatures Inc., y GAME FREAK inc. PokeCollector no está afiliado, respaldado, patrocinado o aprobado por Nintendo, Creatures Inc., o GAME FREAK inc."
+  }
+}

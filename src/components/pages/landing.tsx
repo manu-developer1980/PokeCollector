@@ -14,8 +14,9 @@ import { useAuth } from "../../../supabase/auth";
 import { useTranslation } from "react-i18next";
 
 export default function LandingPage() {
-  const { t } = useTranslation();
   const { user } = useAuth();
+  // Especificamos explícitamente el namespace
+  const { t } = useTranslation(["home"]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-red-50">
@@ -26,21 +27,21 @@ export default function LandingPage() {
             <div className="lg:w-1/2 space-y-8">
               <div>
                 <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-                  {t("landing.hero.badge")}
+                  {t("hero.badge")}
                 </Badge>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900">
-                  {t("landing.hero.title")}
+                  {t("hero.title")}
                 </h1>
               </div>
               <p className="text-lg md:text-xl text-gray-600">
-                {t("landing.hero.subtitle")}
+                {t("hero.description")}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
-                  {t("landing.hero.cta")}
+                  {t("hero.start_now")}
                 </Link>
                 <Link to="/search">
                   <Button
@@ -49,7 +50,7 @@ export default function LandingPage() {
                     className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 w-full sm:w-auto"
                   >
                     <Search className="mr-2 h-4 w-4" />
-                    {t("search.title")}
+                    {t("hero.explore_cards")}
                   </Button>
                 </Link>
               </div>
@@ -58,22 +59,22 @@ export default function LandingPage() {
               <div className="grid grid-cols-2 gap-4 transform rotate-3">
                 <img
                   src="https://images.pokemontcg.io/sv3/1_hires.png"
-                  alt={t("landing.hero.cardAlt1")}
+                  alt="Charizard Card"
                   className="rounded-lg shadow-xl transform -rotate-6 hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pokemontcg.io/sv2/1_hires.png"
-                  alt={t("landing.hero.cardAlt2")}
+                  alt="Pikachu Card"
                   className="rounded-lg shadow-xl transform rotate-6 hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pokemontcg.io/sv3pt5/1_hires.png"
-                  alt={t("landing.hero.cardAlt3")}
+                  alt="Mewtwo Card"
                   className="rounded-lg shadow-xl transform rotate-3 hover:scale-105 transition-transform duration-300"
                 />
                 <img
                   src="https://images.pokemontcg.io/sv3/2_hires.png"
-                  alt={t("landing.hero.cardAlt4")}
+                  alt="Blastoise Card"
                   className="rounded-lg shadow-xl transform -rotate-3 hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -87,13 +88,13 @@ export default function LandingPage() {
         <div className="container px-4 mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-yellow-200 text-yellow-800 hover:bg-yellow-300 border-none">
-              {t("landing.features.badge")}
+              {t("features.badge")}
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
-              {t("landing.features.title")}
+              {t("features.title")}
             </h2>
             <p className="text-gray-600 max-w-[700px] mx-auto">
-              {t("landing.features.subtitle")}
+              {t("features.description")}
             </p>
           </div>
 
@@ -104,10 +105,10 @@ export default function LandingPage() {
                   <Search className="h-6 w-6 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  {t("landing.features.search.title")}
+                  {t("features.card_search.title")}
                 </h3>
                 <p className="text-gray-600">
-                  {t("landing.features.search.description")}
+                  {t("features.card_search.description")}
                 </p>
               </CardContent>
             </Card>
@@ -118,10 +119,10 @@ export default function LandingPage() {
                   <Database className="h-6 w-6 text-green-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  {t("landing.features.collection.title")}
+                  {t("features.collection_management.title")}
                 </h3>
                 <p className="text-gray-600">
-                  {t("landing.features.collection.description")}
+                  {t("features.collection_management.description")}
                 </p>
               </CardContent>
             </Card>
@@ -132,10 +133,10 @@ export default function LandingPage() {
                   <Heart className="h-6 w-6 text-purple-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  {t("landing.features.wishlist.title")}
+                  {t("features.wishlist.title")}
                 </h3>
                 <p className="text-gray-600">
-                  {t("landing.features.wishlist.description")}
+                  {t("features.wishlist.description")}
                 </p>
               </CardContent>
             </Card>
@@ -146,10 +147,10 @@ export default function LandingPage() {
                   <FolderPlus className="h-6 w-6 text-yellow-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  {t("landing.features.customCollections.title")}
+                  {t("features.custom_collections.title")}
                 </h3>
                 <p className="text-gray-600">
-                  {t("landing.features.customCollections.description")}
+                  {t("features.custom_collections.description")}
                 </p>
               </CardContent>
             </Card>
@@ -160,10 +161,10 @@ export default function LandingPage() {
                   <ListFilter className="h-6 w-6 text-red-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  {t("landing.features.filtering.title")}
+                  {t("features.advanced_filtering.title")}
                 </h3>
                 <p className="text-gray-600">
-                  {t("landing.features.filtering.description")}
+                  {t("features.advanced_filtering.description")}
                 </p>
               </CardContent>
             </Card>
@@ -174,10 +175,10 @@ export default function LandingPage() {
                   <Zap className="h-6 w-6 text-indigo-600" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">
-                  {t("landing.features.realtime.title")}
+                  {t("features.realtime_updates.title")}
                 </h3>
                 <p className="text-gray-600">
-                  {t("landing.features.realtime.description")}
+                  {t("features.realtime_updates.description")}
                 </p>
               </CardContent>
             </Card>
@@ -191,17 +192,17 @@ export default function LandingPage() {
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-200 max-w-4xl mx-auto">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-                {t("landing.cta.title")}
+                {t("cta.title")}
               </h2>
               <p className="text-lg md:text-xl mb-8 text-gray-600">
-                {t("landing.cta.subtitle")}
+                {t("cta.description")}
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link
                   to="/pricing"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
-                  {t("landing.hero.cta")}
+                  {t("cta.pricing")}
                 </Link>
                 <Link to="/search">
                   <Button
@@ -209,7 +210,7 @@ export default function LandingPage() {
                     size="lg"
                     className="border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 w-full sm:w-auto"
                   >
-                    {t("landing.cta.exploreButton")}
+                    {t("cta.explore")}
                   </Button>
                 </Link>
               </div>

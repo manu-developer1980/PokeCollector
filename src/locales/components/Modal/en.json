@@ -1,0 +1,93 @@
+{
+  "common": {
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next"
+  },
+  "confirmation": {
+    "title": "Confirm Action",
+    "message": "Are you sure you want to continue?",
+    "confirm": "Yes, continue",
+    "cancel": "No, cancel"
+  },
+  "delete": {
+    "title": "Confirm Deletion",
+    "message": "Are you sure you want to delete this? This action cannot be undone.",
+    "confirm": "Yes, delete",
+    "cancel": "No, cancel"
+  },
+  "error": {
+    "title": "Error",
+    "generic": "An error has occurred",
+    "try_again": "Try again",
+    "contact_support": "Contact support"
+  },
+  "success": {
+    "title": "Success",
+    "generic": "Operation completed successfully",
+    "close": "Close"
+  },
+  "card_edit": {
+    "title": "Edit Card",
+    "quantity": "Quantity",
+    "condition": "Condition",
+    "is_foil": "Foil",
+    "is_first_edition": "First Edition",
+    "notes": "Notes",
+    "save": "Save Changes",
+    "cancel": "Cancel"
+  },
+  "card_add": {
+    "title": "Add to Collection",
+    "quantity": "Quantity",
+    "condition": "Condition",
+    "is_foil": "Foil",
+    "is_first_edition": "First Edition",
+    "notes": "Notes (optional)",
+    "collection": "Collection",
+    "add": "Add Card",
+    "cancel": "Cancel"
+  },
+  "collection_create": {
+    "title": "Create New Collection",
+    "name": "Name",
+    "description": "Description (optional)",
+    "icon": "Icon",
+    "color": "Color",
+    "create": "Create Collection",
+    "cancel": "Cancel"
+  },
+  "collection_edit": {
+    "title": "Edit Collection",
+    "name": "Name",
+    "description": "Description",
+    "icon": "Icon",
+    "color": "Color",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "delete": "Delete Collection"
+  },
+  "image_preview": {
+    "title": "Image Preview",
+    "download": "Download",
+    "close": "Close"
+  },
+  "share": {
+    "title": "Share",
+    "link": "Link",
+    "copy": "Copy Link",
+    "copied": "Link copied!",
+    "social": "Social Media",
+    "close": "Close"
+  },
+  "filter": {
+    "title": "Filters",
+    "apply": "Apply",
+    "clear": "Clear",
+    "close": "Close"
+  }
+}

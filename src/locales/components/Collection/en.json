@@ -1,0 +1,69 @@
+{
+  "title": "My Collection",
+  "stats": {
+    "total_cards": "Total Cards: {{count}}",
+    "total_value": "Total Value: {{value}}",
+    "unique_sets": "Sets: {{count}}"
+  },
+  "actions": {
+    "add_card": "Add Card",
+    "import": "Import",
+    "export": "Export",
+    "create_collection": "Create Collection"
+  },
+  "filters": {
+    "title": "Filters",
+    "search": "Search in my collection",
+    "set": "Set",
+    "type": "Type",
+    "rarity": "Rarity",
+    "condition": "Condition",
+    "apply": "Apply",
+    "clear": "Clear"
+  },
+  "sort": {
+    "title": "Sort by",
+    "name": "Name",
+    "date_added": "Date added",
+    "value": "Value",
+    "rarity": "Rarity",
+    "set": "Set"
+  },
+  "view": {
+    "grid": "Grid",
+    "list": "List",
+    "compact": "Compact"
+  },
+  "empty": {
+    "title": "Empty Collection",
+    "message": "You haven't added any cards to your collection yet",
+    "add_first": "Add your first card"
+  },
+  "card_actions": {
+    "edit": "Edit",
+    "remove": "Remove",
+    "move": "Move to",
+    "duplicate": "Duplicate"
+  },
+  "collections": {
+    "title": "My Collections",
+    "all": "All Cards",
+    "create": "Create New",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "import": {
+    "title": "Import Collection",
+    "formats": "Supported formats: CSV, Excel, JSON",
+    "upload": "Upload File",
+    "template": "Download Template"
+  },
+  "export": {
+    "title": "Export Collection",
+    "format": "Format",
+    "options": "Options",
+    "include_images": "Include images",
+    "include_prices": "Include prices",
+    "download": "Download"
+  }
+}

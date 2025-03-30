@@ -1,0 +1,25 @@
+{
+  "title": "PokeCollector",
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "collection": "My Collection",
+    "wishlist": "Wishlist",
+    "search": "Search",
+    "settings": "Settings"
+  },
+  "user": {
+    "profile": "My Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "search": {
+    "placeholder": "Search cards...",
+    "button": "Search"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You have no notifications",
+    "mark_all_read": "Mark all as read"
+  }
+}

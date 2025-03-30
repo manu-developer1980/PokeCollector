@@ -1,0 +1,69 @@
+{
+  "title": "Mi Colección",
+  "stats": {
+    "total_cards": "Total de Cartas: {{count}}",
+    "total_value": "Valor Total: {{value}}",
+    "unique_sets": "Expansiones: {{count}}"
+  },
+  "actions": {
+    "add_card": "Añadir Carta",
+    "import": "Importar",
+    "export": "Exportar",
+    "create_collection": "Crear Colección"
+  },
+  "filters": {
+    "title": "Filtros",
+    "search": "Buscar en mi colección",
+    "set": "Expansión",
+    "type": "Tipo",
+    "rarity": "Rareza",
+    "condition": "Estado",
+    "apply": "Aplicar",
+    "clear": "Limpiar"
+  },
+  "sort": {
+    "title": "Ordenar por",
+    "name": "Nombre",
+    "date_added": "Fecha de adición",
+    "value": "Valor",
+    "rarity": "Rareza",
+    "set": "Expansión"
+  },
+  "view": {
+    "grid": "Cuadrícula",
+    "list": "Lista",
+    "compact": "Compacta"
+  },
+  "empty": {
+    "title": "Colección Vacía",
+    "message": "Aún no has añadido cartas a tu colección",
+    "add_first": "Añade tu primera carta"
+  },
+  "card_actions": {
+    "edit": "Editar",
+    "remove": "Eliminar",
+    "move": "Mover a",
+    "duplicate": "Duplicar"
+  },
+  "collections": {
+    "title": "Mis Colecciones",
+    "all": "Todas las Cartas",
+    "create": "Crear Nueva",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "import": {
+    "title": "Importar Colección",
+    "formats": "Formatos soportados: CSV, Excel, JSON",
+    "upload": "Subir Archivo",
+    "template": "Descargar Plantilla"
+  },
+  "export": {
+    "title": "Exportar Colección",
+    "format": "Formato",
+    "options": "Opciones",
+    "include_images": "Incluir imágenes",
+    "include_prices": "Incluir precios",
+    "download": "Descargar"
+  }
+}
