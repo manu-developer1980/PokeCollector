@@ -91,7 +91,7 @@
       "setDefaultFailed": "No se pudo establecer la colección predeterminada.",
       "noSelectedCollection": "No hay una colección seleccionada"
     },
-    "confirmDeleteWithName": "¿Estás seguro de que deseas eliminar la colección \"{name}\"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.",
+    "confirmDeleteWithName": "¿Estás seguro de que quieres eliminar la colección \"{name}\"? Esta acción no se puede deshacer y todas las cartas asociadas serán eliminadas.",
     "addCard": "Añadir a Colección",
     "selectCollection": "Seleccionar colección",
     "adding": "Añadiendo...",
@@ -223,7 +223,13 @@
       "addToCollection": "añadir cartas a tu colección",
       "createCollections": "crear nuevas colecciones"
     },
-    "loginRequiredForWishlist": "Debes iniciar sesión para añadir cartas a tu lista de deseos."
+    "loginRequiredForWishlist": "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
+    "downgrade": {
+      "confirmTitle": "Confirmar cambio de plan",
+      "description": "Estás a punto de cambiar de {currentPlan} a {targetPlan}. Este cambio reducirá los límites de tu cuenta.",
+      "warning": "Importante: Si excedes los límites del nuevo plan, no podrás añadir más items hasta que liberes espacio.",
+      "confirm": "Confirmar cambio"
+    }
   },
   "pricing": {
     "title": "Planes y Precios",

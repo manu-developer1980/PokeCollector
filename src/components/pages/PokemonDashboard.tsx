@@ -1364,7 +1364,6 @@ export default function PokemonDashboard() {
         </div>
         <Footer />
       </div>
-
       {/* Dialogs */}
       <CardDetail
         card={selectedCard}
@@ -1388,7 +1387,6 @@ export default function PokemonDashboard() {
         }
         userPlan={planType.toLowerCase()}
       />
-
       <AddToCollectionDialog
         card={selectedCard}
         collections={collections}
@@ -1396,7 +1394,6 @@ export default function PokemonDashboard() {
         onClose={() => setIsAddToCollectionOpen(false)}
         onAddToCollection={handleSaveToCollection}
       />
-
       <CollectionDialog
         collection={editingCollection}
         isOpen={isCollectionDialogOpen}
@@ -1404,7 +1401,6 @@ export default function PokemonDashboard() {
         onSave={handleSaveCollection}
         isDefault={collections.length === 0}
       />
-
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
@@ -1417,9 +1413,9 @@ export default function PokemonDashboard() {
         }
         onConfirm={handleConfirmDelete}
         title={t("collection.delete")}
-        description={t("collection.confirmDeleteWithName", {
-          name: deleteConfirmationState.collectionName,
-        })}
+        description={`${t("collection.confirmDelete")} "${
+          deleteConfirmationState.collectionName
+        }" ${t("collection.deleteWarning")}`}
       />
       <NoDefaultCollectionDialog
         isOpen={isNoDefaultCollectionDialogOpen}

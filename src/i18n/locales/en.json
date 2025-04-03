@@ -220,6 +220,12 @@
       "addToWishlist": "add to your wishlist",
       "addToCollection": "add cards to your collection",
       "createCollections": "create new collections"
+    },
+    "downgrade": {
+      "confirmTitle": "Confirm Plan Change",
+      "description": "You are about to change from {currentPlan} to {targetPlan}. This change will reduce your account limits.",
+      "warning": "Important: If you exceed the limits of the new plan, you won't be able to add more items until you free up space.",
+      "confirm": "Confirm Change"
     }
   },
   "pricing": {

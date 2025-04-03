@@ -173,7 +173,7 @@ const Dashboard = () => {
 
       toast({
         title: id ? t("collection.updated") : t("collection.created"),
-        description: t("collection.saveSuccess", { name }),
+        description: t("collection.saveSuccess", { name: collectionData.name }),
       });
 
       setIsCollectionDialogOpen(false);

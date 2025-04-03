@@ -12,6 +12,13 @@ import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { DowngradeWarningModal } from "./DowngradeWarningModal";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 
+interface PricingCardProps {
+  plan: SubscriptionPlan;
+  isCurrentPlan?: boolean;
+  onSelectPlan?: (plan: SubscriptionPlan) => void;
+  // other props...
+}
+
 interface PlanChangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
