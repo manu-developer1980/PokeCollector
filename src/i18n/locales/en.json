@@ -59,7 +59,9 @@
     "cards": "cards",
     "confirmDelete": "Are you sure you want to delete this collection?",
     "deleteWarning": "This action cannot be undone and will delete all cards in this collection.",
-    "addCard": "Add Card",
+    "addCard": "Add to Collection",
+    "selectCollection": "Select collection",
+    "adding": "Adding...",
     "removeCard": "Remove Card",
     "cardAdded": "Card added to collection",
     "cardAddedToDefault": "Card added to default collection",
@@ -76,6 +78,13 @@
     "deleted": "Collection deleted",
     "saveSuccess": "Collection \"{name}\" has been saved successfully.",
     "deleteSuccess": "The collection has been deleted.",
+    "editDescription": "Modify your collection details",
+    "createDescription": "Create a new collection to organize your cards",
+    "nameLabel": "Collection Name",
+    "namePlaceholder": "My Awesome Collection",
+    "descriptionLabel": "Description (Optional)",
+    "descriptionPlaceholder": "Describe your collection...",
+    "setAsDefault": "Set as default collection",
     "errors": {
       "loadFailed": "Could not load collections. Please try again.",
       "createDefaultFailed": "Could not create default collection. Please try again.",
@@ -154,6 +163,7 @@
     "price": "Price",
     "quantity": "Quantity",
     "notes": "Notes",
+    "selectCondition": "Select condition",
     "personalNotes": "Personal notes about this card",
     "addToCollection": "Add to collection",
     "addToWishlist": "Add to wishlist",
@@ -753,7 +763,8 @@
     "error": "An error occurred",
     "networkError": "Network error. Please check your connection",
     "unauthorized": "Unauthorized. Please log in again",
-    "sessionExpired": "Your session has expired. Please log in again"
+    "sessionExpired": "Your session has expired. Please log in again",
+    "success": "Success!"
   },
   "pagination": {
     "showing": "Showing",

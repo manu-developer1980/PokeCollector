@@ -59,9 +59,15 @@
     "cards": "cartas",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta colección?",
     "deleteWarning": "Esta acción no se puede deshacer y eliminará todas las cartas de esta colección.",
-    "addCard": "Añadir Carta",
+
+    "editDescription": "Modifica los detalles de tu colección",
+    "createDescription": "Crea una nueva colección para organizar tus cartas",
+    "nameLabel": "Nombre de la Colección",
+    "namePlaceholder": "Mi Colección Increíble",
+    "descriptionLabel": "Descripción (Opcional)",
+    "descriptionPlaceholder": "Describe tu colección...",
+    "setAsDefault": "Establecer como colección predeterminada",
     "removeCard": "Eliminar Carta",
-    "cardAdded": "Carta añadida a la colección",
     "cardAddedToDefault": "Carta añadida a la colección por defecto",
     "cardRemoved": "Carta eliminada de la colección",
     "collectionCreated": "Colección creada con éxito",
@@ -85,7 +91,11 @@
       "setDefaultFailed": "No se pudo establecer la colección predeterminada.",
       "noSelectedCollection": "No hay una colección seleccionada"
     },
-    "confirmDeleteWithName": "¿Estás seguro de que deseas eliminar la colección \"{name}\"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas."
+    "confirmDeleteWithName": "¿Estás seguro de que deseas eliminar la colección \"{name}\"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.",
+    "addCard": "Añadir a Colección",
+    "selectCollection": "Seleccionar colección",
+    "adding": "Añadiendo...",
+    "cardAdded": "Carta añadida a la colección correctamente"
   },
   "wishlist": {
     "title": "Lista de Deseos",
@@ -143,6 +153,7 @@
   },
   "card": {
     "details": "Detalles de la carta",
+    "selectCondition": "Seleccionar estado",
     "name": "Nombre",
     "number": "Número",
     "set": "Set",
@@ -754,7 +765,8 @@
     "error": "Ha ocurrido un error",
     "networkError": "Error de red. Por favor, verifica tu conexión",
     "unauthorized": "No autorizado. Por favor, inicia sesión nuevamente",
-    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente"
+    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente",
+    "success": "¡Éxito!"
   },
   "pagination": {
     "showing": "Mostrando",

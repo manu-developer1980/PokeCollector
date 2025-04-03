@@ -28,15 +28,7 @@ import {
   PokemonCard,
   PokemonCardSearchParams,
 } from "@/types/pokemon";
-import {
-  Database,
-  Heart,
-  Search,
-  Grid3X3,
-  Plus,
-  Loader2,
-  User,
-} from "lucide-react";
+import { Database, Heart, Search, User } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 import MainHeader from "../layout/MainHeader";
@@ -136,7 +128,7 @@ export default function PokemonDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [wishlistCards, setWishlistCards] = useState<PokemonCard[]>([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
-  const [activeSection, setActiveSection] = useState("Search Cards");
+  const [activeSection, setActiveSection] = useState("My Collection");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
   const [isNoSubscriptionModalOpen, setIsNoSubscriptionModalOpen] =

@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collection, PokemonCard } from "@/types/pokemon";
 import { supabase } from "../../../supabase/supabase";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface AddToCollectionDialogProps {
   card: PokemonCard | null;
@@ -45,6 +46,8 @@ const AddToCollectionDialog = ({
   onClose,
   onAddToCollection,
 }: AddToCollectionDialogProps) => {
+  const { t } = useTranslation();
+
   // Valores iniciales por defecto
   const DEFAULT_VALUES = {
     quantity: 1,
@@ -128,8 +131,8 @@ const AddToCollectionDialog = ({
       }
 
       toast({
-        title: "¡Éxito!",
-        description: "Carta añadida a la colección correctamente",
+        title: t("toasts.success"),
+        description: t("collection.cardAdded"),
       });
 
       // Notificar al componente padre
@@ -148,8 +151,8 @@ const AddToCollectionDialog = ({
     } catch (error) {
       console.error("Error adding card to collection:", error);
       toast({
-        title: "Error",
-        description: "No se pudo añadir la carta a la colección",
+        title: t("common.error"),
+        description: t("collection.errors.saveFailed"),
         variant: "destructive",
       });
     } finally {
@@ -166,7 +169,7 @@ const AddToCollectionDialog = ({
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Añadir a Colección</DialogTitle>
+          <DialogTitle>{t("collection.addCard")}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -186,7 +189,7 @@ const AddToCollectionDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="collection">Colección</Label>
+              <Label htmlFor="collection">{t("collection.title")}</Label>
               <Select
                 value={selectedCollection?.id}
                 onValueChange={(id) =>
@@ -196,7 +199,7 @@ const AddToCollectionDialog = ({
                 }
               >
                 <SelectTrigger id="collection">
-                  <SelectValue placeholder="Seleccionar colección" />
+                  <SelectValue placeholder={t("collection.selectCollection")} />
                 </SelectTrigger>
                 <SelectContent>
                   {collections.map((collection) => (
@@ -212,7 +215,7 @@ const AddToCollectionDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">Cantidad</Label>
+              <Label htmlFor="quantity">{t("card.quantity")}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -224,22 +227,30 @@ const AddToCollectionDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="condition">Estado</Label>
+            <Label htmlFor="condition">{t("card.condition")}</Label>
             <Select
               value={condition}
               onValueChange={setCondition}
             >
               <SelectTrigger id="condition">
-                <SelectValue placeholder="Seleccionar estado" />
+                <SelectValue placeholder={t("card.selectCondition")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Mint">Perfecta</SelectItem>
-                <SelectItem value="Near Mint">Casi Perfecta</SelectItem>
-                <SelectItem value="Excellent">Excelente</SelectItem>
-                <SelectItem value="Good">Buena</SelectItem>
-                <SelectItem value="Light Played">Poco Usada</SelectItem>
-                <SelectItem value="Played">Usada</SelectItem>
-                <SelectItem value="Poor">Deteriorada</SelectItem>
+                <SelectItem value="Mint">{t("cardConditions.mint")}</SelectItem>
+                <SelectItem value="Near Mint">
+                  {t("cardConditions.nearmint")}
+                </SelectItem>
+                <SelectItem value="Excellent">
+                  {t("cardConditions.excellent")}
+                </SelectItem>
+                <SelectItem value="Good">{t("cardConditions.good")}</SelectItem>
+                <SelectItem value="Light Played">
+                  {t("cardConditions.lightplayed")}
+                </SelectItem>
+                <SelectItem value="Played">
+                  {t("cardConditions.played")}
+                </SelectItem>
+                <SelectItem value="Poor">{t("cardConditions.poor")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -255,7 +266,7 @@ const AddToCollectionDialog = ({
                 htmlFor="foil"
                 className="text-sm cursor-pointer"
               >
-                Foil/Holo
+                {t("card.foil")}
               </Label>
             </div>
 
@@ -271,16 +282,16 @@ const AddToCollectionDialog = ({
                 htmlFor="firstEdition"
                 className="text-sm cursor-pointer"
               >
-                Primera Edición
+                {t("card.firstEdition")}
               </Label>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notas</Label>
+            <Label htmlFor="notes">{t("card.notes")}</Label>
             <Textarea
               id="notes"
-              placeholder="Añade notas sobre esta carta..."
+              placeholder={t("card.notesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="resize-none"
@@ -294,14 +305,14 @@ const AddToCollectionDialog = ({
             variant="outline"
             onClick={onClose}
           >
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleAddToCollection}
             className="bg-red-600 hover:bg-red-700"
             disabled={isLoading}
           >
-            {isLoading ? "Añadiendo..." : "Añadir a Colección"}
+            {isLoading ? t("collection.adding") : t("collection.addCard")}
           </Button>
         </DialogFooter>
       </DialogContent>

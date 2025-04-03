@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collection } from "@/types/pokemon";
+import { useTranslation } from "react-i18next";
 
 interface CollectionDialogProps {
   collection?: Collection;
@@ -29,6 +30,7 @@ const CollectionDialog = ({
   onSave,
   collections,
 }: CollectionDialogProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [makeDefault, setMakeDefault] = useState(false);
@@ -74,32 +76,33 @@ const CollectionDialog = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {collection ? "Editar Colección" : "Crear Colección"}
+            {collection ? t("collection.edit") : t("collection.create")}
           </DialogTitle>
           <DialogDescription>
-            {collection 
-              ? "Modifica los detalles de tu colección"
-              : "Crea una nueva colección para organizar tus cartas"
-            }
+            {collection
+              ? t("collection.editDescription")
+              : t("collection.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre de la Colección</Label>
+            <Label htmlFor="name">{t("collection.nameLabel")}</Label>
             <Input
               id="name"
-              placeholder="Mi Colección Increíble"
+              placeholder={t("collection.namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción (Opcional)</Label>
+            <Label htmlFor="description">
+              {t("collection.descriptionLabel")}
+            </Label>
             <Textarea
               id="description"
-              placeholder="Describe tu colección..."
+              placeholder={t("collection.descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="resize-none"
@@ -122,13 +125,12 @@ const CollectionDialog = ({
                   : ""
               }`}
             >
-              Establecer como colección predeterminada
+              {t("collection.setAsDefault")}
             </Label>
           </div>
           {hasDefaultCollection && !collection?.is_default && (
             <p className="text-xs text-amber-600">
-              Ya existe una colección predeterminada. Debes desmarcar la
-              colección predeterminada actual antes de establecer otra.
+              {t("collection.errors.defaultExists")}
             </p>
           )}
         </div>
@@ -138,13 +140,13 @@ const CollectionDialog = ({
             variant="outline"
             onClick={onClose}
           >
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             className="bg-red-600 hover:bg-red-700"
           >
-            {collection ? "Guardar Cambios" : "Crear Colección"}
+            {collection ? t("common.save") : t("collection.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
