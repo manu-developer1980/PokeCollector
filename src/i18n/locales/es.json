@@ -22,7 +22,8 @@
     "understood": "Entendido",
     "tryAgainLater": "Por favor, intenta de nuevo más tarde",
     "openMenu": "Abrir menú",
-    "verifying": "Verificando..."
+    "verifying": "Verificando...",
+    "unlimited": "Ilimitado"
   },
   "navigation": {
     "dashboard": "Panel",
@@ -95,7 +96,11 @@
     "addCard": "Añadir a Colección",
     "selectCollection": "Seleccionar colección",
     "adding": "Añadiendo...",
-    "cardAdded": "Carta añadida a la colección correctamente"
+    "cardAdded": "Carta añadida a la colección correctamente",
+    "maxCards": "Máximo de cartas",
+    "maxCollections": "Máximo de colecciones",
+    "cards": "Cartas",
+    "collections": "Colecciones"
   },
   "wishlist": {
     "title": "Lista de Deseos",
@@ -113,7 +118,8 @@
       "loadFailed": "No se pudo cargar la lista de deseos",
       "removeFailed": "No se pudo eliminar la carta de la lista de deseos",
       "addFailed": "No se pudo añadir la carta a la lista de deseos."
-    }
+    },
+    "maxItems": "Máximo en lista de deseos"
   },
   "search": {
     "cards": "Buscar Cartas",
@@ -191,6 +197,15 @@
       "updateFailed": "No se pudo actualizar la carta. Por favor, intenta de nuevo."
     }
   },
+  "limits": {
+    "cards": "cartas en tu colección",
+    "collections": "colecciones",
+    "wishlist": "cartas en tu lista de deseos",
+    "elements": "elementos",
+    "limitReached": "Límite de {{type}} alcanzado",
+    "currentPlanLimit": "Tu plan actual ({{plan}}) ha alcanzado su límite. Actualiza tu plan para obtener acceso a más {{type}} y otras funcionalidades.",
+    "upgradePlan": "Mejorar Plan"
+  },
   "subscription": {
     "upgradePlan": "Mejorar Plan",
     "statusActive": "Activo",
@@ -199,7 +214,6 @@
     "title": "Gestión de Suscripción",
     "description": "Gestiona tu plan y uso",
     "currentPlan": "Plan actual",
-    "changePlan": "Cambiar plan",
     "cancelPlan": "Cancelar plan",
     "renewalDate": "Fecha de renovación",
     "paymentMethod": "Método de pago",
@@ -218,6 +232,19 @@
     "nextBilling": "Próximo cobro",
     "goToDashboard": "Ir al Panel",
     "loading": "Cargando suscripción...",
+    "yourSubscription": "Tu Suscripción",
+    "currentPlanDetails": "Detalles de tu plan de suscripción actual",
+    "currentPeriod": "Período Actual",
+    "validUntil": "Válido hasta {{date}}",
+    "includedFeatures": "Características Incluidas",
+    "cancelSubscription": "Cancelar Suscripción",
+    "cancelConfirmation": "¿Estás seguro de que deseas cancelar tu suscripción? Perderás acceso a las características premium al final de tu período de facturación actual.",
+    "canceling": "Cancelando...",
+    "canceled": "Suscripción Cancelada",
+    "canceledDescription": "Tu suscripción ha sido cancelada con éxito. Tendrás acceso a las características premium hasta el final de tu período de facturación actual.",
+    "statusCanceled": "Cancelada",
+    "noActiveSubscription": "Sin Suscripción Activa",
+    "considerSubscribing": "Considera suscribirte a un plan para acceder a las características premium.",
     "actions": {
       "addToWishlist": "añadir a tu lista de deseos",
       "addToCollection": "añadir cartas a tu colección",
@@ -229,7 +256,36 @@
       "description": "Estás a punto de cambiar de {currentPlan} a {targetPlan}. Este cambio reducirá los límites de tu cuenta.",
       "warning": "Importante: Si excedes los límites del nuevo plan, no podrás añadir más items hasta que liberes espacio.",
       "confirm": "Confirmar cambio"
-    }
+    },
+    "requiredTitle": "Suscripción Requerida",
+    "requiredDescription": "Necesitas una suscripción activa para {{action}}.",
+    "welcomeMessage": "¡Bienvenido a PokéCollector!",
+    "changePlan": "Cambiar Plan de Suscripción",
+    "month": "mes",
+    "processing": "Procesando...",
+    "upgradeTo": "Actualizar a {{plan}}",
+    "prorationAmount": "Monto a pagar por el cambio de plan: {{amount}}€",
+    "planUpdated": "Plan actualizado",
+    "planUpdatedSuccess": "Tu plan ha sido actualizado exitosamente",
+    "errors": {
+      "changePlan": "Error al cambiar plan",
+      "changePlanLog": "Error al cambiar plan:",
+      "tryAgain": "Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.",
+      "noSubscriptionInfo": "No hay información de suscripción disponible",
+      "noStripeId": "No se encontró ID de suscripción de Stripe",
+      "cancelFailed": "Error al cancelar la suscripción. Por favor, intenta nuevamente."
+    },
+    "planUsage": "Uso Actual del Plan",
+    "upgradeExperience": "Mejora tu experiencia",
+    "requiredDescription": "Para acceder a {{action}}, necesitas actualizar tu plan de suscripción.",
+    "discoverPremium": "Descubre todas las características premium de PokéCollector.",
+    "features": {
+      "unlimitedCollections": "Colecciones ilimitadas",
+      "extendedWishlist": "Lista de deseos extendida",
+      "exclusiveFeatures": "Características premium exclusivas"
+    },
+    "later": "Más tarde",
+    "viewPlans": "Ver planes"
   },
   "pricing": {
     "title": "Planes y Precios",
@@ -297,7 +353,9 @@
       "2": "Colecciones ilimitadas",
       "3": "Lista de deseos ilimitada",
       "4": "Soporte Prioritario"
-    }
+    },
+    "price": "Precio",
+    "free": "Gratis"
   },
   "plans": {
     "aprendiz": "Aprendiz",

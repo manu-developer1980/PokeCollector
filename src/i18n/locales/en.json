@@ -22,7 +22,8 @@
     "understood": "Understood",
     "tryAgainLater": "Please try again later",
     "openMenu": "Open menu",
-    "verifying": "Verifying..."
+    "verifying": "Verifying...",
+    "unlimited": "Unlimited"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -190,6 +191,16 @@
       "updateFailed": "Could not update card. Please try again."
     }
   },
+
+  "limits": {
+    "cards": "cards in your collection",
+    "collections": "collections",
+    "wishlist": "cards in your wishlist",
+    "elements": "elements",
+    "limitReached": "{{type}} limit reached",
+    "currentPlanLimit": "Your current plan ({{plan}}) has reached its limit. Upgrade your plan to get access to more {{type}} and other features.",
+    "upgradePlan": "Upgrade Plan"
+  },
   "subscription": {
     "upgradePlan": "Upgrade Plan",
     "statusActive": "Active",
@@ -198,7 +209,6 @@
     "title": "Subscription Management",
     "description": "Manage your plan and usage",
     "currentPlan": "Current plan",
-    "changePlan": "Change plan",
     "cancelPlan": "Cancel plan",
     "renewalDate": "Renewal date",
     "paymentMethod": "Payment method",
@@ -216,6 +226,20 @@
     "verifying": "Verifying subscription...",
     "nextBilling": "Next billing",
     "goToDashboard": "Go to Dashboard",
+    "loading": "Loading subscription...",
+    "yourSubscription": "Your Subscription",
+    "currentPlanDetails": "Details of your current subscription plan",
+    "currentPeriod": "Current Period",
+    "validUntil": "Valid until {{date}}",
+    "includedFeatures": "Included Features",
+    "cancelSubscription": "Cancel Subscription",
+    "cancelConfirmation": "Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.",
+    "canceling": "Canceling...",
+    "canceled": "Subscription Canceled",
+    "canceledDescription": "Your subscription has been canceled successfully. You will have access to premium features until the end of your current billing period.",
+    "statusCanceled": "Canceled",
+    "noActiveSubscription": "No Active Subscription",
+    "considerSubscribing": "Consider subscribing to a plan to access premium features.",
     "actions": {
       "addToWishlist": "add to your wishlist",
       "addToCollection": "add cards to your collection",
@@ -226,7 +250,35 @@
       "description": "You are about to change from {currentPlan} to {targetPlan}. This change will reduce your account limits.",
       "warning": "Important: If you exceed the limits of the new plan, you won't be able to add more items until you free up space.",
       "confirm": "Confirm Change"
-    }
+    },
+    "requiredTitle": "Subscription Required",
+    "requiredDescription": "You need an active subscription to {{action}}.",
+    "welcomeMessage": "Welcome to PokéCollector!",
+    "changePlan": "Change Subscription Plan",
+    "month": "month",
+    "processing": "Processing...",
+    "upgradeTo": "Upgrade to {{plan}}",
+    "prorationAmount": "Amount to pay for plan change: {{amount}}€",
+    "planUpdated": "Plan updated",
+    "planUpdatedSuccess": "Your plan has been successfully updated",
+    "errors": {
+      "changePlan": "Error changing plan",
+      "changePlanLog": "Error changing plan:",
+      "tryAgain": "There was an error processing your request. Please try again.",
+      "noSubscriptionInfo": "No subscription information available",
+      "noStripeId": "No Stripe subscription ID found",
+      "cancelFailed": "Failed to cancel subscription. Please try again."
+    },
+    "upgradeExperience": "Upgrade Your Experience",
+    "requiredDescription": "To access {{action}}, you need to upgrade your subscription plan.",
+    "discoverPremium": "Discover all premium features of PokéCollector.",
+    "features": {
+      "unlimitedCollections": "Unlimited collections",
+      "extendedWishlist": "Extended wishlist",
+      "exclusiveFeatures": "Exclusive premium features"
+    },
+    "later": "Later",
+    "viewPlans": "View Plans"
   },
   "pricing": {
     "title": "Plans & Pricing",
@@ -788,5 +840,21 @@
     "goToPage": "Go to page",
     "goToPreviousPage": "Go to previous page",
     "goToNextPage": "Go to next page"
+  },
+  "collection": {
+    "maxCards": "Maximum cards",
+    "maxCollections": "Maximum collections",
+    "cards": "Cards",
+    "collections": "Collections"
+  },
+  "wishlist": {
+    "maxItems": "Maximum wishlist items"
+  },
+  "subscription": {
+    "planUsage": "Current Plan Usage"
+  },
+  "pricing": {
+    "price": "Price",
+    "free": "Free"
   }
 }
