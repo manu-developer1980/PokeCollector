@@ -7,6 +7,7 @@ import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { Progress } from "@/components/ui/progress";
 import { useStats } from "@/hooks/useStats";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionPageProps {
   onSectionChange: (section: string) => void;
@@ -17,11 +18,12 @@ export default function SubscriptionPage({
 }: SubscriptionPageProps) {
   const { subscription, loading } = useSubscription();
   const { stats, isLoading: statsLoading } = useStats();
+  const { t } = useTranslation();
 
   if (loading || statsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner message="Cargando suscripción..." />
+        <LoadingSpinner message={t("subscription.loading")} />
       </div>
     );
   }
@@ -53,26 +55,30 @@ export default function SubscriptionPage({
     <div className="container mx-auto py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
-          Gestión de Suscripción
+          {t("subscription.title")}
         </h1>
-        <p className="text-gray-600">Administra tu plan y suscripción</p>
+        <p className="text-gray-600">{t("subscription.description")}</p>
       </div>
 
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Plan Actual</CardTitle>
+          <CardTitle>{t("subscription.currentPlan")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <p className="font-medium">Plan: {currentPlan.name}</p>
+              <p className="font-medium">
+                {t("subscription.plan")}: {currentPlan.name}
+              </p>
               <p>
-                Estado:{" "}
-                {subscription?.status === "active" ? "Activo" : "No activo"}
+                {t("subscription.status")}:{" "}
+                {subscription?.status === "active"
+                  ? t("subscription.statusActive")
+                  : t("subscription.statusInactive")}
               </p>
               {subscription?.current_period_end && (
                 <p className="text-sm text-muted-foreground">
-                  Próxima renovación:{" "}
+                  {t("subscription.nextBilling")}:{" "}
                   {new Date(
                     subscription.current_period_end
                   ).toLocaleDateString()}
@@ -81,31 +87,33 @@ export default function SubscriptionPage({
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-medium">Límites del plan:</h3>
+              <h3 className="font-medium">{t("subscription.planDetails")}:</h3>
               <ul className="list-disc list-inside space-y-1">
                 <li>
-                  Máximo de cartas:{" "}
+                  {t("collection.maxCards")}:{" "}
                   {currentPlan.maxCards === Infinity
-                    ? "Ilimitado"
+                    ? t("common.unlimited")
                     : currentPlan.maxCards}
                 </li>
                 <li>
-                  Máximo de colecciones:{" "}
+                  {t("collection.maxCollections")}:{" "}
                   {currentPlan.maxCollections === Infinity
-                    ? "Ilimitado"
+                    ? t("common.unlimited")
                     : currentPlan.maxCollections}
                 </li>
                 <li>
-                  Máximo en lista de deseos:{" "}
+                  {t("wishlist.maxItems")}:{" "}
                   {currentPlan.maxWishlist === Infinity
-                    ? "Ilimitado"
+                    ? t("common.unlimited")
                     : currentPlan.maxWishlist}
                 </li>
               </ul>
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-medium">Características incluidas:</h3>
+              <h3 className="font-medium">
+                {t("subscription.includedFeatures")}:
+              </h3>
               <ul className="list-disc list-inside space-y-1">
                 {currentPlan.features.map((feature, index) => (
                   <li key={index}>{feature}</li>
@@ -116,10 +124,10 @@ export default function SubscriptionPage({
             {subscription?.status === "active" && (
               <div className="mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Precio:{" "}
+                  {t("pricing.price")}:{" "}
                   {currentPlan.price === 0
-                    ? "Gratis"
-                    : `${currentPlan.price}€/mes`}
+                    ? t("pricing.free")
+                    : `${currentPlan.price}€/${t("subscription.month")}`}
                 </p>
               </div>
             )}
@@ -129,13 +137,13 @@ export default function SubscriptionPage({
 
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Uso Actual del Plan</CardTitle>
+          <CardTitle>{t("subscription.planUsage")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Cartas</span>
+                <span>{t("collection.cards")}</span>
                 <span className="text-muted-foreground">
                   {stats.cardsCount}/
                   {currentPlan.maxCards === Infinity
@@ -151,7 +159,7 @@ export default function SubscriptionPage({
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Colecciones</span>
+                <span>{t("collection.collections")}</span>
                 <span className="text-muted-foreground">
                   {stats.collectionsCount}/
                   {currentPlan.maxCollections === Infinity
@@ -167,7 +175,7 @@ export default function SubscriptionPage({
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Lista de Deseos</span>
+                <span>{t("wishlist.title")}</span>
                 <span className="text-muted-foreground">
                   {stats.wishlistCount}/
                   {currentPlan.maxWishlist === Infinity
@@ -189,7 +197,9 @@ export default function SubscriptionPage({
           variant="default"
           onClick={() => onSectionChange("Pricing")}
         >
-          {subscription?.status === "active" ? "Cambiar Plan" : "Ver Planes"}
+          {subscription?.status === "active"
+            ? t("subscription.changePlan")
+            : t("subscription.viewPlans")}
         </Button>
       </div>
     </div>

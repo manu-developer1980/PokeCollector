@@ -11,6 +11,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { DowngradeWarningModal } from "./DowngradeWarningModal";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
+import { useTranslation } from "react-i18next";
+
+interface PricingCardProps {
+  plan: SubscriptionPlan;
+  isCurrentPlan?: boolean;
+  onSelectPlan?: (plan: SubscriptionPlan) => void;
+  // other props...
+}
 
 interface PlanChangeDialogProps {
   isOpen: boolean;
@@ -26,6 +34,7 @@ export function PlanChangeDialog({
   showWelcomeMessage = false,
 }: PlanChangeDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [prorationAmount, setProrationAmount] = useState<number | null>(null);
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
@@ -96,7 +105,7 @@ export function PlanChangeDialog({
       });
 
       if (!response.ok) {
-        throw new Error("Error al cambiar el plan");
+        throw new Error(t("subscription.errors.changePlan"));
       }
 
       const data = await response.json();
@@ -109,17 +118,16 @@ export function PlanChangeDialog({
         }
       } else {
         toast({
-          title: "Plan actualizado",
-          description: "Tu plan ha sido actualizado exitosamente",
+          title: t("subscription.planUpdated"),
+          description: t("subscription.planUpdatedSuccess"),
         });
         onClose();
       }
     } catch (error) {
-      console.error("Error al cambiar plan:", error);
+      console.error(t("subscription.errors.changePlanLog"), error);
       toast({
-        title: "Error al cambiar plan",
-        description:
-          "Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.",
+        title: t("subscription.errors.changePlan"),
+        description: t("subscription.errors.tryAgain"),
         variant: "destructive",
       });
     } finally {
@@ -137,8 +145,8 @@ export function PlanChangeDialog({
           <DialogHeader>
             <DialogTitle>
               {showWelcomeMessage
-                ? "¡Bienvenido a PokéCollector!"
-                : "Cambiar Plan de Suscripción"}
+                ? t("subscription.welcomeMessage")
+                : t("subscription.changePlan")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -149,7 +157,7 @@ export function PlanChangeDialog({
                 {PLAN_FEATURES.ENTRENADOR.description}
               </p>
               <p className="text-sm text-muted-foreground">
-                {PLAN_FEATURES.ENTRENADOR.price}€/mes
+                {PLAN_FEATURES.ENTRENADOR.price}€/{t("subscription.month")}
               </p>
               <ul className="text-sm text-muted-foreground mb-4">
                 {PLAN_FEATURES.ENTRENADOR.features.map((feature, index) => (
@@ -162,10 +170,12 @@ export function PlanChangeDialog({
                 className="w-full"
               >
                 {isLoading
-                  ? "Procesando..."
+                  ? t("subscription.processing")
                   : currentPlan === "ENTRENADOR"
-                  ? "Plan actual"
-                  : `Actualizar a ${PLAN_FEATURES.ENTRENADOR.name}`}
+                  ? t("subscription.currentPlan")
+                  : t("subscription.upgradeTo", {
+                      plan: PLAN_FEATURES.ENTRENADOR.name,
+                    })}
               </Button>
             </div>
             <div className="space-y-2">
@@ -174,7 +184,7 @@ export function PlanChangeDialog({
                 {PLAN_FEATURES.MAESTRO.description}
               </p>
               <p className="text-sm text-muted-foreground">
-                {PLAN_FEATURES.MAESTRO.price}€/mes
+                {PLAN_FEATURES.MAESTRO.price}€/{t("subscription.month")}
               </p>
               <ul className="text-sm text-muted-foreground mb-4">
                 {PLAN_FEATURES.MAESTRO.features.map((feature, index) => (
@@ -187,18 +197,21 @@ export function PlanChangeDialog({
                 className="w-full"
               >
                 {isLoading
-                  ? "Procesando..."
+                  ? t("subscription.processing")
                   : currentPlan === "MAESTRO"
-                  ? "Plan actual"
-                  : `Actualizar a ${PLAN_FEATURES.MAESTRO.name}`}
+                  ? t("subscription.currentPlan")
+                  : t("subscription.upgradeTo", {
+                      plan: PLAN_FEATURES.MAESTRO.name,
+                    })}
               </Button>
             </div>
           </div>
           {prorationAmount !== null && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
               <p>
-                Monto a pagar por el cambio de plan:{" "}
-                {prorationAmount.toFixed(2)}€
+                {t("subscription.prorationAmount", {
+                  amount: prorationAmount.toFixed(2),
+                })}
               </p>
             </div>
           )}

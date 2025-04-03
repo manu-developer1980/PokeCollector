@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Crown, Sparkles, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionRequiredModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function SubscriptionRequiredModal({
   feature,
 }: SubscriptionRequiredModalProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleViewPlans = () => {
     navigate("/pricing");
@@ -38,27 +40,27 @@ export function SubscriptionRequiredModal({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-center gap-2 text-2xl">
             <Crown className="h-6 w-6 text-yellow-500" />
-            Mejora tu experiencia
+            {t("subscription.upgradeExperience")}
           </DialogTitle>
           <DialogDescription className="text-center">
             {feature
-              ? `Para acceder a ${feature}, necesitas actualizar tu plan de suscripción.`
-              : "Descubre todas las características premium de PokéCollector."}
+              ? t("subscription.requiredDescription", { action: feature })
+              : t("subscription.discoverPremium")}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <ul className="space-y-3">
             <li className="flex items-center gap-2">
               <Star className="h-5 w-5 text-yellow-500" />
-              <span>Colecciones ilimitadas</span>
+              <span>{t("subscription.features.unlimitedCollections")}</span>
             </li>
             <li className="flex items-center gap-2">
               <Star className="h-5 w-5 text-yellow-500" />
-              <span>Lista de deseos extendida</span>
+              <span>{t("subscription.features.extendedWishlist")}</span>
             </li>
             <li className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-yellow-500" />
-              <span>Características premium exclusivas</span>
+              <span>{t("subscription.features.exclusiveFeatures")}</span>
             </li>
           </ul>
         </div>
@@ -67,14 +69,14 @@ export function SubscriptionRequiredModal({
             variant="outline"
             onClick={onClose}
           >
-            Más tarde
+            {t("subscription.later")}
           </Button>
           <Button
             onClick={handleViewPlans}
             className="gap-2"
           >
             <Crown className="h-4 w-4" />
-            Ver planes
+            {t("subscription.viewPlans")}
           </Button>
         </DialogFooter>
       </DialogContent>

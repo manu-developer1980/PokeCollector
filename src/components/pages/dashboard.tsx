@@ -3,7 +3,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import CollectionList from "../pokemon/CollectionList";
 import CollectionDetail from "../pokemon/CollectionDetail";
 import CollectionDialog from "../pokemon/CollectionDialog";
 import CardDetail from "../pokemon/CardDetail";
@@ -173,7 +172,7 @@ const Dashboard = () => {
 
       toast({
         title: id ? t("collection.updated") : t("collection.created"),
-        description: t("collection.saveSuccess", { name }),
+        description: t("collection.saveSuccess", { name: collectionData.name }),
       });
 
       setIsCollectionDialogOpen(false);

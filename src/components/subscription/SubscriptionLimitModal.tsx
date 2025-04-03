@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionLimitModalProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface SubscriptionLimitModalProps {
   limitType: "cards" | "collections" | "wishlist" | null;
   currentPlan: string;
   errorMessage: string;
-  onViewPlans?: () => void; // Añadimos esta prop
+  onViewPlans?: () => void;
 }
 
 export function SubscriptionLimitModal({
@@ -27,6 +28,7 @@ export function SubscriptionLimitModal({
   onViewPlans,
 }: SubscriptionLimitModalProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleUpgrade = () => {
     navigate("/pricing");
@@ -36,13 +38,13 @@ export function SubscriptionLimitModal({
   const getLimitTypeText = () => {
     switch (limitType) {
       case "cards":
-        return "cartas en tu colección";
+        return t("limits.cards");
       case "collections":
-        return "colecciones";
+        return t("limits.collections");
       case "wishlist":
-        return "cartas en tu lista de deseos";
+        return t("limits.wishlist");
       default:
-        return "elementos";
+        return t("limits.elements");
     }
   };
 
@@ -53,14 +55,17 @@ export function SubscriptionLimitModal({
     >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Límite de {getLimitTypeText()} alcanzado</DialogTitle>
+          <DialogTitle>
+            {t("limits.limitReached", { type: getLimitTypeText() })}
+          </DialogTitle>
           <DialogDescription className="pt-2">{errorMessage}</DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <p className="text-sm text-muted-foreground">
-            Tu plan actual ({currentPlan}) ha alcanzado su límite. Actualiza tu
-            plan para obtener acceso a más {getLimitTypeText()} y otras
-            funcionalidades.
+            {t("limits.currentPlanLimit", {
+              plan: currentPlan,
+              type: getLimitTypeText(),
+            })}
           </p>
         </div>
         <DialogFooter>
@@ -68,7 +73,7 @@ export function SubscriptionLimitModal({
             variant="outline"
             onClick={onClose}
           >
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={() => {
@@ -76,7 +81,7 @@ export function SubscriptionLimitModal({
               onViewPlans?.();
             }}
           >
-            Mejorar Plan
+            {t("limits.upgradePlan")}
           </Button>
         </DialogFooter>
       </DialogContent>

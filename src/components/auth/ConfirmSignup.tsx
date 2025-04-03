@@ -5,10 +5,12 @@ import { supabase } from "../../../supabase/supabase";
 import AuthLayout from "./AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ConfirmSignup() {
   const location = useLocation();
   const email = location.state?.email;
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Asegurarnos de que no haya sesión activa
@@ -30,19 +32,18 @@ export default function ConfirmSignup() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            Verifica tu email
+            {t("auth.confirmSignup.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center">
             <Mail className="mx-auto h-12 w-12 text-gray-400" />
             <p className="mt-4 text-sm text-gray-600">
-              Hemos enviado un enlace de confirmación a:
+              {t("auth.confirmSignup.sentConfirmation")}
             </p>
             <p className="mt-1 font-medium">{email}</p>
             <p className="mt-4 text-sm text-gray-600">
-              Por favor, revisa tu bandeja de entrada y sigue las instrucciones
-              para activar tu cuenta.
+              {t("auth.confirmSignup.checkInbox")}
             </p>
           </div>
           <div className="flex flex-col space-y-2">
@@ -51,7 +52,7 @@ export default function ConfirmSignup() {
                 variant="outline"
                 className="w-full"
               >
-                Volver al inicio de sesión
+                {t("auth.confirmSignup.backToLogin")}
               </Button>
             </Link>
           </div>

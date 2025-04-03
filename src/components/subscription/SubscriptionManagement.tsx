@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Loader2 } from "lucide-react";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionManagementProps {
   onSectionChange: (section: string) => void;
@@ -32,6 +33,7 @@ export default function SubscriptionManagement({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { t } = useTranslation();
 
   // Obtener las características del plan actual
   const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
@@ -43,8 +45,8 @@ export default function SubscriptionManagement({
 
     if (!subscription) {
       toast({
-        title: "Error",
-        description: "No se encontró información de la suscripción",
+        title: t("common.error"),
+        description: t("subscription.errors.noSubscriptionInfo"),
         variant: "destructive",
       });
       return;
@@ -55,8 +57,8 @@ export default function SubscriptionManagement({
 
     if (!subscriptionId) {
       toast({
-        title: "Error",
-        description: "No se encontró el ID de suscripción de Stripe",
+        title: t("common.error"),
+        description: t("subscription.errors.noStripeId"),
         variant: "destructive",
       });
       return;
@@ -85,9 +87,8 @@ export default function SubscriptionManagement({
       }
 
       toast({
-        title: "Suscripción cancelada",
-        description:
-          "Tu suscripción se cancelará al final del período de facturación actual",
+        title: t("subscription.canceled"),
+        description: t("subscription.canceledDescription"),
       });
 
       // Refrescar los datos de la suscripción
@@ -96,11 +97,11 @@ export default function SubscriptionManagement({
     } catch (error) {
       console.error("Error completo:", error);
       toast({
-        title: "Error",
+        title: t("common.error"),
         description:
           error instanceof Error
             ? error.message
-            : "No se pudo cancelar la suscripción",
+            : t("subscription.errors.cancelFailed"),
         variant: "destructive",
       });
     } finally {
@@ -109,17 +110,16 @@ export default function SubscriptionManagement({
   };
 
   if (loading) {
-    return <LoadingSpinner message="Cargando suscripción..." />;
+    return <LoadingSpinner message={t("subscription.loading")} />;
   }
 
   if (!subscription) {
     return (
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No tienes una suscripción activa</AlertTitle>
+        <AlertTitle>{t("subscription.noActiveSubscription")}</AlertTitle>
         <AlertDescription>
-          Para acceder a todas las funciones, considera suscribirte a uno de
-          nuestros planes.
+          {t("subscription.considerSubscribing")}
         </AlertDescription>
       </Alert>
     );
@@ -129,20 +129,24 @@ export default function SubscriptionManagement({
     <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle>Tu suscripción</CardTitle>
-          <CardDescription>Detalles de tu plan actual</CardDescription>
+          <CardTitle>{t("subscription.yourSubscription")}</CardTitle>
+          <CardDescription>
+            {t("subscription.currentPlanDetails")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium">
-                Plan actual: {currentPlan.name}
+                {t("subscription.currentPlan")}: {currentPlan.name}
               </h3>
               <p className="text-muted-foreground">{currentPlan.description}</p>
             </div>
 
             <div>
-              <h3 className="text-lg font-medium">Estado</h3>
+              <h3 className="text-lg font-medium">
+                {t("subscription.status")}
+              </h3>
               <p
                 className={`capitalize ${
                   subscription.status === "active"
@@ -150,25 +154,30 @@ export default function SubscriptionManagement({
                     : "text-yellow-600"
                 }`}
               >
-                {subscription.status === "active" ? "Activa" : "Cancelada"}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium">Período actual</h3>
-              <p className="text-muted-foreground">
-                Hasta el{" "}
-                {format(
-                  new Date(subscription.current_period_end),
-                  "d 'de' MMMM, yyyy",
-                  { locale: es }
-                )}
+                {subscription.status === "active"
+                  ? t("subscription.statusActive")
+                  : t("subscription.statusCanceled")}
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-medium">
-                Características incluidas:
+                {t("subscription.currentPeriod")}
+              </h3>
+              <p className="text-muted-foreground">
+                {t("subscription.validUntil", {
+                  date: format(
+                    new Date(subscription.current_period_end),
+                    "d 'de' MMMM, yyyy",
+                    { locale: es }
+                  ),
+                })}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium">
+                {t("subscription.includedFeatures")}:
               </h3>
               <ul className="mt-2 space-y-2">
                 {currentPlan.features.map((feature, index) => (
@@ -191,9 +200,9 @@ export default function SubscriptionManagement({
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <LoadingSpinner message="Cancelando..." />
+                    <LoadingSpinner message={t("subscription.canceling")} />
                   ) : (
-                    "Cancelar suscripción"
+                    t("subscription.cancelSubscription")
                   )}
                 </Button>
               )}
@@ -204,8 +213,8 @@ export default function SubscriptionManagement({
               >
                 <Crown className="h-4 w-4" />
                 {subscription?.status === "active"
-                  ? "Cambiar Plan"
-                  : "Ver Planes"}
+                  ? t("subscription.changePlan")
+                  : t("subscription.viewPlans")}
               </Button>
             </div>
           </div>
@@ -216,9 +225,9 @@ export default function SubscriptionManagement({
         isOpen={showCancelDialog}
         onClose={() => setShowCancelDialog(false)}
         onConfirm={() => handleCancelSubscription()}
-        title="Cancelar suscripción"
-        description="¿Estás seguro de que deseas cancelar tu suscripción? Podrás seguir usando el servicio hasta el final del período actual."
-        confirmText="Cancelar suscripción"
+        title={t("subscription.cancelSubscription")}
+        description={t("subscription.cancelConfirmation")}
+        confirmText={t("subscription.cancelSubscription")}
         isLoading={isLoading}
       />
     </div>

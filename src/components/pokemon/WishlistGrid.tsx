@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import CardGrid from "./CardGrid";
 import LoadingSpinner from "../ui/LoaderSpinner";
 import type { PokemonCard } from "@/types/pokemon";
-import { navigateToSearch } from "@/lib/navigation";
+import { useTranslation } from "react-i18next";
 
 interface WishlistGridProps {
   cards: PokemonCard[];
@@ -24,12 +23,13 @@ const WishlistGrid = ({
   isLoading,
   onSectionChange,
 }: WishlistGridProps) => {
+  const { t } = useTranslation();
   const handleSearchClick = () => {
     onSectionChange("Search Cards");
   };
 
   if (isLoading) {
-    return <LoadingSpinner message="Cargando lista de deseos..." />;
+    return <LoadingSpinner message={t("subscription.loading")} />;
   }
 
   if (!cards || cards.length === 0) {

@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { PricingCard } from "../pricing/PricingCard";
-import { PLAN_FEATURES } from "@/lib/stripe";
+import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { useAuth } from "../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import LoadingSpinner from "../ui/LoaderSpinner";
@@ -17,22 +16,20 @@ import { useTranslation } from "react-i18next";
 
 export default function PricingPage() {
   const { t } = useTranslation();
-
   const { user } = useAuth();
   const { subscription, loading } = useSubscription();
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  // Add this function to handle plan selection
+  const handleSelectPlan = (planId: string) => {
+    console.log("Selected plan:", planId);
+    // Add your plan selection logic here
+  };
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
   const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
-
-  const handleSelectPlan = (planId: string) => {
-    // Ya no necesitamos guardar el ID del plan ni abrir el modal
-    // El PricingCard ahora maneja directamente la redirección a Stripe
-  };
 
   const faqs = [
     {
@@ -104,7 +101,7 @@ export default function PricingPage() {
             plan={plan}
             isPopular={plan.name === "Entrenador"}
             isCurrentPlan={planType === currentPlanType}
-            onSelectPlan={handleSelectPlan}
+            onSelectPlan={handleSelectPlan} // Add this prop
           />
         ))}
       </div>
