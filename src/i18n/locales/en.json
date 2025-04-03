@@ -45,6 +45,10 @@
     "subtitle": "Manage your Pokémon card collection"
   },
   "collection": {
+    "maxCards": "Maximum cards",
+    "maxCollections": "Maximum collections",
+    "cards": "Cards",
+    "collections": "Collections",
     "loading": "Loading collection...",
     "searchInCollection": "Search cards in this collection",
     "noSearchResults": "No cards found matching your search.",
@@ -57,7 +61,6 @@
     "empty": "You don't have any collections yet",
     "emptyDescription": "Create your first collection to start saving your cards.",
     "createFirst": "Create My First Collection",
-    "cards": "cards",
     "confirmDelete": "Are you sure you want to delete this collection?",
     "deleteWarning": "This action cannot be undone and will delete all cards in this collection.",
     "addCard": "Add to Collection",
@@ -98,6 +101,7 @@
     "confirmDeleteWithName": "Are you sure you want to delete the collection \"{name}\"? This action cannot be undone and all associated cards will be deleted."
   },
   "wishlist": {
+    "maxItems": "Maximum wishlist items",
     "title": "Wishlist",
     "empty": "Your wishlist is empty",
     "addCard": "Add to wishlist",
@@ -202,6 +206,7 @@
     "upgradePlan": "Upgrade Plan"
   },
   "subscription": {
+    "planUsage": "Current Plan Usage",
     "upgradePlan": "Upgrade Plan",
     "statusActive": "Active",
     "statusInactive": "Inactive",
@@ -252,7 +257,6 @@
       "confirm": "Confirm Change"
     },
     "requiredTitle": "Subscription Required",
-    "requiredDescription": "You need an active subscription to {{action}}.",
     "welcomeMessage": "Welcome to PokéCollector!",
     "changePlan": "Change Subscription Plan",
     "month": "month",
@@ -277,10 +281,11 @@
       "extendedWishlist": "Extended wishlist",
       "exclusiveFeatures": "Exclusive premium features"
     },
-    "later": "Later",
-    "viewPlans": "View Plans"
+    "later": "Later"
   },
   "pricing": {
+    "price": "Price",
+    "free": "Free",
     "title": "Plans & Pricing",
     "subtitle": "These are our plans for you. Start with the free one and level up when you need it",
     "startFree": "Start Free",
@@ -442,7 +447,14 @@
       "resetEmailFailed": "Failed to send reset email",
       "nameUpdateFailed": "Failed to update name",
       "deleteFailed": "Failed to delete account"
-    }
+    },
+    "goodbye": "Goodbye!",
+    "accountDeletedMessage": "Your account has been successfully deleted. We hope to see you again soon at PokéCollector.",
+    "welcomeBackMessage": "Remember that you will always be welcome back in our collector community.",
+    "backToHome": "Back to home",
+    "checkEmail": "Check your email",
+    "passwordEmailSent": "We've sent an email to {{email}} with instructions to change your password",
+    "checkInboxPassword": "Check your inbox and follow the instructions to set a new password"
   },
   "auth": {
     "login": "Log in",
@@ -525,7 +537,20 @@
       "sentConfirmation": "We've sent a confirmation link to:",
       "checkInbox": "Please check your inbox and follow the instructions to activate your account.",
       "backToLogin": "Back to login"
-    }
+    },
+    "recoverPassword": "Recover Password",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "sendInstructions": "Send Instructions",
+    "sendingInstructions": "Sending instructions...",
+    "backToLogin": "Back to login",
+    "tooManyAttempts": "Too many attempts",
+    "waitBeforeRetry": "Please wait 30 minutes before trying again",
+    "emailSent": "Email sent",
+    "checkInboxForReset": "Check your inbox to reset your password.",
+    "errorTryAgain": "An error occurred. Please try again.",
+    "instructionsSentTo": "We've sent instructions to:",
+    "checkInboxAndFollow": "Check your inbox and follow the instructions to reset your password."
   },
   "landing": {
     "hero": {
@@ -840,21 +865,5 @@
     "goToPage": "Go to page",
     "goToPreviousPage": "Go to previous page",
     "goToNextPage": "Go to next page"
-  },
-  "collection": {
-    "maxCards": "Maximum cards",
-    "maxCollections": "Maximum collections",
-    "cards": "Cards",
-    "collections": "Collections"
-  },
-  "wishlist": {
-    "maxItems": "Maximum wishlist items"
-  },
-  "subscription": {
-    "planUsage": "Current Plan Usage"
-  },
-  "pricing": {
-    "price": "Price",
-    "free": "Free"
   }
 }

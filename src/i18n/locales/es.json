@@ -451,7 +451,14 @@
       "resetEmailFailed": "No se pudo enviar el correo de restablecimiento",
       "nameUpdateFailed": "No se pudo actualizar el nombre",
       "deleteFailed": "No se pudo eliminar la cuenta"
-    }
+    },
+    "goodbye": "¡Hasta pronto!",
+    "accountDeletedMessage": "Tu cuenta ha sido eliminada correctamente. Esperamos volver a verte pronto en PokéCollector.",
+    "welcomeBackMessage": "Recuerda que siempre serás bienvenido/a de nuevo en nuestra comunidad de coleccionistas.",
+    "backToHome": "Volver al inicio",
+    "checkEmail": "Revisa tu email",
+    "passwordEmailSent": "Hemos enviado un email a {{email}} con instrucciones para cambiar tu contraseña",
+    "checkInboxPassword": "Revisa tu bandeja de entrada y sigue las instrucciones para establecer una nueva contraseña"
   },
   "auth": {
     "login": "Iniciar sesión",

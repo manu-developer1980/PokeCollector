@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PasswordResetInstructionsModalProps {
   isOpen: boolean;
@@ -18,30 +19,34 @@ export function PasswordResetInstructionsModal({
   onClose,
   email,
 }: PasswordResetInstructionsModalProps) {
+  const { t } = useTranslation();
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
       <DialogContent className="sm:max-w-md text-center">
         <DialogHeader>
           <DialogTitle className="text-2xl text-center">
-            Revisa tu email
+            {t("account.checkEmail")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <Mail className="mx-auto h-12 w-12 text-gray-400" />
           <p className="text-sm text-gray-600">
-            Hemos enviado un enlace para cambiar tu contraseña a:
+            {t("account.passwordEmailSent", { email })}
           </p>
           <p className="font-medium">{email}</p>
           <p className="text-sm text-gray-600">
-            Por favor, revisa tu bandeja de entrada y sigue las instrucciones
-            para establecer una nueva contraseña.
+            {t("account.checkInboxPassword")}
           </p>
           <Button
             variant="outline"
             onClick={onClose}
             className="w-full"
           >
-            Entendido
+            {t("common.understood")}
           </Button>
         </div>
       </DialogContent>

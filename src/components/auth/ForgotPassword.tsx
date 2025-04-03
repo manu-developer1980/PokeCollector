@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import AuthLayout from "./AuthLayout";
 import { supabase } from "../../../supabase/supabase";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ export default function ForgotPassword() {
   const MAX_ATTEMPTS = 3;
   const COOLDOWN_TIME = 30 * 60 * 1000; // 30 minutos
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +30,8 @@ export default function ForgotPassword() {
 
       if (lastAttempt && now - parseInt(lastAttempt) < COOLDOWN_TIME) {
         toast({
-          title: "Demasiados intentos",
-          description:
-            "Por favor, espera 30 minutos antes de intentar de nuevo",
+          title: t("auth.tooManyAttempts"),
+          description: t("auth.waitBeforeRetry"),
           variant: "destructive",
         });
         return;
@@ -50,14 +51,13 @@ export default function ForgotPassword() {
 
       setIsSubmitted(true);
       toast({
-        title: "Email enviado",
-        description:
-          "Revisa tu bandeja de entrada para restablecer tu contraseña.",
+        title: t("auth.emailSent"),
+        description: t("auth.checkInboxForReset"),
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Ha ocurrido un error. Intenta de nuevo.",
+        title: t("common.error"),
+        description: error.message || t("auth.errorTryAgain"),
         variant: "destructive",
       });
       setAttempts((prev) => prev + 1);
@@ -72,7 +72,7 @@ export default function ForgotPassword() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            Recuperar Contraseña
+            {t("auth.recoverPassword")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -82,12 +82,12 @@ export default function ForgotPassword() {
               className="space-y-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="tu@email.com"
+                  placeholder={t("auth.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
@@ -101,11 +101,11 @@ export default function ForgotPassword() {
               >
                 {isLoading ? (
                   <LoadingSpinner
-                    message="Enviando instrucciones..."
+                    message={t("auth.sendingInstructions")}
                     compact
                   />
                 ) : (
-                  "Enviar instrucciones"
+                  t("auth.sendInstructions")
                 )}
               </Button>
               <div className="text-center">
@@ -113,26 +113,23 @@ export default function ForgotPassword() {
                   to="/login"
                   className="text-sm text-gray-600 hover:text-red-600"
                 >
-                  Volver al inicio de sesión
+                  {t("auth.backToLogin")}
                 </Link>
               </div>
             </form>
           ) : (
             <div className="text-center space-y-4">
-              <p className="text-gray-600">
-                Hemos enviado las instrucciones a:
-              </p>
+              <p className="text-gray-600">{t("auth.instructionsSentTo")}</p>
               <p className="font-medium">{email}</p>
               <p className="text-sm text-gray-600">
-                Revisa tu bandeja de entrada y sigue las instrucciones para
-                restablecer tu contraseña.
+                {t("auth.checkInboxAndFollow")}
               </p>
               <Link to="/login">
                 <Button
                   variant="outline"
                   className="w-full mt-4"
                 >
-                  Volver al inicio de sesión
+                  {t("auth.backToLogin")}
                 </Button>
               </Link>
             </div>
