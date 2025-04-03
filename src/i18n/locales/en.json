@@ -467,7 +467,13 @@
       "nameRequired": "Name is required",
       "passwordsDoNotMatch": "Passwords do not match"
     },
-    "loginRequiredForWishlist": "You must be logged in to add cards to your wishlist."
+    "loginRequiredForWishlist": "You must be logged in to add cards to your wishlist.",
+    "confirmSignup": {
+      "title": "Verify your email",
+      "sentConfirmation": "We've sent a confirmation link to:",
+      "checkInbox": "Please check your inbox and follow the instructions to activate your account.",
+      "backToLogin": "Back to login"
+    }
   },
   "landing": {
     "hero": {
