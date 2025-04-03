@@ -18,10 +18,10 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "../../../supabase/supabase";
 
 interface PricingCardProps {
-  plan: PlanFeature;
+  plan: SubscriptionPlan;
   isPopular?: boolean;
-  onSelectPlan: (planId: string) => void;
-  isCurrentPlan: boolean;
+  onSelectPlan?: (plan: SubscriptionPlan) => void;
+  isCurrentPlan?: boolean;
 }
 
 export function PricingCard({
@@ -226,9 +226,72 @@ export function PricingCard({
         }}
         onConfirm={() => {
           if (targetPlan) {
-            onSelectPlan(targetPlan);
+            // Instead of just calling onSelectPlan, we should directly handle the checkout
+            // for downgrades here, regardless of whether onSelectPlan is provided
+
+            // Close the modal first
+            setShowDowngradeWarning(false);
+
+            // Then proceed with the checkout process
+            try {
+              console.log("Processing downgrade to plan:", targetPlan);
+
+              const requestData = {
+                priceId: targetPlan,
+                customerEmail: user.email,
+                metadata: {
+                  user_id: user.id,
+                  plan_name: plan.name,
+                },
+                successUrl: `${window.location.origin}/checkout-success`,
+                cancelUrl: `${window.location.origin}/dashboard`,
+              };
+
+              // Call the Stripe checkout function
+              supabase.functions
+                .invoke("create-stripe-checkout", {
+                  body: requestData,
+                })
+                .then(({ data, error }) => {
+                  if (error) {
+                    console.error("Checkout error:", error);
+                    throw new Error(
+                      `Error en checkout: ${
+                        error.message || "Error desconocido"
+                      }`
+                    );
+                  }
+
+                  if (!data?.url) {
+                    console.error(
+                      "URL de checkout no encontrada en la respuesta",
+                      data
+                    );
+                    throw new Error(t("checkout.noCheckoutUrl"));
+                  }
+
+                  // Redirect to Stripe checkout
+                  window.location.href = data.url;
+                })
+                .catch((error) => {
+                  console.error("Error processing downgrade:", error);
+                  toast({
+                    title: t("common.error"),
+                    description: error.message || t("pricing.updateError"),
+                    variant: "destructive",
+                    duration: 5000,
+                  });
+                });
+            } catch (error) {
+              console.error("Error initiating downgrade:", error);
+              toast({
+                title: t("common.error"),
+                description: error.message || t("pricing.updateError"),
+                variant: "destructive",
+                duration: 5000,
+              });
+            }
           }
-          setShowDowngradeWarning(false);
         }}
         currentPlan={
           (subscription?.plan_type?.toUpperCase() as SubscriptionPlan) ||

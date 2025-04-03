@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PricingCard } from "../pricing/PricingCard";
-import { PLAN_FEATURES } from "@/lib/stripe";
+import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { useAuth } from "../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,14 @@ import { useTranslation } from "react-i18next";
 
 export default function PricingPage() {
   const { t } = useTranslation();
-
   const { user } = useAuth();
   const { subscription, loading } = useSubscription();
+
+  // Add this function to handle plan selection
+  const handleSelectPlan = (planId: string) => {
+    console.log("Selected plan:", planId);
+    // Add your plan selection logic here
+  };
 
   if (loading) {
     return <LoadingSpinner />;
@@ -96,6 +101,7 @@ export default function PricingPage() {
             plan={plan}
             isPopular={plan.name === "Entrenador"}
             isCurrentPlan={planType === currentPlanType}
+            onSelectPlan={handleSelectPlan} // Add this prop
           />
         ))}
       </div>
