@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 import { CheckoutFlow } from "../checkout/CheckoutFlow";
-import { Loader2 } from "lucide-react";
 import { PLAN_FEATURES, type PlanFeature } from "@/lib/stripe";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { toast } from "@/components/ui/use-toast";

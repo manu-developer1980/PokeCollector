@@ -100,7 +100,12 @@
     "maxCards": "Máximo de cartas",
     "maxCollections": "Máximo de colecciones",
     "cards": "Cartas",
-    "collections": "Colecciones"
+    "collections": "Colecciones",
+    "noDefaultCollection": "No hay colección predeterminada",
+    "defaultCollectionNeeded": "Para usar la función de añadir rápido, necesitas tener una colección predeterminada.",
+    "setExistingAsDefault": "Puedes establecer una de tus colecciones existentes como predeterminada:",
+    "noCollectionsYet": "No tienes ninguna colección. Crea una nueva para empezar.",
+    "createNew": "Crear Nueva Colección"
   },
   "wishlist": {
     "title": "Lista de Deseos",

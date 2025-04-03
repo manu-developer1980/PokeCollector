@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Collection } from '@/types/collection';
+import { Collection } from "@/types/collection";
+import { useTranslation } from "react-i18next";
 
 interface NoDefaultCollectionDialogProps {
   isOpen: boolean;
@@ -25,13 +26,18 @@ export const NoDefaultCollectionDialog = ({
   onSetDefault,
   existingCollections,
 }: NoDefaultCollectionDialogProps) => {
+  const { t } = useTranslation();
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>No hay colección predeterminada</DialogTitle>
+          <DialogTitle>{t("collection.noDefaultCollection")}</DialogTitle>
           <DialogDescription>
-            Para usar la función de añadir rápido, necesitas tener una colección predeterminada.
+            {t("collection.defaultCollectionNeeded")}
           </DialogDescription>
         </DialogHeader>
 
@@ -39,7 +45,7 @@ export const NoDefaultCollectionDialog = ({
           {existingCollections.length > 0 ? (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Puedes establecer una de tus colecciones existentes como predeterminada:
+                {t("collection.setExistingAsDefault")}
               </p>
               <div className="space-y-2">
                 {existingCollections.map((collection) => (
@@ -56,20 +62,23 @@ export const NoDefaultCollectionDialog = ({
             </div>
           ) : (
             <p className="text-sm text-gray-600">
-              No tienes ninguna colección. Crea una nueva para empezar.
+              {t("collection.noCollectionsYet")}
             </p>
           )}
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            {t("common.cancel")}
           </Button>
-          <Button 
+          <Button
             onClick={onCreateNew}
             className="bg-red-600 hover:bg-red-700"
           >
-            Crear Nueva Colección
+            {t("collection.createNew")}
           </Button>
         </DialogFooter>
       </DialogContent>

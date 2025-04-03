@@ -9,7 +9,6 @@ import {
 import LoginForm from "./components/auth/LoginForm";
 import SignUpForm from "./components/auth/SignUpForm";
 import ConfirmSignup from "./components/auth/ConfirmSignup";
-import Success from "./components/pages/success";
 import LandingPage from "./components/pages/landing";
 import PricingPage from "./components/pages/pricing";
 import PokemonDashboard from "./components/pages/PokemonDashboard";
@@ -127,14 +126,6 @@ function AppRoutes() {
           element={
             <MainLayout>
               <CheckoutPage />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/success"
-          element={
-            <MainLayout>
-              <Success />
             </MainLayout>
           }
         />

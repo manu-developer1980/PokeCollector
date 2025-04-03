@@ -79,7 +79,6 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
             </Link>
           </div>
 
-          {/* Botón de inicio de sesión - solo icono */}
           {!user && (
             <Button
               variant="outline"

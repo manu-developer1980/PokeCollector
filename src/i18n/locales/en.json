@@ -98,7 +98,12 @@
       "setDefaultFailed": "Could not set default collection.",
       "noSelectedCollection": "No collection selected"
     },
-    "confirmDeleteWithName": "Are you sure you want to delete the collection \"{name}\"? This action cannot be undone and all associated cards will be deleted."
+    "confirmDeleteWithName": "Are you sure you want to delete the collection \"{name}\"? This action cannot be undone and all associated cards will be deleted.",
+    "noDefaultCollection": "No default collection",
+    "defaultCollectionNeeded": "To use the quick add feature, you need to have a default collection.",
+    "setExistingAsDefault": "You can set one of your existing collections as default:",
+    "noCollectionsYet": "You don't have any collections. Create a new one to get started.",
+    "createNew": "Create New Collection"
   },
   "wishlist": {
     "maxItems": "Maximum wishlist items",
