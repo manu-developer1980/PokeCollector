@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "../../../supabase/supabase";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function AuthCallback() {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("Iniciando verificación...");
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -212,7 +214,7 @@ export default function AuthCallback() {
           </>
         ) : (
           <>
-            <LoadingSpinner message="Verificando cuenta..." />
+            <LoadingSpinner message={t("subscription.loading")} />
             <p className="mt-2 text-gray-600">{status}</p>
           </>
         )}

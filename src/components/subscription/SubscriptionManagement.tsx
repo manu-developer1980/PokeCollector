@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Loader2 } from "lucide-react";
 import LoadingSpinner from "../ui/LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionManagementProps {
   onSectionChange: (section: string) => void;
@@ -32,6 +33,7 @@ export default function SubscriptionManagement({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { t } = useTranslation();
 
   // Obtener las características del plan actual
   const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
@@ -109,7 +111,7 @@ export default function SubscriptionManagement({
   };
 
   if (loading) {
-    return <LoadingSpinner message="Cargando suscripción..." />;
+    return <LoadingSpinner message={t("subscription.loading")} />;
   }
 
   if (!subscription) {

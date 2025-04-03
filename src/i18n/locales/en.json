@@ -44,6 +44,9 @@
     "subtitle": "Manage your Pokémon card collection"
   },
   "collection": {
+    "loading": "Loading collection...",
+    "searchInCollection": "Search cards in this collection",
+    "noSearchResults": "No cards found matching your search.",
     "title": "My Collection",
     "myCollections": "My Collections",
     "default": "Default",
@@ -59,6 +62,7 @@
     "addCard": "Add Card",
     "removeCard": "Remove Card",
     "cardAdded": "Card added to collection",
+    "cardAddedToDefault": "Card added to default collection",
     "cardRemoved": "Card removed from collection",
     "collectionCreated": "Collection created successfully",
     "collectionUpdated": "Collection updated successfully",
@@ -77,8 +81,11 @@
       "createDefaultFailed": "Could not create default collection. Please try again.",
       "defaultExists": "A default collection already exists. Please unmark the current default collection before setting another one.",
       "saveFailed": "Could not save collection. Please try again.",
-      "deleteFailed": "Could not delete collection. Please try again."
-    }
+      "deleteFailed": "Could not delete collection. Please try again.",
+      "setDefaultFailed": "Could not set default collection.",
+      "noSelectedCollection": "No collection selected"
+    },
+    "confirmDeleteWithName": "Are you sure you want to delete the collection \"{name}\"? This action cannot be undone and all associated cards will be deleted."
   },
   "wishlist": {
     "title": "Wishlist",
@@ -92,8 +99,11 @@
     "removeSuccess": "The card has been removed from your wishlist",
     "errors": {
       "loadFailed": "Could not load wishlist",
-      "removeFailed": "Could not remove card from wishlist"
-    }
+      "removeFailed": "Could not remove card from wishlist",
+      "addFailed": "Could not add card to wishlist."
+    },
+    "alreadyInWishlist": "Already in Wishlist",
+    "cardAlreadyExists": "This card is already in your wishlist."
   },
   "search": {
     "cards": "Search Cards",
@@ -113,7 +123,10 @@
     "clearFilters": "Clear filters",
     "applyFilters": "Apply filters",
     "searchResults": "Search results",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "errors": {
+      "loadFailed": "Could not load search results"
+    }
   },
   "filters": {
     "pokemonType": "Pokémon Type",
@@ -192,7 +205,12 @@
     "successDescription": "Your subscription has been processed successfully.",
     "verifying": "Verifying subscription...",
     "nextBilling": "Next billing",
-    "goToDashboard": "Go to Dashboard"
+    "goToDashboard": "Go to Dashboard",
+    "actions": {
+      "addToWishlist": "add to your wishlist",
+      "addToCollection": "add cards to your collection",
+      "createCollections": "create new collections"
+    }
   },
   "pricing": {
     "title": "Plans & Pricing",
@@ -432,7 +450,8 @@
       "passwordLength": "Password must be at least 6 characters",
       "nameRequired": "Name is required",
       "passwordsDoNotMatch": "Passwords do not match"
-    }
+    },
+    "loginRequiredForWishlist": "You must be logged in to add cards to your wishlist."
   },
   "landing": {
     "hero": {

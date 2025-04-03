@@ -247,9 +247,8 @@ export default function PokemonDashboard() {
     } catch (error) {
       console.error("Error fetching collections:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudieron cargar las colecciones. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("collection.errors.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -296,9 +295,9 @@ export default function PokemonDashboard() {
 
         if (!subscription || subscription.status !== "active") {
           const actionMap = {
-            wishlist: "añadir a tu lista de deseos",
-            collection_cards: "añadir cartas a tu colección",
-            collections: "crear nuevas colecciones",
+            wishlist: t("subscription.actions.addToWishlist"),
+            collection_cards: t("subscription.actions.addToCollection"),
+            collections: t("subscription.actions.createCollections"),
           };
           setLastAttemptedAction(actionMap[resourceType]);
           setIsNoSubscriptionModalOpen(true);
@@ -402,8 +401,8 @@ export default function PokemonDashboard() {
     } catch (error) {
       console.error("Error fetching wishlist:", error);
       toast({
-        title: "Error",
-        description: "No se pudo cargar la lista de deseos.",
+        title: t("common.error"),
+        description: t("wishlist.errors.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -416,8 +415,7 @@ export default function PokemonDashboard() {
       try {
         if (!user?.id) {
           setLimitError({
-            message:
-              "Debes iniciar sesión para añadir cartas a tu lista de deseos.",
+            message: t("auth.loginRequiredForWishlist"),
             type: "wishlist",
           });
           setIsLimitModalOpen(true);
@@ -447,8 +445,8 @@ export default function PokemonDashboard() {
 
         if (existingCard) {
           toast({
-            title: "Ya en Lista de Deseos",
-            description: "Esta carta ya está en tu lista de deseos.",
+            title: t("wishlist.alreadyInWishlist"),
+            description: t("wishlist.cardAlreadyExists"),
           });
           return;
         }
@@ -460,8 +458,8 @@ export default function PokemonDashboard() {
         });
 
         toast({
-          title: "Carta Añadida",
-          description: "La carta ha sido añadida a tu lista de deseos.",
+          title: t("toasts.wishlistAdded"),
+          description: t("wishlist.cardAdded"),
         });
 
         // Refrescar la lista de deseos inmediatamente
@@ -469,8 +467,8 @@ export default function PokemonDashboard() {
       } catch (error) {
         console.error("Error adding to wishlist:", error);
         toast({
-          title: "Error",
-          description: "No se pudo añadir la carta a la lista de deseos.",
+          title: t("common.error"),
+          description: t("wishlist.errors.addFailed"),
           variant: "destructive",
         });
       }
@@ -625,8 +623,8 @@ export default function PokemonDashboard() {
       await getCollections();
       setIsAddToCollectionOpen(false);
       toast({
-        title: "Carta Añadida",
-        description: "La carta ha sido añadida a tu colección.",
+        title: t("toasts.cardAdded"),
+        description: t("collection.cardAdded"),
       });
     } catch (error) {
       console.error("Error saving to collection:", error);
@@ -707,8 +705,10 @@ export default function PokemonDashboard() {
         if (error) throw error;
 
         toast({
-          title: "Colección Actualizada",
-          description: `La colección "${collectionData.name}" ha sido actualizada.`,
+          title: t("collection.updated"),
+          description: t("collection.saveSuccess", {
+            name: collectionData.name,
+          }),
         });
       } else {
         // Para nueva colección
@@ -736,8 +736,10 @@ export default function PokemonDashboard() {
         if (error) throw error;
 
         toast({
-          title: "Colección Creada",
-          description: `La colección "${collectionData.name}" ha sido creada.`,
+          title: t("collection.created"),
+          description: t("collection.saveSuccess", {
+            name: collectionData.name,
+          }),
         });
       }
 
@@ -749,9 +751,8 @@ export default function PokemonDashboard() {
     } catch (error: any) {
       console.error("Error saving collection:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo guardar la colección. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("collection.errors.saveFailed"),
         variant: "destructive",
       });
     }
@@ -797,15 +798,14 @@ export default function PokemonDashboard() {
       }
 
       toast({
-        title: "Colección Eliminada",
-        description: "La colección ha sido eliminada correctamente.",
+        title: t("collection.deleted"),
+        description: t("collection.deleteSuccess"),
       });
     } catch (error) {
       console.error("Error deleting collection:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo eliminar la colección. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("collection.errors.deleteFailed"),
         variant: "destructive",
       });
     } finally {
@@ -847,14 +847,14 @@ export default function PokemonDashboard() {
       });
 
       toast({
-        title: "Carta eliminada",
-        description: "La carta ha sido eliminada de la colección",
+        title: t("card.removed"),
+        description: t("card.removeSuccess"),
       });
     } catch (error) {
       console.error("Error removing card:", error);
       toast({
-        title: "Error",
-        description: "No se pudo eliminar la carta",
+        title: t("common.error"),
+        description: t("wishlist.errors.removeFailed"),
         variant: "destructive",
       });
     }
@@ -869,7 +869,7 @@ export default function PokemonDashboard() {
     notes?: string;
   }) => {
     if (!selectedCollection) {
-      throw new Error("No hay una colección seleccionada");
+      throw new Error(t("collection.errors.noSelectedCollection"));
     }
 
     try {
@@ -922,8 +922,8 @@ export default function PokemonDashboard() {
         }
 
         toast({
-          title: "Carta Actualizada",
-          description: "La carta ha sido actualizada correctamente.",
+          title: t("card.updated"),
+          description: t("card.updateSuccess"),
         });
 
         return { ...cardData, ...updateData };
@@ -974,17 +974,16 @@ export default function PokemonDashboard() {
       }
 
       toast({
-        title: "Carta Actualizada",
-        description: "La carta ha sido actualizada correctamente.",
+        title: t("card.updated"),
+        description: t("card.updateSuccess"),
       });
 
       return completeUpdatedCard;
     } catch (error) {
       console.error("Error updating card:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo actualizar la carta. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("card.errors.updateFailed"),
         variant: "destructive",
       });
       throw error;
@@ -1013,15 +1012,14 @@ export default function PokemonDashboard() {
       });
 
       toast({
-        title: "Carta Añadida",
-        description: "La carta ha sido añadida a tu colección por defecto.",
+        title: t("toasts.cardAdded"),
+        description: t("collection.cardAddedToDefault"),
       });
     } catch (error) {
       console.error("Error al añadir carta a la colección:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("collection.errors.loadFailed"),
         variant: "destructive",
       });
     }
@@ -1047,8 +1045,8 @@ export default function PokemonDashboard() {
     } catch (error) {
       console.error("Error al establecer colección predeterminada:", error);
       toast({
-        title: "Error",
-        description: "No se pudo establecer la colección predeterminada.",
+        title: t("common.error"),
+        description: t("collection.errors.setDefaultFailed"),
         variant: "destructive",
       });
     }
@@ -1174,15 +1172,14 @@ export default function PokemonDashboard() {
       );
 
       toast({
-        title: "Carta Eliminada",
-        description: "La carta ha sido eliminada de tu lista de deseos.",
+        title: t("wishlist.cardRemoved"),
+        description: t("wishlist.removeSuccess"),
       });
     } catch (error) {
       console.error("Error removing from wishlist:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo eliminar la carta. Por favor, intenta de nuevo.",
+        title: t("common.error"),
+        description: t("wishlist.errors.removeFailed"),
         variant: "destructive",
       });
     }
@@ -1233,8 +1230,8 @@ export default function PokemonDashboard() {
       } catch (error) {
         console.error("Error searching cards:", error);
         toast({
-          title: "Error",
-          description: "No se pudieron cargar los resultados de la búsqueda",
+          title: t("common.error"),
+          description: t("search.errors.loadFailed"),
           variant: "destructive",
         });
       } finally {
@@ -1427,8 +1424,10 @@ export default function PokemonDashboard() {
           setDeleteConfirmationState((prev) => ({ ...prev, isOpen: false }))
         }
         onConfirm={handleConfirmDelete}
-        title="Eliminar Colección"
-        description={`¿Estás seguro de que deseas eliminar la colección "${deleteConfirmationState.collectionName}"? Esta acción no se puede deshacer y se eliminarán todas las cartas asociadas.`}
+        title={t("collection.delete")}
+        description={t("collection.confirmDeleteWithName", {
+          name: deleteConfirmationState.collectionName,
+        })}
       />
       <NoDefaultCollectionDialog
         isOpen={isNoDefaultCollectionDialogOpen}

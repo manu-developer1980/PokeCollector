@@ -7,6 +7,7 @@ import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { Progress } from "@/components/ui/progress";
 import { useStats } from "@/hooks/useStats";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionPageProps {
   onSectionChange: (section: string) => void;
@@ -17,11 +18,12 @@ export default function SubscriptionPage({
 }: SubscriptionPageProps) {
   const { subscription, loading } = useSubscription();
   const { stats, isLoading: statsLoading } = useStats();
+  const { t } = useTranslation();
 
   if (loading || statsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner message="Cargando suscripción..." />
+        <LoadingSpinner message={t("subscription.loading")} />
       </div>
     );
   }

@@ -9,6 +9,7 @@ import { useState, useMemo } from "react";
 import CardGrid from "./CardGrid";
 import LoadingSpinner from "../ui/LoaderSpinner";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -29,6 +30,7 @@ const CollectionDetail = ({
   isLoading = false,
   onSectionChange,
 }: CollectionDetailProps) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCards = useMemo(() => {
@@ -52,11 +54,11 @@ const CollectionDetail = ({
               onClick={onBack}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver
+              {t("common.back")}
             </Button>
             <h2 className="text-2xl font-bold">{collection.name}</h2>
             {collection.is_default && (
-              <Badge variant="secondary">Predeterminada</Badge>
+              <Badge variant="secondary">{t("collection.default")}</Badge>
             )}
           </div>
           <Button
@@ -64,21 +66,20 @@ const CollectionDetail = ({
             onClick={() => onEdit(collection)}
           >
             <Edit className="h-4 w-4 mr-2" />
-            Editar Colección
+            {t("collection.edit")}
           </Button>
         </div>
 
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-gray-500 mb-4">
-              Esta colección está vacía. ¡Comienza a añadir cartas desde el
-              buscador!
+              {t("collection.emptyDescription")}
             </p>
             <Button
               className="bg-red-600 hover:bg-red-700"
               onClick={handleSearchClick}
             >
-              <Search className="h-4 w-4 mr-1" /> Buscar Cartas
+              <Search className="h-4 w-4 mr-1" /> {t("search.searchCards")}
             </Button>
           </CardContent>
         </Card>
@@ -88,7 +89,7 @@ const CollectionDetail = ({
 
   return (
     <div className="space-y-6 relative">
-      {isLoading && <LoadingSpinner message="Cargando colección..." />}
+      {isLoading && <LoadingSpinner message={t("collection.loading")} />}
 
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center space-x-4 flex-wrap">
@@ -97,14 +98,14 @@ const CollectionDetail = ({
             onClick={onBack}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
+            {t("common.back")}
           </Button>
           <h2 className="text-2xl font-bold">{collection.name}</h2>
           {collection.is_default && (
-            <Badge variant="secondary">Predeterminada</Badge>
+            <Badge variant="secondary">{t("collection.default")}</Badge>
           )}
           <Badge variant="collection">
-            {collection.cards?.length || 0} cartas
+            {collection.cards?.length || 0} {t("collection.cards")}
           </Badge>
         </div>
         <Button
@@ -112,7 +113,7 @@ const CollectionDetail = ({
           onClick={() => onEdit(collection)}
         >
           <Edit className="h-4 w-4 mr-2" />
-          Editar Colección
+          {t("collection.edit")}
         </Button>
       </div>
 
@@ -123,7 +124,7 @@ const CollectionDetail = ({
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
         <Input
-          placeholder="Buscar cartas en esta colección"
+          placeholder={t("collection.searchInCollection")}
           className="pl-9"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -144,7 +145,7 @@ const CollectionDetail = ({
         <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-gray-500 mb-4">
-              No se encontraron cartas que coincidan con tu búsqueda.
+              {t("collection.noSearchResults")}
             </p>
             <Button
               variant="outline"
@@ -152,7 +153,7 @@ const CollectionDetail = ({
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <X className="h-4 w-4 mr-2" />
-              Limpiar búsqueda
+              {t("search.clearFilters")}
             </Button>
           </CardContent>
         </Card>

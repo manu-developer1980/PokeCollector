@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { PLAN_FEATURES, type PlanFeature } from "@/lib/stripe";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,6 +14,7 @@ export default function CheckoutPage() {
   const { user, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && (!user || !user.email_confirmed_at)) {
@@ -83,7 +85,7 @@ export default function CheckoutPage() {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner message="Cargando datos..." />
+        <LoadingSpinner message={t("subscription.loading")} />
       </div>
     );
   }
