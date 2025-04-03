@@ -3,7 +3,6 @@ import { PricingCard } from "../pricing/PricingCard";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import { useAuth } from "../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import LoadingSpinner from "../ui/LoaderSpinner";
@@ -20,19 +19,12 @@ export default function PricingPage() {
 
   const { user } = useAuth();
   const { subscription, loading } = useSubscription();
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
   const currentPlanType = subscription?.plan_type?.toUpperCase() || "APRENDIZ";
-
-  const handleSelectPlan = (planId: string) => {
-    // Ya no necesitamos guardar el ID del plan ni abrir el modal
-    // El PricingCard ahora maneja directamente la redirección a Stripe
-  };
 
   const faqs = [
     {
@@ -104,7 +96,6 @@ export default function PricingPage() {
             plan={plan}
             isPopular={plan.name === "Entrenador"}
             isCurrentPlan={planType === currentPlanType}
-            onSelectPlan={handleSelectPlan}
           />
         ))}
       </div>
