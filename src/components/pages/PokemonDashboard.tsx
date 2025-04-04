@@ -538,11 +538,18 @@ export default function PokemonDashboard() {
   }, [toast]);
 
   const handleCardClick = (card: PokemonCard) => {
+    console.log("Card clicked in PokemonDashboard:", card);
+    console.log("Card wishlist_id:", (card as any).wishlist_id);
     setSelectedCard(card);
     setIsCardDetailOpen(true);
   };
 
   const handleAddToCollection = (card: PokemonCard) => {
+    console.log("handleAddToCollection called with card:", card);
+    console.log(
+      "Card wishlist_id in handleAddToCollection:",
+      (card as any).wishlist_id
+    );
     if (!user) {
       toast({
         title: "Error",
@@ -552,7 +559,13 @@ export default function PokemonDashboard() {
       return;
     }
 
-    setSelectedCard(card);
+    // Asegurarse de que la carta tenga la propiedad wishlist_id si viene de la lista de deseos
+    const cardWithWishlistId = {
+      ...card,
+      wishlist_id: (card as any).wishlist_id,
+    };
+    console.log("Setting selectedCard with wishlist_id:", cardWithWishlistId);
+    setSelectedCard(cardWithWishlistId);
     setIsAddToCollectionOpen(true);
     setIsCardDetailOpen(false); // Close the detail modal if it's open
   };
@@ -566,7 +579,14 @@ export default function PokemonDashboard() {
     isFirstEdition?: boolean;
     notes?: string;
   }) => {
+    console.log(
+      "handleSaveToCollection called with cardData:",
+      JSON.stringify(cardData)
+    );
     if (!subscription) return;
+
+    // Guardar el estado actual de la sección para poder volver a él después de actualizar
+    const currentSection = activeSection;
 
     try {
       const normalizedCardId = normalizeCardId(cardData.card.id);
@@ -627,6 +647,54 @@ export default function PokemonDashboard() {
         title: t("toasts.cardAdded"),
         description: t("collection.cardAdded"),
       });
+
+      // Si la carta proviene de la lista de deseos (tiene wishlist_id), eliminarla de la lista de deseos
+      console.log("Card data in handleSaveToCollection:", cardData);
+      console.log("Wishlist ID:", cardData.card.wishlist_id);
+      console.log("Card data type:", typeof cardData.card.wishlist_id);
+
+      // Forzar la actualización de la lista de deseos después de añadir la carta a la colección
+      // Esto se hace independientemente de si la carta tiene wishlist_id o no
+      await fetchWishlist();
+
+      if (cardData.card.wishlist_id) {
+        try {
+          console.log(
+            "Deleting wishlist card with ID:",
+            cardData.card.wishlist_id
+          );
+          const { error: removeError } = await supabase
+            .from("wishlist_cards")
+            .delete()
+            .eq("id", cardData.card.wishlist_id);
+          console.log("Delete result:", removeError ? "Error" : "Success");
+
+          if (removeError) throw removeError;
+
+          // Actualizar la lista de deseos en la interfaz
+          console.log(
+            "Updating wishlist cards, removing card with wishlist_id:",
+            cardData.card.wishlist_id
+          );
+          console.log("Current wishlist cards:", wishlistCards);
+
+          // Ya hemos actualizado la lista de deseos antes, pero actualizamos el estado local para una respuesta más rápida
+          setWishlistCards((prev) => {
+            const filtered = prev.filter(
+              (c) => c.wishlist_id !== cardData.card.wishlist_id
+            );
+            console.log("Filtered wishlist cards:", filtered);
+            return filtered;
+          });
+
+          toast({
+            title: t("wishlist.cardRemoved"),
+            description: t("wishlist.removedAfterAdding"),
+          });
+        } catch (error) {
+          console.error("Error removing card from wishlist:", error);
+        }
+      }
     } catch (error) {
       console.error("Error saving to collection:", error);
       toast({
@@ -634,6 +702,11 @@ export default function PokemonDashboard() {
         description: "No se pudo guardar la carta en la colección.",
         variant: "destructive",
       });
+    } finally {
+      // Si estábamos en la sección de lista de deseos, volvemos a cargar la lista de deseos
+      if (currentSection === "Wishlist") {
+        await fetchWishlist();
+      }
     }
   };
 
@@ -1016,6 +1089,30 @@ export default function PokemonDashboard() {
         title: t("toasts.cardAdded"),
         description: t("collection.cardAddedToDefault"),
       });
+
+      // Si la carta proviene de la lista de deseos (tiene wishlist_id), eliminarla de la lista de deseos
+      if (card.wishlist_id) {
+        try {
+          const { error: removeError } = await supabase
+            .from("wishlist_cards")
+            .delete()
+            .eq("id", card.wishlist_id);
+
+          if (removeError) throw removeError;
+
+          // Actualizar la lista de deseos en la interfaz
+          setWishlistCards((prev) =>
+            prev.filter((c) => c.wishlist_id !== card.wishlist_id)
+          );
+
+          toast({
+            title: t("wishlist.cardRemoved"),
+            description: t("wishlist.removedAfterAdding"),
+          });
+        } catch (error) {
+          console.error("Error removing card from wishlist:", error);
+        }
+      }
     } catch (error) {
       console.error("Error al añadir carta a la colección:", error);
       toast({
@@ -1329,6 +1426,13 @@ export default function PokemonDashboard() {
       </>
     );
   };
+
+  // Efecto para cargar la lista de deseos cuando se cambia a la sección Wishlist
+  useEffect(() => {
+    if (activeSection === "Wishlist") {
+      fetchWishlist();
+    }
+  }, [activeSection, fetchWishlist]);
 
   const renderSection = () => {
     switch (activeSection) {

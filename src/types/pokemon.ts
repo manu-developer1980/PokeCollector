@@ -44,6 +44,8 @@ export interface PokemonCard {
   isFirstEdition?: boolean;
   isFoil?: boolean;
   condition?: string;
+  // Propiedad para identificar la carta en la lista de deseos
+  wishlist_id?: string;
 }
 
 export interface PokemonCardSet {

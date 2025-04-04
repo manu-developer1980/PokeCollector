@@ -71,6 +71,7 @@ const AddToCollectionDialog = ({
   // Resetear el formulario cuando se abre el diálogo
   useEffect(() => {
     if (isOpen) {
+      console.log("AddToCollectionDialog opened with card:", card);
       setSelectedCollection(collections[0] || null);
       setQuantity(DEFAULT_VALUES.quantity);
       setCondition(DEFAULT_VALUES.condition);
@@ -130,14 +131,56 @@ const AddToCollectionDialog = ({
         if (insertError) throw insertError;
       }
 
+      // Si la carta proviene de la lista de deseos (tiene wishlist_id), eliminarla de la lista de deseos
+      console.log("Card in AddToCollectionDialog:", card);
+      console.log(
+        "Wishlist ID in AddToCollectionDialog:",
+        (card as any).wishlist_id
+      );
+
+      if ((card as any).wishlist_id) {
+        try {
+          console.log(
+            "Deleting wishlist card with ID:",
+            (card as any).wishlist_id
+          );
+          const { error: removeError } = await supabase
+            .from("wishlist_cards")
+            .delete()
+            .eq("id", (card as any).wishlist_id);
+
+          console.log("Delete result:", removeError ? "Error" : "Success");
+
+          if (removeError) {
+            console.error("Error removing card from wishlist:", removeError);
+          } else {
+            toast({
+              title: t("wishlist.cardRemoved"),
+              description: t("wishlist.removedAfterAdding"),
+            });
+          }
+        } catch (error) {
+          console.error("Error removing card from wishlist:", error);
+        }
+      }
+
       toast({
         title: t("toasts.success"),
         description: t("collection.cardAdded"),
       });
 
       // Notificar al componente padre
+      const cardWithWishlistId = {
+        ...card,
+        // Asegurarse de pasar el wishlist_id si existe
+        wishlist_id: (card as any).wishlist_id,
+      };
+      console.log(
+        "AddToCollectionDialog sending card with wishlist_id:",
+        cardWithWishlistId
+      );
       onAddToCollection({
-        card,
+        card: cardWithWishlistId,
         collectionId: selectedCollection.id,
         quantity,
         condition,

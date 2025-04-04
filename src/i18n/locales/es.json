@@ -189,6 +189,7 @@
     "searchCards": "Buscar cartas para añadir",
     "cardRemoved": "Carta eliminada",
     "removeSuccess": "La carta ha sido eliminada de tu lista de deseos",
+    "removedAfterAdding": "La carta ha sido eliminada de tu lista de deseos después de añadirla a tu colección",
     "alreadyInWishlist": "Ya en Lista de Deseos",
     "cardAlreadyExists": "Esta carta ya está en tu lista de deseos.",
     "errors": {

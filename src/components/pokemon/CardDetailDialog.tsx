@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getCardById } from "@/lib/api";
 import {
   Dialog,
@@ -25,13 +25,13 @@ import {
   type CardSubtype,
 } from "@/lib/constants";
 import { getRarityBadgeStyle } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
-
-const { t } = useTranslation();
+// import { useTranslation } from "react-i18next";
 interface CardDetailDialogProps {
   card: PokemonCard | CollectionCard;
   isOpen: boolean;
   onClose: () => void;
+  onUpdate?: (card: CollectionCard) => void;
+  onRemove?: (card: CollectionCard) => void;
   onAddToCollection?: (card: PokemonCard) => void;
   onRemoveFromWishlist?: (card: PokemonCard) => void;
   mode?: "search" | "collection" | "wishlist";
@@ -49,18 +49,26 @@ const CardDetailDialog = ({
 }: CardDetailDialogProps) => {
   const [cardDetails, setCardDetails] = useState<PokemonCard | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // Usamos useTranslation para mantener la consistencia con el resto del código
 
   useEffect(() => {
+    console.log(
+      "CardDetailDialog useEffect with card:",
+      card,
+      "and mode:",
+      mode
+    );
     const loadCardDetails = async () => {
       if (!card) return;
 
       try {
         // En modo wishlist, la carta ya tiene todos los detalles
         if (mode === "wishlist") {
-          setCardDetails(card);
+          setCardDetails(card as PokemonCard);
         } else {
           // En modo collection, necesitamos usar card.card_id en lugar de card.id
-          const cardId = mode === "collection" ? card.card_id : card.id;
+          const cardId =
+            mode === "collection" ? (card as CollectionCard).card_id : card.id;
           const details = await getCardById(cardId);
           setCardDetails(details);
         }
@@ -82,7 +90,22 @@ const CardDetailDialog = ({
         <div className="flex flex-col gap-2 mt-4">
           <Button
             variant="outline"
-            onClick={() => onAddToCollection?.(cardDetails)}
+            onClick={() => {
+              // Asegurarse de que cardDetails tenga toda la información necesaria, incluido wishlist_id
+              const completeCard: PokemonCard = {
+                ...cardDetails,
+                wishlist_id:
+                  mode === "wishlist" ? (card as any).wishlist_id : undefined, // Asegurarse de pasar el wishlist_id solo si estamos en modo wishlist
+              };
+              console.log("Card in CardDetailDialog:", card);
+              console.log("Mode in CardDetailDialog:", mode);
+              console.log(
+                "Passing wishlist_id to parent:",
+                mode === "wishlist" ? (card as any).wishlist_id : undefined
+              );
+              onAddToCollection?.(completeCard);
+              onClose(); // Cerrar el modal después de añadir a la colección
+            }}
             className="w-full"
           >
             <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
@@ -107,7 +130,7 @@ const CardDetailDialog = ({
       return (
         <Button
           variant="outline"
-          onClick={() => onRemove?.(card.id)}
+          onClick={() => onRemove?.(card as CollectionCard)}
           className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full mt-4"
         >
           <Trash className="h-4 w-4 mr-2" /> Eliminar
@@ -323,8 +346,19 @@ const CardDetailDialog = ({
           card={card as CollectionCard}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdate={onUpdate}
-          onRemove={onRemove}
+          onSave={(updatedCard) => {
+            // Convertir el objeto updatedCard a CollectionCard
+            const collectionCard: CollectionCard = {
+              ...(card as CollectionCard),
+              quantity: updatedCard.quantity,
+              condition: updatedCard.condition || "",
+              is_foil: updatedCard.is_foil || false,
+              is_first_edition: updatedCard.is_first_edition || false,
+              notes: updatedCard.notes || "",
+            };
+            onUpdate?.(collectionCard);
+            setIsEditModalOpen(false);
+          }}
         />
       )}
     </>

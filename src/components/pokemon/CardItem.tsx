@@ -51,6 +51,7 @@ const CardItem = ({
   showPrice = false,
 }: CardItemProps) => {
   const { t } = useTranslation();
+  console.log("CardItem card:", card);
   const [imageError, setImageError] = useState(false);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
 
