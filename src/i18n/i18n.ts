@@ -5,12 +5,6 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import enTranslation from "./locales/en.json";
 import esTranslation from "./locales/es.json";
 
-// Verificar que los archivos de traducción se estén importando correctamente
-console.log("Translations loaded:", {
-  en: Object.keys(enTranslation),
-  es: Object.keys(esTranslation),
-});
-
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -24,7 +18,7 @@ i18n
       },
     },
     fallbackLng: "en",
-    debug: true, // Activar modo debug para ver más información
+    debug: false, // Desactivar modo debug
     interpolation: {
       escapeValue: false,
     },

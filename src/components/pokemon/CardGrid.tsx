@@ -25,7 +25,6 @@ const CardGrid = ({
   actions = "search",
   showPrice = false,
 }: CardGridProps) => {
-  console.log("CardGrid cards:", cards);
   return (
     <div className="flex flex-wrap gap-4 justify-center">
       {cards.map((card) => (

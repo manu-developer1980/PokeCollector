@@ -135,7 +135,6 @@ export default function LoginForm() {
           }
 
           const data = await response.json();
-          console.log(t("auth.success.userInitialized"), data);
 
           // Verificamos si el usuario necesita onboarding
           const needsOnboarding = await checkOnboardingStatus(

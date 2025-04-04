@@ -25,7 +25,6 @@ const WishlistGrid = ({
 }: WishlistGridProps) => {
   const { t } = useTranslation();
 
-  console.log("WishlistGrid cards:", cards);
   const handleSearchClick = () => {
     onSectionChange("Search Cards");
   };
@@ -59,7 +58,6 @@ const WishlistGrid = ({
         <CardGrid
           cards={cards}
           onCardClick={(card) => {
-            console.log("WishlistGrid onCardClick with card:", card);
             // Asegurarse de que la carta tenga la propiedad wishlist_id
             const cardWithWishlistId = {
               ...card,
@@ -68,7 +66,6 @@ const WishlistGrid = ({
             onCardClick(cardWithWishlistId);
           }}
           onQuickAdd={(card) => {
-            console.log("WishlistGrid onQuickAdd with card:", card);
             // Asegurarse de que la carta tenga la propiedad wishlist_id
             const cardWithWishlistId = {
               ...card,

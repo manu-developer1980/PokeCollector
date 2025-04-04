@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Search, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 import SearchFilters from "../pokemon/SearchFilters";
 import CardGrid from "../pokemon/CardGrid";
 import CardDetail from "../pokemon/CardDetail";
 import AuthDialog from "../auth/AuthDialog";
 import { PokemonCard, PokemonCardSearchParams } from "@/types/pokemon";
-import { searchCards } from "@/lib/api";
+import { searchCards, getSets, getTypes, getRarities } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { supabase } from "../../../supabase/supabase";
 import { normalizeCardId } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { errorHandler } from "@/lib/error-handler";
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -62,12 +61,7 @@ export default function SearchPage() {
         setTypes(typesData || []);
         setRarities(raritiesData || []);
       } catch (error) {
-        console.error("Error loading filter data:", error);
-        toast({
-          title: t("common.error"),
-          description: t("errors.generic"),
-          variant: "destructive",
-        });
+        errorHandler.handleError(error, "loadFilterData", toast, t);
       }
     };
 
@@ -86,7 +80,7 @@ export default function SearchPage() {
       setTotalCount(response.totalCount);
       setCurrentPage(params.page || 1);
     } catch (error) {
-      console.error("Error searching cards:", error);
+      errorHandler.handleError(error, "handleSearch", toast, t);
     } finally {
       setIsSearching(false);
     }
@@ -143,12 +137,7 @@ export default function SearchPage() {
         description: t("wishlist.cardAdded"),
       });
     } catch (error) {
-      console.error("Error adding to wishlist:", error);
-      toast({
-        title: t("common.error"),
-        description: t("wishlist.errors.addFailed"),
-        variant: "destructive",
-      });
+      errorHandler.handleError(error, "handleAddToWishlist", toast, t);
     }
   };
 
@@ -208,6 +197,7 @@ export default function SearchPage() {
         onClose={() => setIsCardDetailOpen(false)}
         onAddToCollection={handleAddToCollection}
         onAddToWishlist={handleAddToWishlist}
+        mode="search"
       />
 
       <AuthDialog

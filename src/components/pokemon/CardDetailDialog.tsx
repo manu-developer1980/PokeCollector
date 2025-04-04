@@ -52,12 +52,6 @@ const CardDetailDialog = ({
   // Usamos useTranslation para mantener la consistencia con el resto del código
 
   useEffect(() => {
-    console.log(
-      "CardDetailDialog useEffect with card:",
-      card,
-      "and mode:",
-      mode
-    );
     const loadCardDetails = async () => {
       if (!card) return;
 

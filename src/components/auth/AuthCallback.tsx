@@ -40,7 +40,6 @@ export default function AuthCallback() {
 
             if (setSessionError) throw setSessionError;
             if (session) {
-              console.log("Sesión establecida con tokens de URL");
               return handleExistingSession(session);
             }
           } catch (error) {
@@ -57,7 +56,6 @@ export default function AuthCallback() {
         if (sessionError) {
           console.error("Error getting session:", sessionError);
         } else if (session) {
-          console.log("Sesión existente encontrada");
           return handleExistingSession(session);
         }
 
@@ -68,8 +66,6 @@ export default function AuthCallback() {
         const delay = 1500;
 
         while (attempts < maxAttempts) {
-          console.log(`Intento ${attempts + 1} de ${maxAttempts}`);
-
           const {
             data: { session: retrySession },
             error: retryError,
@@ -78,7 +74,6 @@ export default function AuthCallback() {
           if (retryError) {
             console.error(`Error en intento ${attempts + 1}:`, retryError);
           } else if (retrySession) {
-            console.log("Sesión obtenida en reintento");
             return handleExistingSession(retrySession);
           }
 
@@ -102,7 +97,6 @@ export default function AuthCallback() {
 
             if (exchangeError) throw exchangeError;
             if (exchangeSession) {
-              console.log("Sesión obtenida por intercambio de código");
               return handleExistingSession(exchangeSession);
             }
           }
@@ -189,7 +183,6 @@ export default function AuthCallback() {
         }
 
         const data = await response.json();
-        console.log("Usuario inicializado correctamente:", data);
       } catch (error) {
         console.error("Error en initializeUser:", error);
         throw error;

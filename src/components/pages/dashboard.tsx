@@ -264,8 +264,6 @@ const Dashboard = () => {
     if (!selectedCollection) return;
 
     try {
-      console.log("Dashboard - Updating card:", cardId, updates); // Nuevo log
-
       const { error } = await supabase
         .from("collection_cards")
         .update(updates)
