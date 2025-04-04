@@ -86,7 +86,7 @@ export default function SearchPage() {
     }
   };
 
-  const handleAddToCollection = (card: PokemonCard) => {
+  const handleAddToCollection = async (card: PokemonCard) => {
     if (!user) {
       setLastAction({ type: "collection", card });
       setIsAuthDialogOpen(true);
@@ -96,7 +96,78 @@ export default function SearchPage() {
       });
       return;
     }
-    // Aquí iría la lógica para añadir a la colección cuando el usuario está autenticado
+
+    try {
+      // Obtener la colección por defecto del usuario
+      const { data: defaultCollections, error: collectionsError } =
+        await supabase
+          .from("collections")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("is_default", true)
+          .limit(1);
+
+      if (collectionsError) throw collectionsError;
+
+      // Verificar si existe una colección por defecto
+      if (!defaultCollections || defaultCollections.length === 0) {
+        toast({
+          title: t("collection.noDefaultCollection"),
+          description: t("collection.pleaseCreateDefault"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const defaultCollection = defaultCollections[0];
+      const normalizedCardId = normalizeCardId(card.id);
+
+      // Verificar si la carta ya existe en la colección
+      const { data: existingCards, error: checkError } = await supabase
+        .from("collection_cards")
+        .select("id, quantity")
+        .eq("collection_id", defaultCollection.id)
+        .eq("card_id", normalizedCardId);
+
+      if (checkError) throw checkError;
+
+      if (existingCards && existingCards.length > 0) {
+        // Si la carta ya existe, incrementar la cantidad
+        const existingCard = existingCards[0];
+        const { error: updateError } = await supabase
+          .from("collection_cards")
+          .update({
+            quantity: existingCard.quantity + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingCard.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Si la carta no existe, añadirla a la colección
+        const { error: insertError } = await supabase
+          .from("collection_cards")
+          .insert({
+            collection_id: defaultCollection.id,
+            card_id: normalizedCardId,
+            quantity: 1,
+            condition: "Near Mint",
+            is_foil: false,
+            is_first_edition: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: t("common.success"),
+        description: t("collection.cardAddedToDefault"),
+      });
+    } catch (error) {
+      errorHandler.handleError(error, "handleAddToCollection", toast, t);
+    }
   };
 
   const handleAddToWishlist = async (card: PokemonCard) => {
@@ -185,6 +256,8 @@ export default function SearchPage() {
                 }}
                 onAddToCollection={handleAddToCollection}
                 onAddToWishlist={handleAddToWishlist}
+                onQuickAdd={handleAddToCollection}
+                actions="search"
               />
             )}
           </SearchFilters>

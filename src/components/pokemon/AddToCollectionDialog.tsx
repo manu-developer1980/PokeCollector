@@ -19,7 +19,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Collection, PokemonCard } from "@/types/pokemon";
-import { supabase } from "../../../supabase/supabase";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
 
@@ -80,90 +79,22 @@ const AddToCollectionDialog = ({
     }
   }, [isOpen, collections]);
 
-  const handleAddToCollection = async () => {
+  const handleAddToCollection = () => {
     if (!selectedCollection || !card) return;
 
     try {
       setIsLoading(true);
 
-      // Modificamos la consulta para evitar el error 406
-      const { data: existingCards, error: checkError } = await supabase
-        .from("collection_cards")
-        .select("id, quantity")
-        .match({
-          collection_id: selectedCollection.id,
-          card_id: card.id,
-        });
+      // Instead of performing database operations here, we'll just pass the data to the parent component
+      // which will handle the database operations
 
-      if (checkError) throw checkError;
-
-      const existingCard = existingCards?.[0];
-
-      if (existingCard) {
-        const { error: updateError } = await supabase
-          .from("collection_cards")
-          .update({
-            quantity: existingCard.quantity + quantity,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingCard.id);
-
-        if (updateError) throw updateError;
-      } else {
-        // Crear objeto con solo los campos existentes en la tabla
-        const newCard = {
-          collection_id: selectedCollection.id,
-          card_id: card.id,
-          quantity,
-          condition,
-          is_foil: isFoil,
-          is_first_edition: isFirstEdition,
-          notes,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-
-        const { error: insertError } = await supabase
-          .from("collection_cards")
-          .insert(newCard);
-
-        if (insertError) throw insertError;
-      }
-
-      // Si la carta proviene de la lista de deseos (tiene wishlist_id), eliminarla de la lista de deseos
-
-      if ((card as any).wishlist_id) {
-        try {
-          const { error: removeError } = await supabase
-            .from("wishlist_cards")
-            .delete()
-            .eq("id", (card as any).wishlist_id);
-
-          if (removeError) {
-            console.error("Error removing card from wishlist:", removeError);
-          } else {
-            toast({
-              title: t("wishlist.cardRemoved"),
-              description: t("wishlist.removedAfterAdding"),
-            });
-          }
-        } catch (error) {
-          console.error("Error removing card from wishlist:", error);
-        }
-      }
-
-      toast({
-        title: t("toasts.success"),
-        description: t("collection.cardAdded"),
-      });
-
-      // Notificar al componente padre
+      // Prepare the card with wishlist_id if it exists
       const cardWithWishlistId = {
         ...card,
-        // Asegurarse de pasar el wishlist_id si existe
         wishlist_id: (card as any).wishlist_id,
       };
 
+      // Notify the parent component
       onAddToCollection({
         card: cardWithWishlistId,
         collectionId: selectedCollection.id,
@@ -174,10 +105,10 @@ const AddToCollectionDialog = ({
         notes,
       });
 
-      // Limpiar el formulario y cerrar
+      // Clean up the form and close
       onClose();
     } catch (error) {
-      console.error("Error adding card to collection:", error);
+      console.error("Error preparing card data:", error);
       toast({
         title: t("common.error"),
         description: t("collection.errors.saveFailed"),

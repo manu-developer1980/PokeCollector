@@ -98,8 +98,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
         className={`
           md:relative fixed top-14 left-0 z-50
           md:flex md:flex-col w-64 bg-white border-r border-gray-200 shrink-0
-          md:h-[calc(100vh-4rem)] md:sticky md:top-16
-          h-[calc(100vh-3.5rem)]
+          md:min-h-[100vh] md:sticky md:top-16
           transform transition-transform duration-300 ease-in-out
           ${
             isDrawerOpen

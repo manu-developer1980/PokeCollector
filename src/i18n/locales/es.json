@@ -1,5 +1,6 @@
 {
   "common": {
+    "processing": "Procesando...",
     "loading": "Cargando...",
     "search": "Buscar",
     "back": "Volver",
@@ -174,6 +175,7 @@
     "cards": "Cartas",
     "collections": "Colecciones",
     "noDefaultCollection": "No hay colección predeterminada",
+    "pleaseCreateDefault": "Por favor, crea una colección predeterminada o establece una existente como predeterminada.",
     "defaultCollectionNeeded": "Para usar la función de añadir rápido, necesitas tener una colección predeterminada.",
     "setExistingAsDefault": "Puedes establecer una de tus colecciones existentes como predeterminada:",
     "noCollectionsYet": "No tienes ninguna colección. Crea una nueva para empezar.",
@@ -913,6 +915,7 @@
     "collectionUpdated": "Colección actualizada exitosamente",
     "collectionDeleted": "Colección eliminada exitosamente",
     "cardAdded": "Carta añadida a la colección",
+    "addingCard": "Añadiendo carta a la colección...",
     "cardRemoved": "Carta eliminada de la colección",
     "cardUpdated": "Carta actualizada en la colección",
     "wishlistAdded": "Carta añadida a la lista de deseos",

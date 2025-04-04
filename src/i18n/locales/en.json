@@ -1,5 +1,6 @@
 {
   "common": {
+    "processing": "Processing...",
     "loading": "Loading...",
     "search": "Search",
     "back": "Back",
@@ -330,6 +331,7 @@
     "adding": "Adding...",
     "removeCard": "Remove Card",
     "cardAdded": "Card added to collection",
+    "addingCard": "Adding card to collection...",
     "cardAddedToDefault": "Card added to default collection",
     "cardRemoved": "Card removed from collection",
     "collectionCreated": "Collection created successfully",
@@ -362,6 +364,7 @@
     },
     "confirmDeleteWithName": "Are you sure you want to delete the collection \"{name}\"? This action cannot be undone and all associated cards will be deleted.",
     "noDefaultCollection": "No default collection",
+    "pleaseCreateDefault": "Please create a default collection or set an existing one as default.",
     "defaultCollectionNeeded": "To use the quick add feature, you need to have a default collection.",
     "setExistingAsDefault": "You can set one of your existing collections as default:",
     "noCollectionsYet": "You don't have any collections. Create a new one to get started.",

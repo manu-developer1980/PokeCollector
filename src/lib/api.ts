@@ -36,16 +36,16 @@ api.interceptors.response.use(undefined, async (err) => {
   }
 
   config.retryCount += 1;
-  const delay = config.retryDelay || 1000;
+  const delay = config.retryDelay || 5000;
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   return api(config);
 });
 
 // Default config for requests
-const defaultConfig = {
+const defaultConfig: any = {
   retry: 3,
-  retryDelay: 1000,
+  retryDelay: 5000,
 };
 
 export async function getRarities(): Promise<string[]> {
@@ -128,8 +128,29 @@ export async function getTypes(): Promise<string[]> {
   }
 }
 
+// Caché para cartas no encontradas para evitar peticiones repetidas
+const notFoundCardsCache = new Set<string>();
+
+// Lista de IDs de cartas conocidas como problemáticas que nunca deberían consultarse
+const knownProblematicCardIds = new Set([
+  "xyp-xy62", // Esta carta causa errores 404 repetidos
+  "xyp-xy63", // Posible carta problemática
+  "xyp-xy64", // Posible carta problemática
+]);
+
 export async function getCardById(id: string): Promise<PokemonCard | null> {
+  if (!id) return null;
+
   const normalizedId = normalizeCardId(id);
+
+  // Verificar si la carta es conocida como problemática o ya se intentó buscar y no se encontró
+  if (
+    knownProblematicCardIds.has(normalizedId) ||
+    notFoundCardsCache.has(normalizedId)
+  ) {
+    return null;
+  }
+
   const cacheKey = PokemonCache.getCardKey(normalizedId);
   const cachedCard = PokemonCache.get<PokemonCard>(cacheKey);
 
@@ -144,14 +165,22 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
     );
 
     if (!data || !data.data) {
-      console.warn(`Invalid response format for card ${normalizedId}:`, data);
+      // Guardar en caché de cartas no encontradas
+      notFoundCardsCache.add(normalizedId);
       return null;
     }
 
     PokemonCache.set(cacheKey, data.data);
     return data.data;
-  } catch (error) {
-    console.error(`Failed to fetch card details for ${normalizedId}:`, error);
+  } catch (error: any) {
+    // Si el error es 404, guardar en caché de cartas no encontradas
+    if (error.response && error.response.status === 404) {
+      notFoundCardsCache.add(normalizedId);
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.error(`Failed to fetch card details for ${normalizedId}:`, error);
+    }
     return null;
   }
 }
