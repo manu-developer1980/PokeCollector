@@ -187,6 +187,7 @@
     "loading": "Cargando lista de deseos...",
     "emptyDescription": "Añade cartas a tu lista de deseos para seguir las que quieres conseguir",
     "searchCards": "Buscar cartas para añadir",
+    "cardAdded": "Carta añadida a la lista de deseos",
     "cardRemoved": "Carta eliminada",
     "removeSuccess": "La carta ha sido eliminada de tu lista de deseos",
     "removedAfterAdding": "La carta ha sido eliminada de tu lista de deseos después de añadirla a tu colección",

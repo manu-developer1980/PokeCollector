@@ -285,7 +285,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                     {localCard.notes && (
                       <Badge
                         variant="outline"
-                        className="bg-gray-50 text-gray-700 text-xs shrink-0 cursor-pointer hover:bg-gray-100"
+                        className="bg-gray-200 text-gray-700 text-xs shrink-0 cursor-pointer hover:bg-gray-100"
                         onClick={handleNotesClick}
                       >
                         <FileText className="h-3 w-3 mr-1" />
@@ -369,7 +369,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
 
             <div className="flex-1 flex flex-col ">
               {mode === "collection" && localCard && (
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-200 rounded-lg">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="font-medium">
                       {t("collection.collectionDetails")}
@@ -509,7 +509,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                       {cardDetails.abilities.map((ability, index) => (
                         <div
                           key={index}
-                          className="p-2 bg-gray-50 rounded-md"
+                          className="p-2 bg-gray-200 rounded-md"
                         >
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{ability.name}</span>
@@ -538,7 +538,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                       {cardDetails.attacks.map((attack, index) => (
                         <div
                           key={index}
-                          className="p-2 bg-gray-50 rounded-md"
+                          className="p-2 bg-gray-200 rounded-md"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -584,7 +584,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                       {cardDetails.rules.map((rule, index) => (
                         <p
                           key={index}
-                          className="text-sm p-2 bg-gray-50 rounded-md"
+                          className="text-sm p-2 bg-gray-200 rounded-md"
                         >
                           {rule}
                         </p>

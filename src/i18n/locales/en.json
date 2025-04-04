@@ -376,6 +376,7 @@
     "loading": "Loading wishlist...",
     "emptyDescription": "Add cards to your wishlist to keep track of the ones you want to get",
     "searchCards": "Search cards to add",
+    "cardAdded": "Card added to wishlist",
     "cardRemoved": "Card removed",
     "removeSuccess": "The card has been removed from your wishlist",
     "removedAfterAdding": "The card has been removed from your wishlist after adding it to your collection",
