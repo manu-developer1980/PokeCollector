@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import footerEs from "../../i18n/locales/footer/es.json";
 import footerEn from "../../i18n/locales/footer/en.json";
+import { useCookieConsent } from "@/hooks/useCookieConsent";
 
 export default function Footer() {
   const { i18n } = useTranslation();
+  const { openPreferences } = useCookieConsent();
 
   // Seleccionar las traducciones según el idioma actual
   const footerTranslations = i18n.language === "es" ? footerEs : footerEn;
@@ -130,6 +132,22 @@ export default function Footer() {
                 >
                   {footerTranslations.company.privacy}
                 </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cookie-policy"
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  {footerTranslations.company.cookiePolicy}
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={openPreferences}
+                  className="text-gray-600 hover:text-red-600 text-left w-full"
+                >
+                  {footerTranslations.company.manageCookies}
+                </button>
               </li>
               <li>
                 <Link

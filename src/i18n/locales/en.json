@@ -25,6 +25,78 @@
     "verifying": "Verifying...",
     "unlimited": "Unlimited"
   },
+  "cookies": {
+    "title": "Cookie Consent",
+    "description": "We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking 'Accept All', you consent to our use of cookies.",
+    "learnMore": "Learn more about cookies",
+    "acceptAll": "Accept All",
+    "rejectAll": "Reject All",
+    "savePreferences": "Save Preferences",
+    "preferences": {
+      "title": "Cookie Preferences",
+      "description": "Manage your cookie preferences. You can enable or disable different types of cookies below.",
+      "necessary": {
+        "title": "Necessary Cookies",
+        "description": "These cookies are essential for the website to function properly.",
+        "details": "Necessary cookies help make a website usable by enabling basic functions like page navigation and access to secure areas of the website. The website cannot function properly without these cookies.",
+        "services": "We use Supabase for user authentication and Stripe for payment processing. These services use essential cookies to provide their functionality."
+      },
+      "analytics": {
+        "title": "Analytics Cookies",
+        "description": "These cookies help us understand how visitors interact with our website.",
+        "details": "Analytics cookies help website owners understand how visitors interact with websites by collecting and reporting information anonymously. We use Google Analytics to collect information about how users use our site."
+      },
+      "details": {
+        "title": "Detailed Cookie Information",
+        "description": "Below you can find more information about the specific cookies we use."
+      }
+    }
+  },
+  "cookiePolicy": {
+    "title": "Cookie Policy",
+    "introduction": "This Cookie Policy explains how PokéCollector uses cookies and similar technologies to recognize you when you visit our website. It explains what these technologies are and why we use them, as well as your rights to control our use of them.",
+    "whatAreCookies": {
+      "title": "What Are Cookies?",
+      "description": "Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners in order to make their websites work, or to work more efficiently, as well as to provide reporting information. Cookies set by the website owner (in this case, PokéCollector) are called 'first-party cookies'. Cookies set by parties other than the website owner are called 'third-party cookies'. Third-party cookies enable third-party features or functionality to be provided on or through the website (e.g., advertising, interactive content, and analytics)."
+    },
+    "typesOfCookies": {
+      "title": "Types of Cookies We Use"
+    },
+    "howWeUse": {
+      "title": "How We Use Cookies",
+      "description": "We use cookies for several reasons. Some cookies are required for technical reasons in order for our website to operate, and we refer to these as 'necessary' cookies. Other cookies also enable us to track and target the interests of our users to enhance the experience on our website. Third parties serve cookies through our website for analytics and other purposes."
+    },
+    "googleAnalytics": {
+      "title": "Google Analytics",
+      "description": "We use Google Analytics to help us understand how our customers use the site. You can read more about how Google uses your Personal Information here: https://policies.google.com/privacy. You can opt-out of Google Analytics tracking by disabling analytics cookies in your cookie preferences."
+    },
+    "stripe": {
+      "title": "Stripe",
+      "description": "We use Stripe for payment processing. Stripe uses cookies to enable the payment functionality, prevent fraud, and improve the security of our payment processing. These cookies are necessary for the proper functioning of the payment features."
+    },
+    "supabase": {
+      "title": "Supabase",
+      "description": "We use Supabase for user authentication and data storage. Supabase uses cookies and local storage to maintain your authentication state and ensure you stay logged in. These cookies are necessary for the proper functioning of the authentication features."
+    },
+    "managingCookies": {
+      "title": "Managing Your Cookie Preferences",
+      "description": "You can set or amend your cookie preferences at any time by using our cookie preference center. This allows you to reject non-essential cookies."
+    },
+    "manageCookies": "Manage Cookie Preferences",
+    "browserSettings": {
+      "title": "Browser Controls",
+      "description": "Most web browsers also allow some control of most cookies through the browser settings. To find out more about cookies, including how to see what cookies have been set, visit www.aboutcookies.org or www.allaboutcookies.org. Find out how to manage cookies on popular browsers: Google Chrome, Microsoft Edge, Mozilla Firefox, Microsoft Internet Explorer, Opera, Apple Safari."
+    },
+    "updates": {
+      "title": "Updates to This Cookie Policy",
+      "description": "We may update this Cookie Policy from time to time in order to reflect, for example, changes to the cookies we use or for other operational, legal, or regulatory reasons. Please therefore revisit this Cookie Policy regularly to stay informed about our use of cookies and related technologies."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "description": "If you have any questions about our use of cookies or other technologies, please email us at support@pokecollector.com."
+    },
+    "lastUpdated": "Last updated:"
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "collection": "Collection",

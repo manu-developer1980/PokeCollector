@@ -16,6 +16,7 @@ import CheckoutPage from "./components/pages/checkout";
 import CheckoutSuccessPage from "./components/pages/checkout-success";
 import SearchPage from "./components/pages/SearchPage";
 import Rules from "./components/pages/Rules";
+import CookiePolicy from "./components/pages/CookiePolicy";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/auth/AuthCallback";
@@ -24,6 +25,8 @@ import ResetPassword from "./components/auth/ResetPassword";
 import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
 import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 import GoodbyeModal from "@/components/auth/GoodbyeModal";
+import { CookieConsentProvider } from "./contexts/CookieConsentContext";
+import CookieBanner from "./components/cookies/CookieBanner";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -101,6 +104,14 @@ function AppRoutes() {
           element={
             <MainLayout>
               <Rules />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/cookie-policy"
+          element={
+            <MainLayout>
+              <CookiePolicy />
             </MainLayout>
           }
         />
@@ -208,7 +219,10 @@ export default function App() {
     <Suspense fallback={<div>Loading...</div>}>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <CookieConsentProvider>
+            <AppRoutes />
+            <CookieBanner />
+          </CookieConsentProvider>
         </AuthProvider>
       </BrowserRouter>
     </Suspense>

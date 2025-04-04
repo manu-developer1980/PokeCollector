@@ -25,6 +25,78 @@
     "verifying": "Verificando...",
     "unlimited": "Ilimitado"
   },
+  "cookies": {
+    "title": "Consentimiento de Cookies",
+    "description": "Utilizamos cookies para mejorar tu experiencia de navegación, analizar el tráfico del sitio y personalizar el contenido. Al hacer clic en 'Aceptar Todo', consientes el uso de cookies.",
+    "learnMore": "Más información sobre cookies",
+    "acceptAll": "Aceptar Todo",
+    "rejectAll": "Rechazar Todo",
+    "savePreferences": "Guardar Preferencias",
+    "preferences": {
+      "title": "Preferencias de Cookies",
+      "description": "Gestiona tus preferencias de cookies. Puedes activar o desactivar diferentes tipos de cookies a continuación.",
+      "necessary": {
+        "title": "Cookies Necesarias",
+        "description": "Estas cookies son esenciales para el funcionamiento correcto del sitio web.",
+        "details": "Las cookies necesarias ayudan a hacer que un sitio web sea utilizable al habilitar funciones básicas como la navegación de páginas y el acceso a áreas seguras del sitio web. El sitio web no puede funcionar correctamente sin estas cookies.",
+        "services": "Utilizamos Supabase para la autenticación de usuarios y Stripe para el procesamiento de pagos. Estos servicios utilizan cookies esenciales para proporcionar su funcionalidad."
+      },
+      "analytics": {
+        "title": "Cookies Analíticas",
+        "description": "Estas cookies nos ayudan a entender cómo los visitantes interactúan con nuestro sitio web.",
+        "details": "Las cookies analíticas ayudan a los propietarios de sitios web a comprender cómo los visitantes interactúan con los sitios web recopilando y reportando información de forma anónima. Utilizamos Google Analytics para recopilar información sobre cómo los usuarios utilizan nuestro sitio."
+      },
+      "details": {
+        "title": "Información Detallada de Cookies",
+        "description": "A continuación puedes encontrar más información sobre las cookies específicas que utilizamos."
+      }
+    }
+  },
+  "cookiePolicy": {
+    "title": "Política de Cookies",
+    "introduction": "Esta Política de Cookies explica cómo PokéCollector utiliza cookies y tecnologías similares para reconocerte cuando visitas nuestro sitio web. Explica qué son estas tecnologías y por qué las usamos, así como tus derechos para controlar nuestro uso de ellas.",
+    "whatAreCookies": {
+      "title": "¿Qué Son las Cookies?",
+      "description": "Las cookies son pequeños archivos de datos que se colocan en tu ordenador o dispositivo móvil cuando visitas un sitio web. Las cookies son ampliamente utilizadas por los propietarios de sitios web para hacer que sus sitios funcionen, o para que funcionen de manera más eficiente, así como para proporcionar información de reportes. Las cookies establecidas por el propietario del sitio web (en este caso, PokéCollector) se denominan 'cookies de primera parte'. Las cookies establecidas por partes distintas al propietario del sitio web se denominan 'cookies de terceros'. Las cookies de terceros permiten que funciones o funcionalidades de terceros se proporcionen en o a través del sitio web (por ejemplo, publicidad, contenido interactivo y análisis)."
+    },
+    "typesOfCookies": {
+      "title": "Tipos de Cookies que Utilizamos"
+    },
+    "howWeUse": {
+      "title": "Cómo Utilizamos las Cookies",
+      "description": "Utilizamos cookies por varias razones. Algunas cookies son necesarias por razones técnicas para que nuestro sitio web funcione, y nos referimos a ellas como cookies 'necesarias'. Otras cookies también nos permiten rastrear y dirigir los intereses de nuestros usuarios para mejorar la experiencia en nuestro sitio web. Terceros sirven cookies a través de nuestro sitio web para análisis y otros propósitos."
+    },
+    "googleAnalytics": {
+      "title": "Google Analytics",
+      "description": "Utilizamos Google Analytics para ayudarnos a entender cómo nuestros clientes utilizan el sitio. Puedes leer más sobre cómo Google utiliza tu Información Personal aquí: https://policies.google.com/privacy. Puedes optar por no participar en el seguimiento de Google Analytics desactivando las cookies analíticas en tus preferencias de cookies."
+    },
+    "stripe": {
+      "title": "Stripe",
+      "description": "Utilizamos Stripe para el procesamiento de pagos. Stripe utiliza cookies para habilitar la funcionalidad de pago, prevenir fraudes y mejorar la seguridad de nuestro procesamiento de pagos. Estas cookies son necesarias para el correcto funcionamiento de las características de pago."
+    },
+    "supabase": {
+      "title": "Supabase",
+      "description": "Utilizamos Supabase para la autenticación de usuarios y el almacenamiento de datos. Supabase utiliza cookies y almacenamiento local para mantener tu estado de autenticación y asegurar que permanezcas conectado. Estas cookies son necesarias para el correcto funcionamiento de las características de autenticación."
+    },
+    "managingCookies": {
+      "title": "Gestión de tus Preferencias de Cookies",
+      "description": "Puedes establecer o modificar tus preferencias de cookies en cualquier momento utilizando nuestro centro de preferencias de cookies. Esto te permite rechazar cookies no esenciales."
+    },
+    "manageCookies": "Gestionar Preferencias de Cookies",
+    "browserSettings": {
+      "title": "Controles del Navegador",
+      "description": "La mayoría de los navegadores web también permiten cierto control de la mayoría de las cookies a través de la configuración del navegador. Para obtener más información sobre las cookies, incluido cómo ver qué cookies se han establecido, visita www.aboutcookies.org o www.allaboutcookies.org. Descubre cómo gestionar las cookies en navegadores populares: Google Chrome, Microsoft Edge, Mozilla Firefox, Microsoft Internet Explorer, Opera, Apple Safari."
+    },
+    "updates": {
+      "title": "Actualizaciones de esta Política de Cookies",
+      "description": "Podemos actualizar esta Política de Cookies de vez en cuando para reflejar, por ejemplo, cambios en las cookies que utilizamos o por otras razones operativas, legales o regulatorias. Por lo tanto, revisa regularmente esta Política de Cookies para mantenerte informado sobre nuestro uso de cookies y tecnologías relacionadas."
+    },
+    "contact": {
+      "title": "Contáctanos",
+      "description": "Si tienes alguna pregunta sobre nuestro uso de cookies u otras tecnologías, por favor envíanos un correo electrónico a support@pokecollector.com."
+    },
+    "lastUpdated": "Última actualización:"
+  },
   "navigation": {
     "dashboard": "Panel",
     "collection": "Colección",
