@@ -41,7 +41,7 @@ export default function CollectionList({
   const { t } = useTranslation();
 
   if (isLoading) {
-    return <LoadingSpinner message={t("subscription.loading")} />;
+    return <LoadingSpinner message={t("collection.loading")} />;
   }
 
   if (collections.length === 0) {

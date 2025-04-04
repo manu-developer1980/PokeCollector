@@ -753,6 +753,7 @@
     "checkInboxInstructions": "Please check your inbox and follow the instructions to complete your registration.",
     "openGmail": "Open Gmail",
     "loggingIn": "Logging in...",
+    "accessingAccount": "Accessing your account...",
     "registering": "Registering user...",
     "verifyNewEmail": "Verify your new email",
     "confirmationLinkSent": "We've sent a confirmation link to:",

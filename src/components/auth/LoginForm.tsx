@@ -183,91 +183,90 @@ export default function LoginForm() {
 
   return (
     <AuthLayout>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            {t("auth.login")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("auth.email")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t("auth.emailPlaceholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("auth.password")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        autoComplete="current-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {form.formState.errors.root && (
-                <div className="text-sm font-medium text-destructive">
-                  {form.formState.errors.root.message}
-                </div>
-              )}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
+      {isLoading ? (
+        <div className="w-full max-w-md flex justify-center items-center">
+          <LoadingSpinner message={t("auth.accessingAccount")} />
+        </div>
+      ) : (
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">
+              {t("auth.login")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
               >
-                {isLoading ? (
-                  <LoadingSpinner
-                    message={t("auth.loggingIn")}
-                    compact
-                  />
-                ) : (
-                  t("auth.login")
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("auth.email")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("auth.emailPlaceholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("auth.password")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          autoComplete="current-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.formState.errors.root && (
+                  <div className="text-sm font-medium text-destructive">
+                    {form.formState.errors.root.message}
+                  </div>
                 )}
-              </Button>
-            </form>
-          </Form>
-          <div className="mt-4 text-center text-sm">
-            <Link
-              to="/forgot-password"
-              className="text-blue-600 hover:underline"
-            >
-              {t("auth.forgotPassword")}
-            </Link>
-          </div>
-          <div className="mt-4 text-center text-sm">
-            {t("auth.dontHaveAccount")}{" "}
-            <Link
-              to="/signup"
-              className="text-blue-600 hover:underline"
-            >
-              {t("auth.signup")}
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {t("auth.login")}
+                </Button>
+              </form>
+            </Form>
+            <div className="mt-4 text-center text-sm">
+              <Link
+                to="/forgot-password"
+                className="text-blue-600 hover:underline"
+              >
+                {t("auth.forgotPassword")}
+              </Link>
+            </div>
+            <div className="mt-4 text-center text-sm">
+              {t("auth.dontHaveAccount")}{" "}
+              <Link
+                to="/signup"
+                className="text-blue-600 hover:underline"
+              >
+                {t("auth.signup")}
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       <OnboardingModal
         isOpen={showOnboarding}
         onClose={handleOnboardingClose}
