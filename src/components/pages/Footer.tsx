@@ -127,7 +127,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to="/privacy-policy"
                   className="text-gray-600 hover:text-red-600"
                 >
                   {footerTranslations.company.privacy}
@@ -151,10 +151,18 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to="/terms-of-service"
                   className="text-gray-600 hover:text-red-600"
                 >
                   {footerTranslations.company.terms}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/legal-notice"
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  {footerTranslations.company.legalNotice}
                 </Link>
               </li>
             </ul>

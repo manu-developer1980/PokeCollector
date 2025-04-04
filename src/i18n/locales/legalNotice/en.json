@@ -1,0 +1,84 @@
+{
+  "title": "Legal Notice",
+  "lastUpdated": "Last updated:",
+  "companyInfo": {
+    "title": "Company Information",
+    "description": "In compliance with the information obligations established in Law 34/2002, on Services of the Information Society and Electronic Commerce, the following identification data of the owner of this website are provided:",
+    "items": {
+      "name": {
+        "label": "Name",
+        "value": "PokéCollector"
+      },
+      "nif": {
+        "label": "NIF/CIF",
+        "value": "B12345678"
+      },
+      "address": {
+        "label": "Registered Address",
+        "value": "Calle Principal 123, 28001 Madrid, Spain"
+      },
+      "email": {
+        "label": "Email",
+        "value": "support@pokecollector.com"
+      },
+      "website": {
+        "label": "Website",
+        "value": "www.pokecollector.com"
+      }
+    }
+  },
+  "purpose": {
+    "title": "Purpose of the Website",
+    "description": "PokéCollector is a platform dedicated to helping Pokémon card collectors manage their collections, track their cards, and connect with other collectors."
+  },
+  "termsOfUse": {
+    "title": "Terms of Use",
+    "description": "Access to and use of this website implies full and unreserved acceptance of the Terms of Service that govern its use.",
+    "linkText": "View our Terms of Service"
+  },
+  "intellectualProperty": {
+    "title": "Intellectual Property",
+    "description": "All content on this website, including but not limited to text, images, graphics, logos, icons, software, and design, is the property of PokéCollector or its content providers and is protected by national and international intellectual property laws.",
+    "additionalInfo": "The reproduction, distribution, public communication, transformation, or any other use of the content of this website without the express written permission of PokéCollector is prohibited."
+  },
+  "userObligations": {
+    "title": "User Obligations",
+    "description": "Users of this website agree to:",
+    "items": {
+      "legalUse": "Use the website in accordance with current legislation and these legal terms",
+      "noHarmfulContent": "Not transmit or disseminate content that is illegal, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, or invasive of privacy",
+      "respectRights": "Respect the intellectual property rights of PokéCollector and third parties",
+      "noImpersonation": "Not impersonate other users or persons"
+    }
+  },
+  "dataProtection": {
+    "title": "Data Protection",
+    "description": "In compliance with the provisions of the General Data Protection Regulation (GDPR) and the Organic Law on Data Protection and Guarantee of Digital Rights, we inform you that the personal data provided through this website will be processed as described in our Privacy Policy.",
+    "privacyPolicyLink": "View our Privacy Policy"
+  },
+  "cookies": {
+    "title": "Cookies",
+    "description": "This website uses cookies to enhance user experience and analyze website traffic. For more information about the cookies we use and how to manage them, please refer to our Cookie Policy.",
+    "cookiePolicyLink": "View our Cookie Policy"
+  },
+  "liability": {
+    "title": "Limitation of Liability",
+    "description": "PokéCollector is not responsible for any damages that may occur due to the use or inability to use the content of this website. PokéCollector reserves the right to modify, suspend, or discontinue any aspect of the website at any time without prior notice."
+  },
+  "applicable": {
+    "title": "Applicable Law and Jurisdiction",
+    "description": "These legal terms are governed by Spanish law. For the resolution of any controversy that may arise from the access or use of this website, the parties submit to the courts and tribunals of Madrid, Spain, expressly waiving any other jurisdiction that may correspond to them."
+  },
+  "modifications": {
+    "title": "Modifications",
+    "description": "PokéCollector reserves the right to modify this Legal Notice at any time. Changes will be effective from the moment they are published on the website."
+  },
+  "contact": {
+    "title": "Contact",
+    "description": "For any questions or clarifications regarding this Legal Notice, please contact us at the following email address:"
+  },
+  "relatedDocuments": "Related legal documents:",
+  "privacyPolicyLink": "Privacy Policy",
+  "cookiePolicyLink": "Cookie Policy",
+  "termsOfServiceLink": "Terms of Service"
+}

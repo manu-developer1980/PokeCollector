@@ -1,0 +1,84 @@
+{
+  "title": "Aviso Legal",
+  "lastUpdated": "Última actualización:",
+  "companyInfo": {
+    "title": "Información de la Empresa",
+    "description": "En cumplimiento de las obligaciones de información establecidas en la Ley 34/2002, de Servicios de la Sociedad de la Información y de Comercio Electrónico, se facilitan los siguientes datos de identificación del titular de este sitio web:",
+    "items": {
+      "name": {
+        "label": "Nombre",
+        "value": "PokéCollector"
+      },
+      "nif": {
+        "label": "NIF/CIF",
+        "value": "B12345678"
+      },
+      "address": {
+        "label": "Domicilio Social",
+        "value": "Calle Principal 123, 28001 Madrid, España"
+      },
+      "email": {
+        "label": "Correo Electrónico",
+        "value": "support@pokecollector.com"
+      },
+      "website": {
+        "label": "Sitio Web",
+        "value": "www.pokecollector.com"
+      }
+    }
+  },
+  "purpose": {
+    "title": "Finalidad del Sitio Web",
+    "description": "PokéCollector es una plataforma dedicada a ayudar a los coleccionistas de cartas Pokémon a gestionar sus colecciones, hacer seguimiento de sus cartas y conectar con otros coleccionistas."
+  },
+  "termsOfUse": {
+    "title": "Condiciones de Uso",
+    "description": "El acceso y uso de este sitio web implica la aceptación plena y sin reservas de las Condiciones de Servicio que rigen su utilización.",
+    "linkText": "Ver nuestros Términos de Servicio"
+  },
+  "intellectualProperty": {
+    "title": "Propiedad Intelectual",
+    "description": "Todo el contenido de este sitio web, incluyendo pero no limitado a textos, imágenes, gráficos, logotipos, iconos, software y diseño, es propiedad de PokéCollector o de sus proveedores de contenido y está protegido por las leyes nacionales e internacionales de propiedad intelectual.",
+    "additionalInfo": "Queda prohibida la reproducción, distribución, comunicación pública, transformación o cualquier otro uso del contenido de este sitio web sin la autorización expresa y por escrito de PokéCollector."
+  },
+  "userObligations": {
+    "title": "Obligaciones del Usuario",
+    "description": "Los usuarios de este sitio web se comprometen a:",
+    "items": {
+      "legalUse": "Utilizar el sitio web de conformidad con la legislación vigente y estos términos legales",
+      "noHarmfulContent": "No transmitir ni difundir contenidos que sean ilegales, dañinos, amenazantes, abusivos, hostigadores, difamatorios, vulgares, obscenos o invasivos de la privacidad",
+      "respectRights": "Respetar los derechos de propiedad intelectual de PokéCollector y de terceros",
+      "noImpersonation": "No suplantar a otros usuarios o personas"
+    }
+  },
+  "dataProtection": {
+    "title": "Protección de Datos",
+    "description": "En cumplimiento de lo dispuesto en el Reglamento General de Protección de Datos (RGPD) y la Ley Orgánica de Protección de Datos y Garantía de los Derechos Digitales, le informamos que los datos personales facilitados a través de este sitio web serán tratados según lo descrito en nuestra Política de Privacidad.",
+    "privacyPolicyLink": "Ver nuestra Política de Privacidad"
+  },
+  "cookies": {
+    "title": "Cookies",
+    "description": "Este sitio web utiliza cookies para mejorar la experiencia del usuario y analizar el tráfico del sitio web. Para más información sobre las cookies que utilizamos y cómo gestionarlas, consulte nuestra Política de Cookies.",
+    "cookiePolicyLink": "Ver nuestra Política de Cookies"
+  },
+  "liability": {
+    "title": "Limitación de Responsabilidad",
+    "description": "PokéCollector no se responsabiliza de los daños que puedan producirse por el uso o la imposibilidad de uso del contenido de este sitio web. PokéCollector se reserva el derecho de modificar, suspender o interrumpir cualquier aspecto del sitio web en cualquier momento sin previo aviso."
+  },
+  "applicable": {
+    "title": "Ley Aplicable y Jurisdicción",
+    "description": "Estos términos legales se rigen por la legislación española. Para la resolución de cualquier controversia que pudiera derivarse del acceso o uso de este sitio web, las partes se someten a los juzgados y tribunales de Madrid, España, renunciando expresamente a cualquier otro fuero que pudiera corresponderles."
+  },
+  "modifications": {
+    "title": "Modificaciones",
+    "description": "PokéCollector se reserva el derecho de modificar este Aviso Legal en cualquier momento. Los cambios serán efectivos desde el momento en que se publiquen en el sitio web."
+  },
+  "contact": {
+    "title": "Contacto",
+    "description": "Para cualquier duda o aclaración respecto a este Aviso Legal, puede contactarnos en la siguiente dirección de correo electrónico:"
+  },
+  "relatedDocuments": "Documentos legales relacionados:",
+  "privacyPolicyLink": "Política de Privacidad",
+  "cookiePolicyLink": "Política de Cookies",
+  "termsOfServiceLink": "Términos de Servicio"
+}

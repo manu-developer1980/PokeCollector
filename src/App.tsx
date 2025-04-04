@@ -17,6 +17,9 @@ import CheckoutSuccessPage from "./components/pages/checkout-success";
 import SearchPage from "./components/pages/SearchPage";
 import Rules from "./components/pages/Rules";
 import CookiePolicy from "./components/pages/CookiePolicy";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+import TermsOfService from "./components/pages/TermsOfService";
+import LegalNotice from "./components/pages/LegalNotice";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/auth/AuthCallback";
@@ -112,6 +115,30 @@ function AppRoutes() {
           element={
             <MainLayout>
               <CookiePolicy />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/privacy-policy"
+          element={
+            <MainLayout>
+              <PrivacyPolicy />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/terms-of-service"
+          element={
+            <MainLayout>
+              <TermsOfService />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/legal-notice"
+          element={
+            <MainLayout>
+              <LegalNotice />
             </MainLayout>
           }
         />

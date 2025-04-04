@@ -1,0 +1,93 @@
+{
+  "title": "Privacy Policy",
+  "introduction": "This Privacy Policy describes how your personal information is collected, used, and shared when you visit or make a purchase from PokéCollector. We respect your privacy and are committed to protecting your personal data.",
+  "lastUpdated": "Last updated:",
+  "informationWeCollect": {
+    "title": "Information We Collect",
+    "description": "When you visit the site, we automatically collect certain information about your device, including information about your web browser, IP address, time zone, and some of the cookies that are installed on your device."
+  },
+  "personalInformation": {
+    "title": "Personal Information",
+    "description": "When you register for an account or subscribe to our service, we may ask you to provide the following types of personal information:",
+    "items": {
+      "email": "Email address",
+      "name": "Name",
+      "billingInfo": "Billing information (for paid subscriptions)"
+    }
+  },
+  "usageData": {
+    "title": "Usage Data",
+    "description": "We may also collect information about how you access and use our service:",
+    "items": {
+      "ipAddress": "IP address",
+      "browserType": "Browser type and version",
+      "pagesVisited": "Pages of our service that you visit",
+      "timeSpent": "Time spent on those pages"
+    }
+  },
+  "howWeUseInformation": {
+    "title": "How We Use Your Information",
+    "description": "We use the information we collect about you to:",
+    "items": {
+      "provideService": "Provide, operate, and maintain our service",
+      "improveService": "Improve and personalize your experience on our site",
+      "communicate": "Communicate with you, including for customer service",
+      "processPayments": "Process payments and prevent fraud"
+    }
+  },
+  "dataStorage": {
+    "title": "Where Your Data is Stored",
+    "description": "Your data is stored securely with our service providers:"
+  },
+  "supabase": {
+    "title": "Supabase",
+    "description": "We use Supabase to store user data and authentication information. Supabase stores data in accordance with GDPR requirements and implements appropriate security measures to protect your personal information."
+  },
+  "stripe": {
+    "title": "Stripe",
+    "description": "For payment processing, we use Stripe. When you provide your payment information, it is transmitted directly to Stripe and is not stored on our servers. Stripe processes your payment information in accordance with their privacy policy."
+  },
+  "cookies": {
+    "title": "Cookies and Tracking",
+    "description": "We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.",
+    "linkText": "Learn more about our Cookie Policy"
+  },
+  "dataSharing": {
+    "title": "Sharing Your Personal Information",
+    "description": "We share your Personal Information with third parties to help us use your Personal Information, as described above. We may also share your Personal Information in the following situations:",
+    "items": {
+      "serviceProviders": "With service providers who perform services for us",
+      "legalRequirements": "If required by law or in response to valid requests by public authorities",
+      "businessTransfers": "In connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition"
+    }
+  },
+  "dataRetention": {
+    "title": "Data Retention",
+    "description": "We will retain your Personal Information only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your Personal Information to the extent necessary to comply with our legal obligations, resolve disputes, and enforce our legal agreements and policies."
+  },
+  "yourRights": {
+    "title": "Your Rights Under GDPR",
+    "description": "If you are a resident of the European Economic Area (EEA), you have certain data protection rights. You have the right to:",
+    "items": {
+      "access": "Access information we hold about you",
+      "rectification": "Rectify any inaccurate or incomplete personal information",
+      "erasure": "Request the deletion of your personal data",
+      "restriction": "Restrict or object to the processing of your personal data",
+      "dataPortability": "Request the transfer of your data to you or a third party",
+      "objection": "Object to the processing of your personal data for direct marketing"
+    },
+    "exerciseRights": "To exercise these rights, please contact us using the contact information provided below."
+  },
+  "dataProtectionOfficer": {
+    "title": "Data Protection Officer",
+    "description": "We have appointed a data protection officer (DPO) who is responsible for overseeing questions in relation to this privacy policy. If you have any questions about this privacy policy, please contact our DPO at support@pokecollector.com."
+  },
+  "changes": {
+    "title": "Changes to This Privacy Policy",
+    "description": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the 'last updated' date."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "If you have any questions about this Privacy Policy, please contact us."
+  }
+}

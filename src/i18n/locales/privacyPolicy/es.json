@@ -1,0 +1,93 @@
+{
+  "title": "Política de Privacidad",
+  "introduction": "Esta Política de Privacidad describe cómo se recopila, utiliza y comparte su información personal cuando visita o realiza una compra en PokéCollector. Respetamos su privacidad y estamos comprometidos a proteger sus datos personales.",
+  "lastUpdated": "Última actualización:",
+  "informationWeCollect": {
+    "title": "Información que Recopilamos",
+    "description": "Cuando visita el sitio, recopilamos automáticamente cierta información sobre su dispositivo, incluyendo información sobre su navegador web, dirección IP, zona horaria y algunas de las cookies que están instaladas en su dispositivo."
+  },
+  "personalInformation": {
+    "title": "Información Personal",
+    "description": "Cuando se registra para una cuenta o se suscribe a nuestro servicio, podemos pedirle que proporcione los siguientes tipos de información personal:",
+    "items": {
+      "email": "Dirección de correo electrónico",
+      "name": "Nombre",
+      "billingInfo": "Información de facturación (para suscripciones de pago)"
+    }
+  },
+  "usageData": {
+    "title": "Datos de Uso",
+    "description": "También podemos recopilar información sobre cómo accede y utiliza nuestro servicio:",
+    "items": {
+      "ipAddress": "Dirección IP",
+      "browserType": "Tipo y versión del navegador",
+      "pagesVisited": "Páginas de nuestro servicio que visita",
+      "timeSpent": "Tiempo dedicado a esas páginas"
+    }
+  },
+  "howWeUseInformation": {
+    "title": "Cómo Utilizamos su Información",
+    "description": "Utilizamos la información que recopilamos sobre usted para:",
+    "items": {
+      "provideService": "Proporcionar, operar y mantener nuestro servicio",
+      "improveService": "Mejorar y personalizar su experiencia en nuestro sitio",
+      "communicate": "Comunicarnos con usted, incluso para atención al cliente",
+      "processPayments": "Procesar pagos y prevenir fraudes"
+    }
+  },
+  "dataStorage": {
+    "title": "Dónde se Almacenan sus Datos",
+    "description": "Sus datos se almacenan de forma segura con nuestros proveedores de servicios:"
+  },
+  "supabase": {
+    "title": "Supabase",
+    "description": "Utilizamos Supabase para almacenar datos de usuarios e información de autenticación. Supabase almacena datos de acuerdo con los requisitos del RGPD e implementa medidas de seguridad apropiadas para proteger su información personal."
+  },
+  "stripe": {
+    "title": "Stripe",
+    "description": "Para el procesamiento de pagos, utilizamos Stripe. Cuando proporciona su información de pago, se transmite directamente a Stripe y no se almacena en nuestros servidores. Stripe procesa su información de pago de acuerdo con su política de privacidad."
+  },
+  "cookies": {
+    "title": "Cookies y Seguimiento",
+    "description": "Utilizamos cookies y tecnologías de seguimiento similares para rastrear la actividad en nuestro servicio y almacenar cierta información. Puede instruir a su navegador para que rechace todas las cookies o para que le indique cuando se está enviando una cookie.",
+    "linkText": "Más información sobre nuestra Política de Cookies"
+  },
+  "dataSharing": {
+    "title": "Compartir su Información Personal",
+    "description": "Compartimos su Información Personal con terceros para ayudarnos a utilizar su Información Personal, como se describió anteriormente. También podemos compartir su Información Personal en las siguientes situaciones:",
+    "items": {
+      "serviceProviders": "Con proveedores de servicios que realizan servicios para nosotros",
+      "legalRequirements": "Si es requerido por ley o en respuesta a solicitudes válidas de autoridades públicas",
+      "businessTransfers": "En relación con, o durante las negociaciones de, cualquier fusión, venta de activos de la empresa, financiación o adquisición"
+    }
+  },
+  "dataRetention": {
+    "title": "Retención de Datos",
+    "description": "Conservaremos su Información Personal solo durante el tiempo que sea necesario para los fines establecidos en esta Política de Privacidad. Conservaremos y utilizaremos su Información Personal en la medida necesaria para cumplir con nuestras obligaciones legales, resolver disputas y hacer cumplir nuestros acuerdos y políticas legales."
+  },
+  "yourRights": {
+    "title": "Sus Derechos bajo el RGPD",
+    "description": "Si es residente del Espacio Económico Europeo (EEE), tiene ciertos derechos de protección de datos. Tiene derecho a:",
+    "items": {
+      "access": "Acceder a la información que tenemos sobre usted",
+      "rectification": "Rectificar cualquier información personal inexacta o incompleta",
+      "erasure": "Solicitar la eliminación de sus datos personales",
+      "restriction": "Restringir u objetar el procesamiento de sus datos personales",
+      "dataPortability": "Solicitar la transferencia de sus datos a usted o a un tercero",
+      "objection": "Oponerse al procesamiento de sus datos personales para marketing directo"
+    },
+    "exerciseRights": "Para ejercer estos derechos, póngase en contacto con nosotros utilizando la información de contacto proporcionada a continuación."
+  },
+  "dataProtectionOfficer": {
+    "title": "Delegado de Protección de Datos",
+    "description": "Hemos nombrado a un delegado de protección de datos (DPD) que es responsable de supervisar las cuestiones relacionadas con esta política de privacidad. Si tiene alguna pregunta sobre esta política de privacidad, póngase en contacto con nuestro DPD en support@pokecollector.com."
+  },
+  "changes": {
+    "title": "Cambios en esta Política de Privacidad",
+    "description": "Podemos actualizar nuestra Política de Privacidad de vez en cuando. Le notificaremos cualquier cambio publicando la nueva Política de Privacidad en esta página y actualizando la fecha de 'última actualización'."
+  },
+  "contact": {
+    "title": "Contáctenos",
+    "description": "Si tiene alguna pregunta sobre esta Política de Privacidad, póngase en contacto con nosotros."
+  }
+}

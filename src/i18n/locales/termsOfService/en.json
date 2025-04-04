@@ -1,0 +1,97 @@
+{
+  "title": "Terms of Service",
+  "introduction": "These Terms of Service govern your use of the PokéCollector website and service. By accessing or using our service, you agree to be bound by these Terms.",
+  "lastUpdated": "Last updated:",
+  "definitions": {
+    "title": "Definitions",
+    "items": {
+      "service": {
+        "term": "Service",
+        "definition": "The PokéCollector website and platform operated by us."
+      },
+      "user": {
+        "term": "User",
+        "definition": "Any individual who accesses or uses the Service."
+      },
+      "account": {
+        "term": "Account",
+        "definition": "A unique account created for you to access our Service or parts of our Service."
+      },
+      "subscription": {
+        "term": "Subscription",
+        "definition": "The recurring payment plan that grants access to premium features of the Service."
+      },
+      "company": {
+        "term": "Company",
+        "definition": "Refers to PokéCollector, the operator of this Service."
+      }
+    }
+  },
+  "acceptance": {
+    "title": "Acceptance of Terms",
+    "description": "By accessing or using our Service, you confirm that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you may not use our Service."
+  },
+  "userAccounts": {
+    "title": "User Accounts",
+    "description": "When you create an account with us, you must provide information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.",
+    "items": {
+      "accuracy": "You are responsible for maintaining the accuracy of your account information.",
+      "security": "You are responsible for safeguarding the password used to access the Service.",
+      "unauthorized": "You agree to notify us immediately of any unauthorized access to or use of your account.",
+      "termination": "We reserve the right to terminate or suspend your account at our sole discretion, without notice."
+    }
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "description": "Some parts of the Service are available on a subscription basis. You will be billed in advance on a recurring basis, depending on the type of subscription plan you select.",
+    "billing": "By subscribing to our Service, you authorize us to charge your payment method on a recurring basis according to the terms of your subscription plan.",
+    "cancellation": "You can cancel your subscription at any time through your account settings. Your subscription will remain active until the end of the current billing period."
+  },
+  "intellectualProperty": {
+    "title": "Intellectual Property",
+    "description": "The Service and its original content, features, and functionality are and will remain the exclusive property of PokéCollector and its licensors. The Service is protected by copyright, trademark, and other laws.",
+    "userContent": "By submitting content to the Service, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, adapt, publish, translate, and distribute your content in any existing or future media."
+  },
+  "prohibitedUses": {
+    "title": "Prohibited Uses",
+    "description": "You may use our Service only for lawful purposes and in accordance with these Terms. You agree not to use the Service:",
+    "items": {
+      "illegal": "In any way that violates any applicable national or international law or regulation.",
+      "harmful": "To transmit, or procure the sending of, any advertising or promotional material, including any 'junk mail', 'chain letter', 'spam', or any other similar solicitation.",
+      "impersonation": "To impersonate or attempt to impersonate the Company, a Company employee, another user, or any other person or entity.",
+      "infringement": "To engage in any activity that infringes or misappropriates the intellectual property rights of others.",
+      "automation": "To use any robot, spider, or other automatic device to access the Service for any purpose without our express written permission."
+    }
+  },
+  "disclaimer": {
+    "title": "Disclaimer of Warranties",
+    "description": "Your use of the Service is at your sole risk. The Service is provided on an 'AS IS' and 'AS AVAILABLE' basis. The Service is provided without warranties of any kind, whether express or implied."
+  },
+  "limitation": {
+    "title": "Limitation of Liability",
+    "description": "In no event shall PokéCollector, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service."
+  },
+  "indemnification": {
+    "title": "Indemnification",
+    "description": "You agree to defend, indemnify, and hold harmless PokéCollector and its licensors, service providers, employees, agents, officers, and directors from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out of or relating to your violation of these Terms or your use of the Service."
+  },
+  "termination": {
+    "title": "Termination",
+    "description": "We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease."
+  },
+  "governing": {
+    "title": "Governing Law",
+    "description": "These Terms shall be governed and construed in accordance with the laws of Spain, without regard to its conflict of law provisions."
+  },
+  "changes": {
+    "title": "Changes to Terms",
+    "description": "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "If you have any questions about these Terms, please contact us."
+  },
+  "relatedPolicies": "Please also review our other policies:",
+  "privacyPolicyLink": "Privacy Policy",
+  "cookiePolicyLink": "Cookie Policy"
+}
