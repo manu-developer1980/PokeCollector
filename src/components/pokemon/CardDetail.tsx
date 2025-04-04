@@ -208,55 +208,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
     }
   };
 
-  const renderActions = () => {
-    switch (mode) {
-      case "search":
-        return (
-          <div className="flex flex-col gap-2 mt-auto pt-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => cardDetails && handleAddToCollection(cardDetails)}
-            >
-              <Plus className="h-4 w-4 mr-2" /> {t("card.addToCollection")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => cardDetails && handleAddToWishlist(cardDetails)}
-              className="w-full"
-            >
-              <Heart className="h-4 w-4 mr-2 text-red-500 fill-current" />
-              {t("card.addToWishlist")}
-            </Button>
-          </div>
-        );
-
-      case "wishlist":
-        return (
-          <div className="flex flex-col gap-2 mt-auto pt-4">
-            <Button
-              variant="outline"
-              onClick={() => cardDetails && handleAddToCollection(cardDetails)}
-              className="w-full"
-            >
-              <Plus className="h-4 w-4 mr-2" /> {t("card.addToCollection")}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() =>
-                cardDetails && handleRemoveFromWishlist(cardDetails)
-              }
-              className="w-full"
-            >
-              <Trash className="h-4 w-4 mr-2" /> {t("card.removeFromWishlist")}
-            </Button>
-          </div>
-        );
-
-      case "collection":
-        return null; // Eliminamos el botón de aquí
-    }
-  };
+  // La función renderActions ya no es necesaria porque los botones se han movido debajo de la imagen
 
   // Agregar una validación temprana
   if (!cardDetails) {
@@ -364,6 +316,54 @@ const CardDetail: React.FC<CardDetailProps> = ({
                 >
                   <Trash className="h-4 w-4 mr-2" /> {t("common.remove")}
                 </Button>
+              )}
+              {mode === "search" && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() =>
+                      cardDetails && handleAddToCollection(cardDetails)
+                    }
+                  >
+                    <Plus className="h-4 w-4 mr-2" />{" "}
+                    {t("card.addToCollection")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      cardDetails && handleAddToWishlist(cardDetails)
+                    }
+                    className="w-full"
+                  >
+                    <Heart className="h-4 w-4 mr-2 text-red-500 fill-current" />
+                    {t("card.addToWishlist")}
+                  </Button>
+                </div>
+              )}
+              {mode === "wishlist" && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      cardDetails && handleAddToCollection(cardDetails)
+                    }
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />{" "}
+                    {t("card.addToCollection")}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() =>
+                      cardDetails && handleRemoveFromWishlist(cardDetails)
+                    }
+                    className="w-full"
+                  >
+                    <Trash className="h-4 w-4 mr-2" />{" "}
+                    {t("card.removeFromWishlist")}
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -560,6 +560,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                                       src={`/images/energy/${type.toLowerCase()}.png`}
                                       alt={type}
                                       className="w-full h-full object-contain"
+                                      title={type}
                                     />
                                   </span>
                                 ))}
@@ -591,80 +592,83 @@ const CardDetail: React.FC<CardDetailProps> = ({
                     </div>
                   </div>
                 )}
+                <div className="flex justify-start gap-16">
+                  {cardDetails.weaknesses &&
+                    cardDetails.weaknesses.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium mb-1">
+                          {t("card.weaknesses")}
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {cardDetails.weaknesses.map((weakness, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="bg-red-50 text-red-700"
+                            >
+                              <img
+                                src={`/images/energy/${weakness.type.toLowerCase()}.png`}
+                                alt={weakness.type}
+                                className="w-4 h-4 mr-1 border-slate-900"
+                                title={weakness.type}
+                              />
+                              {weakness.value}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                {cardDetails.weaknesses &&
-                  cardDetails.weaknesses.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium mb-1">
-                        {t("card.weaknesses")}
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {cardDetails.weaknesses.map((weakness, index) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="bg-red-50 text-red-700"
-                          >
+                  {cardDetails.resistances &&
+                    cardDetails.resistances.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium mb-1">
+                          {t("card.resistances")}
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {cardDetails.resistances.map((resistance, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="bg-green-50 text-green-700"
+                            >
+                              <img
+                                src={`/images/energy/${resistance.type.toLowerCase()}.png`}
+                                alt={resistance.type}
+                                className="w-4 h-4 mr-1"
+                                title={resistance.type}
+                              />
+                              {resistance.value}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  {cardDetails.retreatCost &&
+                    cardDetails.retreatCost.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium mb-1">
+                          {t("card.retreatCost")}
+                        </h3>
+                        <div className="flex items-center">
+                          {cardDetails.retreatCost.map((type, index) => (
                             <img
-                              src={`/images/energy/${weakness.type.toLowerCase()}.png`}
-                              alt={weakness.type}
-                              className="w-4 h-4 mr-1"
+                              key={index}
+                              src={`/images/energy/${type.toLowerCase()}.png`}
+                              alt={type}
+                              className="w-5 h-5 mr-1"
+                              title={type}
                             />
-                            {weakness.value}
-                          </Badge>
-                        ))}
+                          ))}
+                          <span className="ml-2">
+                            ({cardDetails.retreatCost.length})
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                {cardDetails.resistances &&
-                  cardDetails.resistances.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium mb-1">
-                        {t("card.resistances")}
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {cardDetails.resistances.map((resistance, index) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="bg-green-50 text-green-700"
-                          >
-                            <img
-                              src={`/images/energy/${resistance.type.toLowerCase()}.png`}
-                              alt={resistance.type}
-                              className="w-4 h-4 mr-1"
-                            />
-                            {resistance.value}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                {cardDetails.retreatCost &&
-                  cardDetails.retreatCost.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium mb-1">
-                        {t("card.retreatCost")}
-                      </h3>
-                      <div className="flex items-center">
-                        {cardDetails.retreatCost.map((type, index) => (
-                          <img
-                            key={index}
-                            src={`/images/energy/${type.toLowerCase()}.png`}
-                            alt={type}
-                            className="w-5 h-5 mr-1"
-                          />
-                        ))}
-                        <span className="ml-2">
-                          ({cardDetails.retreatCost.length})
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                {renderActions()}
+                    )}
+                </div>
+                {/* Los botones de acción se han movido debajo de la imagen */}
               </div>
             </div>
           </div>

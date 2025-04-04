@@ -37,6 +37,21 @@ export interface PokemonCard {
     text?: string;
     damage?: string;
     convertedEnergyCost?: number;
+    cost?: string[];
+  }>;
+  weaknesses?: Array<{
+    type: string;
+    value: string;
+  }>;
+  resistances?: Array<{
+    type: string;
+    value: string;
+  }>;
+  retreatCost?: string[];
+  abilities?: Array<{
+    name: string;
+    text: string;
+    type?: string;
   }>;
   rules?: string[];
   // Propiedades específicas de la colección

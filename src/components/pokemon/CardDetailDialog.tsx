@@ -84,62 +84,7 @@ const CardDetailDialog = ({
 
   if (!card || !cardDetails) return null;
 
-  const renderActions = () => {
-    if (mode === "wishlist" && cardDetails) {
-      return (
-        <div className="flex flex-col gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={() => {
-              // Asegurarse de que cardDetails tenga toda la información necesaria, incluido wishlist_id
-              const completeCard: PokemonCard = {
-                ...cardDetails,
-                wishlist_id:
-                  mode === "wishlist" ? (card as any).wishlist_id : undefined, // Asegurarse de pasar el wishlist_id solo si estamos en modo wishlist
-              };
-              console.log("Card in CardDetailDialog:", card);
-              console.log("Mode in CardDetailDialog:", mode);
-              console.log(
-                "Passing wishlist_id to parent:",
-                mode === "wishlist" ? (card as any).wishlist_id : undefined
-              );
-              onAddToCollection?.(completeCard);
-              onClose(); // Cerrar el modal después de añadir a la colección
-            }}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (cardDetails) {
-                onRemoveFromWishlist?.(cardDetails);
-                onClose();
-              }
-            }}
-            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash className="h-4 w-4 mr-2" /> Eliminar de Lista de Deseos
-          </Button>
-        </div>
-      );
-    }
-
-    if (mode === "collection") {
-      return (
-        <Button
-          variant="outline"
-          onClick={() => onRemove?.(card as CollectionCard)}
-          className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full mt-4"
-        >
-          <Trash className="h-4 w-4 mr-2" /> Eliminar
-        </Button>
-      );
-    }
-
-    return null;
-  };
+  // La función renderActions ya no es necesaria porque los botones se han movido debajo de la imagen
 
   return (
     <>
@@ -215,6 +160,50 @@ const CardDetailDialog = ({
                 alt={cardDetails.name}
                 className="rounded-lg xxs:max-w-[300px] w-auto"
               />
+              {mode === "wishlist" && cardDetails && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Asegurarse de que cardDetails tenga toda la información necesaria, incluido wishlist_id
+                      const completeCard: PokemonCard = {
+                        ...cardDetails,
+                        wishlist_id:
+                          mode === "wishlist"
+                            ? (card as any).wishlist_id
+                            : undefined, // Asegurarse de pasar el wishlist_id solo si estamos en modo wishlist
+                      };
+                      onAddToCollection?.(completeCard);
+                      onClose(); // Cerrar el modal después de añadir a la colección
+                    }}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Añadir a Colección
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (cardDetails) {
+                        onRemoveFromWishlist?.(cardDetails);
+                        onClose();
+                      }
+                    }}
+                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash className="h-4 w-4 mr-2" /> Eliminar de Lista de
+                    Deseos
+                  </Button>
+                </div>
+              )}
+              {mode === "collection" && (
+                <Button
+                  variant="outline"
+                  onClick={() => onRemove?.(card as CollectionCard)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full mt-2"
+                >
+                  <Trash className="h-4 w-4 mr-2" /> Eliminar
+                </Button>
+              )}
             </div>
 
             <div className="space-y-4 flex-1 flex flex-col">
@@ -228,15 +217,25 @@ const CardDetailDialog = ({
                     {cardDetails.types?.length > 0 && (
                       <>
                         <div className="text-gray-500">Tipo</div>
-                        <div>
-                          {cardDetails.types
-                            .map(
-                              (type) =>
-                                POKEMON_TYPES_MAP[
+                        <div className="flex items-center gap-2">
+                          {cardDetails.types.map((type, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-1"
+                            >
+                              <img
+                                src={`/images/energy/${type.toLowerCase()}.png`}
+                                alt={type}
+                                className="w-4 h-4"
+                              />
+                              <span>
+                                {POKEMON_TYPES_MAP[
                                   type.toLowerCase() as PokemonType
-                                ] || type
-                            )
-                            .join(", ")}
+                                ] || type}
+                              </span>
+                              {index < cardDetails.types.length - 1 && ", "}
+                            </div>
+                          ))}
                         </div>
                       </>
                     )}
@@ -307,13 +306,28 @@ const CardDetailDialog = ({
                           {attack.text && (
                             <div className="text-gray-500">{attack.text}</div>
                           )}
-                          <div className="text-gray-500">
-                            {attack.damage && `Daño: ${attack.damage}`}
+                          <div className="flex items-center gap-2 text-gray-500">
+                            {attack.damage && (
+                              <span>Daño: {attack.damage}</span>
+                            )}
                             {attack.damage &&
                               attack.convertedEnergyCost &&
                               " · "}
-                            {attack.convertedEnergyCost &&
-                              `Coste: ${attack.convertedEnergyCost}`}
+                            {attack.convertedEnergyCost && (
+                              <div className="flex items-center gap-1">
+                                <span>Coste:</span>
+                                {attack.cost?.map(
+                                  (energyType: string, idx: number) => (
+                                    <img
+                                      key={idx}
+                                      src={`/images/energy/${energyType.toLowerCase()}.png`}
+                                      alt={energyType}
+                                      className="w-4 h-4 mr-1"
+                                    />
+                                  )
+                                ) || <span>{attack.convertedEnergyCost}</span>}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -334,8 +348,7 @@ const CardDetailDialog = ({
                 )}
               </div>
 
-              {/* Botones de acción siempre al final */}
-              <div className="mt-auto pt-4">{renderActions()}</div>
+              {/* Los botones de acción se han movido debajo de la imagen */}
             </div>
           </div>
         </DialogContent>
