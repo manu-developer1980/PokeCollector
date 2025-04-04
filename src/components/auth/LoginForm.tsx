@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import { Loader2 } from "lucide-react";
+// import { Loader2 } from "lucide-react"; // No se utiliza
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,7 +19,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import OnboardingModal from "../onboarding/OnboardingModal";
+// import OnboardingModal from "../onboarding/OnboardingModal"; // Ya no lo necesitamos aquí
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { useTranslation } from "react-i18next";
@@ -34,7 +34,7 @@ export default function LoginForm() {
   const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  // Ya no necesitamos el estado showOnboarding en el LoginForm
   const [showConfirmEmail, setShowConfirmEmail] = useState(false);
   const [emailToConfirm, setEmailToConfirm] = useState("");
   const { signIn } = useAuth();
@@ -137,12 +137,15 @@ export default function LoginForm() {
           const data = await response.json();
           console.log(t("auth.success.userInitialized"), data);
 
+          // Verificamos si el usuario necesita onboarding
           const needsOnboarding = await checkOnboardingStatus(
             result.data.user.id
           );
+
+          // Si necesita onboarding, guardamos esta información en localStorage
+          // para que se muestre en el dashboard
           if (needsOnboarding) {
-            setShowOnboarding(true);
-            return;
+            localStorage.setItem("needs_onboarding", "true");
           }
 
           toast({
@@ -168,18 +171,15 @@ export default function LoginForm() {
         variant: "destructive",
       });
     } finally {
+      // Siempre establecemos isLoading a false al finalizar
       setIsLoading(false);
     }
   };
 
-  const handleOnboardingClose = () => {
-    setShowOnboarding(false);
-    // Mostrar planes después del onboarding
-  };
+  // Ya no necesitamos handleOnboardingClose en el LoginForm
+  // El onboarding se mostrará en el dashboard
 
-  const handlePlansDialogClose = () => {
-    // Eliminamos esta función ya que no la usaremos
-  };
+  // Eliminamos la función handlePlansDialogClose ya que no se utiliza
 
   return (
     <AuthLayout>
@@ -267,10 +267,7 @@ export default function LoginForm() {
           </CardContent>
         </Card>
       )}
-      <OnboardingModal
-        isOpen={showOnboarding}
-        onClose={handleOnboardingClose}
-      />
+      {/* Eliminamos el OnboardingModal del LoginForm */}
       <ConfirmDialog
         isOpen={showConfirmEmail}
         onClose={() => setShowConfirmEmail(false)}

@@ -479,6 +479,15 @@ export default function PokemonDashboard() {
       try {
         setIsLoading(true);
         await Promise.all([getCollections(), checkOnboardingStatus()]);
+
+        // Verificar si el usuario necesita ver el onboarding (guardado en localStorage por LoginForm)
+        const needsOnboarding = localStorage.getItem("needs_onboarding");
+        if (needsOnboarding === "true") {
+          // Mostrar el onboarding
+          setShowOnboarding(true);
+          // Eliminar la marca de localStorage para que no se muestre de nuevo
+          localStorage.removeItem("needs_onboarding");
+        }
       } catch (error) {
         console.error("Error initializing dashboard:", error);
       } finally {
@@ -1403,7 +1412,10 @@ export default function PokemonDashboard() {
       />
       <OnboardingModal
         isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
+        onClose={() => {
+          setShowOnboarding(false);
+          // El OnboardingModal ya actualiza la base de datos cuando se cierra
+        }}
       />
       <Toaster />
       <DeleteConfirmationDialog

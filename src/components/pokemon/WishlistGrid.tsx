@@ -29,7 +29,7 @@ const WishlistGrid = ({
   };
 
   if (isLoading) {
-    return <LoadingSpinner message={t("subscription.loading")} />;
+    return <LoadingSpinner message={t("wishlist.loading")} />;
   }
 
   if (!cards || cards.length === 0) {
