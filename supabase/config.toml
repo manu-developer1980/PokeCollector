@@ -1,6 +1,6 @@
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
+site_url = "https://poke-collector.netlify.app"
 additional_redirect_urls = ["http://localhost:5173/", "https://poke-collector.netlify.app/"]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
