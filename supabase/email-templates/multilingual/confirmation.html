@@ -7,8 +7,9 @@
       content="width=device-width, initial-scale=1"
     />
     <title>
-      {{ if eq .Data.preferred_lang "es" }}Confirma tu email - PokéCollector{{
-      else }}Confirm your email - PokéCollector{{ end }}
+      {{ if or (eq .Data.preferred_lang "es") (eq
+      .User.user_metadata.preferred_lang "es") }}⭐ PokéCollector - Confirmación
+      de Email{{ else }}⭐ PokéCollector - Email Confirmation{{ end }}
     </title>
     <style>
       body {
@@ -156,10 +157,13 @@
         </div>
         {{ if or (eq .Data.preferred_lang "es") (eq
         .User.user_metadata.preferred_lang "es") }}
-        <p>PokéCollector © 2024. Todos los derechos reservados.</p>
+        <p>
+          PokéCollector © {{ now.Format "2006" }}. Todos los derechos
+          reservados.
+        </p>
         <p>Este email fue enviado a {{ .Email }}</p>
         {{ else }}
-        <p>PokéCollector © 2024. All rights reserved.</p>
+        <p>PokéCollector © {{ now.Format "2006" }}. All rights reserved.</p>
         <p>This email was sent to {{ .Email }}</p>
         {{ end }}
       </div>

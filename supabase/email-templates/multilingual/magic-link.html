@@ -7,8 +7,9 @@
       content="width=device-width, initial-scale=1"
     />
     <title>
-      {{ if eq .Data.preferred_lang "es" }}Tu Enlace Mágico - PokéCollector{{
-      else }}Your Magic Link - PokéCollector{{ end }}
+      {{ if or (eq .Data.preferred_lang "es") (eq
+      .User.user_metadata.preferred_lang "es") }}🔑 PokéCollector - Tu Enlace
+      Mágico{{ else }}🔑 PokéCollector - Your Magic Link{{ end }}
     </title>
     <style>
       body {
@@ -168,13 +169,16 @@
       <div class="footer">
         {{ if or (eq .Data.preferred_lang "es") (eq
         .User.user_metadata.preferred_lang "es") }}
-        <p>PokéCollector © 2024. Todos los derechos reservados.</p>
+        <p>
+          PokéCollector © {{ now.Format "2006" }}. Todos los derechos
+          reservados.
+        </p>
         <p>Este email fue enviado a {{ .Email }}</p>
         <p>
           Si no solicitaste este enlace, por favor contacta a nuestro soporte.
         </p>
         {{ else }}
-        <p>PokéCollector © 2024. All rights reserved.</p>
+        <p>PokéCollector © {{ now.Format "2006" }}. All rights reserved.</p>
         <p>This email was sent to {{ .Email }}</p>
         <p>If you didn't request this link, please contact our support team.</p>
         {{ end }}
