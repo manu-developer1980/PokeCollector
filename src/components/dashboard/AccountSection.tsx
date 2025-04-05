@@ -19,6 +19,7 @@ import { PLAN_FEATURES } from "@/lib/stripe";
 import { Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Progress } from "@/components/ui/progress";
+import { PasswordResetConfirmationModal } from "@/components/auth/PasswordResetConfirmationModal";
 
 interface AccountSectionProps {
   onSectionChange: (section: string) => void;
@@ -54,13 +55,9 @@ export default function AccountSection({
 
       if (error) throw error;
 
+      // Cerramos el primer modal y abrimos el segundo
       setShowPasswordConfirm(false);
       setShowPasswordInstructions(true);
-
-      toast({
-        title: t("account.passwordResetEmailSent"),
-        description: t("account.checkInbox"),
-      });
     } catch (error: any) {
       toast({
         title: t("common.error"),
@@ -421,14 +418,10 @@ export default function AccountSection({
       />
 
       {/* Modal de instrucciones enviadas */}
-      <ConfirmDialog
+      <PasswordResetConfirmationModal
         isOpen={showPasswordInstructions}
         onClose={() => setShowPasswordInstructions(false)}
-        onConfirm={() => setShowPasswordInstructions(false)}
-        title={t("account.instructionsSent")}
-        description={t("account.passwordResetInstructions")}
-        confirmText={t("common.understood")}
-        showCancel={false}
+        email={user?.email || ""}
       />
 
       {/* Modal de confirmación de eliminación de cuenta */}

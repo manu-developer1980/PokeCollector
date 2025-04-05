@@ -19,6 +19,14 @@ interface ConfirmDialogProps {
   cancelText?: string;
   isLoading?: boolean;
   loadingMessage?: string;
+  showCancel?: boolean;
+  confirmVariant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 export function ConfirmDialog({
@@ -31,6 +39,8 @@ export function ConfirmDialog({
   cancelText = "Cancelar",
   isLoading = false,
   loadingMessage = "Procesando...",
+  showCancel = true,
+  confirmVariant = "default",
 }: ConfirmDialogProps) {
   const handleConfirm = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,15 +64,17 @@ export function ConfirmDialog({
             </div>
           ) : (
             <>
-              <Button
-                variant="outline"
-                onClick={onClose}
-              >
-                {cancelText}
-              </Button>
+              {showCancel && (
+                <Button
+                  variant="outline"
+                  onClick={onClose}
+                >
+                  {cancelText}
+                </Button>
+              )}
               <Button
                 onClick={handleConfirm}
-                variant="destructive"
+                variant={confirmVariant}
               >
                 {confirmText}
               </Button>

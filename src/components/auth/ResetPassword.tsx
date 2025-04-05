@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import AuthLayout from "./AuthLayout";
 import { supabase } from "../../../supabase/supabase";
 import { useTranslation } from "react-i18next";
+import { PasswordChangedSuccessModal } from "./PasswordChangedSuccessModal";
 
 const validatePassword = (password: string) => {
   const minLength = password.length >= 8;
@@ -31,6 +32,7 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -66,12 +68,8 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
-      toast({
-        title: t("common.success"),
-        description: t("auth.passwordChanged"),
-      });
-
-      navigate("/login");
+      // Show success modal instead of toast
+      setShowSuccessModal(true);
     } catch (error: any) {
       toast({
         title: t("common.error"),
@@ -85,6 +83,13 @@ export default function ResetPassword() {
 
   return (
     <AuthLayout>
+      <PasswordChangedSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate("/login");
+        }}
+      />
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">

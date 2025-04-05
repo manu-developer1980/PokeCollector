@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +9,14 @@ import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import AuthLayout from "./AuthLayout";
 import { supabase } from "../../../supabase/supabase";
 import { useTranslation } from "react-i18next";
+import { PasswordResetInstructionsModal } from "./PasswordResetInstructionsModal";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const navigate = useNavigate();
   const [attempts, setAttempts] = useState(0);
   const MAX_ATTEMPTS = 3;
   const COOLDOWN_TIME = 30 * 60 * 1000; // 30 minutos
@@ -50,10 +53,7 @@ export default function ForgotPassword() {
       if (error) throw error;
 
       setIsSubmitted(true);
-      toast({
-        title: t("auth.emailSent"),
-        description: t("auth.checkInboxForReset"),
-      });
+      setShowResetModal(true);
     } catch (error: any) {
       toast({
         title: t("common.error"),
@@ -69,6 +69,14 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout>
+      <PasswordResetInstructionsModal
+        isOpen={showResetModal}
+        onClose={() => {
+          setShowResetModal(false);
+          navigate("/login");
+        }}
+        email={email}
+      />
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
