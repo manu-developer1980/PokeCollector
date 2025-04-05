@@ -43,12 +43,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Starting signup process for:", email);
 
+      // Get the current language from localStorage or use browser language
+      const preferredLang =
+        localStorage.getItem("preferredLanguage") ||
+        (navigator.language.startsWith("es") ? "es" : "en");
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
           data: {
             full_name: fullName.trim(),
+            preferred_lang: preferredLang, // Store language preference in user metadata
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },

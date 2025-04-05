@@ -21,3 +21,7 @@ verify_jwt = true
 [functions.test-stripe-config]
 verify_jwt = true
 
+[functions.send-email]
+verify_jwt = false
+allowed_origins = ["http://localhost:5173", "http://localhost:3000", "https://poke-collector.netlify.app"]
+

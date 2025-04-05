@@ -7,14 +7,36 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Globe } from "lucide-react";
+import { supabase } from "../../supabase/supabase";
+import { useAuth } from "../../supabase/auth";
+import { useToast } from "@/components/ui/use-toast";
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const changeLanguage = (lng: string) => {
+  const changeLanguage = async (lng: string) => {
+    // Change the language in i18n
     i18n.changeLanguage(lng);
-    // Opcional: guardar la preferencia de idioma
+
+    // Save preference to localStorage
     localStorage.setItem("preferredLanguage", lng);
+
+    // If user is logged in, update their metadata
+    if (user) {
+      try {
+        const { error } = await supabase.auth.updateUser({
+          data: { preferred_lang: lng },
+        });
+
+        if (error) {
+          console.error("Error updating language preference:", error);
+        }
+      } catch (err) {
+        console.error("Error updating user language preference:", err);
+      }
+    }
   };
 
   return (

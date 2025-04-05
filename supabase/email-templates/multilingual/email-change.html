@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>
+      {{ if eq .Data.preferred_lang "es" }}Confirma tu nuevo email -
+      PokéCollector{{ else }}Confirm your new email - PokéCollector{{ end }}
+    </title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background-color: #ff5350;
+        padding: 20px;
+        text-align: center;
+        color: white;
+      }
+      .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .header-text {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .content {
+        padding: 30px;
+        line-height: 1.6;
+      }
+      .button {
+        display: inline-block;
+        background-color: #ff5350;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .button:hover {
+        background-color: #e74c3c;
+      }
+      .pokemon-decoration {
+        text-align: center;
+        font-size: 24px;
+        margin: 20px 0;
+      }
+      .footer {
+        background-color: #f5f5f5;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+      }
+      .warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 12px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <img
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+            alt="Pokeball"
+          />
+          <span class="header-text">PokéCollector</span>
+        </div>
+      </div>
+      <div class="content">
+        <!-- Spanish Content -->
+        {{ if or (eq .Data.preferred_lang "es") (eq
+        .User.user_metadata.preferred_lang "es") }}
+        <h1>Confirma tu nuevo email</h1>
+        <p>Hola {{ .Email }},</p>
+        <p>
+          Has solicitado cambiar tu dirección de email en PokéCollector. Por
+          favor, confirma tu nueva dirección haciendo clic en el botón a
+          continuación:
+        </p>
+
+        <div style="text-align: center">
+          <a
+            href="{{ .ConfirmationURL }}"
+            class="button"
+          >
+            Confirmar nuevo email
+          </a>
+        </div>
+
+        <div class="warning">
+          <strong>¡Importante!</strong>
+          <p style="margin: 5px 0 0 0">
+            Este enlace expirará en 24 horas por razones de seguridad.
+          </p>
+        </div>
+
+        <div class="pokemon-decoration">⚡️ 🔥 💧 ⭐️ 🌟</div>
+
+        <p>
+          Si no solicitaste este cambio, por favor ignora este email o contacta
+          con nuestro soporte inmediatamente.
+        </p>
+
+        <p>
+          Si tienes problemas con el botón, copia y pega este enlace en tu
+          navegador:
+        </p>
+        <p style="word-break: break-all; font-size: 14px; color: #6b7280">
+          {{ .ConfirmationURL }}
+        </p>
+
+        <!-- English Content -->
+        {{ else }}
+        <!-- Default to English if no language preference is found -->
+        <h1>Confirm Your New Email</h1>
+        <p>Hello {{ .Email }},</p>
+        <p>
+          You've requested to change your email address on PokéCollector. Please
+          confirm your new address by clicking the button below:
+        </p>
+
+        <div style="text-align: center">
+          <a
+            href="{{ .ConfirmationURL }}"
+            class="button"
+          >
+            Confirm New Email
+          </a>
+        </div>
+
+        <div class="warning">
+          <strong>Important!</strong>
+          <p style="margin: 5px 0 0 0">
+            This link will expire in 24 hours for security reasons.
+          </p>
+        </div>
+
+        <div class="pokemon-decoration">⚡️ 🔥 💧 ⭐️ 🌟</div>
+
+        <p>
+          If you didn't request this change, please ignore this email or contact
+          our support team immediately.
+        </p>
+
+        <p>
+          If you're having trouble with the button, copy and paste this link
+          into your browser:
+        </p>
+        <p style="word-break: break-all; font-size: 14px; color: #6b7280">
+          {{ .ConfirmationURL }}
+        </p>
+        {{ end }}
+      </div>
+      <div class="footer">
+        {{ if or (eq .Data.preferred_lang "es") (eq
+        .User.user_metadata.preferred_lang "es") }}
+        <p>PokéCollector © 2024. Todos los derechos reservados.</p>
+        <p>Este email fue enviado a {{ .Email }}</p>
+        <p>Por tu seguridad, este enlace expirará en 24 horas.</p>
+        {{ else }}
+        <p>PokéCollector © 2024. All rights reserved.</p>
+        <p>This email was sent to {{ .Email }}</p>
+        <p>For your security, this link will expire in 24 hours.</p>
+        {{ end }}
+      </div>
+    </div>
+  </body>
+</html>
