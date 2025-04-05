@@ -1,13 +1,16 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
-import { useNavigate } from "react-router-dom";
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string
+  ) => Promise<{ data?: any; error: any | null }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<{ session: any; error: any }>;
 };
@@ -56,14 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           message: authError.message,
           status: authError.status,
           name: authError.name,
-          code: authError?.details?.code,
-          isAuthError: authError?.details?.__isAuthError,
+          fullError: JSON.stringify(authError, null, 2),
         });
 
         return {
           error: {
             message: authError.message,
-            code: authError?.details?.code || "AUTH_ERROR",
+            code: "AUTH_ERROR",
             originalError: authError,
           },
         };
@@ -80,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Modificamos la consulta a la tabla users
-      const { data: userData, error: userError } = await supabase
+      const { error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authData.user.id)
@@ -121,12 +123,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { data: authData, error: null };
     } catch (error: any) {
-      console.error("Unexpected signup error:", error);
+      console.error("Unexpected signup error:", {
+        message: error?.message,
+        status: error?.status,
+        name: error?.name,
+        response: error?.response,
+        stack: error?.stack,
+        fullError: JSON.stringify(error, null, 2),
+      });
+
+      // Check if it's a server error (500)
+      const isServerError =
+        error?.status === 500 ||
+        (error?.message && error.message.includes("500")) ||
+        error?.response?.status === 500;
+
       return {
         error: {
-          message:
-            "Error inesperado durante el registro. Por favor, intenta nuevamente.",
-          code: "UNEXPECTED_ERROR",
+          message: isServerError
+            ? "Error en el servidor durante el registro. Por favor, intenta más tarde."
+            : "Error inesperado durante el registro. Por favor, intenta nuevamente.",
+          code: isServerError ? "SERVER_ERROR" : "UNEXPECTED_ERROR",
           originalError: error,
         },
       };
