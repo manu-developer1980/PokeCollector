@@ -6,8 +6,9 @@ Esta función Edge de Supabase se encarga de enviar correos electrónicos multil
 
 1. Cuando Supabase Auth necesita enviar un correo electrónico (confirmación, restablecimiento de contraseña, etc.), envía una solicitud a esta función Edge.
 2. La función verifica la autenticación mediante un secreto compartido.
-3. Obtiene los metadatos del usuario para determinar su idioma preferido.
-4. Envía el correo electrónico en el idioma adecuado utilizando Resend.
+3. Obtiene los metadatos del usuario para determinar su idioma preferido y nombre completo.
+4. Genera una plantilla HTML personalizada según el tipo de correo y el idioma del usuario.
+5. Envía el correo electrónico con el asunto y contenido HTML personalizados.
 
 ## Configuración
 
@@ -23,8 +24,7 @@ SEND_EMAIL_HOOK_SECRET=v1,whsec_NLP7yuJ+3qdMrM77FgQ3N0LUr3drXnre2zhCn37X13JmISoB
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
 
-# API Key de Resend para enviar correos
-RESEND_API_KEY=tu_api_key_de_resend
+# Ya no se necesita Resend, ahora usamos la API de Supabase directamente
 ```
 
 ### Configuración en Supabase
@@ -39,9 +39,8 @@ RESEND_API_KEY=tu_api_key_de_resend
 
    ```bash
    supabase secrets set SEND_EMAIL_HOOK_SECRET="v1,whsec_NLP7yuJ+3qdMrM77FgQ3N0LUr3drXnre2zhCn37X13JmISoB0PQ26IgbUhsm+7Qc9PBMLEz8fgsBZfkB"
-   supabase secrets set SUPABASE_URL=https://tu-proyecto.supabase.co
-   supabase secrets set SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
-   supabase secrets set RESEND_API_KEY=tu_api_key_de_resend
+   supabase secrets set SUPABASE_URL="https://kiphglgoanmibjztwhmj.supabase.co"
+   supabase secrets set SUPABASE_SERVICE_ROLE_KEY="tu_service_role_key"
    ```
 
 3. Activa el "Send Email Hook" en el dashboard de Supabase:
@@ -52,15 +51,19 @@ RESEND_API_KEY=tu_api_key_de_resend
 
 ## Plantillas de correo electrónico
 
-Las plantillas de correo electrónico multilingües se encuentran en `supabase/email-templates/multilingual/`. Estas plantillas utilizan la sintaxis de Go Template para mostrar contenido en diferentes idiomas según la preferencia del usuario.
+Las plantillas de correo electrónico están definidas en el archivo `templates.ts`. Cada plantilla:
 
-Para configurar las plantillas en Supabase:
+- Muestra el contenido en español o inglés según la preferencia del usuario
+- Usa el nombre completo del usuario en lugar de su dirección de correo electrónico cuando está disponible
+- Incluye el año actual en el pie de página automáticamente
+- Tiene un diseño responsivo y atractivo con los colores de la marca
 
-1. Ve a Authentication > Email Templates
-2. Para cada tipo de plantilla (Confirmation, Recovery, Magic Link, Email Change):
-   - Haz clic en la plantilla
-   - Reemplaza la plantilla predeterminada con el contenido del archivo correspondiente
-   - Guarda los cambios
+### Personalización
+
+Si necesitas modificar las plantillas de correo electrónico:
+
+1. Edita el archivo `templates.ts` para cambiar el diseño o contenido de las plantillas
+2. Despliega la función actualizada con `supabase functions deploy send-email --no-verify-jwt`
 
 ## Pruebas
 
@@ -96,4 +99,4 @@ Si los correos no se envían correctamente:
 
 3. Verifica que el "Send Email Hook" esté activado y configurado con la URL y el secreto correctos.
 
-4. Comprueba que las plantillas de correo electrónico estén correctamente instaladas en el dashboard de Supabase.
+4. Comprueba que las plantillas de correo electrónico estén correctamente implementadas en el archivo `templates.ts`.
