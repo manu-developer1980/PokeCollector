@@ -723,7 +723,7 @@ export default function PokemonDashboard() {
     try {
       if (collectionData.id) {
         // Si estamos marcando como predeterminada, primero desmarcamos la actual
-        if (collectionData.isDefault) {
+        if (collectionData.is_default) {
           const { error: updateError } = await supabase
             .from("collections")
             .update({ is_default: false })
@@ -740,7 +740,7 @@ export default function PokemonDashboard() {
           .update({
             name: collectionData.name,
             description: collectionData.description,
-            is_default: collectionData.isDefault,
+            is_default: collectionData.is_default,
             updated_at: new Date().toISOString(),
           })
           .eq("id", collectionData.id);
@@ -755,7 +755,7 @@ export default function PokemonDashboard() {
         });
       } else {
         // Para nueva colección
-        if (collectionData.isDefault) {
+        if (collectionData.is_default) {
           // Primero desmarcamos cualquier colección predeterminada existente
           const { error: updateError } = await supabase
             .from("collections")
@@ -771,7 +771,7 @@ export default function PokemonDashboard() {
           name: collectionData.name,
           description: collectionData.description,
           user_id: user?.id,
-          is_default: collectionData.isDefault,
+          is_default: collectionData.is_default,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -1077,7 +1077,7 @@ export default function PokemonDashboard() {
         id: collection.id,
         name: collection.name,
         description: collection.description,
-        isDefault: true,
+        is_default: true, // Cambiado de isDefault a is_default para que coincida con el tipo Collection
       });
 
       // Si hay una carta pendiente, la añadimos
@@ -1099,6 +1099,8 @@ export default function PokemonDashboard() {
 
   const handleCreateNewFromNoDefault = () => {
     setIsNoDefaultCollectionDialogOpen(false);
+    // Abrimos el diálogo de creación de colección pero sin marcar la opción de colección por defecto
+    // El usuario tendrá que marcar manualmente la opción si quiere que sea la colección por defecto
     setIsCollectionDialogOpen(true);
   };
 
@@ -1463,12 +1465,13 @@ export default function PokemonDashboard() {
         onClose={() => setIsAddToCollectionOpen(false)}
         onAddToCollection={handleSaveToCollection}
       />
+      {/* Pasamos las colecciones existentes para que el usuario pueda decidir si quiere crear una colección por defecto */}
       <CollectionDialog
         collection={editingCollection}
         isOpen={isCollectionDialogOpen}
         onClose={() => setIsCollectionDialogOpen(false)}
         onSave={handleSaveCollection}
-        isDefault={collections.length === 0}
+        collections={collections}
       />
       <OnboardingModal
         isOpen={showOnboarding}
