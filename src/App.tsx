@@ -27,7 +27,8 @@ import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
 import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
-import GoodbyeModal from "@/components/auth/GoodbyeModal";
+import GoodbyePage from "@/components/pages/GoodbyePage";
+import { ProtectedGoodbyeRoute } from "@/components/auth/ProtectedGoodbyeRoute";
 import { CookieConsentProvider } from "./contexts/CookieConsentContext";
 import CookieBanner from "./components/cookies/CookieBanner";
 
@@ -225,15 +226,15 @@ function AppRoutes() {
             </PrivateRoute>
           }
         />
+        {/* Ruta especial para la página de despedida después de eliminar la cuenta */}
         <Route
           path="/goodbye"
           element={
-            <MainLayout>
-              <GoodbyeModal
-                isOpen={true}
-                onClose={() => {}}
-              />
-            </MainLayout>
+            <ProtectedGoodbyeRoute>
+              <MainLayout>
+                <GoodbyePage />
+              </MainLayout>
+            </ProtectedGoodbyeRoute>
           }
         />
       </Routes>

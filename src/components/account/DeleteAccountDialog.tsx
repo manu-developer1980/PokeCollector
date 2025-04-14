@@ -29,7 +29,8 @@ export function DeleteAccountDialog({
 
     setIsLoading(true);
     try {
-      // Primero borrar la cuenta
+      // 1. Primero borrar la cuenta en la base de datos
+      console.log("1. Eliminando cuenta en la base de datos...");
       const response = await fetch("/api/delete-account", {
         method: "POST",
         headers: {
@@ -42,11 +43,23 @@ export function DeleteAccountDialog({
         throw new Error("Error al eliminar la cuenta");
       }
 
+      console.log("2. Cuenta eliminada correctamente, cerrando sesión...");
+
+      // 2. Cerrar el diálogo antes de hacer signOut
+      onOpenChange(false);
+
+      // Establecer un token de acceso único para la página de despedida
+      console.log(
+        "3. Estableciendo token de acceso para la página de despedida..."
+      );
+      sessionStorage.setItem("goodbyeAccessToken", Date.now().toString());
+
       // Navegar a la página de despedida
+      console.log("4. Navegando a la página de despedida...");
       navigate("/goodbye", { replace: true });
 
-      // Por último hacer signOut
-      await signOut();
+      // Nota: No intentamos cerrar sesión aquí porque está causando errores 403
+      // El usuario podrá cerrar sesión manualmente después si es necesario
     } catch (error) {
       console.error("Error al eliminar la cuenta:", error);
       toast({

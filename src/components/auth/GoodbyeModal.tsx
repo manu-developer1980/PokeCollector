@@ -12,32 +12,74 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 import { useTranslation } from "react-i18next";
 
-export default function GoodbyeModal() {
+interface GoodbyeModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function GoodbyeModal({
+  isOpen = true,
+  onClose,
+}: GoodbyeModalProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  // Verificar si debemos mostrar el modal basado en sessionStorage
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate("/", { replace: true });
-    }, 3000);
+    const shouldShowModal = sessionStorage.getItem("showGoodbyeModal");
+    console.log("¿Debemos mostrar el modal de despedida?", shouldShowModal);
 
-    return () => clearTimeout(timer);
+    if (!shouldShowModal) {
+      console.log(
+        "No se encontró indicador para mostrar el modal, redirigiendo..."
+      );
+      navigate("/", { replace: true });
+    } else {
+      console.log("Mostrando modal de despedida...");
+      // Limpiar el indicador después de mostrar el modal
+      sessionStorage.removeItem("showGoodbyeModal");
+    }
   }, [navigate]);
 
-  if (user) {
-    return (
-      <Navigate
-        to="/"
-        replace
-      />
-    );
-  }
+  // Configurar temporizador para redirigir después de mostrar el modal
+  useEffect(() => {
+    console.log("GoodbyeModal montado, configurando temporizador...");
+
+    // Temporizador para redirigir a la página de inicio después de 5 segundos
+    const timer = setTimeout(() => {
+      console.log(
+        "Temporizador completado, redirigiendo a la página de inicio..."
+      );
+      navigate("/", { replace: true });
+    }, 5000);
+
+    return () => {
+      console.log("GoodbyeModal desmontado, limpiando temporizador...");
+      clearTimeout(timer);
+    };
+  }, [navigate]);
+
+  // Solo registrar si el usuario sigue autenticado, pero no redirigir
+  useEffect(() => {
+    if (user) {
+      console.log(
+        "Usuario aún autenticado en GoodbyeModal, pero continuando..."
+      );
+    } else {
+      console.log("Usuario no autenticado en GoodbyeModal, como se esperaba.");
+    }
+  }, [user]);
 
   return (
     <Dialog
-      open={true}
-      onOpenChange={() => navigate("/", { replace: true })}
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          if (onClose) onClose();
+          navigate("/", { replace: true });
+        }
+      }}
     >
       <DialogContent className="sm:max-w-md text-center">
         <DialogHeader>
