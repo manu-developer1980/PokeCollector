@@ -1,7 +1,18 @@
+-- Migración consolidada final para PokéCollector
+-- Esta migración reemplaza todas las migraciones anteriores y asegura que no se creen colecciones automáticamente
+
 BEGIN;
 
--- Drop existing objects
+-- Eliminar objetos existentes para asegurar una instalación limpia
+-- Primero eliminamos el trigger en auth.users que es seguro que existe
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- Eliminamos las funciones
+DROP FUNCTION IF EXISTS public.delete_user_data(UUID) CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.update_updated_at_column() CASCADE;
+
+-- Eliminamos las tablas (esto también eliminará los triggers asociados)
 DROP TABLE IF EXISTS public.users CASCADE;
 DROP TABLE IF EXISTS public.collections CASCADE;
 DROP TABLE IF EXISTS public.collection_cards CASCADE;
@@ -9,23 +20,21 @@ DROP TABLE IF EXISTS public.wishlist_cards CASCADE;
 DROP TABLE IF EXISTS public.subscriptions CASCADE;
 DROP TABLE IF EXISTS public.webhook_events CASCADE;
 DROP TABLE IF EXISTS public.subscription_changes CASCADE;
-DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
-DROP FUNCTION IF EXISTS public.handle_soft_delete() CASCADE;
-DROP FUNCTION IF EXISTS public.trim_collection_cards() CASCADE;
-DROP FUNCTION IF EXISTS public.trim_collections() CASCADE;
-DROP FUNCTION IF EXISTS public.delete_user_data() CASCADE;
+
+-- Eliminamos los tipos
 DROP TYPE IF EXISTS subscription_plan_type CASCADE;
 
--- Create types
+-- Crear tipos
 CREATE TYPE subscription_plan_type AS ENUM ('aprendiz', 'entrenador', 'maestro');
 
--- Create tables
+-- Crear tablas
 CREATE TABLE public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
     full_name TEXT,
     has_seen_onboarding BOOLEAN DEFAULT false,
     level TEXT DEFAULT 'aprendiz',
+    preferred_lang TEXT DEFAULT 'es',
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
@@ -49,6 +58,9 @@ CREATE TABLE public.collection_cards (
     is_foil BOOLEAN DEFAULT false,
     is_first_edition BOOLEAN DEFAULT false,
     notes TEXT,
+    name TEXT,
+    set_name TEXT,
+    image_url TEXT,
     date_added TIMESTAMPTZ DEFAULT now(),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
@@ -98,10 +110,10 @@ CREATE TABLE public.subscription_changes (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Create indexes
+-- Crear índices para mejorar el rendimiento
+CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON public.subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription_id ON public.subscriptions(stripe_subscription_id);
-CREATE INDEX IF NOT EXISTS users_email_idx ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_collection_cards_collection_id ON public.collection_cards(collection_id);
 CREATE INDEX IF NOT EXISTS idx_collection_cards_card_id ON public.collection_cards(card_id);
 CREATE INDEX IF NOT EXISTS idx_wishlist_cards_user_id ON public.wishlist_cards(user_id);
@@ -109,7 +121,16 @@ CREATE INDEX IF NOT EXISTS idx_wishlist_cards_card_id ON public.wishlist_cards(c
 CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON public.webhook_events(status);
 CREATE INDEX IF NOT EXISTS idx_subscription_changes_user_id ON public.subscription_changes(user_id);
 
--- Create functions
+-- Función para actualizar el campo updated_at automáticamente
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función para manejar nuevos usuarios (sin creación automática de colecciones)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 SECURITY DEFINER
@@ -119,13 +140,19 @@ AS $$
 DECLARE
     _full_name TEXT;
     _now TIMESTAMPTZ;
-    _default_price_id TEXT := 'price_1R4KH1EoOyqILXNqxnOSjJHZ'; -- Default Aprendiz plan price ID
+    _default_price_id TEXT := 'price_1R4KH1EoOyqILXNqxnOSjJHZ';
+    _preferred_lang TEXT;
 BEGIN
     _now := now();
     _full_name := COALESCE(
         NEW.raw_user_meta_data->>'full_name',
         NEW.raw_user_meta_data->>'name',
         'Usuario ' || substr(NEW.id::text, 1, 8)
+    );
+
+    _preferred_lang := COALESCE(
+        NEW.raw_user_meta_data->>'preferred_lang',
+        'es'
     );
 
     -- Add detailed logging
@@ -140,6 +167,7 @@ BEGIN
             full_name,
             has_seen_onboarding,
             level,
+            preferred_lang,
             created_at,
             updated_at
         ) VALUES (
@@ -148,6 +176,7 @@ BEGIN
             _full_name,
             false,
             'aprendiz',
+            _preferred_lang,
             _now,
             _now
         );
@@ -176,9 +205,10 @@ BEGIN
         );
 
         RAISE LOG 'handle_new_user: Subscription created successfully';
-        
+        RAISE LOG 'handle_new_user: No automatic collection creation - collections must be created manually by the user';
+
         RETURN NEW;
-    EXCEPTION 
+    EXCEPTION
         WHEN unique_violation THEN
             RAISE LOG 'handle_new_user: Unique violation occurred';
             IF EXISTS (SELECT 1 FROM public.users WHERE id = NEW.id) THEN
@@ -194,34 +224,71 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.delete_user_data(user_id_param UUID)
+-- Función para eliminar datos de usuario
+-- Usamos user_id_param como nombre del parámetro para evitar conflictos
+CREATE FUNCTION public.delete_user_data(user_id_param UUID)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = user_id_param) THEN
-        RAISE EXCEPTION 'Usuario no encontrado';
-    END IF;
-
-    DELETE FROM public.wishlist_cards WHERE user_id = user_id_param;
-    DELETE FROM public.collection_cards WHERE collection_id IN (
+    -- Eliminar datos de colecciones
+    DELETE FROM public.collection_cards
+    WHERE collection_id IN (
         SELECT id FROM public.collections WHERE user_id = user_id_param
     );
+
     DELETE FROM public.collections WHERE user_id = user_id_param;
+
+    -- Eliminar datos de wishlist
+    DELETE FROM public.wishlist_cards WHERE user_id = user_id_param;
+
+    -- Eliminar suscripciones
     DELETE FROM public.subscriptions WHERE user_id = user_id_param;
+
+    -- Eliminar cambios de suscripción
+    DELETE FROM public.subscription_changes WHERE user_id = user_id_param;
+
+    -- Eliminar usuario
     DELETE FROM public.users WHERE id = user_id_param;
+
+    RAISE LOG 'delete_user_data: Deleted all data for user %', user_id_param;
 END;
 $$;
 
--- Create triggers
+-- Crear triggers
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 
--- Set up RLS
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_collections_updated_at
+    BEFORE UPDATE ON public.collections
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_collection_cards_updated_at
+    BEFORE UPDATE ON public.collection_cards
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_wishlist_cards_updated_at
+    BEFORE UPDATE ON public.wishlist_cards
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_subscriptions_updated_at
+    BEFORE UPDATE ON public.subscriptions
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Habilitar Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.collection_cards ENABLE ROW LEVEL SECURITY;
@@ -230,97 +297,160 @@ ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscription_changes ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for users table
-DROP POLICY IF EXISTS "Enable email check" ON public.users;
-DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
-DROP POLICY IF EXISTS "Enable insert for registration" ON public.users;
-DROP POLICY IF EXISTS "Users can read their own data" ON public.users;
-DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.users;
-
-CREATE POLICY "Enable insert for registration"
-    ON public.users
-    FOR INSERT
-    WITH CHECK (
-        auth.uid() = id 
-        OR auth.role() = 'service_role'
-        OR auth.role() = 'anon'
-    );
-
-CREATE POLICY "Users can view own profile"
+-- Políticas para users
+CREATE POLICY "Users can view own data"
     ON public.users
     FOR SELECT
-    USING (
-        auth.uid() = id 
-        OR auth.role() = 'service_role'
-    );
+    USING (auth.uid() = id OR auth.role() = 'service_role');
 
-CREATE POLICY "Users can update own profile"
+CREATE POLICY "Users can update own data"
     ON public.users
     FOR UPDATE
-    USING (auth.uid() = id);
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
 
--- RLS Policies for other tables
-CREATE POLICY "Users can view own wishlist cards" ON public.wishlist_cards
-    FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own wishlist cards" ON public.wishlist_cards
+-- Políticas para collections
+CREATE POLICY "Users can create their own collections"
+    ON public.collections
     FOR INSERT
+    TO authenticated
     WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own wishlist cards" ON public.wishlist_cards
+CREATE POLICY "Users can view their own collections"
+    ON public.collections
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own collections"
+    ON public.collections
     FOR UPDATE
-    USING (auth.uid() = user_id);
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own wishlist cards" ON public.wishlist_cards
+CREATE POLICY "Users can delete their own collections"
+    ON public.collections
     FOR DELETE
+    TO authenticated
     USING (auth.uid() = user_id);
 
--- Grant permissions
+-- Políticas para collection_cards
+CREATE POLICY "Users can create their own collection cards"
+    ON public.collection_cards
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.collections
+            WHERE id = collection_id AND user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can view their own collection cards"
+    ON public.collection_cards
+    FOR SELECT
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.collections
+            WHERE id = collection_id AND user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can update their own collection cards"
+    ON public.collection_cards
+    FOR UPDATE
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.collections
+            WHERE id = collection_id AND user_id = auth.uid()
+        )
+    )
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.collections
+            WHERE id = collection_id AND user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can delete their own collection cards"
+    ON public.collection_cards
+    FOR DELETE
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.collections
+            WHERE id = collection_id AND user_id = auth.uid()
+        )
+    );
+
+-- Políticas para wishlist_cards
+CREATE POLICY "Users can create their own wishlist cards"
+    ON public.wishlist_cards
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own wishlist cards"
+    ON public.wishlist_cards
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own wishlist cards"
+    ON public.wishlist_cards
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own wishlist cards"
+    ON public.wishlist_cards
+    FOR DELETE
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+-- Políticas para subscriptions
+CREATE POLICY "Users can view their own subscriptions"
+    ON public.subscriptions
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+-- Políticas para subscription_changes
+CREATE POLICY "Users can view their own subscription changes"
+    ON public.subscription_changes
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+-- Permisos
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT SELECT, UPDATE ON public.users TO authenticated;
 GRANT ALL ON public.collections TO authenticated;
 GRANT ALL ON public.collection_cards TO authenticated;
 GRANT ALL ON public.wishlist_cards TO authenticated;
 GRANT SELECT ON public.subscriptions TO authenticated;
-GRANT ALL ON public.webhook_events TO service_role;
-GRANT ALL ON public.subscription_changes TO service_role;
 GRANT SELECT ON public.subscription_changes TO authenticated;
 
--- Enable realtime
+-- Permisos para funciones
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres;
+GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO service_role;
+GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO postgres;
+
+-- Habilitar realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collections;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collection_cards;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.wishlist_cards;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.subscription_changes;
 
--- Function permissions
-GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
-GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres;
-GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO service_role;
-GRANT EXECUTE ON FUNCTION public.delete_user_data(UUID) TO postgres;
-
--- Trigger para actualizar updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON public.users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Modificar la tabla collection_cards para incluir los campos faltantes
-ALTER TABLE public.collection_cards 
-    ADD COLUMN IF NOT EXISTS name TEXT,
-    ADD COLUMN IF NOT EXISTS set_name TEXT,
-    ADD COLUMN IF NOT EXISTS image_url TEXT;
+-- Agregar comentarios para documentación
+COMMENT ON FUNCTION public.handle_new_user() IS 'Maneja la creación de nuevos usuarios. Crea un registro de usuario y una suscripción inicial. NO crea colecciones automáticamente - las colecciones deben ser creadas manualmente por el usuario.';
+COMMENT ON FUNCTION public.delete_user_data(UUID) IS 'Elimina todos los datos asociados a un usuario, incluyendo colecciones, cartas, wishlist y suscripciones.';
+COMMENT ON TABLE public.collections IS 'Colecciones de cartas creadas por los usuarios. Las colecciones NO se crean automáticamente.';
 
 COMMIT;
-

@@ -59,7 +59,7 @@ const CollectionDialog = ({
       id: collection?.id,
       name: name.trim(),
       description: description.trim() || undefined,
-      isDefault: makeDefault,
+      is_default: makeDefault,
     });
 
     // Cerramos el modal después de guardar

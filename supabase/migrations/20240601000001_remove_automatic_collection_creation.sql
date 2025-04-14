@@ -1,3 +1,11 @@
+-- Migration to ensure no automatic collection creation happens when a user registers
+-- This migration explicitly documents that collections should not be created automatically
+
+-- Drop the existing trigger function and recreate it without any collection creation logic
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user();
+
+-- Recreate the function with only user and subscription creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 SECURITY DEFINER
@@ -64,6 +72,7 @@ BEGIN
         );
 
         RAISE LOG 'handle_new_user: Subscription created successfully';
+        RAISE LOG 'handle_new_user: No automatic collection creation - collections must be created manually by the user';
         
         RETURN NEW;
     EXCEPTION 
@@ -81,3 +90,12 @@ BEGIN
     END;
 END;
 $$;
+
+-- Recreate the trigger
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_new_user();
+
+-- Add a comment to the function to document the no-automatic-collection policy
+COMMENT ON FUNCTION public.handle_new_user() IS 'Handles new user creation by creating a user record and subscription. Does NOT create any default collections - collections must be created manually by the user.';
