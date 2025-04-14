@@ -478,6 +478,7 @@
     "upgradePlan": "Upgrade Plan"
   },
   "subscription": {
+    "loading": "Loading...",
     "planUsage": "Current Plan Usage",
     "upgradePlan": "Upgrade Plan",
     "statusActive": "Active",

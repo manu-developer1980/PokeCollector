@@ -18,15 +18,51 @@ export default function CheckoutSuccessPage() {
   const [planName, setPlanName] = useState("");
   const { t } = useTranslation();
 
+  // Estado para controlar si ya se ha cargado la suscripción
+  const [subscriptionLoaded, setSubscriptionLoaded] = useState(false);
+
   useEffect(() => {
     const verifySubscription = async () => {
       try {
+        // Solo mostrar el log si aún no se ha cargado la suscripción
+        if (!subscriptionLoaded) {
+          console.log("Verificando suscripción en checkout-success...");
+        }
+
         const updatedSubscription = await refetchSubscription();
+
+        if (!subscriptionLoaded) {
+          console.log("Suscripción actualizada:", updatedSubscription);
+        }
 
         if (updatedSubscription?.plan_type) {
           // Convertir a minúsculas para asegurar la coincidencia
           const planType = updatedSubscription.plan_type.toLowerCase();
-          setPlanName(t(`plans.${planType}`, { defaultValue: planType }));
+
+          if (!subscriptionLoaded) {
+            console.log("Tipo de plan detectado:", planType);
+          }
+
+          // Usar la clave correcta para la traducción
+          const translationKey = `plans.${planType}.name`;
+
+          if (!subscriptionLoaded) {
+            console.log("Clave de traducción:", translationKey);
+          }
+
+          const translatedName = t(translationKey, {
+            defaultValue:
+              PLAN_NAMES[planType as keyof typeof PLAN_NAMES] || planType,
+          });
+
+          if (!subscriptionLoaded) {
+            console.log("Nombre traducido:", translatedName);
+          }
+
+          setPlanName(translatedName);
+
+          // Marcar que la suscripción ya se ha cargado
+          setSubscriptionLoaded(true);
         }
 
         // Limpiar el localStorage después de procesar la suscripción
@@ -36,8 +72,20 @@ export default function CheckoutSuccessPage() {
       }
     };
 
+    // Verificar la suscripción inmediatamente
     verifySubscription();
-  }, [refetchSubscription, t]);
+
+    // Configurar un intervalo para verificar la suscripción cada 5 segundos
+    // pero solo si aún no se ha cargado correctamente
+    const intervalId = setInterval(() => {
+      if (!subscriptionLoaded) {
+        verifySubscription();
+      }
+    }, 5000);
+
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(intervalId);
+  }, [refetchSubscription, t, subscriptionLoaded]);
 
   return (
     <div className="container max-w-2xl mx-auto py-16">
@@ -60,7 +108,8 @@ export default function CheckoutSuccessPage() {
           ) : (
             <div className="space-y-2">
               <p className="text-green-600 font-medium">
-                {t("subscription.currentPlan")}: {planName}
+                {t("subscription.currentPlan")}:{" "}
+                {planName || t("subscription.loading")}
               </p>
               {subscription?.current_period_end && (
                 <p className="text-sm text-gray-500 mt-2">

@@ -288,6 +288,7 @@
     "upgradePlan": "Mejorar Plan"
   },
   "subscription": {
+    "loading": "Cargando...",
     "upgradePlan": "Mejorar Plan",
     "statusActive": "Activo",
     "statusInactive": "Inactivo",

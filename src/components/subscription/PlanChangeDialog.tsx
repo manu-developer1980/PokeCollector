@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { DowngradeWarningModal } from "./DowngradeWarningModal";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 import { useTranslation } from "react-i18next";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface PricingCardProps {
   plan: SubscriptionPlan;
@@ -35,11 +37,13 @@ export function PlanChangeDialog({
 }: PlanChangeDialogProps) {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [prorationAmount, setProrationAmount] = useState<number | null>(null);
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
   const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
   const { stats } = useSubscriptionStats();
+  const { refetchSubscription } = useSubscription();
 
   const handlePlanChange = async (newPlan: SubscriptionPlan) => {
     console.log("handlePlanChange called with:", { newPlan, currentPlan }); // Nuevo log
@@ -117,10 +121,16 @@ export function PlanChangeDialog({
             data.subscription.latest_invoice.payment_intent.client_secret;
         }
       } else {
+        // Actualizar la suscripción en la UI
+        await refetchSubscription();
+
         toast({
           title: t("subscription.planUpdated"),
           description: t("subscription.planUpdatedSuccess"),
         });
+
+        // Redirigir a la página de éxito para mostrar el nuevo plan
+        navigate("/checkout-success");
         onClose();
       }
     } catch (error) {
