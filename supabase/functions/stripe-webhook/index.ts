@@ -11,30 +11,10 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-// Función para registrar todos los headers para depuración
-function logHeaders(headers: Headers) {
-  const headersObj: Record<string, string> = {};
-  headers.forEach((value, key) => {
-    headersObj[key] = value;
-  });
-  return headersObj;
-}
-
 serve(async (req) => {
-  console.log("🔔 Webhook request received", {
-    method: req.method,
-    url: req.url,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Log all headers for debugging
-  console.log("Request headers:", logHeaders(req.headers));
-
+  // Solo registramos información básica en producción
   const signature = req.headers.get("stripe-signature");
-  console.log("Stripe signature present:", !!signature);
-
   const body = await req.text();
-  console.log("Request body length:", body.length, "bytes");
 
   try {
     let event;
@@ -45,7 +25,6 @@ serve(async (req) => {
         signature,
         Deno.env.get("STRIPE_WEBHOOK_SECRET")
       );
-      console.log("Event constructed successfully:", event.type); // Confirmar construcción
     } catch (err) {
       console.error("⚠️ Error validating webhook:", err.message);
       return new Response(JSON.stringify({ error: err.message }), {
@@ -53,23 +32,12 @@ serve(async (req) => {
       });
     }
 
-    console.log("🔔 Processing webhook event:", {
-      type: event.type,
-      id: event.id,
-      timestamp: new Date().toISOString(),
-    });
+    // Procesando el evento de webhook
 
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        console.log("\ud83d\udcb3 Checkout session completed:", {
-          id: session.id,
-          customer: session.customer,
-          subscription: session.subscription,
-          metadata: session.metadata,
-          payment_status: session.payment_status,
-          status: session.status,
-        });
+        // Checkout session completada
 
         // Verificar que tenemos los datos necesarios
         if (!session.metadata?.user_id) {
@@ -93,17 +61,12 @@ serve(async (req) => {
         }
 
         // Obtener la suscripción de Stripe para obtener más detalles
-        console.log(
-          "\ud83d\udd0d Fetching subscription details from Stripe:",
-          session.subscription
-        );
         const stripeSubscription = await stripe.subscriptions.retrieve(
           session.subscription
         );
 
         // Obtener el ID del precio actual
         const currentPriceId = stripeSubscription.items.data[0].price.id;
-        console.log("Current price ID:", currentPriceId);
 
         // Mapeo de IDs de precio a tipos de plan (usando minúsculas para coincidir con el ENUM de la base de datos)
         const PRICE_TO_PLAN = {
@@ -125,16 +88,7 @@ serve(async (req) => {
           );
         }
 
-        console.log(
-          "\ud83d\udcdd Updating subscription in database for user:",
-          session.metadata.user_id
-        );
-
         // Primero verificamos si ya existe una suscripción para este usuario
-        console.log(
-          "Buscando suscripciones existentes para el usuario:",
-          session.metadata.user_id
-        );
 
         const { data: existingSubs, error: fetchError } = await supabase
           .from("subscriptions")
@@ -150,18 +104,7 @@ serve(async (req) => {
           throw fetchError;
         }
 
-        console.log(
-          `Found ${existingSubs?.length || 0} existing subscriptions for user`
-        );
-
-        if (existingSubs && existingSubs.length > 0) {
-          console.log("Suscripción existente:", {
-            id: existingSubs[0].id,
-            plan_type: existingSubs[0].plan_type,
-            stripe_subscription_id:
-              existingSubs[0].stripe_subscription_id || "none",
-          });
-        }
+        // Verificar si encontramos suscripciones existentes
 
         // Datos para actualizar o insertar
         const subscriptionData = {
@@ -183,12 +126,6 @@ serve(async (req) => {
 
         // Si existe una suscripción, la actualizamos
         if (existingSubs && existingSubs.length > 0) {
-          console.log("Updating existing subscription with data:", {
-            plan_type,
-            stripe_subscription_id: session.subscription,
-            status: stripeSubscription.status,
-          });
-
           // Primero intentamos con el ID de la suscripción
           updateResult = await supabase
             .from("subscriptions")
@@ -197,10 +134,6 @@ serve(async (req) => {
             .select();
 
           if (updateResult.error) {
-            console.error(
-              "Error actualizando por ID, intentando por user_id:",
-              updateResult.error
-            );
             // Si falla, intentamos con el user_id
             updateResult = await supabase
               .from("subscriptions")
@@ -210,11 +143,6 @@ serve(async (req) => {
           }
         } else {
           // Si no existe, creamos una nueva
-          console.log("Creating new subscription with data:", {
-            plan_type,
-            stripe_subscription_id: session.subscription,
-            status: stripeSubscription.status,
-          });
 
           updateResult = await supabase
             .from("subscriptions")
@@ -237,13 +165,7 @@ serve(async (req) => {
           throw updateResult.error;
         }
 
-        console.log("Resultado de la actualización:", updateResult.data);
-
-        console.log("\u2705 Successfully updated subscription:", {
-          userId: session.metadata.user_id,
-          planType: plan_type,
-          subscriptionId: session.subscription,
-        });
+        // Suscripción actualizada exitosamente
 
         break;
       }
@@ -252,21 +174,7 @@ serve(async (req) => {
         const subscription = event.data.object;
         const currentPriceId = subscription.items.data[0].price.id;
 
-        console.log("📦 Subscription update details:", {
-          subscriptionId: subscription.id,
-          priceId: currentPriceId,
-          status: subscription.status,
-          customerId: subscription.customer,
-          cancel_at_period_end: subscription.cancel_at_period_end,
-          current_period_end: new Date(
-            subscription.current_period_end * 1000
-          ).toISOString(),
-        });
-
-        console.log(
-          "Buscando suscripción existente con stripe_subscription_id:",
-          subscription.id
-        );
+        // Procesando actualización de suscripción
 
         const { data: existingSub, error: fetchError } = await supabase
           .from("subscriptions")
@@ -279,11 +187,7 @@ serve(async (req) => {
           console.error("Error completo:", JSON.stringify(fetchError, null, 2));
 
           // Si no encontramos la suscripción por stripe_subscription_id, intentamos buscarla por customer_id
-          console.log(
-            "Intentando buscar por customer_id:",
-            subscription.customer
-          );
-
+          // Intentar buscar por customer_id como alternativa
           const { data: customerSub, error: customerFetchError } =
             await supabase
               .from("subscriptions")
@@ -293,30 +197,17 @@ serve(async (req) => {
               .limit(1);
 
           if (customerFetchError) {
-            console.error(
-              "Error buscando por customer_id:",
-              customerFetchError
-            );
             throw customerFetchError;
           }
 
           if (customerSub && customerSub.length > 0) {
-            console.log("Suscripción encontrada por customer_id:", {
-              id: customerSub[0].id,
-              user_id: customerSub[0].user_id,
-              plan_type: customerSub[0].plan_type,
-            });
             return customerSub[0];
           }
 
           throw fetchError;
         }
 
-        console.log("Suscripción encontrada:", {
-          id: existingSub.id,
-          user_id: existingSub.user_id,
-          plan_type: existingSub.plan_type,
-        });
+        // Suscripción encontrada, proceder con la actualización
 
         const PRICE_TO_PLAN = {
           price_1R4KGgEoOyqILXNqf6Z2vjqQ: "entrenador",
@@ -344,18 +235,13 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        console.log("Actualizando suscripción con datos:", {
-          plan_type,
-          status: subscription.status,
-          user_id: existingSub.user_id,
-        });
+        // Actualizando suscripción
 
         // Primero intentamos actualizar por ID
-        const { error: updateError, data: updateResult } = await supabase
+        const { error: updateError } = await supabase
           .from("subscriptions")
           .update(subscriptionUpdateData)
-          .eq("id", existingSub.id)
-          .select();
+          .eq("id", existingSub.id);
 
         if (updateError) {
           console.error("Failed to update subscription by ID:", updateError);
@@ -365,13 +251,11 @@ serve(async (req) => {
           );
 
           // Si falla, intentamos por stripe_subscription_id y user_id
-          const { error: secondUpdateError, data: secondUpdateData } =
-            await supabase
-              .from("subscriptions")
-              .update(subscriptionUpdateData)
-              .eq("stripe_subscription_id", subscription.id)
-              .eq("user_id", existingSub.user_id)
-              .select();
+          const { error: secondUpdateError } = await supabase
+            .from("subscriptions")
+            .update(subscriptionUpdateData)
+            .eq("stripe_subscription_id", subscription.id)
+            .eq("user_id", existingSub.user_id);
 
           if (secondUpdateError) {
             console.error(
@@ -380,26 +264,7 @@ serve(async (req) => {
             );
             throw secondUpdateError;
           }
-
-          console.log(
-            "Suscripción actualizada (segundo intento):",
-            secondUpdateData
-          );
-        } else {
-          console.log(
-            "Suscripción actualizada (primer intento):",
-            updateResult
-          );
         }
-
-        console.log("✅ Successfully processed subscription update:", {
-          subscriptionId: subscription.id,
-          userId: existingSub.user_id,
-          newPlanType: plan_type,
-          effectiveDate: new Date(
-            subscription.current_period_end * 1000
-          ).toISOString(),
-        });
         break;
       }
     }
