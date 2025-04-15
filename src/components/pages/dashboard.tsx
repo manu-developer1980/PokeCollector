@@ -80,30 +80,7 @@ const Dashboard = () => {
     }
   };
 
-  const createDefaultCollection = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("collections")
-        .insert({
-          name: t("collection.defaultName"),
-          description: t("collection.defaultDescription"),
-          user_id: user?.id,
-          is_default: true,
-        })
-        .select();
-
-      if (error) throw error;
-
-      setCollections([{ ...data[0], cards: [] }]);
-    } catch (error) {
-      console.error("Error creating default collection:", error);
-      toast({
-        title: t("common.error"),
-        description: t("collection.errors.createDefaultFailed"),
-        variant: "destructive",
-      });
-    }
-  };
+  // Eliminamos la función createDefaultCollection ya que no la estamos utilizando
 
   const handleCreateCollection = () => {
     setEditingCollection(null);
@@ -119,13 +96,13 @@ const Dashboard = () => {
     id?: string;
     name: string;
     description?: string;
-    isDefault: boolean;
+    is_default: boolean;
   }) => {
     try {
-      const { id, name, description, isDefault } = collectionData;
+      const { id, name, description, is_default } = collectionData;
 
       // Si la nueva colección será predeterminada, primero quitamos el estado predeterminado de otras colecciones
-      if (isDefault) {
+      if (is_default) {
         const { error: updateError } = await supabase
           .from("collections")
           .update({ is_default: false })
@@ -142,7 +119,7 @@ const Dashboard = () => {
           .update({
             name,
             description,
-            is_default: isDefault,
+            is_default: is_default,
             updated_at: new Date().toISOString(),
           })
           .eq("id", id)
@@ -161,7 +138,7 @@ const Dashboard = () => {
             name,
             description,
             user_id: user?.id,
-            is_default: isDefault,
+            is_default: is_default,
           })
           .select();
 
@@ -312,7 +289,8 @@ const Dashboard = () => {
                   setSelectedCollectionCard(card);
                   setIsCardDetailDialogOpen(true);
                 }}
-                isLoading={isLoading}
+                isLoading={false}
+                onSectionChange={() => {}} // No necesitamos cambiar de sección en este componente
               />
             )}
           </div>
@@ -324,14 +302,24 @@ const Dashboard = () => {
         isOpen={isCollectionDialogOpen}
         onClose={() => setIsCollectionDialogOpen(false)}
         onSave={handleSaveCollection}
-        isDefault={collections.length === 0}
+        collections={collections}
       />
 
       <CardDetail
         card={selectedCollectionCard}
         isOpen={isCardDetailDialogOpen}
         onClose={() => setIsCardDetailDialogOpen(false)}
-        onUpdate={handleUpdateCard}
+        onUpdate={(cardData) => {
+          if (cardData && cardData.id) {
+            handleUpdateCard(cardData.id, {
+              quantity: cardData.quantity,
+              condition: cardData.condition,
+              is_foil: cardData.is_foil,
+              is_first_edition: cardData.is_first_edition,
+              notes: cardData.notes,
+            });
+          }
+        }}
         onRemove={handleRemoveCard}
         mode="collection"
       />
