@@ -26,6 +26,8 @@ const WishlistGrid = ({
   const { t } = useTranslation();
 
   const handleSearchClick = () => {
+    // Usamos el ID de sección "Search Cards" que es el que espera la aplicación
+    // Este ID se usa en toda la aplicación para identificar la sección de búsqueda
     onSectionChange("Search Cards");
   };
 
@@ -38,14 +40,13 @@ const WishlistGrid = ({
       <Card className="border-dashed border-2 border-gray-300 bg-gray-50">
         <CardContent className="p-6 text-center">
           <p className="text-gray-500 mb-4">
-            Tu lista de deseos está vacía. ¡Comienza a añadir cartas desde el
-            buscador!
+            {t("wishlist.empty")} {t("wishlist.emptyDescription")}
           </p>
           <Button
             className="bg-red-600 hover:bg-red-700"
             onClick={handleSearchClick}
           >
-            <Search className="h-4 w-4 mr-1" /> Buscar Cartas
+            <Search className="h-4 w-4 mr-1" /> {t("wishlist.searchCards")}
           </Button>
         </CardContent>
       </Card>

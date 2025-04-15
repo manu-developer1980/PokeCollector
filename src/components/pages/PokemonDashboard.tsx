@@ -281,7 +281,10 @@ export default function PokemonDashboard() {
         if (isSubscriptionLoading) {
           return {
             valid: false,
-            error: "Verificando estado de suscripción...",
+            error: t(
+              "subscription.verifyingStatus",
+              "Verifying subscription status..."
+            ),
           };
         }
 
@@ -295,7 +298,7 @@ export default function PokemonDashboard() {
           setIsNoSubscriptionModalOpen(true);
           return {
             valid: false,
-            error: "Suscripción requerida",
+            error: t("subscription.requiredTitle", "Subscription required"),
           };
         }
 
@@ -328,7 +331,10 @@ export default function PokemonDashboard() {
         console.error("Error validating limit:", error);
         return {
           valid: false,
-          error: "Error al validar los límites de la suscripción",
+          error: t(
+            "subscription.errors.validationFailed",
+            "Error validating subscription limits"
+          ),
         };
       }
     },
@@ -507,15 +513,24 @@ export default function PokemonDashboard() {
       try {
         const [setsData, typesData, raritiesData] = await Promise.all([
           getSets().catch((error) => {
-            console.error("Error al cargar sets:", error);
+            console.error(
+              t("search.errors.setsFailed", "Error loading sets:"),
+              error
+            );
             return [];
           }),
           getTypes().catch((error) => {
-            console.error("Error al cargar tipos:", error);
+            console.error(
+              t("search.errors.typesFailed", "Error loading types:"),
+              error
+            );
             return [];
           }),
           getRarities().catch((error) => {
-            console.error("Error al cargar rarezas:", error);
+            console.error(
+              t("search.errors.raritiesFailed", "Error loading rarities:"),
+              error
+            );
             return [];
           }),
         ]);
@@ -524,11 +539,16 @@ export default function PokemonDashboard() {
         setTypes(typesData || []);
         setRarities(raritiesData || []);
       } catch (error) {
-        console.error("Error al cargar datos de filtros:", error);
+        console.error(
+          t("search.errors.filterDataFailed", "Error loading filter data:"),
+          error
+        );
         toast({
           title: "Error",
-          description:
-            "No se pudieron cargar los filtros. Por favor, intenta de nuevo.",
+          description: t(
+            "search.errors.filtersFailed",
+            "Could not load filters. Please try again."
+          ),
           variant: "destructive",
         });
       }
@@ -545,8 +565,11 @@ export default function PokemonDashboard() {
   const handleAddToCollection = (card: PokemonCard) => {
     if (!user) {
       toast({
-        title: "Error",
-        description: "Debes iniciar sesión para añadir cartas a tu colección.",
+        title: t("common.error"),
+        description: t(
+          "auth.loginRequiredForCollection",
+          "You must be logged in to add cards to your collection."
+        ),
         variant: "destructive",
       });
       return;
@@ -1061,7 +1084,10 @@ export default function PokemonDashboard() {
       // No need for additional toast or wishlist operations here
       // as they are already handled in handleSaveToCollection
     } catch (error) {
-      console.error("Error al añadir carta a la colección:", error);
+      console.error(
+        t("collection.errors.addFailed", "Error adding card to collection:"),
+        error
+      );
       toast({
         title: t("common.error"),
         description: t("collection.errors.loadFailed"),
@@ -1213,7 +1239,9 @@ export default function PokemonDashboard() {
   const handleRemoveFromWishlist = async (card: PokemonCard) => {
     try {
       if (!card.wishlist_id) {
-        throw new Error("Wishlist ID not found");
+        throw new Error(
+          t("wishlist.errors.idNotFound", "Wishlist ID not found")
+        );
       }
 
       const { error } = await supabase
