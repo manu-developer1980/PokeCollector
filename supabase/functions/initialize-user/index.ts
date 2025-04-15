@@ -42,11 +42,21 @@ serve(async (req) => {
 
     try {
       // 1. Verificar si el usuario ya tiene una suscripción en Stripe
-      const { data: existingSubscription } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", user_id)
-        .single();
+      const { data: existingSubscriptions, error: subscriptionError } =
+        await supabase.from("subscriptions").select("*").eq("user_id", user_id);
+
+      if (subscriptionError) {
+        console.error(
+          "Error al verificar suscripciones existentes:",
+          subscriptionError
+        );
+        throw subscriptionError;
+      }
+
+      const existingSubscription =
+        existingSubscriptions && existingSubscriptions.length > 0
+          ? existingSubscriptions[0]
+          : null;
 
       if (existingSubscription?.stripe_customer_id) {
         console.log("Usuario ya tiene suscripción en Stripe");
