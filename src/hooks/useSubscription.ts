@@ -29,18 +29,27 @@ export const useSubscription = () => {
     }
 
     try {
+      // Primero obtenemos todas las suscripciones del usuario
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching subscription:", error);
         return null;
       }
 
-      return data;
+      // Si hay múltiples suscripciones, tomamos la más reciente
+      if (data && data.length > 0) {
+        console.log(
+          `Found ${data.length} subscriptions, using the most recent one`
+        );
+        return data[0];
+      }
+
+      return null;
     } finally {
       setIsLoading(false);
     }
