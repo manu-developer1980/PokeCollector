@@ -24,7 +24,8 @@
     "tryAgainLater": "Please try again later",
     "openMenu": "Open menu",
     "verifying": "Verifying...",
-    "unlimited": "Unlimited"
+    "unlimited": "Unlimited",
+    "unknownCard": "Who's that Pokémon?"
   },
   "cookies": {
     "title": "Cookie Consent",
@@ -386,7 +387,8 @@
     "errors": {
       "loadFailed": "Could not load wishlist",
       "removeFailed": "Could not remove card from wishlist",
-      "addFailed": "Could not add card to wishlist."
+      "addFailed": "Could not add card to wishlist.",
+      "idNotFound": "Wishlist ID not found"
     },
     "alreadyInWishlist": "Already in Wishlist",
     "cardAlreadyExists": "This card is already in your wishlist."
@@ -411,7 +413,12 @@
     "searchResults": "Search results",
     "loadMore": "Load more",
     "errors": {
-      "loadFailed": "Could not load search results"
+      "loadFailed": "Could not load search results",
+      "filtersFailed": "Could not load filters. Please try again.",
+      "setsFailed": "Error loading sets",
+      "typesFailed": "Error loading types",
+      "raritiesFailed": "Error loading rarities",
+      "filterDataFailed": "Error loading filter data"
     }
   },
   "filters": {
@@ -502,6 +509,7 @@
     "successTitle": "Congratulations, you are now a {{planName}} Pokémon!",
     "successDescription": "Your subscription has been processed successfully.",
     "verifying": "Verifying subscription...",
+    "verifyingStatus": "Verifying subscription status...",
     "nextBilling": "Next billing",
     "goToDashboard": "Go to Dashboard",
     "loading": "Loading subscription...",
@@ -544,7 +552,8 @@
       "tryAgain": "There was an error processing your request. Please try again.",
       "noSubscriptionInfo": "No subscription information available",
       "noStripeId": "No Stripe subscription ID found",
-      "cancelFailed": "Failed to cancel subscription. Please try again."
+      "cancelFailed": "Failed to cancel subscription. Please try again.",
+      "validationFailed": "Error validating subscription limits"
     },
     "upgradeExperience": "Upgrade Your Experience",
     "requiredDescription": "To access {{action}}, you need to upgrade your subscription plan.",
@@ -806,6 +815,7 @@
       "passwordsDoNotMatch": "Passwords do not match"
     },
     "loginRequiredForWishlist": "You must be logged in to add cards to your wishlist.",
+    "loginRequiredForCollection": "You must be logged in to add cards to your collection.",
     "confirmSignup": {
       "title": "Verify your email",
       "sentConfirmation": "We've sent a confirmation link to:",

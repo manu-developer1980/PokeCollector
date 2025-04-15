@@ -81,19 +81,19 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       queryParts.push(`name:"${searchTerm}*"`);
     }
 
-    // Básico (Aprendiz): solo nombre y tipo
+    // Basic (Apprentice): only name and type
     if (type !== "all") {
       queryParts.push(`types:"${type}"`);
     }
 
-    // Entrenador: añade rareza
+    // Trainer: adds rarity
     if (planType === "ENTRENADOR" || planType === "MAESTRO") {
       if (selectedRarity && selectedRarity !== "all") {
         queryParts.push(`rarity:"${selectedRarity}"`);
       }
     }
 
-    // Maestro: añade supertype y subtype
+    // Master: adds supertype and subtype
     if (planType === "MAESTRO") {
       if (supertype !== "all") {
         queryParts.push(`supertype:"${supertype}"`);

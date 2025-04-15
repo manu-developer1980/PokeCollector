@@ -117,7 +117,16 @@ const CardDetail: React.FC<CardDetailProps> = ({
             console.error("No se pudieron cargar los detalles de la carta");
             return;
           }
-          setCardDetails(details || pokemonCard);
+
+          // Preserve wishlist_id if it exists in the original card
+          if (mode === "wishlist" && pokemonCard.wishlist_id) {
+            setCardDetails({
+              ...(details || pokemonCard),
+              wishlist_id: pokemonCard.wishlist_id,
+            });
+          } else {
+            setCardDetails(details || pokemonCard);
+          }
         }
       } catch (error) {
         console.error("Error loading card details:", error);
@@ -161,8 +170,15 @@ const CardDetail: React.FC<CardDetailProps> = ({
   };
 
   const handleRemoveFromWishlist = (card: PokemonCard) => {
-    onRemoveFromWishlist?.(card);
-    onClose();
+    if (onRemoveFromWishlist) {
+      // Make sure we're passing the card with wishlist_id
+      const cardWithWishlistId = {
+        ...card,
+        wishlist_id: card.wishlist_id,
+      };
+      onRemoveFromWishlist(cardWithWishlistId);
+      onClose();
+    }
   };
 
   const handleUpdate = async (cardData: {
@@ -355,9 +371,18 @@ const CardDetail: React.FC<CardDetailProps> = ({
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={() =>
-                      cardDetails && handleRemoveFromWishlist(cardDetails)
-                    }
+                    onClick={() => {
+                      if (cardDetails) {
+                        // Ensure we have the wishlist_id from the original card
+                        const originalCard = card as PokemonCard;
+                        const cardWithWishlistId = {
+                          ...cardDetails,
+                          wishlist_id:
+                            cardDetails.wishlist_id || originalCard.wishlist_id,
+                        };
+                        handleRemoveFromWishlist(cardWithWishlistId);
+                      }
+                    }}
                     className="w-full"
                   >
                     <Trash className="h-4 w-4 mr-2" />{" "}
@@ -684,7 +709,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Notas - {cardDetails.name}
+              {t("card.notes")} - {cardDetails.name}
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">

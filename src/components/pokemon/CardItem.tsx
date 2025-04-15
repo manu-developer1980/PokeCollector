@@ -113,9 +113,7 @@ const CardItem = ({
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400 rounded-lg">
                 <div className="text-center">
                   <div className="mb-2">❓</div>
-                  <div className="text-sm">
-                    {t("common.unknownCard", "Who's that Pokémon?")}
-                  </div>
+                  <div className="text-sm">{t("common.unknownCard")}</div>
                 </div>
               </div>
             )}
@@ -138,12 +136,7 @@ const CardItem = ({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          {t(
-                            "collection.addToDefault",
-                            "Añadir a colección por defecto"
-                          )}
-                        </p>
+                        <p>{t("collection.addToDefault")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -162,9 +155,7 @@ const CardItem = ({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>
-                            {t("wishlist.addCard", "Añadir a lista de deseos")}
-                          </p>
+                          <p>{t("wishlist.addCard")}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -179,7 +170,7 @@ const CardItem = ({
                       size="sm"
                       className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
                       onClick={(e) => handleAction(e, () => onQuickAdd(card))}
-                      title={t("collection.addCard", "Añadir a Colección")}
+                      title={t("collection.addCard")}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -189,10 +180,7 @@ const CardItem = ({
                       size="sm"
                       className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
                       onClick={(e) => handleAction(e, () => onRemove(card))}
-                      title={t(
-                        "wishlist.removeCard",
-                        "Eliminar de Lista de Deseos"
-                      )}
+                      title={t("wishlist.removeCard")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -205,7 +193,7 @@ const CardItem = ({
                   size="sm"
                   className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
                   onClick={(e) => handleAction(e, () => onRemove(card.id))}
-                  title={t("collection.removeCard", "Eliminar de Colección")}
+                  title={t("collection.removeCard")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -260,7 +248,7 @@ const CardItem = ({
                     <Badge
                       variant="outline"
                       className="bg-purple-50 text-purple-700 text-xs shrink-0"
-                      tooltip={t("card.firstEdition", "1ª Edición")}
+                      tooltip={t("card.firstEdition")}
                     >
                       1st
                     </Badge>
@@ -271,7 +259,7 @@ const CardItem = ({
                     <Badge
                       variant="outline"
                       className="bg-yellow-50 text-yellow-700 text-xs shrink-0"
-                      tooltip={t("card.foil", "Foil")}
+                      tooltip={t("card.foil")}
                     >
                       ✨
                     </Badge>
@@ -301,7 +289,7 @@ const CardItem = ({
                       onClick={handleNotesClick}
                     >
                       <FileText className="h-3 w-3 mr-1" />
-                      {t("card.notes", "Notas")}
+                      {t("card.notes")}
                     </Badge>
                   )}
                 </>
@@ -327,11 +315,9 @@ const CardItem = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              {t("card.notes", "Notas")} - {card.name}
+              {t("card.notes")} - {card.name}
             </DialogTitle>
-            <DialogDescription>
-              {t("card.personalNotes", "Notas personales sobre esta carta")}
-            </DialogDescription>
+            <DialogDescription>{t("card.personalNotes")}</DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">
             {card.notes}
