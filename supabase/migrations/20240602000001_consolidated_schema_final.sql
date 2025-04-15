@@ -419,6 +419,13 @@ CREATE POLICY "Users can view their own subscriptions"
     TO authenticated
     USING (auth.uid() = user_id);
 
+-- Política para que service_role pueda actualizar suscripciones (necesario para webhooks)
+CREATE POLICY "Service role can update subscriptions"
+    ON public.subscriptions
+    FOR ALL
+    TO service_role
+    USING (true);
+
 -- Políticas para subscription_changes
 CREATE POLICY "Users can view their own subscription changes"
     ON public.subscription_changes
@@ -433,6 +440,7 @@ GRANT ALL ON public.collections TO authenticated;
 GRANT ALL ON public.collection_cards TO authenticated;
 GRANT ALL ON public.wishlist_cards TO authenticated;
 GRANT SELECT ON public.subscriptions TO authenticated;
+GRANT ALL ON public.subscriptions TO service_role;
 GRANT SELECT ON public.subscription_changes TO authenticated;
 
 -- Permisos para funciones
@@ -446,6 +454,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collections;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.collection_cards;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.wishlist_cards;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.subscriptions;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.subscription_changes;
 
 -- Agregar comentarios para documentación

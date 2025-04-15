@@ -52,7 +52,8 @@ export default function CheckoutPage() {
   const handleCheckout = async (priceId: string, planType: string) => {
     try {
       // Guardar el plan seleccionado en localStorage (más persistente que sessionStorage)
-      localStorage.setItem("selectedPlanType", planType);
+      // Asegurarnos de que está en minúsculas para coincidir con el ENUM de la base de datos
+      localStorage.setItem("selectedPlanType", planType.toLowerCase());
 
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,

@@ -14,6 +14,13 @@ USING (
   (auth.uid())::text = (user_id)::text
 );
 
+-- Permitir que el service_role actualice las suscripciones (necesario para el webhook)
+CREATE POLICY "Service role can update subscriptions"
+ON subscriptions
+FOR ALL
+TO service_role
+USING (true);
+
 -- Agregar un índice para mejorar el rendimiento
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
 
@@ -34,7 +41,7 @@ WHERE tablename = 'subscriptions';
 CREATE POLICY "Users can view own data" ON public.users
     FOR SELECT
     USING (
-        auth.uid() = id 
+        auth.uid() = id
         OR auth.role() = 'service_role'
         OR auth.role() = 'authenticated'
     );
