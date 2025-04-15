@@ -51,41 +51,43 @@ export default function CheckoutSuccessPage() {
 
     // Función para calcular el tiempo de espera entre intentos
     const getRetryDelay = (attempt: number) => {
-      // Comenzamos con 1 segundo y aumentamos gradualmente, pero con un máximo menor
+      // Comenzamos con 1 segundo y aumentamos gradualmente
       const baseDelay = 1000;
-      // Aumentamos el tiempo de espera con cada intento, hasta un máximo de 3 segundos
-      return Math.min(baseDelay * Math.pow(1.2, Math.min(attempt, 3)), 3000);
+      // Aumentamos el tiempo de espera con cada intento, hasta un máximo de 5 segundos
+      return Math.min(baseDelay * Math.pow(1.5, Math.min(attempt, 4)), 5000);
+    };
+
+    // Función para obtener el nombre traducido del plan
+    const getTranslatedPlanName = (planType: string) => {
+      const normalizedPlanType = planType.toLowerCase();
+      const translationKey = `plans.${normalizedPlanType}.name`;
+      return t(translationKey, {
+        defaultValue:
+          normalizedPlanType === "aprendiz"
+            ? "Aprendiz"
+            : normalizedPlanType === "entrenador"
+            ? "Entrenador"
+            : normalizedPlanType === "maestro"
+            ? "Maestro"
+            : normalizedPlanType,
+      });
     };
 
     const verifySubscription = async () => {
       try {
-        // Reducimos el número máximo de intentos a 10
-        if (verificationAttempts >= 10) {
+        // Aumentamos el número máximo de intentos a 15
+        if (verificationAttempts >= 15) {
           console.log("Límite de intentos alcanzado, marcando como cargada");
           setSubscriptionLoaded(true);
 
           // Obtener el plan seleccionado del localStorage
           const selectedPlanType = localStorage.getItem("selectedPlanType");
           if (selectedPlanType) {
-            // Si tenemos un plan seleccionado en localStorage, lo usamos como fallback
             console.log(
               "Usando plan del localStorage como fallback:",
               selectedPlanType
             );
-            // Asegurarnos de que el plan está en minúsculas para coincidir con la base de datos
-            const planType = selectedPlanType.toLowerCase();
-            const translationKey = `plans.${planType}.name`;
-            const translatedName = t(translationKey, {
-              defaultValue:
-                planType === "aprendiz"
-                  ? "Aprendiz"
-                  : planType === "entrenador"
-                  ? "Entrenador"
-                  : planType === "maestro"
-                  ? "Maestro"
-                  : planType,
-            });
-            setPlanName(translatedName);
+            setPlanName(getTranslatedPlanName(selectedPlanType));
           }
 
           return;
@@ -100,76 +102,44 @@ export default function CheckoutSuccessPage() {
         // Incrementar el contador de intentos
         setVerificationAttempts((prev) => prev + 1);
 
+        // Intentar obtener la suscripción actualizada
         const updatedSubscription = await refetchSubscription();
         console.log("Suscripción actualizada:", updatedSubscription);
 
-        // Verificar si la suscripción tiene un plan_type (independientemente del stripe_subscription_id)
+        // Verificar si la suscripción tiene un plan_type
         if (updatedSubscription?.plan_type) {
           console.log("Plan type encontrado:", updatedSubscription.plan_type);
-
-          // El plan_type ya viene en minúsculas de la base de datos
-          const planType = updatedSubscription.plan_type;
-          console.log("Tipo de plan:", planType);
-
-          // Usar la clave correcta para la traducción
-          const translationKey = `plans.${planType}.name`;
-          console.log("Clave de traducción:", translationKey);
-
-          // Obtener el nombre traducido del plan
-          const translatedName = t(translationKey, {
-            defaultValue:
-              planType === "aprendiz"
-                ? "Aprendiz"
-                : planType === "entrenador"
-                ? "Entrenador"
-                : planType === "maestro"
-                ? "Maestro"
-                : planType,
-          });
-          console.log("Nombre traducido:", translatedName);
-
-          setPlanName(translatedName);
-
-          // Marcar que la suscripción ya se ha cargado
+          setPlanName(getTranslatedPlanName(updatedSubscription.plan_type));
           setSubscriptionLoaded(true);
 
           // Registrar evento de éxito
           console.log("\u2705 Suscripción verificada exitosamente", {
-            planType,
+            planType: updatedSubscription.plan_type,
             subscriptionId:
               updatedSubscription.stripe_subscription_id || "pendiente",
             attempts: verificationAttempts + 1,
           });
-        } else if (error) {
-          // Si hay un error en la solicitud, lo mostramos
-          console.error("Error al obtener la suscripción:", error);
+        } else {
+          // Si no hay plan_type, verificamos si hay un error o si debemos usar el fallback
+          if (error) {
+            console.error("Error al obtener la suscripción:", error);
+          }
 
-          // Si llevamos varios intentos con errores, detenemos los intentos antes
-          if (verificationAttempts >= 4) {
-            console.log("Demasiados errores, deteniendo verificación");
-            setSubscriptionLoaded(true);
-
-            // Obtener el plan seleccionado del localStorage como fallback
+          // Si llevamos varios intentos sin éxito, usamos el fallback
+          if (verificationAttempts >= 8) {
             const selectedPlanType = localStorage.getItem("selectedPlanType");
             if (selectedPlanType) {
               console.log(
-                "Usando plan del localStorage como fallback:",
+                "Usando plan del localStorage como fallback después de varios intentos:",
                 selectedPlanType
               );
-              // Asegurarnos de que el plan está en minúsculas para coincidir con la base de datos
-              const planType = selectedPlanType.toLowerCase();
-              const translationKey = `plans.${planType}.name`;
-              const translatedName = t(translationKey, {
-                defaultValue:
-                  planType === "aprendiz"
-                    ? "Aprendiz"
-                    : planType === "entrenador"
-                    ? "Entrenador"
-                    : planType === "maestro"
-                    ? "Maestro"
-                    : planType,
-              });
-              setPlanName(translatedName);
+              setPlanName(getTranslatedPlanName(selectedPlanType));
+
+              // Si llevamos muchos intentos, marcamos como cargada para no seguir intentando
+              if (verificationAttempts >= 12) {
+                console.log("Demasiados intentos, deteniendo verificación");
+                setSubscriptionLoaded(true);
+              }
             }
           }
         }

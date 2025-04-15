@@ -39,20 +39,36 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
 
       if (error) {
         if (error.code === "PGRST116") {
-          const { error: insertError } = await supabase
-            .from("users")
-            .insert([{ id: user.id, has_seen_onboarding: false }]);
+          // El usuario no existe en la tabla users, intentamos crearlo
+          const { error: insertError } = await supabase.from("users").insert([
+            {
+              id: user.id,
+              email: user.email || "",
+              full_name: user.user_metadata?.full_name || "Usuario",
+              has_seen_onboarding: false,
+              preferred_lang: user.user_metadata?.preferred_lang || "es",
+            },
+          ]);
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            console.error("Error al insertar usuario:", insertError);
+            // A pesar del error, asumimos que el usuario necesita ver el onboarding
+            setShouldShowModal(true);
+            return;
+          }
           setShouldShowModal(true);
         } else {
-          throw error;
+          console.error("Error al verificar onboarding:", error);
+          // A pesar del error, asumimos que el usuario necesita ver el onboarding
+          setShouldShowModal(true);
         }
       } else {
         setShouldShowModal(!data?.has_seen_onboarding);
       }
     } catch (error) {
       console.error(t("errors.generic"), error);
+      // A pesar del error, asumimos que el usuario necesita ver el onboarding
+      setShouldShowModal(true);
     }
   };
 
@@ -63,12 +79,43 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
     }
 
     try {
-      const { error } = await supabase
+      // Primero verificamos si el usuario existe
+      const { data, error: checkError } = await supabase
         .from("users")
-        .update({ has_seen_onboarding: true })
-        .eq("id", user.id);
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (checkError && checkError.code !== "PGRST116") {
+        console.error("Error al verificar usuario:", checkError);
+      }
+
+      // Si el usuario no existe, lo creamos
+      if (!data) {
+        const { error: insertError } = await supabase.from("users").insert([
+          {
+            id: user.id,
+            email: user.email || "",
+            full_name: user.user_metadata?.full_name || "Usuario",
+            has_seen_onboarding: true,
+            preferred_lang: user.user_metadata?.preferred_lang || "es",
+          },
+        ]);
+
+        if (insertError) {
+          console.error("Error al insertar usuario:", insertError);
+        }
+      } else {
+        // Si el usuario existe, actualizamos has_seen_onboarding
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ has_seen_onboarding: true })
+          .eq("id", user.id);
+
+        if (updateError) {
+          console.error("Error al actualizar onboarding:", updateError);
+        }
+      }
     } catch (error) {
       console.error(t("errors.generic"), error);
     } finally {

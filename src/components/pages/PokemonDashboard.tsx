@@ -263,7 +263,29 @@ export default function PokemonDashboard() {
         .eq("id", user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "PGRST116") {
+          // No se encontró el usuario, vamos a crearlo
+          const { error: insertError } = await supabase.from("users").insert([
+            {
+              id: user.id,
+              email: user.email || "",
+              full_name: user.user_metadata?.full_name || "Usuario",
+              has_seen_onboarding: false,
+              preferred_lang: user.user_metadata?.preferred_lang || "es",
+            },
+          ]);
+
+          if (insertError) {
+            console.error("Error inserting user:", insertError);
+            return;
+          }
+
+          setShowOnboarding(true);
+          return;
+        }
+        throw error;
+      }
       setShowOnboarding(!data?.has_seen_onboarding);
     } catch (error) {
       console.error("Error checking onboarding status:", error);
@@ -955,7 +977,13 @@ export default function PokemonDashboard() {
         .select("*")
         .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        if (updateError.code === "PGRST116") {
+          // La carta no existe
+          throw new Error("La carta no existe o ha sido eliminada");
+        }
+        throw updateError;
+      }
 
       // Si la actualización fue exitosa pero no tenemos los datos, al menos actualizamos los campos básicos
       if (!updatedCard) {
@@ -1215,7 +1243,13 @@ export default function PokemonDashboard() {
         .eq("id", collectionId)
         .single();
 
-      if (collectionError) throw collectionError;
+      if (collectionError) {
+        if (collectionError.code === "PGRST116") {
+          // La colección no existe
+          return null;
+        }
+        throw collectionError;
+      }
       if (!collectionData) return null;
 
       const cards = await getCollectionCards(collectionId);

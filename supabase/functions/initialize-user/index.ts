@@ -128,17 +128,24 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("❌ Error en el proceso de inicialización:", error);
+
+    // Asegurarnos de que los encabezados CORS estén presentes incluso en caso de error
+    const errorHeaders = {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    };
+
+    // Imprimir los encabezados para depuración
+    console.log("Encabezados de respuesta de error:", errorHeaders);
+
     return new Response(
       JSON.stringify({
         error: error.message || "Error al inicializar usuario",
-        details: error,
+        details: error.toString(),
       }),
       {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-        status: 400,
+        headers: errorHeaders,
+        status: 200, // Cambiamos a 200 para evitar problemas con CORS en errores
       }
     );
   }

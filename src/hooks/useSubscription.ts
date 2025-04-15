@@ -38,7 +38,7 @@ export const useSubscription = () => {
   const [fetchError, setFetchError] = useState<Error | null>(null);
 
   const fetchSubscription = useCallback(
-    async (retryAttempt = 0, maxRetries = 3) => {
+    async (retryAttempt = 0, maxRetries = 5) => {
       if (!user) {
         console.log("No user found, skipping subscription fetch");
         setIsLoading(false);
@@ -145,15 +145,31 @@ export const useSubscription = () => {
       // Usar un tiempo de espera más corto para el primer intento
       await sleep(Math.random() * 500); // Pequeño retraso aleatorio para evitar solicitudes simultáneas
 
-      const data = await fetchSubscription();
+      // Intentar obtener la suscripción con más reintentos
+      const data = await fetchSubscription(0, 5);
+
       if (data) {
+        console.log("Subscription data found, updating state:", {
+          id: data.id,
+          plan_type: data.plan_type,
+          status: data.status,
+          stripe_subscription_id: data.stripe_subscription_id || "none",
+        });
         setSubscription(data);
+      } else {
+        console.log("No subscription data found after retries");
       }
+
       return data;
     } catch (err) {
       console.error("\u274c Error in refetchSubscription:", err);
       setFetchError(err instanceof Error ? err : new Error(String(err)));
       return null;
+    } finally {
+      // Asegurarnos de que isLoading se establece a false incluso si hay errores
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
     }
   }, [fetchSubscription]);
 

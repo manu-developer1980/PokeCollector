@@ -61,7 +61,13 @@ export default function LoginForm() {
         .eq("id", userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "PGRST116") {
+          // No se encontró el usuario, asumimos que necesita ver el onboarding
+          return true;
+        }
+        throw error;
+      }
       return !data?.has_seen_onboarding;
     } catch (error) {
       console.error(t("errors.generic"), error);
@@ -111,30 +117,45 @@ export default function LoginForm() {
       if (result.data?.user) {
         try {
           // Inicializar usuario
-          const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/initialize-user`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${result.data.session?.access_token}`,
-                "Content-Type": "application/json",
-                apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-              },
-              mode: "cors",
-              credentials: "include",
-              body: JSON.stringify({
-                user_id: result.data.user.id,
-              }),
+          try {
+            const response = await fetch(
+              `${
+                import.meta.env.VITE_SUPABASE_URL
+              }/functions/v1/initialize-user`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${result.data.session?.access_token}`,
+                  "Content-Type": "application/json",
+                  apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+                },
+                mode: "cors",
+                credentials: "include",
+                body: JSON.stringify({
+                  user_id: result.data.user.id,
+                }),
+              }
+            );
+
+            console.log(
+              "Respuesta de initialize-user:",
+              response.status,
+              response.statusText
+            );
+
+            const data = await response.json();
+            console.log("Datos de initialize-user:", data);
+
+            if (data.error) {
+              console.error(t("auth.errors.initError"), data.error);
+              // Continuamos aunque haya error, ya que el usuario ya está autenticado
+              console.warn("Continuando a pesar del error en initialize-user");
             }
-          );
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.error(t("auth.errors.initError"), errorData);
-            throw new Error(errorData.error || t("auth.errors.initError"));
+          } catch (initError) {
+            console.error("Error al llamar a initialize-user:", initError);
+            // Continuamos aunque haya error, ya que el usuario ya está autenticado
+            console.warn("Continuando a pesar del error en initialize-user");
           }
-
-          const data = await response.json();
 
           // Verificamos si el usuario necesita onboarding
           const needsOnboarding = await checkOnboardingStatus(

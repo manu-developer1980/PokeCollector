@@ -126,6 +126,10 @@ serve(async (req) => {
 
         // Si existe una suscripción, la actualizamos
         if (existingSubs && existingSubs.length > 0) {
+          console.log(
+            `Encontradas ${existingSubs.length} suscripciones existentes para el usuario ${session.metadata.user_id}`
+          );
+
           // Primero intentamos con el ID de la suscripción
           updateResult = await supabase
             .from("subscriptions")
@@ -134,15 +138,41 @@ serve(async (req) => {
             .select();
 
           if (updateResult.error) {
+            console.error(
+              "Error actualizando por ID, intentando por user_id:",
+              updateResult.error
+            );
+
             // Si falla, intentamos con el user_id
             updateResult = await supabase
               .from("subscriptions")
               .update(subscriptionData)
               .eq("user_id", session.metadata.user_id)
               .select();
+
+            if (updateResult.error) {
+              console.error(
+                "Error actualizando por user_id, intentando upsert:",
+                updateResult.error
+              );
+
+              // Si ambos fallan, intentamos un upsert
+              updateResult = await supabase
+                .from("subscriptions")
+                .upsert({
+                  ...subscriptionData,
+                  id: existingSubs[0].id,
+                  created_at:
+                    existingSubs[0].created_at || new Date().toISOString(),
+                })
+                .select();
+            }
           }
         } else {
           // Si no existe, creamos una nueva
+          console.log(
+            `No se encontraron suscripciones para el usuario ${session.metadata.user_id}, creando nueva`
+          );
 
           updateResult = await supabase
             .from("subscriptions")
@@ -151,6 +181,22 @@ serve(async (req) => {
               created_at: new Date().toISOString(),
             })
             .select();
+
+          if (updateResult.error) {
+            console.error(
+              "Error insertando nueva suscripción, intentando upsert:",
+              updateResult.error
+            );
+
+            // Si falla la inserción, intentamos un upsert
+            updateResult = await supabase
+              .from("subscriptions")
+              .upsert({
+                ...subscriptionData,
+                created_at: new Date().toISOString(),
+              })
+              .select();
+          }
         }
 
         if (updateResult.error) {

@@ -6,6 +6,20 @@ export const ALLOWED_ORIGINS = [
 
 export const getCorsHeaders = (request: Request) => {
   const origin = request.headers.get("Origin") || "";
+
+  // Si estamos en desarrollo, permitir cualquier origen
+  if (origin.includes("localhost")) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Headers":
+        "authorization, x-client-info, apikey, content-type, prefer, Authorization",
+      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Max-Age": "86400",
+    };
+  }
+
+  // Para producción, verificar contra la lista de orígenes permitidos
   const isAllowedOrigin = ALLOWED_ORIGINS.includes(origin);
 
   return {

@@ -34,6 +34,29 @@ export function useUser(): UseUserReturn {
         .maybeSingle();
 
       if (error) {
+        if (error.code === "PGRST116") {
+          // No se encontró el usuario, vamos a crearlo
+          const { data: userData, error: insertError } = await supabase
+            .from("users")
+            .insert([
+              {
+                id: userId,
+                email: authUser?.email || "",
+                full_name: authUser?.user_metadata?.full_name || "Usuario",
+                has_seen_onboarding: false,
+                preferred_lang: authUser?.user_metadata?.preferred_lang || "es",
+              },
+            ])
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("Error inserting user:", insertError);
+            throw insertError;
+          }
+
+          return userData;
+        }
         throw error;
       }
 
