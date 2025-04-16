@@ -67,6 +67,8 @@ const CardDetail: React.FC<CardDetailProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localCard, setLocalCard] = useState<CollectionCard | null>(null);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { t } = useTranslation();
 
   const handleNotesClick = (e: React.MouseEvent) => {
@@ -78,44 +80,90 @@ const CardDetail: React.FC<CardDetailProps> = ({
     const loadCardDetails = async () => {
       if (!card) {
         setCardDetails(null);
+        setIsLoading(false);
         return;
       }
 
+      setIsLoading(true);
+      setLoadError(null);
+
       try {
+        // Primero, intentamos usar los datos que ya tenemos en la carta
+        // Esto evita mostrar un estado de carga si ya tenemos datos suficientes
+        let initialCardData: PokemonCard | null = null;
+
+        if (mode === "wishlist" && (card as PokemonCard).images) {
+          // En modo wishlist, la carta ya suele tener todos los datos necesarios
+          initialCardData = card as PokemonCard;
+          // Asegurarse de preservar el wishlist_id
+          if ((card as PokemonCard).wishlist_id) {
+            initialCardData.wishlist_id = (card as PokemonCard).wishlist_id;
+          }
+          // Establecer los datos iniciales inmediatamente para evitar parpadeos
+          setCardDetails(initialCardData);
+        }
+
+        // Luego, cargamos los datos completos de la API
         if (mode === "collection") {
           const collectionCard = card as CollectionCard;
           const cardId = collectionCard.card_id;
 
           if (!cardId) {
             console.warn("Missing card_id for collection card:", card);
+            setLoadError(t("common.errorLoadingCard"));
+            setIsLoading(false);
             return;
           }
 
           const details = await getCardById(cardId);
           if (!details) {
             console.error("No se pudieron cargar los detalles de la carta");
+            setLoadError(t("common.cardUnavailable"));
+            setIsLoading(false);
             return;
           }
 
-          setCardDetails({
+          // Si es una carta no disponible, mostrar mensaje pero seguir con la UI
+          if (details.name === "Card Unavailable") {
+            setLoadError(t("common.cardUnavailable"));
+          }
+
+          // Crear un objeto con las propiedades necesarias para evitar errores de tipo
+          const cardWithDetails = {
             ...details,
             id: collectionCard.id,
-            collection_id: collectionCard.collection_id,
+            // Añadir propiedades de la colección
             quantity: collectionCard.quantity,
             condition: collectionCard.condition,
             is_foil: collectionCard.is_foil,
             is_first_edition: collectionCard.is_first_edition,
             notes: collectionCard.notes,
-          });
+          };
+
+          setCardDetails(cardWithDetails as PokemonCard);
           setLocalCard(collectionCard);
         } else {
+          // Si ya establecimos datos iniciales, no necesitamos hacer nada más en modo wishlist
+          if (initialCardData && mode === "wishlist") {
+            setIsLoading(false);
+            return;
+          }
+
           const pokemonCard = card as PokemonCard;
           const details = pokemonCard.id
             ? await getCardById(pokemonCard.id)
             : null;
+
           if (!details && !pokemonCard) {
             console.error("No se pudieron cargar los detalles de la carta");
+            setLoadError(t("common.cardUnavailable"));
+            setIsLoading(false);
             return;
+          }
+
+          // Si es una carta no disponible, mostrar mensaje pero seguir con la UI
+          if (details && details.name === "Card Unavailable") {
+            setLoadError(t("common.cardUnavailable"));
           }
 
           // Preserve wishlist_id if it exists in the original card
@@ -130,7 +178,13 @@ const CardDetail: React.FC<CardDetailProps> = ({
         }
       } catch (error) {
         console.error("Error loading card details:", error);
-        setCardDetails(null);
+        setLoadError(t("common.errorLoadingCard"));
+        // No establecemos cardDetails a null si ya tenemos datos iniciales
+        if (!cardDetails) {
+          setCardDetails(null);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -139,15 +193,17 @@ const CardDetail: React.FC<CardDetailProps> = ({
     } else {
       setCardDetails(null);
       setLocalCard(null);
+      setIsLoading(false);
+      setLoadError(null);
     }
-  }, [card, isOpen, mode]);
+  }, [card, isOpen, mode, t]);
 
   const handleRemove = (cardId: string) => {
     onRemove?.(cardId);
     onClose();
   };
 
-  const handleAddToCollection = (card: PokemonCard) => {
+  const handleAddToCollection = () => {
     if (onAddToCollection && cardDetails) {
       // Asegurarse de que cardDetails tenga toda la información necesaria
       const completeCard: PokemonCard = {
@@ -192,32 +248,40 @@ const CardDetail: React.FC<CardDetailProps> = ({
     if (!onUpdate || !localCard) return;
 
     try {
-      const updatedCard = await onUpdate({
+      // Llamar a onUpdate sin esperar el resultado
+      onUpdate({
         ...cardData,
         id: localCard.id,
       });
 
-      if (updatedCard) {
-        // Actualizar cardDetails
-        setCardDetails((prev) => ({
-          ...prev!,
-          quantity: updatedCard.quantity,
-          condition: updatedCard.condition,
-          is_foil: updatedCard.is_foil,
-          is_first_edition: updatedCard.is_first_edition,
-          notes: updatedCard.notes,
-        }));
+      // Actualizar la UI inmediatamente con los datos proporcionados
+      // Esto evita esperar por la respuesta de la API
+      const updatedData = {
+        quantity: cardData.quantity,
+        condition: cardData.condition,
+        is_foil: cardData.is_foil,
+        is_first_edition: cardData.is_first_edition,
+        notes: cardData.notes,
+      };
 
-        // Actualizar localCard
-        setLocalCard((prev) => ({
-          ...prev!,
-          quantity: updatedCard.quantity,
-          condition: updatedCard.condition,
-          is_foil: updatedCard.is_foil,
-          is_first_edition: updatedCard.is_first_edition,
-          notes: updatedCard.notes,
-        }));
-      }
+      // Actualizar cardDetails con type assertion para evitar errores
+      setCardDetails((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...updatedData,
+        } as PokemonCard;
+      });
+
+      // Actualizar localCard con type assertion para evitar errores
+      setLocalCard((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...updatedData,
+        } as CollectionCard;
+      });
+
       setIsEditModalOpen(false);
     } catch (error) {
       console.error("Error updating card:", error);
@@ -235,7 +299,14 @@ const CardDetail: React.FC<CardDetailProps> = ({
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("common.loading")}</DialogTitle>
+            <DialogTitle>
+              {isLoading ? t("common.loading") : t("common.error")}
+            </DialogTitle>
+            {loadError && (
+              <DialogDescription className="text-amber-600">
+                {loadError}
+              </DialogDescription>
+            )}
           </DialogHeader>
         </DialogContent>
       </Dialog>
@@ -313,8 +384,20 @@ const CardDetail: React.FC<CardDetailProps> = ({
               </span>
             </DialogTitle>
             <DialogDescription>
-              {cardDetails.set?.name} · {cardDetails.number}/
-              {cardDetails.set?.printedTotal}
+              {cardDetails.name === "Card Unavailable" ? (
+                <span className="text-amber-600">
+                  {t("common.cardUnavailable")}
+                </span>
+              ) : (
+                <>
+                  {cardDetails.set?.name || t("common.unknownSet")} ·{" "}
+                  {cardDetails.number || "N/A"}
+                  {cardDetails.set?.printedTotal &&
+                  cardDetails.set.printedTotal > 0
+                    ? `/${cardDetails.set.printedTotal}`
+                    : ""}
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
 
@@ -338,9 +421,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() =>
-                      cardDetails && handleAddToCollection(cardDetails)
-                    }
+                    onClick={() => cardDetails && handleAddToCollection()}
                   >
                     <Plus className="h-4 w-4 mr-2" />{" "}
                     {t("card.addToCollection")}
@@ -361,9 +442,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
                 <div className="flex flex-col gap-2 mt-2">
                   <Button
                     variant="outline"
-                    onClick={() =>
-                      cardDetails && handleAddToCollection(cardDetails)
-                    }
+                    onClick={() => cardDetails && handleAddToCollection()}
                     className="w-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />{" "}
@@ -452,6 +531,17 @@ const CardDetail: React.FC<CardDetailProps> = ({
                   <h3 className="text-lg font-medium mb-1">
                     {t("card.details")}
                   </h3>
+
+                  {/* Mostrar mensaje si la carta no está disponible */}
+                  {cardDetails.name === "Card Unavailable" && (
+                    <div className="text-amber-600 text-sm font-medium mb-4 p-3 bg-amber-50 rounded-md border border-amber-200">
+                      {t("common.cardUnavailable")}
+                      <p className="mt-2 text-xs text-gray-600">
+                        {t("common.cardUnavailableExplanation")}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     {cardDetails.types && cardDetails.types.length > 0 && (
                       <div>

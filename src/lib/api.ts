@@ -132,11 +132,34 @@ export async function getTypes(): Promise<string[]> {
 const notFoundCardsCache = new Set<string>();
 
 // Lista de IDs de cartas conocidas como problemáticas que nunca deberían consultarse
+// Nota: Mantener los IDs exactamente como aparecen en la API (sensible a mayúsculas/minúsculas)
 const knownProblematicCardIds = new Set([
-  "xyp-xy62", // Esta carta causa errores 404 repetidos
-  "xyp-xy63", // Posible carta problemática
-  "xyp-xy64", // Posible carta problemática
+  // Cartas que causan errores 404 incluso con la normalización correcta
+  "xyp-XY62",
+  "xyp-XY63",
+  "xyp-XY64",
 ]);
+
+// Función para crear una carta placeholder cuando no se encuentra
+function createPlaceholderCard(id: string): PokemonCard {
+  return {
+    id: id, // Mantener el ID original con mayúsculas/minúsculas
+    name: "Card Unavailable",
+    number: "N/A",
+    set: {
+      name: "Unknown Set",
+      printedTotal: 0,
+    },
+    supertype: "Unknown",
+    subtypes: [],
+    types: [],
+    images: {
+      small: "/images/card-placeholder.svg",
+      large: "/images/card-placeholder.svg",
+    },
+    rarity: "Unknown",
+  };
+}
 
 export async function getCardById(id: string): Promise<PokemonCard | null> {
   if (!id) return null;
@@ -148,7 +171,8 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
     knownProblematicCardIds.has(normalizedId) ||
     notFoundCardsCache.has(normalizedId)
   ) {
-    return null;
+    // Crear un placeholder en lugar de devolver null
+    return createPlaceholderCard(normalizedId);
   }
 
   const cacheKey = PokemonCache.getCardKey(normalizedId);
@@ -159,15 +183,45 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
   }
 
   try {
-    const { data } = await api.get(
-      `/pokemon/cards/${normalizedId}`,
-      defaultConfig
-    );
+    // Importante: Usar el ID original para la petición a la API
+    // La API de Pokémon TCG es sensible a mayúsculas/minúsculas
+    const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
 
     if (!data || !data.data) {
       // Guardar en caché de cartas no encontradas
       notFoundCardsCache.add(normalizedId);
-      return null;
+      // Crear un placeholder para cartas sin datos
+      const placeholderCard = createPlaceholderCard(normalizedId);
+      // Guardar en caché para evitar futuras peticiones
+      PokemonCache.set(cacheKey, placeholderCard);
+      return placeholderCard;
+    }
+
+    // Verificar si es una carta no disponible (placeholder)
+    if (data.data.name === "Card Unavailable") {
+      // Crear un objeto de carta más completo para evitar errores en la UI
+      const placeholderCard: PokemonCard = {
+        ...data.data,
+        id: normalizedId,
+        number: "N/A",
+        set: {
+          name: "Unknown Set",
+          printedTotal: 0,
+        },
+        // Añadir propiedades mínimas necesarias para la UI
+        supertype: "Unknown",
+        subtypes: [],
+        types: [],
+        images: {
+          small: "/images/card-placeholder.svg",
+          large: "/images/card-placeholder.svg",
+        },
+        rarity: "Unknown",
+      };
+
+      // Guardar en caché
+      PokemonCache.set(cacheKey, placeholderCard);
+      return placeholderCard;
     }
 
     PokemonCache.set(cacheKey, data.data);
@@ -176,12 +230,18 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
     // Si el error es 404, guardar en caché de cartas no encontradas
     if (error.response && error.response.status === 404) {
       notFoundCardsCache.add(normalizedId);
+      // Crear un placeholder para cartas no encontradas
+      const placeholderCard = createPlaceholderCard(normalizedId);
+      // Guardar en caché para evitar futuras peticiones
+      PokemonCache.set(cacheKey, placeholderCard);
+      return placeholderCard;
     }
 
     if (process.env.NODE_ENV !== "production") {
       console.error(`Failed to fetch card details for ${normalizedId}:`, error);
     }
-    return null;
+    // Para otros errores, devolver un placeholder genérico
+    return createPlaceholderCard(normalizedId);
   }
 }
 

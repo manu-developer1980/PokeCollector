@@ -25,7 +25,11 @@
     "openMenu": "Open menu",
     "verifying": "Verifying...",
     "unlimited": "Unlimited",
-    "unknownCard": "Who's that Pokémon?"
+    "unknownCard": "Who's that Pokémon?",
+    "unknownSet": "Unknown Set",
+    "cardUnavailable": "Card data unavailable",
+    "cardUnavailableExplanation": "This card may be temporarily unavailable or may not exist in our database. You can still add it to your collection or wishlist.",
+    "errorLoadingCard": "Error loading card data"
   },
   "cookies": {
     "title": "Cookie Consent",
