@@ -25,8 +25,9 @@ export const getRarityBadgeStyle = (rarity: string) => {
 };
 
 export const normalizeCardId = (cardId: string): string => {
-  // Eliminar caracteres especiales y convertir a minúsculas
-  return cardId.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  // Eliminar caracteres especiales pero mantener mayúsculas y minúsculas
+  // Importante: La API de Pokémon TCG es sensible a mayúsculas/minúsculas
+  return cardId.replace(/[^a-zA-Z0-9-]/g, "");
 };
 
 /**

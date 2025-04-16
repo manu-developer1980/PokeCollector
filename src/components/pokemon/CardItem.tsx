@@ -205,13 +205,21 @@ const CardItem = ({
           <div className="space-y-1.5">
             <h3 className="flex justify-between items-center text-sm">
               <span className="text-indigo-600 font-medium truncate max-w-[150px]">
-                {card.set?.name}
+                {card.set?.name || t("common.unknownSet", "Unknown Set")}
               </span>
               <span className="text-gray-500 ml-1 shrink-0">
                 {card.number}
-                {card.set?.printedTotal ? `/${card.set.printedTotal}` : ""}
+                {card.set?.printedTotal && card.set.printedTotal > 0
+                  ? `/${card.set.printedTotal}`
+                  : ""}
               </span>
             </h3>
+            {/* Si es una carta no disponible, mostrar un mensaje */}
+            {card.name === "Card Unavailable" && (
+              <div className="text-amber-600 text-xs font-medium mt-1">
+                {t("common.cardUnavailable", "Card data unavailable")}
+              </div>
+            )}
 
             {/* Contenedor de badges - mejorar el wrapping */}
             <div className="mt-2 flex flex-wrap gap-1 min-h-[24px]">
