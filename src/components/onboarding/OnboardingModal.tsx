@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import GetStartedGuide from "./GetStartedGuide";
 import { useAuth } from "../../../supabase/auth";
-import { supabase } from "../../../supabase/supabase";
 import { useTranslation } from "react-i18next";
+import { useUserData } from "../../hooks/useUserData";
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -19,51 +19,28 @@ interface OnboardingModalProps {
 const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { userData, updateUserData, fetchUserData } = useUserData();
   const [shouldShowModal, setShouldShowModal] = useState(isOpen);
 
   useEffect(() => {
     if (user && isOpen) {
       checkOnboardingStatus();
     }
-  }, [user, isOpen]);
+  }, [user, isOpen, fetchUserData]);
 
   const checkOnboardingStatus = async () => {
     if (!user?.id) return;
 
     try {
-      let { data, error } = await supabase
-        .from("users")
-        .select("has_seen_onboarding")
-        .eq("id", user.id)
-        .single();
+      // Usar el hook useUserData para obtener los datos del usuario
+      const data = await fetchUserData();
 
-      if (error) {
-        if (error.code === "PGRST116") {
-          // El usuario no existe en la tabla users, intentamos crearlo
-          const { error: insertError } = await supabase.from("users").insert([
-            {
-              id: user.id,
-              email: user.email || "",
-              full_name: user.user_metadata?.full_name || "Usuario",
-              has_seen_onboarding: false,
-              preferred_lang: user.user_metadata?.preferred_lang || "es",
-            },
-          ]);
-
-          if (insertError) {
-            console.error("Error al insertar usuario:", insertError);
-            // A pesar del error, asumimos que el usuario necesita ver el onboarding
-            setShouldShowModal(true);
-            return;
-          }
-          setShouldShowModal(true);
-        } else {
-          console.error("Error al verificar onboarding:", error);
-          // A pesar del error, asumimos que el usuario necesita ver el onboarding
-          setShouldShowModal(true);
-        }
+      // Si tenemos datos, verificar si el usuario ha visto el onboarding
+      if (data) {
+        setShouldShowModal(!data.has_seen_onboarding);
       } else {
-        setShouldShowModal(!data?.has_seen_onboarding);
+        // Si no hay datos, asumimos que el usuario necesita ver el onboarding
+        setShouldShowModal(true);
       }
     } catch (error) {
       console.error(t("errors.generic"), error);
@@ -79,42 +56,11 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
     }
 
     try {
-      // Primero verificamos si el usuario existe
-      const { data, error: checkError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
+      // Actualizar el estado de onboarding usando el hook useUserData
+      const result = await updateUserData({ has_seen_onboarding: true });
 
-      if (checkError && checkError.code !== "PGRST116") {
-        console.error("Error al verificar usuario:", checkError);
-      }
-
-      // Si el usuario no existe, lo creamos
-      if (!data) {
-        const { error: insertError } = await supabase.from("users").insert([
-          {
-            id: user.id,
-            email: user.email || "",
-            full_name: user.user_metadata?.full_name || "Usuario",
-            has_seen_onboarding: true,
-            preferred_lang: user.user_metadata?.preferred_lang || "es",
-          },
-        ]);
-
-        if (insertError) {
-          console.error("Error al insertar usuario:", insertError);
-        }
-      } else {
-        // Si el usuario existe, actualizamos has_seen_onboarding
-        const { error: updateError } = await supabase
-          .from("users")
-          .update({ has_seen_onboarding: true })
-          .eq("id", user.id);
-
-        if (updateError) {
-          console.error("Error al actualizar onboarding:", updateError);
-        }
+      if (!result.success) {
+        console.error("Error al actualizar onboarding:", result.error);
       }
     } catch (error) {
       console.error(t("errors.generic"), error);
