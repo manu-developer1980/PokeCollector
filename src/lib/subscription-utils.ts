@@ -7,14 +7,17 @@ export const validateSubscriptionLimits = (
   currentCollections: number = 0,
   currentWishlist: number = 0
 ) => {
+  // Normalizar el tipo de plan para asegurarnos de que coincide con las claves de PLAN_FEATURES
   const normalizedPlanType = String(planType || "APRENDIZ").toUpperCase();
+
+  // Verificar si el tipo de plan normalizado existe en PLAN_FEATURES
   const actualPlanType = Object.keys(PLAN_FEATURES).includes(normalizedPlanType)
     ? (normalizedPlanType as SubscriptionPlan)
     : "APRENDIZ";
 
   const plan = PLAN_FEATURES[actualPlanType];
 
-  if (currentCards > 0 && currentCards > plan.maxCards) {
+  if (currentCards >= plan.maxCards) {
     return {
       valid: false,
       error: `Has alcanzado el límite de ${plan.maxCards} cartas en tu plan ${plan.name}`,
@@ -22,7 +25,7 @@ export const validateSubscriptionLimits = (
     };
   }
 
-  if (currentCollections > 0 && currentCollections > plan.maxCollections) {
+  if (currentCollections >= plan.maxCollections) {
     return {
       valid: false,
       error: `Has alcanzado el límite de ${plan.maxCollections} colecciones en tu plan ${plan.name}`,
@@ -30,7 +33,7 @@ export const validateSubscriptionLimits = (
     };
   }
 
-  if (currentWishlist > 0 && currentWishlist > plan.maxWishlist) {
+  if (currentWishlist >= plan.maxWishlist) {
     return {
       valid: false,
       error: `Has alcanzado el límite de ${plan.maxWishlist} cartas en tu lista de deseos en tu plan ${plan.name}`,

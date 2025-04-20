@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "../../../supabase/auth";
@@ -30,31 +30,23 @@ import {
 } from "@/types/pokemon";
 import { Database, Heart, Search, User } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
 import MainHeader from "../layout/MainHeader";
 import AccountSection from "../dashboard/AccountSection"; // Cambiar esta línea
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 import { NoDefaultCollectionDialog } from "../pokemon/NoDefaultCollectionDialog";
 import { useSubscription } from "@/hooks/useSubscription";
-import { validateSubscriptionLimits } from "@/lib/subscription-utils";
-import { useNavigate } from "react-router-dom";
+import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { PlanChangeDialog } from "@/components/subscription/PlanChangeDialog";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { NoActiveSubscriptionModal } from "@/components/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
-import { useUser } from "@/hooks/useUser";
 import { normalizeCardId } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 // Eliminar esta línea que está causando el error
 // const { t } = useTranslation();
 
-interface PolarSubscription {
-  status: string;
-  polar_price_id: string;
-  current_period_end: number;
-  cancel_at_period_end: boolean;
-}
+// Interfaz eliminada: PolarSubscription
 
 export default function PokemonDashboard() {
   // Mover la llamada a useTranslation dentro del componente
@@ -64,7 +56,7 @@ export default function PokemonDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { subscription, isLoading: isSubscriptionLoading } = useSubscription();
-  const location = useLocation();
+  // const location = useLocation(); // No se utiliza
 
   // Definir los elementos de navegación dentro del componente
   const defaultNavItems = [
@@ -87,6 +79,7 @@ export default function PokemonDashboard() {
   ];
 
   // 2. ALL State declarations
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] =
@@ -106,7 +99,7 @@ export default function PokemonDashboard() {
   const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
     name: "",
     set: "",
-    type: "",
+    types: "", // Cambiado de type a types para que coincida con PokemonCardSearchParams
     rarity: "",
     page: 1,
     pageSize: 20,
@@ -116,8 +109,7 @@ export default function PokemonDashboard() {
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [isCardDetailOpen, setIsCardDetailOpen] = useState(false);
   const [isAddToCollectionOpen, setIsAddToCollectionOpen] = useState(false);
-  const [selectedCollectionCard, setSelectedCollectionCard] =
-    useState<CollectionCard | null>(null);
+  // Variable eliminada: selectedCollectionCard
   const [pendingQuickAddCard, setPendingQuickAddCard] =
     useState<PokemonCard | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -129,13 +121,16 @@ export default function PokemonDashboard() {
   const [wishlistCards, setWishlistCards] = useState<PokemonCard[]>([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [activeSection, setActiveSection] = useState("My Collection");
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+  // Variable eliminada: subscriptionStatus
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
   const [isNoSubscriptionModalOpen, setIsNoSubscriptionModalOpen] =
     useState(false);
   const [lastAttemptedAction, setLastAttemptedAction] = useState("");
-  const [limitError, setLimitError] = useState({ message: "", type: "" });
-  const [isPlanChangeDialogOpen, setIsPlanChangeDialogOpen] = useState(false);
+  const [limitError, setLimitError] = useState<{
+    message: string;
+    type: "cards" | "collections" | "wishlist" | string;
+  }>({ message: "", type: "" });
+  // Variable eliminada: isPlanChangeDialogOpen
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
 
   // 3. Define getCollectionCards first
@@ -197,9 +192,10 @@ export default function PokemonDashboard() {
           })
         );
 
+        // Convertir el tipo de retorno para que coincida con CollectionCard
         return cardsWithDetails.filter(
-          (card): card is CollectionCard => card !== null
-        );
+          (card): card is any => card !== null
+        ) as CollectionCard[];
       } catch (error) {
         console.error("Error in getCollectionCards:", error);
         throw error;
@@ -249,10 +245,7 @@ export default function PokemonDashboard() {
   }, [user?.id, toast, getCollectionCards]);
 
   // 4. Helper functions and other callbacks
-  const getSubscriptionStatus = useCallback(() => {
-    if (!subscription) return "free";
-    return subscription.status === "active" ? subscription.plan_type : "free";
-  }, [subscription]);
+  // Función eliminada: getSubscriptionStatus
 
   const checkOnboardingStatus = useCallback(async () => {
     if (!user) return;
@@ -325,30 +318,146 @@ export default function PokemonDashboard() {
         }
 
         const planType = subscription?.plan_type || "APRENDIZ";
-        const { count } = await supabase
-          .from(
-            resourceType === "wishlist" ? "wishlist_cards" : "collection_cards"
-          )
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userId);
+        // Seleccionar la tabla correcta según el tipo de recurso
+        const tableName =
+          resourceType === "wishlist"
+            ? "wishlist_cards"
+            : resourceType === "collections"
+            ? "collections"
+            : "collection_cards";
 
-        const currentCount = count || 0;
-        const validation = validateSubscriptionLimits(
-          planType,
-          resourceType === "collection_cards" ? currentCount + quantity : 0,
-          resourceType === "collections" ? currentCount + quantity : 0,
-          resourceType === "wishlist" ? currentCount + quantity : 0
-        );
+        // Obtener el conteo actual
+        let count = 0;
+        let error = null;
 
-        if (!validation.valid) {
-          setLimitError({
-            message: validation.error || "",
-            type: validation.limitType,
+        if (resourceType === "collection_cards") {
+          // Para collection_cards, necesitamos primero obtener las colecciones del usuario
+          // y luego contar las cartas en esas colecciones
+          console.log(`Obteniendo colecciones para el usuario ${userId}`);
+          const { data: userCollections, error: collectionsError } =
+            await supabase
+              .from("collections")
+              .select("id")
+              .eq("user_id", userId);
+
+          if (collectionsError) {
+            console.error(
+              `Error al obtener colecciones del usuario:`,
+              collectionsError
+            );
+            throw collectionsError;
+          }
+
+          console.log(`Colecciones encontradas:`, userCollections);
+
+          if (userCollections && userCollections.length > 0) {
+            const collectionIds = userCollections.map((c) => c.id);
+            console.log(`IDs de colecciones a consultar:`, collectionIds);
+
+            const { count: cardsCount, error: cardsError } = await supabase
+              .from("collection_cards")
+              .select("*", { count: "exact", head: true })
+              .in("collection_id", collectionIds);
+
+            console.log(`Resultado del conteo de cartas:`, {
+              cardsCount,
+              cardsError,
+            });
+            count = cardsCount || 0;
+            error = cardsError;
+          } else {
+            console.log(
+              `No se encontraron colecciones para el usuario ${userId}`
+            );
+          }
+        } else {
+          // Para wishlist_cards y collections, podemos filtrar directamente por user_id
+          console.log(
+            `Consultando tabla ${tableName} para el usuario ${userId}`
+          );
+          const { count: itemCount, error: itemError } = await supabase
+            .from(tableName)
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", userId);
+
+          console.log(`Resultado del conteo en ${tableName}:`, {
+            itemCount,
+            itemError,
           });
-          setIsLimitModalOpen(true);
+          count = itemCount || 0;
+          error = itemError;
         }
 
-        return validation;
+        if (error) {
+          console.error(`Error al contar ${resourceType}:`, error);
+          throw error;
+        }
+
+        const currentCount = count || 0;
+
+        // Registros de depuración detallados para entender qué está pasando
+        const maxValue =
+          resourceType === "collections"
+            ? PLAN_FEATURES[planType.toUpperCase()]?.maxCollections
+            : resourceType === "wishlist"
+            ? PLAN_FEATURES[planType.toUpperCase()]?.maxWishlist
+            : PLAN_FEATURES[planType.toUpperCase()]?.maxCards;
+
+        console.log(`validateResourceLimit - ${resourceType}:`, {
+          currentCount,
+          quantity,
+          planType,
+          planTypeUpperCase: planType.toUpperCase(),
+          maxValue,
+          planFeatures: PLAN_FEATURES[planType.toUpperCase()],
+          allPlanFeatures: PLAN_FEATURES,
+          willExceedLimit: currentCount + quantity > maxValue,
+          calculation: `${currentCount} + ${quantity} ${
+            currentCount + quantity > maxValue ? ">" : "<="
+          } ${maxValue}`,
+        });
+
+        // Verificar directamente si estamos en el límite o lo superamos
+
+        // Corregir el problema con el límite de colecciones
+        // Si currentCount + quantity es mayor que maxValue, no es válido
+        // Para colecciones, verificamos si currentCount >= maxValue (sin sumar quantity)
+        // porque estamos verificando antes de crear una nueva colección
+        const willExceedLimit =
+          resourceType === "collections"
+            ? currentCount >= maxValue
+            : currentCount + quantity > maxValue;
+
+        console.log(`validateResourceLimit - Verificación final:`, {
+          resourceType,
+          currentCount,
+          maxValue,
+          willExceedLimit,
+          calculation:
+            resourceType === "collections"
+              ? `${currentCount} >= ${maxValue} = ${currentCount >= maxValue}`
+              : `${currentCount} + ${quantity} > ${maxValue} = ${
+                  currentCount + quantity > maxValue
+                }`,
+        });
+
+        if (willExceedLimit) {
+          const errorMessage = `Has alcanzado el límite de ${maxValue} ${
+            resourceType === "collections" ? "colecciones" : "cartas"
+          } en tu plan ${PLAN_FEATURES[planType.toUpperCase()].name}`;
+          return {
+            valid: false,
+            error: errorMessage,
+            limitType:
+              resourceType === "collections"
+                ? "collections"
+                : resourceType === "wishlist"
+                ? "wishlist"
+                : "cards",
+          };
+        }
+
+        return { valid: true, error: null, limitType: null };
       } catch (error) {
         console.error("Error validating limit:", error);
         return {
@@ -526,9 +635,7 @@ export default function PokemonDashboard() {
     initializeDashboard();
   }, [user, navigate, getCollections, checkOnboardingStatus]);
 
-  useEffect(() => {
-    setSubscriptionStatus(getSubscriptionStatus());
-  }, [subscription, getSubscriptionStatus]);
+  // Efecto eliminado: actualización de subscriptionStatus
 
   useEffect(() => {
     const loadFilterData = async () => {
@@ -557,7 +664,12 @@ export default function PokemonDashboard() {
           }),
         ]);
 
-        setSets(setsData?.map((set) => ({ id: set.id, name: set.name })) || []);
+        setSets(
+          setsData?.map((set: { id: string; name: string }) => ({
+            id: set.id,
+            name: set.name,
+          })) || []
+        );
         setTypes(typesData || []);
         setRarities(raritiesData || []);
       } catch (error) {
@@ -622,6 +734,11 @@ export default function PokemonDashboard() {
     const currentSection = activeSection;
 
     try {
+      // Verificar límites de cartas si es una nueva carta (no actualización)
+      if (!user?.id) {
+        throw new Error(t("auth.loginRequiredForCollection"));
+      }
+
       const normalizedCardId = normalizeCardId(cardData.card.id);
 
       // Verificar si la carta existe en la colección
@@ -634,6 +751,24 @@ export default function PokemonDashboard() {
 
       if (checkError && checkError.code !== "PGRST116") {
         throw checkError;
+      }
+
+      // Si no existe la carta, verificar límites antes de añadirla
+      if (!existingCard) {
+        const { valid, error: limitError } = await validateResourceLimit(
+          "collection_cards",
+          user.id,
+          cardData.quantity
+        );
+
+        if (!valid) {
+          setLimitError({
+            message: limitError || "",
+            type: "cards",
+          });
+          setIsLimitModalOpen(true);
+          return;
+        }
       }
 
       if (existingCard) {
@@ -726,36 +861,58 @@ export default function PokemonDashboard() {
 
   const handleCreateCollection = async () => {
     if (!subscription) return;
+    if (!user?.id) return;
 
     try {
-      // Obtener el conteo actual de colecciones
-      const { count } = await supabase
+      // 1. Obtener el número actual de colecciones
+      const { count, error: countError } = await supabase
         .from("collections")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user?.id);
+        .eq("user_id", user.id);
 
-      const currentCollectionCount = count || 0;
+      if (countError) {
+        console.error("Error al contar colecciones:", countError);
+        throw countError;
+      }
 
-      // Validar límites
-      const validation = validateSubscriptionLimits(
-        subscription.plan_type,
-        0, // No validamos cartas aquí
-        currentCollectionCount + 1
-      );
+      // 2. Obtener el límite máximo de colecciones para el plan
+      const currentCount = count || 0;
+      const maxCollections =
+        PLAN_FEATURES[subscription.plan_type.toUpperCase()]?.maxCollections ||
+        0;
 
-      if (!validation.valid) {
+      console.log("Verificación de límite de colecciones:", {
+        currentCount,
+        maxCollections,
+        planType: subscription.plan_type,
+        comparacion: `${currentCount} < ${maxCollections} = ${
+          currentCount < maxCollections
+        }`,
+      });
+
+      // 3. Comparar directamente si el número actual es menor que el límite
+      if (currentCount < maxCollections) {
+        // Si no se ha alcanzado el límite, permitir crear la colección
+        setEditingCollection(null);
+        setIsCollectionDialogOpen(true);
+      } else {
+        // Si se ha alcanzado el límite, mostrar error
+        const errorMessage = `Has alcanzado el límite de ${maxCollections} colecciones en tu plan ${
+          PLAN_FEATURES[subscription.plan_type.toUpperCase()].name
+        }`;
         setLimitError({
-          message: validation.error || "",
+          message: errorMessage,
           type: "collections",
         });
         setIsLimitModalOpen(true);
-        return;
       }
-
-      setEditingCollection(null);
-      setIsCollectionDialogOpen(true);
     } catch (error) {
-      console.error("Error validando límites de colección:", error);
+      console.error("Error al crear colección:", error);
+      toast({
+        title: t("common.error"),
+        description: t("collection.errors.createFailed"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -792,11 +949,14 @@ export default function PokemonDashboard() {
 
         if (error) throw error;
 
+        // Usar interpolación directa para asegurarnos de que el nombre se muestre correctamente
+        const successMessage = t("collection.saveSuccess").replace(
+          "{name}",
+          collectionData.name || ""
+        );
         toast({
           title: t("collection.updated"),
-          description: t("collection.saveSuccess", {
-            name: collectionData.name,
-          }),
+          description: successMessage,
         });
       } else {
         // Para nueva colección
@@ -823,11 +983,14 @@ export default function PokemonDashboard() {
 
         if (error) throw error;
 
+        // Usar interpolación directa para asegurarnos de que el nombre se muestre correctamente
+        const successMessage = t("collection.saveSuccess").replace(
+          "{name}",
+          collectionData.name || ""
+        );
         toast({
           title: t("collection.created"),
-          description: t("collection.saveSuccess", {
-            name: collectionData.name,
-          }),
+          description: successMessage,
         });
       }
 
@@ -1158,11 +1321,7 @@ export default function PokemonDashboard() {
     setIsCollectionDialogOpen(true);
   };
 
-  const calculateRange = () => {
-    const start = (currentPage - 1) * pageSize + 1;
-    const end = Math.min(currentPage * pageSize, totalCount);
-    return `${start} - ${end} de ${totalCount} resultados`;
-  };
+  // Función eliminada: calculateRange
 
   // Configurar suscripciones en tiempo real
   useEffect(() => {
@@ -1417,8 +1576,8 @@ export default function PokemonDashboard() {
           onEdit={handleEditCollection}
           onRemove={handleRemoveCard}
           onCardClick={(card) => {
-            setSelectedCollectionCard(card);
-            setSelectedCard(card);
+            // Convertir CollectionCard a PokemonCard para setSelectedCard
+            setSelectedCard(card as unknown as PokemonCard);
             setIsCardDetailOpen(true);
           }}
           onSectionChange={setActiveSection}
@@ -1472,9 +1631,7 @@ export default function PokemonDashboard() {
     }
   };
 
-  const handleUpgradePlan = () => {
-    setActiveSection("Pricing");
-  };
+  // Función eliminada: handleUpgradePlan
 
   const planType = (subscription?.plan_type?.toUpperCase() ||
     "APRENDIZ") as SubscriptionPlan;
@@ -1568,14 +1725,22 @@ export default function PokemonDashboard() {
         <PlanChangeDialog
           isOpen={isPlanDialogOpen}
           onClose={() => setIsPlanDialogOpen(false)}
-          currentPlan={subscription?.plan_type || "APRENDIZ"}
+          currentPlan={
+            (subscription?.plan_type?.toUpperCase() ||
+              "APRENDIZ") as SubscriptionPlan
+          }
         />
       )}
       <SubscriptionLimitModal
         isOpen={isLimitModalOpen}
         onClose={() => setIsLimitModalOpen(false)}
-        limitType={limitError.type}
-        currentPlan={subscription?.plan_type || "APRENDIZ"}
+        limitType={
+          limitError.type as "cards" | "collections" | "wishlist" | null
+        }
+        currentPlan={
+          (subscription?.plan_type?.toUpperCase() ||
+            "APRENDIZ") as SubscriptionPlan
+        }
         errorMessage={limitError.message}
         onViewPlans={() => setActiveSection("Pricing")}
       />
