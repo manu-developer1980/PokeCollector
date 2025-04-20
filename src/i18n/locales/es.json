@@ -290,7 +290,7 @@
     }
   },
   "limits": {
-    "cards": "cartas en tu colección",
+    "cards": "carta(s) en tu colección",
     "collections": "colecciones",
     "wishlist": "cartas en tu lista de deseos",
     "elements": "elementos",
@@ -299,6 +299,7 @@
     "upgradePlan": "Mejorar Plan"
   },
   "subscription": {
+    "limitReachedMessage": "Has alcanzado el límite de {{limit}} {{type}} en tu plan {{plan}}",
     "loading": "Cargando...",
     "upgradePlan": "Mejorar Plan",
     "statusActive": "Activo",

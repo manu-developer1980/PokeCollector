@@ -28,7 +28,15 @@ export function SubscriptionLimitModal({
   onViewPlans,
 }: SubscriptionLimitModalProps) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Registro de depuración para ver qué valores se están pasando
+  console.log("SubscriptionLimitModal - Valores:", {
+    currentPlan,
+    limitType,
+    currentLanguage: i18n.language,
+    errorMessage,
+  });
 
   const handleUpgrade = () => {
     navigate("/pricing");
@@ -48,6 +56,42 @@ export function SubscriptionLimitModal({
     }
   };
 
+  // Función para traducir el nombre del plan
+  const getTranslatedPlanName = (planType: string) => {
+    // Convertir a minúsculas y eliminar espacios
+    const normalizedPlanType = planType.toLowerCase().trim();
+
+    // Mapear los nombres de planes en mayúsculas a sus claves de traducción
+    // Primero intentamos con el nombre normalizado
+    if (
+      normalizedPlanType === "aprendiz" ||
+      normalizedPlanType === "apprentice"
+    ) {
+      return t("plans.aprendiz");
+    } else if (
+      normalizedPlanType === "entrenador" ||
+      normalizedPlanType === "trainer"
+    ) {
+      return t("plans.entrenador");
+    } else if (
+      normalizedPlanType === "maestro" ||
+      normalizedPlanType === "master"
+    ) {
+      return t("plans.maestro");
+    }
+
+    // Si no coincide con ninguno de los anteriores, intentamos con el nombre original
+    // pero convertido a formato de clave (primera letra minúscula)
+    const planKey = planType.charAt(0).toLowerCase() + planType.slice(1);
+
+    // Intentamos buscar una traducción para este plan
+    const translation = t(`plans.${planKey}`, { defaultValue: planType });
+
+    // Si la traducción es igual al planType, significa que no se encontró una traducción
+    // En ese caso, devolvemos el nombre original
+    return translation !== planKey ? translation : planType;
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -63,7 +107,7 @@ export function SubscriptionLimitModal({
         <div className="py-4">
           <p className="text-sm text-muted-foreground">
             {t("limits.currentPlanLimit", {
-              plan: currentPlan,
+              plan: getTranslatedPlanName(currentPlan),
               type: getLimitTypeText(),
             })}
           </p>

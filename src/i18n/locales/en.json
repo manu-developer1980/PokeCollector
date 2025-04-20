@@ -480,11 +480,11 @@
   },
 
   "limits": {
-    "cards": "cards in your collection",
-    "collections": "collections",
+    "cards": "card(s) in your collection",
+    "collections": "Collections",
     "wishlist": "cards in your wishlist",
     "elements": "elements",
-    "limitReached": "{{type}} limit reached",
+    "limitReached": "{{type}} Limit Reached",
     "currentPlanLimit": "Your current plan ({{plan}}) has reached its limit. Upgrade your plan to get access to more {{type}} and other features.",
     "upgradePlan": "Upgrade Plan"
   },
@@ -505,6 +505,7 @@
     "billingHistory": "Billing history",
     "planDetails": "Plan details",
     "limitReached": "You have reached your plan limit",
+    "limitReachedMessage": "You have reached the limit of {{limit}} {{type}} in your {{plan}} plan",
     "upgradeNow": "Upgrade now",
     "active": "Your subscription is active",
     "inactive": "You don't have an active subscription",

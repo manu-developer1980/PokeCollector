@@ -25,7 +25,7 @@ interface PricingCardProps {
 interface PlanChangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  currentPlan: SubscriptionPlan;
+  currentPlan: string;
   showWelcomeMessage?: boolean;
 }
 
@@ -72,13 +72,32 @@ export function PlanChangeDialog({
     await processPlanChange(newPlan);
   };
 
-  const isPlanDowngrade = (
-    current: SubscriptionPlan,
-    target: SubscriptionPlan
-  ) => {
+  const isPlanDowngrade = (current: string, target: SubscriptionPlan) => {
     // Convertir los planes a mayúsculas para asegurar la comparación correcta
-    const normalizedCurrent = current.toUpperCase() as SubscriptionPlan;
+    const normalizedCurrent = current.toUpperCase();
     const normalizedTarget = target.toUpperCase() as SubscriptionPlan;
+
+    // Mapear los nombres de planes normalizados a las claves de SubscriptionPlan
+    let currentPlanKey: SubscriptionPlan;
+    if (
+      normalizedCurrent.includes("APRENDIZ") ||
+      normalizedCurrent.includes("APPRENTICE")
+    ) {
+      currentPlanKey = "APRENDIZ";
+    } else if (
+      normalizedCurrent.includes("ENTRENADOR") ||
+      normalizedCurrent.includes("TRAINER")
+    ) {
+      currentPlanKey = "ENTRENADOR";
+    } else if (
+      normalizedCurrent.includes("MAESTRO") ||
+      normalizedCurrent.includes("MASTER")
+    ) {
+      currentPlanKey = "MAESTRO";
+    } else {
+      // Si no podemos determinar el plan, asumimos APRENDIZ
+      currentPlanKey = "APRENDIZ";
+    }
 
     const planHierarchy: Record<SubscriptionPlan, number> = {
       APRENDIZ: 1,
@@ -88,15 +107,16 @@ export function PlanChangeDialog({
 
     console.log("isPlanDowngrade checking:", {
       normalizedCurrent,
+      currentPlanKey,
       normalizedTarget,
-      currentValue: planHierarchy[normalizedCurrent],
+      currentValue: planHierarchy[currentPlanKey],
       targetValue: planHierarchy[normalizedTarget],
     }); // Nuevo log
 
     // Si el plan actual es APRENDIZ, nunca será un downgrade
-    if (normalizedCurrent === "APRENDIZ") return false;
+    if (currentPlanKey === "APRENDIZ") return false;
 
-    return planHierarchy[normalizedTarget] < planHierarchy[normalizedCurrent];
+    return planHierarchy[normalizedTarget] < planHierarchy[currentPlanKey];
   };
 
   const processPlanChange = async (newPlan: SubscriptionPlan) => {
@@ -176,12 +196,14 @@ export function PlanChangeDialog({
               </ul>
               <Button
                 onClick={() => handlePlanChange("ENTRENADOR")}
-                disabled={isLoading || currentPlan === "ENTRENADOR"}
+                disabled={
+                  isLoading || currentPlan.toLowerCase() === "entrenador"
+                }
                 className="w-full"
               >
                 {isLoading
                   ? t("subscription.processing")
-                  : currentPlan === "ENTRENADOR"
+                  : currentPlan.toLowerCase() === "entrenador"
                   ? t("subscription.currentPlan")
                   : t("subscription.upgradeTo", {
                       plan: PLAN_FEATURES.ENTRENADOR.name,
@@ -203,12 +225,12 @@ export function PlanChangeDialog({
               </ul>
               <Button
                 onClick={() => handlePlanChange("MAESTRO")}
-                disabled={isLoading || currentPlan === "MAESTRO"}
+                disabled={isLoading || currentPlan.toLowerCase() === "maestro"}
                 className="w-full"
               >
                 {isLoading
                   ? t("subscription.processing")
-                  : currentPlan === "MAESTRO"
+                  : currentPlan.toLowerCase() === "maestro"
                   ? t("subscription.currentPlan")
                   : t("subscription.upgradeTo", {
                       plan: PLAN_FEATURES.MAESTRO.name,

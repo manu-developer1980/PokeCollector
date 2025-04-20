@@ -1,5 +1,6 @@
 import { PLAN_FEATURES } from "./stripe";
 import { SubscriptionPlan } from "../types/subscription";
+import i18next from "i18next";
 
 export const validateSubscriptionLimits = (
   planType: SubscriptionPlan | string,
@@ -17,10 +18,21 @@ export const validateSubscriptionLimits = (
 
   const plan = PLAN_FEATURES[actualPlanType];
 
+  // Obtener la función de traducción
+  const t = i18next.t;
+
+  // Obtener el nombre del plan traducido
+  const planKey = actualPlanType.toLowerCase();
+  const planName = t(`plans.${planKey}`);
+
   if (currentCards >= plan.maxCards) {
     return {
       valid: false,
-      error: `Has alcanzado el límite de ${plan.maxCards} cartas en tu plan ${plan.name}`,
+      error: t("subscription.limitReachedMessage", {
+        limit: plan.maxCards,
+        type: t("limits.cards"),
+        plan: planName,
+      }),
       limitType: "cards" as const,
     };
   }
@@ -28,7 +40,11 @@ export const validateSubscriptionLimits = (
   if (currentCollections >= plan.maxCollections) {
     return {
       valid: false,
-      error: `Has alcanzado el límite de ${plan.maxCollections} colecciones en tu plan ${plan.name}`,
+      error: t("subscription.limitReachedMessage", {
+        limit: plan.maxCollections,
+        type: t("limits.collections"),
+        plan: planName,
+      }),
       limitType: "collections" as const,
     };
   }
@@ -36,7 +52,11 @@ export const validateSubscriptionLimits = (
   if (currentWishlist >= plan.maxWishlist) {
     return {
       valid: false,
-      error: `Has alcanzado el límite de ${plan.maxWishlist} cartas en tu lista de deseos en tu plan ${plan.name}`,
+      error: t("subscription.limitReachedMessage", {
+        limit: plan.maxWishlist,
+        type: t("limits.wishlist"),
+        plan: planName,
+      }),
       limitType: "wishlist" as const,
     };
   }

@@ -26,7 +26,7 @@ const CardGrid = ({
   showPrice = false,
 }: CardGridProps) => {
   return (
-    <div className="flex flex-wrap gap-4 justify-center">
+    <div className="flex flex-wrap gap-4 justify-start">
       {cards.map((card) => (
         <CardItem
           key={card.id || `${card.pokemon_card_id}-${card.collection_id}`}

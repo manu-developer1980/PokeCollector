@@ -15,7 +15,7 @@ interface DowngradeWarningModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  currentPlan: SubscriptionPlan;
+  currentPlan: string;
   targetPlan: SubscriptionPlan;
   currentStats?: {
     totalCards?: number;
