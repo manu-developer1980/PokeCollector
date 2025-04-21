@@ -31,17 +31,25 @@ export function useStats() {
           .select("*", { count: "exact", head: true })
           .eq("user_id", user.id);
 
-        // Obtener el conteo de cartas
-        const { count: cardsCount } = await supabase
+        // Obtener el conteo de cartas considerando la cantidad de cada carta
+        const { data: cards, error: cardsError } = await supabase
           .from("collection_cards")
           .select(
             `
-            id,
+            quantity,
             collection:collection_id(user_id)
-          `,
-            { count: "exact", head: true }
+          `
           )
           .eq("collection.user_id", user.id);
+
+        if (cardsError) {
+          console.error("Error fetching cards count:", cardsError);
+          throw cardsError;
+        }
+
+        // Sumar las cantidades de todas las cartas
+        const cardsCount =
+          cards?.reduce((sum, card) => sum + (card.quantity || 1), 0) || 0;
 
         // Obtener el conteo de wishlist
         const { count: wishlistCount } = await supabase

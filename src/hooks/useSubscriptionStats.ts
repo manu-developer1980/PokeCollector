@@ -17,28 +17,29 @@ export function useSubscriptionStats() {
       if (!user?.id) return;
 
       try {
-        const [collectionsResult, wishlistResult] = await Promise.all([
-          // Primero obtenemos las colecciones del usuario
-          supabase
-            .from("collections")
-            .select(
-              `
-              id,
-              collection_cards (count)
-            `
-            )
-            .eq("user_id", user.id),
-          // Obtenemos el conteo de la lista de deseos
-          supabase
-            .from("wishlist_cards")
-            .select("id", { count: "exact" })
-            .eq("user_id", user.id),
-        ]);
+        const [collectionsResult, cardsResult, wishlistResult] =
+          await Promise.all([
+            // Primero obtenemos las colecciones del usuario
+            supabase.from("collections").select("id").eq("user_id", user.id),
+            // Obtenemos todas las cartas con sus cantidades
+            supabase
+              .from("collection_cards")
+              .select("quantity, collection_id")
+              .in(
+                "collection_id",
+                supabase.from("collections").select("id").eq("user_id", user.id)
+              ),
+            // Obtenemos el conteo de la lista de deseos
+            supabase
+              .from("wishlist_cards")
+              .select("id", { count: "exact" })
+              .eq("user_id", user.id),
+          ]);
 
-        // Calculamos el total de cartas sumando las cartas de todas las colecciones
+        // Calculamos el total de cartas sumando las cantidades
         const totalCards =
-          collectionsResult.data?.reduce((acc, collection) => {
-            return acc + (collection.collection_cards?.length || 0);
+          cardsResult.data?.reduce((acc, card) => {
+            return acc + (card.quantity || 1);
           }, 0) || 0;
 
         setStats({
