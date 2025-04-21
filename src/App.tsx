@@ -231,9 +231,8 @@ function AppRoutes() {
           path="/goodbye"
           element={
             <ProtectedGoodbyeRoute>
-              <MainLayout>
-                <GoodbyePage />
-              </MainLayout>
+              {/* No usamos MainLayout para evitar que el usuario pueda navegar */}
+              <GoodbyePage />
             </ProtectedGoodbyeRoute>
           }
         />

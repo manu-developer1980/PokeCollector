@@ -130,9 +130,17 @@ export default function AccountSection({
         throw new Error(responseData.message || t("account.deleteError"));
       }
 
-      // Si todo fue exitoso, navegamos a goodbye y cerramos sesión
+      // Establecer un token de acceso único para la página de despedida
+      console.log(
+        "Estableciendo token de acceso para la página de despedida..."
+      );
+      sessionStorage.setItem("goodbyeAccessToken", Date.now().toString());
+
+      // Si todo fue exitoso, navegamos a goodbye
       navigate("/goodbye", { replace: true });
-      await signOut();
+
+      // No cerramos la sesión aquí para permitir que la página de despedida se muestre correctamente
+      // La sesión se cerrará automáticamente cuando el usuario vuelva a la página principal
     } catch (error: any) {
       console.error("Error detallado:", error);
       toast({
