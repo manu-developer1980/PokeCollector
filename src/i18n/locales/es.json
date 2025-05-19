@@ -103,6 +103,196 @@
     },
     "lastUpdated": "Última actualización:"
   },
+  "privacyPolicy": {
+    "title": "Política de Privacidad",
+    "introduction": "Esta Política de Privacidad describe cómo se recopila, utiliza y comparte tu información personal cuando visitas o realizas una compra en PokéCollector. Respetamos tu privacidad y estamos comprometidos a proteger tus datos personales.",
+    "lastUpdated": "Última actualización:",
+    "informationWeCollect": {
+      "title": "Información que Recopilamos",
+      "description": "Cuando visitas el sitio, recopilamos automáticamente cierta información sobre tu dispositivo, incluyendo información sobre tu navegador web, dirección IP, zona horaria y algunas de las cookies que están instaladas en tu dispositivo."
+    },
+    "personalInformation": {
+      "title": "Información Personal",
+      "description": "Cuando te registras para una cuenta o te suscribes a nuestro servicio, podemos pedirte que proporciones los siguientes tipos de información personal:",
+      "items": {
+        "email": "Dirección de correo electrónico",
+        "name": "Nombre",
+        "billingInfo": "Información de facturación (para suscripciones de pago)"
+      }
+    },
+    "usageData": {
+      "title": "Datos de Uso",
+      "description": "También podemos recopilar información sobre cómo accedes y utilizas nuestro servicio:",
+      "items": {
+        "ipAddress": "Dirección IP",
+        "browserType": "Tipo y versión del navegador",
+        "pagesVisited": "Páginas de nuestro servicio que visitas",
+        "timeSpent": "Tiempo dedicado a esas páginas"
+      }
+    },
+    "howWeUseInformation": {
+      "title": "Cómo Utilizamos tu Información",
+      "description": "Utilizamos la información que recopilamos sobre ti para:",
+      "items": {
+        "provideService": "Proporcionar, operar y mantener nuestro servicio",
+        "improveService": "Mejorar y personalizar tu experiencia en nuestro sitio",
+        "communicate": "Comunicarnos contigo, incluso para atención al cliente",
+        "processPayments": "Procesar pagos y prevenir fraudes"
+      }
+    },
+    "dataStorage": {
+      "title": "Dónde se Almacenan tus Datos",
+      "description": "Tus datos se almacenan de forma segura con nuestros proveedores de servicios:"
+    },
+    "supabase": {
+      "title": "Supabase",
+      "description": "Utilizamos Supabase para almacenar datos de usuarios e información de autenticación. Supabase almacena datos de acuerdo con los requisitos del RGPD e implementa medidas de seguridad apropiadas para proteger tu información personal."
+    },
+    "stripe": {
+      "title": "Stripe",
+      "description": "Para el procesamiento de pagos, utilizamos Stripe. Cuando proporcionas tu información de pago, se transmite directamente a Stripe y no se almacena en nuestros servidores. Stripe procesa tu información de pago de acuerdo con su política de privacidad."
+    },
+    "cookies": {
+      "title": "Cookies y Seguimiento",
+      "description": "Utilizamos cookies y tecnologías de seguimiento similares para rastrear la actividad en nuestro servicio y almacenar cierta información. Puedes instruir a tu navegador para que rechace todas las cookies o para que indique cuándo se está enviando una cookie.",
+      "linkText": "Más información sobre nuestra Política de Cookies"
+    },
+    "dataSharing": {
+      "title": "Compartir tu Información Personal",
+      "description": "Compartimos tu Información Personal con terceros para ayudarnos a utilizar tu Información Personal, como se describió anteriormente. También podemos compartir tu Información Personal en las siguientes situaciones:",
+      "items": {
+        "serviceProviders": "Con proveedores de servicios que realizan servicios para nosotros",
+        "legalRequirements": "Si lo exige la ley o en respuesta a solicitudes válidas de autoridades públicas",
+        "businessTransfers": "En relación con, o durante las negociaciones de, cualquier fusión, venta de activos de la empresa, financiación o adquisición"
+      }
+    },
+    "dataRetention": {
+      "title": "Retención de Datos",
+      "description": "Conservaremos tu Información Personal solo durante el tiempo necesario para los fines establecidos en esta Política de Privacidad. Conservaremos y utilizaremos tu Información Personal en la medida necesaria para cumplir con nuestras obligaciones legales, resolver disputas y hacer cumplir nuestros acuerdos y políticas legales."
+    },
+    "yourRights": {
+      "title": "Tus Derechos bajo el RGPD",
+      "description": "Si eres residente del Espacio Económico Europeo (EEE), tienes ciertos derechos de protección de datos. Tienes derecho a:",
+      "items": {
+        "access": "Acceder a la información que tenemos sobre ti",
+        "rectification": "Rectificar cualquier información personal inexacta o incompleta",
+        "erasure": "Solicitar la eliminación de tus datos personales",
+        "restriction": "Restringir u objetar el procesamiento de tus datos personales",
+        "dataPortability": "Solicitar la transferencia de tus datos a ti o a un tercero",
+        "objection": "Oponerte al procesamiento de tus datos personales para marketing directo"
+      },
+      "exerciseRights": "Para ejercer estos derechos, por favor contáctanos utilizando la información de contacto proporcionada a continuación."
+    },
+    "dataProtectionOfficer": {
+      "title": "Delegado de Protección de Datos",
+      "description": "Hemos designado un delegado de protección de datos (DPD) que es responsable de supervisar las cuestiones relacionadas con esta política de privacidad. Si tienes alguna pregunta sobre esta política de privacidad, por favor contacta a nuestro DPD en support@pokecollector.com."
+    },
+    "changes": {
+      "title": "Cambios a esta Política de Privacidad",
+      "description": "Podemos actualizar nuestra Política de Privacidad de vez en cuando. Te notificaremos cualquier cambio publicando la nueva Política de Privacidad en esta página y actualizando la fecha de 'última actualización'."
+    },
+    "contact": {
+      "title": "Contáctanos",
+      "description": "Si tienes alguna pregunta sobre esta Política de Privacidad, por favor contáctanos."
+    }
+  },
+  "termsOfService": {
+    "title": "Términos de Servicio",
+    "introduction": "Estos Términos de Servicio rigen tu uso del sitio web y servicio de PokéCollector. Al acceder o utilizar nuestro servicio, aceptas estar sujeto a estos Términos.",
+    "lastUpdated": "Última actualización:",
+    "definitions": {
+      "title": "Definiciones",
+      "items": {
+        "service": {
+          "term": "Servicio",
+          "definition": "El sitio web y plataforma PokéCollector operado por nosotros."
+        },
+        "user": {
+          "term": "Usuario",
+          "definition": "Cualquier individuo que accede o utiliza el Servicio."
+        },
+        "account": {
+          "term": "Cuenta",
+          "definition": "Una cuenta única creada para ti para acceder a nuestro Servicio o partes de nuestro Servicio."
+        },
+        "subscription": {
+          "term": "Suscripción",
+          "definition": "El plan de pago recurrente que otorga acceso a las características premium del Servicio."
+        },
+        "company": {
+          "term": "Compañía",
+          "definition": "Se refiere a PokéCollector, el operador de este Servicio."
+        }
+      }
+    },
+    "acceptance": {
+      "title": "Aceptación de Términos",
+      "description": "Al acceder o utilizar nuestro Servicio, confirmas que has leído, entendido y aceptas estar sujeto a estos Términos de Servicio. Si no estás de acuerdo con alguna parte de estos términos, no puedes utilizar nuestro Servicio."
+    },
+    "userAccounts": {
+      "title": "Cuentas de Usuario",
+      "description": "Cuando creas una cuenta con nosotros, debes proporcionar información que sea precisa, completa y actual en todo momento. El incumplimiento de esto constituye una violación de los Términos, lo que puede resultar en la terminación inmediata de tu cuenta en nuestro Servicio.",
+      "items": {
+        "accuracy": "Eres responsable de mantener la precisión de la información de tu cuenta.",
+        "security": "Eres responsable de salvaguardar la contraseña utilizada para acceder al Servicio.",
+        "unauthorized": "Aceptas notificarnos inmediatamente de cualquier acceso no autorizado o uso de tu cuenta.",
+        "termination": "Nos reservamos el derecho de terminar o suspender tu cuenta a nuestra sola discreción, sin previo aviso."
+      }
+    },
+    "subscriptions": {
+      "title": "Suscripciones",
+      "description": "Algunas partes del Servicio están disponibles mediante suscripción. Se te facturará por adelantado de forma recurrente, dependiendo del tipo de plan de suscripción que selecciones.",
+      "billing": "Al suscribirte a nuestro Servicio, nos autorizas a cargar tu método de pago de forma recurrente según los términos de tu plan de suscripción.",
+      "cancellation": "Puedes cancelar tu suscripción en cualquier momento a través de la configuración de tu cuenta. Tu suscripción permanecerá activa hasta el final del período de facturación actual."
+    },
+    "intellectualProperty": {
+      "title": "Propiedad Intelectual",
+      "description": "El Servicio y su contenido original, características y funcionalidad son y seguirán siendo propiedad exclusiva de PokéCollector y sus licenciantes. El Servicio está protegido por derechos de autor, marcas registradas y otras leyes.",
+      "userContent": "Al enviar contenido al Servicio, nos otorgas una licencia mundial, no exclusiva, libre de regalías para usar, reproducir, modificar, adaptar, publicar, traducir y distribuir tu contenido en cualquier medio existente o futuro."
+    },
+    "prohibitedUses": {
+      "title": "Usos Prohibidos",
+      "description": "Puedes utilizar nuestro Servicio solo para fines legales y de acuerdo con estos Términos. Aceptas no utilizar el Servicio:",
+      "items": {
+        "illegal": "De cualquier manera que viole cualquier ley o regulación nacional o internacional aplicable.",
+        "harmful": "Para transmitir, o procurar el envío de, cualquier material publicitario o promocional, incluyendo cualquier 'correo basura', 'cadena de cartas', 'spam' o cualquier otra solicitud similar.",
+        "impersonation": "Para hacerte pasar o intentar hacerte pasar por la Compañía, un empleado de la Compañía, otro usuario o cualquier otra persona o entidad.",
+        "infringement": "Para participar en cualquier actividad que infrinja o se apropie indebidamente de los derechos de propiedad intelectual de otros.",
+        "automation": "Para utilizar cualquier robot, araña u otro dispositivo automático para acceder al Servicio para cualquier propósito sin nuestro permiso expreso por escrito."
+      }
+    },
+    "disclaimer": {
+      "title": "Descargo de Responsabilidad de Garantías",
+      "description": "Tu uso del Servicio es bajo tu propio riesgo. El Servicio se proporciona 'TAL CUAL' y 'SEGÚN DISPONIBILIDAD'. El Servicio se proporciona sin garantías de ningún tipo, ya sean expresas o implícitas."
+    },
+    "limitation": {
+      "title": "Limitación de Responsabilidad",
+      "description": "En ningún caso PokéCollector, ni sus directores, empleados, socios, agentes, proveedores o afiliados, serán responsables por cualquier daño indirecto, incidental, especial, consecuente o punitivo, incluyendo sin limitación, pérdida de beneficios, datos, uso, buena voluntad u otras pérdidas intangibles, resultantes de tu acceso a o uso de o incapacidad para acceder o usar el Servicio."
+    },
+    "indemnification": {
+      "title": "Indemnización",
+      "description": "Aceptas defender, indemnizar y mantener indemne a PokéCollector y sus licenciantes, proveedores de servicios, empleados, agentes, funcionarios y directores de y contra cualquier reclamo, responsabilidad, daño, juicio, premio, pérdida, costo, gasto o tarifa (incluyendo honorarios razonables de abogados) que surjan de o estén relacionados con tu violación de estos Términos o tu uso del Servicio."
+    },
+    "termination": {
+      "title": "Terminación",
+      "description": "Podemos terminar o suspender tu cuenta inmediatamente, sin previo aviso o responsabilidad, por cualquier motivo, incluyendo sin limitación si incumples los Términos. Tras la terminación, tu derecho a utilizar el Servicio cesará inmediatamente."
+    },
+    "governing": {
+      "title": "Ley Aplicable",
+      "description": "Estos Términos se regirán e interpretarán de acuerdo con las leyes de España, sin tener en cuenta sus disposiciones sobre conflictos de leyes."
+    },
+    "changes": {
+      "title": "Cambios a los Términos",
+      "description": "Nos reservamos el derecho, a nuestra sola discreción, de modificar o reemplazar estos Términos en cualquier momento. Si una revisión es material, intentaremos proporcionar al menos 30 días de aviso antes de que los nuevos términos entren en vigor."
+    },
+    "contact": {
+      "title": "Contáctanos",
+      "description": "Si tienes alguna pregunta sobre estos Términos, por favor contáctanos."
+    },
+    "relatedPolicies": "Por favor, revisa también nuestras otras políticas:",
+    "privacyPolicyLink": "Política de Privacidad",
+    "cookiePolicyLink": "Política de Cookies"
+  },
   "navigation": {
     "dashboard": "Panel",
     "collection": "Colección",
@@ -135,10 +325,8 @@
     "empty": "No tienes colecciones aún",
     "emptyDescription": "Crea tu primera colección para empezar a guardar tus cartas.",
     "createFirst": "Crear Mi Primera Colección",
-    "cards": "cartas",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta colección?",
     "deleteWarning": "Esta acción no se puede deshacer y eliminará todas las cartas de esta colección.",
-
     "editDescription": "Modifica los detalles de tu colección",
     "createDescription": "Crea una nueva colección para organizar tus cartas",
     "nameLabel": "Nombre de la Colección",
@@ -168,13 +356,20 @@
       "saveFailed": "No se pudo guardar la colección. Por favor, intenta de nuevo.",
       "deleteFailed": "No se pudo eliminar la colección. Por favor, intenta de nuevo.",
       "setDefaultFailed": "No se pudo establecer la colección predeterminada.",
-      "noSelectedCollection": "No hay una colección seleccionada"
+      "noSelectedCollection": "No hay una colección seleccionada",
+      "createFailed": "No se pudo crear la colección. Por favor, intenta de nuevo.",
+      "addFailed": "No se pudo añadir la carta a la colección. Por favor, intenta de nuevo."
     },
     "confirmDeleteWithName": "¿Estás seguro de que quieres eliminar la colección \"{name}\"? Esta acción no se puede deshacer y todas las cartas asociadas serán eliminadas.",
     "addCard": "Añadir a Colección",
     "selectCollection": "Seleccionar colección",
     "adding": "Añadiendo...",
-    "cardAdded": "Carta añadida a la colección correctamente",
+    "cardAdded": "Carta añadida a la colección",
+    "cardAddedDescription": "La carta ha sido añadida a tu colección",
+    "cardUpdatedDescription": "La carta ha sido actualizada en tu colección",
+    "quantityIncreased": "La cantidad ha sido incrementada",
+    "deleteConfirmTitle": "Eliminar Colección",
+    "deleteConfirmDescription": "¿Estás seguro de que quieres eliminar la colección \"{name}\"?",
     "maxCards": "Máximo de cartas",
     "maxCollections": "Máximo de colecciones",
     "cards": "Cartas",
@@ -195,9 +390,12 @@
     "emptyDescription": "Añade cartas a tu lista de deseos para seguir las que quieres conseguir",
     "searchCards": "Buscar cartas para añadir",
     "cardAdded": "Carta añadida a la lista de deseos",
+    "addSuccess": "La carta ha sido añadida a tu lista de deseos",
     "cardRemoved": "Carta eliminada",
     "removeSuccess": "La carta ha sido eliminada de tu lista de deseos",
     "removedAfterAdding": "La carta ha sido eliminada de tu lista de deseos después de añadirla a tu colección",
+    "removedFromWishlist": "Eliminada de la lista de deseos",
+    "cardRemovedDescription": "La carta ha sido eliminada de tu lista de deseos",
     "alreadyInWishlist": "Ya en Lista de Deseos",
     "cardAlreadyExists": "Esta carta ya está en tu lista de deseos.",
     "errors": {
@@ -484,7 +682,7 @@
         "Soporte Prioritario"
       ]
     },
-    "perMonth": "/mes",
+    "perMonth": "mes",
     "selectPlan": "Seleccionar plan",
     "currentPlan": "Plan Actual",
     "startFree": "Empezar Gratis",
@@ -559,14 +757,21 @@
   },
   "auth": {
     "login": "Iniciar sesión",
+    "backToLogin": "Volver al inicio de sesión",
+    "checkInboxAndFollow": "Revisa tu bandeja de entrada y sigue las instrucciones",
+    "checkInboxForReset": "Revisa tu bandeja de entrada para restablecer tu contraseña",
     "signup": "Registrarse",
     "logout": "Cerrar sesión",
     "email": "Correo electrónico",
     "emailPlaceholder": "tu@email.com",
+    "emailSent": "Correo electrónico enviado",
+    "errorTryAgain": "Error, por favor intenta de nuevo",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "resetPassword": "Restablecer contraseña",
+    "instructionsSentTo": "Instrucciones enviadas a",
+    "recoverPassword": "Recuperar contraseña",
     "confirmEmail": {
       "title": "Confirma tu email",
       "description": "Tu cuenta aún no ha sido verificada. Hemos enviado un nuevo email de confirmación a:",
@@ -694,7 +899,9 @@
     "forbidden": "Prohibido",
     "validation": "Error de validación",
     "network": "Error de red",
-    "server": "Error del servidor"
+    "server": "Error del servidor",
+    "tooManyAttempts": "Demasiados intentos",
+    "waitBeforeRetry": "Por favor, espera antes de intentarlo de nuevo"
   },
   "onboarding": {
     "title": "Guía de inicio - PokéCollector",

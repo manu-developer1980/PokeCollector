@@ -174,10 +174,14 @@ export function PricingCard({
           <h3 className="text-2xl font-bold">{planName}</h3>
           <p className="text-muted-foreground">{planDescription}</p>
           <div className="mt-4">
-            <span className="text-4xl font-bold">{plan.price}€</span>
-            <span className="text-muted-foreground">
-              /{t("plans.perMonth")}
+            <span className="text-4xl font-bold">
+              {plan.price === 0 ? t("pricing.free") : `${plan.price}€`}
             </span>
+            {plan.price > 0 && (
+              <span className="text-muted-foreground">
+                {t("plans.perMonth")}
+              </span>
+            )}
           </div>
         </CardHeader>
 

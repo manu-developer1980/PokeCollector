@@ -336,6 +336,8 @@
     "adding": "Adding...",
     "removeCard": "Remove Card",
     "cardAdded": "Card added to collection",
+    "cardAddedDescription": "The card has been added to your collection",
+    "cardUpdatedDescription": "The card has been updated in your collection",
     "addingCard": "Adding card to collection...",
     "cardAddedToDefault": "Card added to default collection",
     "cardRemoved": "Card removed from collection",
@@ -358,6 +360,9 @@
     "descriptionLabel": "Description (Optional)",
     "descriptionPlaceholder": "Describe your collection...",
     "setAsDefault": "Set as default collection",
+    "quantityIncreased": "The quantity has been increased",
+    "deleteConfirmTitle": "Delete Collection",
+    "deleteConfirmDescription": "Are you sure you want to delete the collection \"{name}\"?",
     "errors": {
       "loadFailed": "Could not load collections. Please try again.",
       "createDefaultFailed": "Could not create default collection. Please try again.",
@@ -365,7 +370,9 @@
       "saveFailed": "Could not save collection. Please try again.",
       "deleteFailed": "Could not delete collection. Please try again.",
       "setDefaultFailed": "Could not set default collection.",
-      "noSelectedCollection": "No collection selected"
+      "noSelectedCollection": "No collection selected",
+      "createFailed": "Could not create collection. Please try again.",
+      "addFailed": "Could not add card to collection. Please try again."
     },
     "confirmDeleteWithName": "Are you sure you want to delete the collection \"{name}\"? This action cannot be undone and all associated cards will be deleted.",
     "noDefaultCollection": "No default collection",
@@ -385,9 +392,12 @@
     "emptyDescription": "Add cards to your wishlist to keep track of the ones you want to get",
     "searchCards": "Search cards to add",
     "cardAdded": "Card added to wishlist",
+    "addSuccess": "The card has been added to your wishlist",
     "cardRemoved": "Card removed",
     "removeSuccess": "The card has been removed from your wishlist",
     "removedAfterAdding": "The card has been removed from your wishlist after adding it to your collection",
+    "removedFromWishlist": "Removed from wishlist",
+    "cardRemovedDescription": "The card has been removed from your wishlist",
     "errors": {
       "loadFailed": "Could not load wishlist",
       "removeFailed": "Could not remove card from wishlist",

@@ -627,8 +627,8 @@ export default function PokemonDashboard() {
         });
 
         toast({
-          title: t("toasts.wishlistAdded"),
-          description: t("wishlist.cardAdded"),
+          title: t("wishlist.cardAdded"),
+          description: t("wishlist.addSuccess"),
         });
 
         // Refrescar la lista de deseos inmediatamente
@@ -863,8 +863,8 @@ export default function PokemonDashboard() {
 
       // Show toast notification
       toast({
-        title: t("toasts.cardAdded"),
-        description: t("collection.cardAdded"),
+        title: t("collection.cardAdded"),
+        description: t("collection.cardAddedDescription"),
       });
 
       // No need to call getCollections() here as it will be triggered by the real-time subscription
@@ -887,7 +887,7 @@ export default function PokemonDashboard() {
           });
 
           toast({
-            title: t("wishlist.cardRemoved"),
+            title: t("wishlist.removedFromWishlist"),
             description: t("wishlist.removedAfterAdding"),
           });
         } catch (error) {
@@ -1039,14 +1039,10 @@ export default function PokemonDashboard() {
 
         if (error) throw error;
 
-        // Usar interpolación directa para asegurarnos de que el nombre se muestre correctamente
-        const successMessage = t("collection.saveSuccess").replace(
-          "{name}",
-          collectionData.name || ""
-        );
+        // No need to use interpolation here as we're using a fixed message
         toast({
           title: t("collection.created"),
-          description: successMessage,
+          description: t("collection.collectionCreated"),
         });
       }
 
