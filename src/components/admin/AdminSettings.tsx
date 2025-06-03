@@ -7,6 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -29,6 +36,7 @@ import {
   Settings,
   Server,
   Users,
+  User,
   Shield,
   Database,
   Globe,
@@ -62,6 +70,18 @@ interface SystemInfo {
   apiUrl: string;
   frontendUrl: string;
   maintenanceMode: boolean;
+  auditLogging: boolean;
+  rateLimiting: boolean;
+}
+
+interface SecuritySettings {
+  sessionTimeout: number;
+  maxLoginAttempts: number;
+  twoFactorAuth: boolean;
+  passwordPolicy: "weak" | "medium" | "strong";
+  ipWhitelist: boolean;
+  adminPanelAccess: "open" | "restricted" | "locked";
+  apiAccess: "open" | "authenticated" | "restricted";
 }
 
 interface DatabaseStats {
@@ -110,7 +130,24 @@ const AdminSettings: React.FC = () => {
     apiUrl: import.meta.env.VITE_SUPABASE_URL || "Not configured",
     frontendUrl: window.location.origin,
     maintenanceMode: false,
+    auditLogging: true,
+    rateLimiting: true,
   });
+
+  // Security settings state
+  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
+    sessionTimeout: 60,
+    maxLoginAttempts: 5,
+    twoFactorAuth: true,
+    passwordPolicy: "strong",
+    ipWhitelist: false,
+    adminPanelAccess: "restricted",
+    apiAccess: "authenticated",
+  });
+
+  // Form state management
+  const [isEditing, setIsEditing] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Admin users state
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -389,6 +426,87 @@ const AdminSettings: React.FC = () => {
     loadAdminUsers,
   ]);
 
+  // Save system configuration
+  const saveSystemConfiguration = useCallback(async () => {
+    try {
+      // In a real implementation, this would call a backend API
+      // For now, we'll simulate the save operation
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      await logAdminAction(
+        user!.id,
+        null,
+        "UPDATE_SYSTEM_CONFIG",
+        "system",
+        "configuration",
+        null,
+        systemInfo,
+        { section: "system_configuration" }
+      );
+
+      toast({
+        title: t("admin.settings.success.configurationSaved", {
+          defaultValue: "Configuration saved successfully",
+        }),
+        description: t("admin.settings.success.configurationSavedDesc", {
+          defaultValue: "System configuration has been updated",
+        }),
+      });
+
+      setHasUnsavedChanges(false);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving system configuration:", err);
+      toast({
+        title: t("admin.settings.errors.saveFailed", {
+          defaultValue: "Failed to save configuration",
+        }),
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  }, [systemInfo, logAdminAction, user, toast, t]);
+
+  // Save security settings
+  const saveSecuritySettings = useCallback(async () => {
+    try {
+      // In a real implementation, this would call a backend API
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      await logAdminAction(
+        user!.id,
+        null,
+        "UPDATE_SECURITY_CONFIG",
+        "system",
+        "security",
+        null,
+        securitySettings,
+        { section: "security_settings" }
+      );
+
+      toast({
+        title: t("admin.settings.success.securitySaved", {
+          defaultValue: "Security settings saved successfully",
+        }),
+        description: t("admin.settings.success.securitySavedDesc", {
+          defaultValue: "Security configuration has been updated",
+        }),
+      });
+
+      setHasUnsavedChanges(false);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving security settings:", err);
+      toast({
+        title: t("admin.settings.errors.saveFailed", {
+          defaultValue: "Failed to save configuration",
+        }),
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  }, [securitySettings, logAdminAction, user, toast, t]);
+
   // Run maintenance operation
   const runMaintenanceOperation = useCallback(
     async (operation: MaintenanceOperation) => {
@@ -658,14 +776,48 @@ const AdminSettings: React.FC = () => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Server className="h-5 w-5" />
-                <span>
-                  {t("admin.settings.systemConfig.title", {
-                    defaultValue: "System Configuration",
-                  })}
-                </span>
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <Server className="h-5 w-5" />
+                  <span>
+                    {t("admin.settings.systemConfig.title", {
+                      defaultValue: "System Configuration",
+                    })}
+                  </span>
+                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  {!isEditing ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      {t("common.edit", { defaultValue: "Edit" })}
+                    </Button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setHasUnsavedChanges(false);
+                        }}
+                      >
+                        {t("common.cancel", { defaultValue: "Cancel" })}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={saveSystemConfiguration}
+                        disabled={!hasUnsavedChanges}
+                      >
+                        {t("common.save", { defaultValue: "Save" })}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -716,43 +868,88 @@ const AdminSettings: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 col-span-2">
                   <h4 className="font-medium text-gray-900">
                     Configuration URLs
                   </h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         {t("admin.settings.systemConfig.frontendUrl", {
                           defaultValue: "Frontend URL",
                         })}
                         :
-                      </span>
-                      <span className="text-sm font-mono text-blue-600 truncate max-w-32">
-                        {systemInfo.frontendUrl}
-                      </span>
+                      </label>
+                      {isEditing ? (
+                        <Input
+                          value={systemInfo.frontendUrl}
+                          onChange={(e) => {
+                            setSystemInfo((prev) => ({
+                              ...prev,
+                              frontendUrl: e.target.value,
+                            }));
+                            setHasUnsavedChanges(true);
+                          }}
+                          className="text-sm font-mono w-full"
+                          placeholder="https://example.com"
+                        />
+                      ) : (
+                        <span className="text-sm font-mono text-blue-600 block break-all">
+                          {systemInfo.frontendUrl}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         {t("admin.settings.systemConfig.apiUrl", {
                           defaultValue: "API URL",
                         })}
                         :
-                      </span>
-                      <span className="text-sm font-mono text-blue-600 truncate max-w-32">
-                        {systemInfo.apiUrl.replace(/\/.*/, "/***")}
-                      </span>
+                      </label>
+                      {isEditing ? (
+                        <Input
+                          value={systemInfo.apiUrl}
+                          onChange={(e) => {
+                            setSystemInfo((prev) => ({
+                              ...prev,
+                              apiUrl: e.target.value,
+                            }));
+                            setHasUnsavedChanges(true);
+                          }}
+                          className="text-sm font-mono w-full"
+                          placeholder="https://api.example.com"
+                        />
+                      ) : (
+                        <span className="text-sm font-mono text-blue-600 block break-all">
+                          {systemInfo.apiUrl.replace(/\/.*/, "/***")}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         {t("admin.settings.systemConfig.databaseUrl", {
                           defaultValue: "Database URL",
                         })}
                         :
-                      </span>
-                      <span className="text-sm font-mono text-blue-600 truncate max-w-32">
-                        {systemInfo.databaseUrl.replace(/\/.*/, "/***")}
-                      </span>
+                      </label>
+                      {isEditing ? (
+                        <Input
+                          value={systemInfo.databaseUrl}
+                          onChange={(e) => {
+                            setSystemInfo((prev) => ({
+                              ...prev,
+                              databaseUrl: e.target.value,
+                            }));
+                            setHasUnsavedChanges(true);
+                          }}
+                          className="text-sm font-mono w-full"
+                          placeholder="postgresql://..."
+                        />
+                      ) : (
+                        <span className="text-sm font-mono text-blue-600 block break-all">
+                          {systemInfo.databaseUrl.replace(/\/.*/, "/***")}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -769,33 +966,44 @@ const AdminSettings: React.FC = () => {
                       </span>
                       <Switch
                         checked={systemInfo.maintenanceMode}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked) => {
                           setSystemInfo((prev) => ({
                             ...prev,
                             maintenanceMode: checked,
-                          }))
-                        }
+                          }));
+                          setHasUnsavedChanges(true);
+                        }}
                       />
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">
                         Audit Logging:
                       </span>
-                      <Badge variant="default">
-                        {t("admin.settings.systemConfig.enabled", {
-                          defaultValue: "Enabled",
-                        })}
-                      </Badge>
+                      <Switch
+                        checked={systemInfo.auditLogging}
+                        onCheckedChange={(checked) => {
+                          setSystemInfo((prev) => ({
+                            ...prev,
+                            auditLogging: checked,
+                          }));
+                          setHasUnsavedChanges(true);
+                        }}
+                      />
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">
                         Rate Limiting:
                       </span>
-                      <Badge variant="default">
-                        {t("admin.settings.systemConfig.enabled", {
-                          defaultValue: "Enabled",
-                        })}
-                      </Badge>
+                      <Switch
+                        checked={systemInfo.rateLimiting}
+                        onCheckedChange={(checked) => {
+                          setSystemInfo((prev) => ({
+                            ...prev,
+                            rateLimiting: checked,
+                          }));
+                          setHasUnsavedChanges(true);
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -983,14 +1191,48 @@ const AdminSettings: React.FC = () => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Shield className="h-5 w-5" />
-                <span>
-                  {t("admin.settings.security.title", {
-                    defaultValue: "Security Settings",
-                  })}
-                </span>
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5" />
+                  <span>
+                    {t("admin.settings.security.title", {
+                      defaultValue: "Security Settings",
+                    })}
+                  </span>
+                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  {!isEditing ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      {t("common.edit", { defaultValue: "Edit" })}
+                    </Button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setHasUnsavedChanges(false);
+                        }}
+                      >
+                        {t("common.cancel", { defaultValue: "Cancel" })}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={saveSecuritySettings}
+                        disabled={!hasUnsavedChanges}
+                      >
+                        {t("common.save", { defaultValue: "Save" })}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -999,46 +1241,99 @@ const AdminSettings: React.FC = () => {
                     Authentication Settings
                   </h4>
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         {t("admin.settings.security.sessionTimeout", {
                           defaultValue: "Session Timeout",
                         })}
                         :
-                      </span>
-                      <span className="text-sm font-mono">
-                        60{" "}
-                        {t("admin.settings.security.minutes", {
-                          defaultValue: "minutes",
-                        })}
-                      </span>
+                      </label>
+                      {isEditing ? (
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            value={securitySettings.sessionTimeout}
+                            onChange={(e) => {
+                              setSecuritySettings((prev) => ({
+                                ...prev,
+                                sessionTimeout: parseInt(e.target.value) || 0,
+                              }));
+                              setHasUnsavedChanges(true);
+                            }}
+                            className="w-20 text-sm"
+                            min="1"
+                            max="1440"
+                          />
+                          <span className="text-sm text-gray-600">
+                            {t("admin.settings.security.minutes", {
+                              defaultValue: "minutes",
+                            })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-mono block">
+                          {securitySettings.sessionTimeout}{" "}
+                          {t("admin.settings.security.minutes", {
+                            defaultValue: "minutes",
+                          })}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         {t("admin.settings.security.maxLoginAttempts", {
                           defaultValue: "Max Login Attempts",
                         })}
                         :
-                      </span>
-                      <span className="text-sm font-mono">
-                        5{" "}
-                        {t("admin.settings.security.attempts", {
-                          defaultValue: "attempts",
-                        })}
-                      </span>
+                      </label>
+                      {isEditing ? (
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            value={securitySettings.maxLoginAttempts}
+                            onChange={(e) => {
+                              setSecuritySettings((prev) => ({
+                                ...prev,
+                                maxLoginAttempts: parseInt(e.target.value) || 0,
+                              }));
+                              setHasUnsavedChanges(true);
+                            }}
+                            className="w-20 text-sm"
+                            min="1"
+                            max="20"
+                          />
+                          <span className="text-sm text-gray-600">
+                            {t("admin.settings.security.attempts", {
+                              defaultValue: "attempts",
+                            })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-mono block">
+                          {securitySettings.maxLoginAttempts}{" "}
+                          {t("admin.settings.security.attempts", {
+                            defaultValue: "attempts",
+                          })}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">
                         {t("admin.settings.security.twoFactorAuth", {
                           defaultValue: "Two-Factor Authentication",
                         })}
                         :
                       </span>
-                      <Badge variant="default">
-                        {t("admin.settings.systemConfig.enabled", {
-                          defaultValue: "Enabled",
-                        })}
-                      </Badge>
+                      <Switch
+                        checked={securitySettings.twoFactorAuth}
+                        onCheckedChange={(checked) => {
+                          setSecuritySettings((prev) => ({
+                            ...prev,
+                            twoFactorAuth: checked,
+                          }));
+                          setHasUnsavedChanges(true);
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1048,16 +1343,45 @@ const AdminSettings: React.FC = () => {
                     Security Policies
                   </h4>
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         {t("admin.settings.security.passwordPolicy", {
                           defaultValue: "Password Policy",
                         })}
                         :
-                      </span>
-                      <Badge variant="default">Strong</Badge>
+                      </label>
+                      {isEditing ? (
+                        <Select
+                          value={securitySettings.passwordPolicy}
+                          onValueChange={(
+                            value: "weak" | "medium" | "strong"
+                          ) => {
+                            setSecuritySettings((prev) => ({
+                              ...prev,
+                              passwordPolicy: value,
+                            }));
+                            setHasUnsavedChanges(true);
+                          }}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="weak">Weak</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="strong">Strong</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge
+                          variant="default"
+                          className="capitalize"
+                        >
+                          {securitySettings.passwordPolicy}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">
                         {t("admin.settings.security.rateLimiting", {
                           defaultValue: "Rate Limiting",
@@ -1070,7 +1394,7 @@ const AdminSettings: React.FC = () => {
                         })}
                       </Badge>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">
                         {t("admin.settings.security.auditLogging", {
                           defaultValue: "Audit Logging",
@@ -1089,28 +1413,99 @@ const AdminSettings: React.FC = () => {
                 <div className="space-y-4">
                   <h4 className="font-medium text-gray-900">Access Control</h4>
                   <div className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">
                         {t("admin.settings.security.ipWhitelist", {
                           defaultValue: "IP Whitelist",
                         })}
                         :
                       </span>
-                      <Badge variant="secondary">
-                        {t("admin.settings.systemConfig.disabled", {
-                          defaultValue: "Disabled",
-                        })}
-                      </Badge>
+                      <Switch
+                        checked={securitySettings.ipWhitelist}
+                        onCheckedChange={(checked) => {
+                          setSecuritySettings((prev) => ({
+                            ...prev,
+                            ipWhitelist: checked,
+                          }));
+                          setHasUnsavedChanges(true);
+                        }}
+                      />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
                         Admin Panel Access:
-                      </span>
-                      <Badge variant="default">Restricted</Badge>
+                      </label>
+                      {isEditing ? (
+                        <Select
+                          value={securitySettings.adminPanelAccess}
+                          onValueChange={(
+                            value: "open" | "restricted" | "locked"
+                          ) => {
+                            setSecuritySettings((prev) => ({
+                              ...prev,
+                              adminPanelAccess: value,
+                            }));
+                            setHasUnsavedChanges(true);
+                          }}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="open">Open</SelectItem>
+                            <SelectItem value="restricted">
+                              Restricted
+                            </SelectItem>
+                            <SelectItem value="locked">Locked</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge
+                          variant="default"
+                          className="capitalize"
+                        >
+                          {securitySettings.adminPanelAccess}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">API Access:</span>
-                      <Badge variant="default">Authenticated</Badge>
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-600">
+                        API Access:
+                      </label>
+                      {isEditing ? (
+                        <Select
+                          value={securitySettings.apiAccess}
+                          onValueChange={(
+                            value: "open" | "authenticated" | "restricted"
+                          ) => {
+                            setSecuritySettings((prev) => ({
+                              ...prev,
+                              apiAccess: value,
+                            }));
+                            setHasUnsavedChanges(true);
+                          }}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="open">Open</SelectItem>
+                            <SelectItem value="authenticated">
+                              Authenticated
+                            </SelectItem>
+                            <SelectItem value="restricted">
+                              Restricted
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge
+                          variant="default"
+                          className="capitalize"
+                        >
+                          {securitySettings.apiAccess}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>

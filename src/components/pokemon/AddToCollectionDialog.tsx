@@ -121,6 +121,33 @@ const AddToCollectionDialog = ({
 
   if (!card) return null;
 
+  // Show message if no collections are available
+  if (collections.length === 0) {
+    return (
+      <Dialog
+        open={isOpen}
+        onOpenChange={onClose}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("collection.addCard")}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <p className="text-gray-600 mb-4">
+              {t("collection.noCollectionsYet")}
+            </p>
+            <p className="text-sm text-gray-500">
+              {t("collection.pleaseCreateDefault")}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={onClose}>{t("common.close")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog
       open={isOpen}

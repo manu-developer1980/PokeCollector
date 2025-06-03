@@ -380,7 +380,9 @@
     "defaultCollectionNeeded": "To use the quick add feature, you need to have a default collection.",
     "setExistingAsDefault": "You can set one of your existing collections as default:",
     "noCollectionsYet": "You don't have any collections. Create a new one to get started.",
-    "createNew": "Create New Collection"
+    "createNew": "Create New Collection",
+    "defaultName": "My Collection",
+    "defaultDescription": "My default Pokémon card collection"
   },
   "wishlist": {
     "maxItems": "Maximum wishlist items",
@@ -1380,11 +1382,16 @@
         "updateFailed": "Failed to update settings",
         "maintenanceFailed": "Maintenance operation failed",
         "testFailed": "Connection test failed",
-        "unauthorized": "Unauthorized to perform this action"
+        "unauthorized": "Unauthorized to perform this action",
+        "saveFailed": "Failed to save configuration"
       },
       "success": {
         "settingsUpdated": "Settings updated successfully",
-        "operationComplete": "Operation completed successfully"
+        "operationComplete": "Operation completed successfully",
+        "configurationSaved": "Configuration saved successfully",
+        "configurationSavedDesc": "System configuration has been updated",
+        "securitySaved": "Security settings saved successfully",
+        "securitySavedDesc": "Security configuration has been updated"
       }
     },
     "loadingUsers": "Loading users...",

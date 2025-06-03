@@ -379,7 +379,9 @@
     "defaultCollectionNeeded": "Para usar la función de añadir rápido, necesitas tener una colección predeterminada.",
     "setExistingAsDefault": "Puedes establecer una de tus colecciones existentes como predeterminada:",
     "noCollectionsYet": "No tienes ninguna colección. Crea una nueva para empezar.",
-    "createNew": "Crear Nueva Colección"
+    "createNew": "Crear Nueva Colección",
+    "defaultName": "Mi Colección",
+    "defaultDescription": "Mi colección predeterminada de cartas Pokémon"
   },
   "wishlist": {
     "title": "Lista de Deseos",
@@ -1377,11 +1379,16 @@
         "updateFailed": "Error al actualizar configuración",
         "maintenanceFailed": "Operación de mantenimiento falló",
         "testFailed": "Prueba de conexión falló",
-        "unauthorized": "No autorizado para realizar esta acción"
+        "unauthorized": "No autorizado para realizar esta acción",
+        "saveFailed": "Error al guardar configuración"
       },
       "success": {
         "settingsUpdated": "Configuración actualizada exitosamente",
-        "operationComplete": "Operación completada exitosamente"
+        "operationComplete": "Operación completada exitosamente",
+        "configurationSaved": "Configuración guardada exitosamente",
+        "configurationSavedDesc": "La configuración del sistema ha sido actualizada",
+        "securitySaved": "Configuración de seguridad guardada exitosamente",
+        "securitySavedDesc": "La configuración de seguridad ha sido actualizada"
       }
     },
     "loadingUsers": "Cargando usuarios...",

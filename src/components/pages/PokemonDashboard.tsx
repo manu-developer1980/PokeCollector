@@ -736,7 +736,7 @@ export default function PokemonDashboard() {
     setIsCardDetailOpen(true);
   };
 
-  const handleAddToCollection = (card: PokemonCard) => {
+  const handleAddToCollection = async (card: PokemonCard) => {
     if (!user) {
       toast({
         title: t("common.error"),
@@ -747,6 +747,48 @@ export default function PokemonDashboard() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Check if user has any collections
+    if (!collections || collections.length === 0) {
+      // Create a default collection automatically
+      try {
+        const { data, error } = await supabase
+          .from("collections")
+          .insert({
+            name: t("collection.defaultName", "My Collection"),
+            description: t(
+              "collection.defaultDescription",
+              "My default Pokémon card collection"
+            ),
+            user_id: user.id,
+            is_default: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select();
+
+        if (error) throw error;
+
+        // Update collections state
+        await getCollections();
+
+        toast({
+          title: t("collection.created"),
+          description: t("collection.collectionCreated"),
+        });
+      } catch (error) {
+        console.error("Error creating default collection:", error);
+        toast({
+          title: t("common.error"),
+          description: t(
+            "collection.errors.createFailed",
+            "Failed to create collection"
+          ),
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     // Asegurarse de que la carta tenga la propiedad wishlist_id si viene de la lista de deseos
