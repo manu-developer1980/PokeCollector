@@ -309,12 +309,15 @@ export const useSubscription = () => {
   const refetchSubscription = useCallback(async () => {
     console.log("\ud83d\udd04 Refetching subscription data...");
 
-    // Llamar a la versión con debounce
+    // Llamar directamente a fetchSubscription para obtener datos frescos
+    const freshData = await fetchSubscription(0, 5, true);
+
+    // También llamar a la versión con debounce para actualizar el estado
     debouncedRefetch();
 
-    // Devolver la suscripción actual mientras se actualiza en segundo plano
-    return subscription;
-  }, [subscription]);
+    // Devolver los datos frescos
+    return freshData;
+  }, [fetchSubscription, debouncedRefetch]);
 
   useEffect(() => {
     // Marcar el componente como montado

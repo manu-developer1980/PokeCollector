@@ -16,6 +16,31 @@ export default function CheckoutSuccessPage() {
   // Estado para controlar si ya se ha cargado la suscripción
   const [subscriptionLoaded, setSubscriptionLoaded] = useState(false);
 
+  // Initialize with fallback plan name immediately
+  useEffect(() => {
+    if (!planName) {
+      // Try to get plan from localStorage first
+      const selectedPlanType = localStorage.getItem("selectedPlanType");
+      if (selectedPlanType) {
+        const fallbackName =
+          selectedPlanType.toLowerCase() === "aprendiz"
+            ? t("plans.aprendiz", { defaultValue: "Aprendiz" })
+            : selectedPlanType.toLowerCase() === "entrenador"
+            ? t("plans.entrenador", { defaultValue: "Entrenador" })
+            : selectedPlanType.toLowerCase() === "maestro"
+            ? t("plans.maestro", { defaultValue: "Maestro" })
+            : t("plans.aprendiz", { defaultValue: "Aprendiz" });
+        setPlanName(fallbackName);
+        console.log("Set initial plan name from localStorage:", fallbackName);
+      } else {
+        // Default fallback
+        const defaultName = t("plans.aprendiz", { defaultValue: "Aprendiz" });
+        setPlanName(defaultName);
+        console.log("Set initial plan name to default:", defaultName);
+      }
+    }
+  }, [t, planName]);
+
   // Estado para controlar el número de intentos de verificación
   const [verificationAttempts, setVerificationAttempts] = useState(0);
 
@@ -59,18 +84,28 @@ export default function CheckoutSuccessPage() {
 
     // Función para obtener el nombre traducido del plan
     const getTranslatedPlanName = (planType: string) => {
-      const normalizedPlanType = planType.toLowerCase();
-      const translationKey = `plans.${normalizedPlanType}.name`;
-      return t(translationKey, {
-        defaultValue:
-          normalizedPlanType === "aprendiz"
-            ? "Aprendiz"
-            : normalizedPlanType === "entrenador"
-            ? "Entrenador"
-            : normalizedPlanType === "maestro"
-            ? "Maestro"
-            : normalizedPlanType,
-      });
+      if (!planType) {
+        console.warn("Plan type is empty or undefined, using fallback");
+        return t("plans.aprendiz", { defaultValue: "Aprendiz" });
+      }
+
+      const normalizedPlanType = planType.toLowerCase().trim();
+
+      // Use the correct translation keys based on the actual structure
+      switch (normalizedPlanType) {
+        case "aprendiz":
+        case "apprentice":
+          return t("plans.aprendiz", { defaultValue: "Aprendiz" });
+        case "entrenador":
+        case "trainer":
+          return t("plans.entrenador", { defaultValue: "Entrenador" });
+        case "maestro":
+        case "master":
+          return t("plans.maestro", { defaultValue: "Maestro" });
+        default:
+          console.warn(`Unknown plan type: ${planType}, using fallback`);
+          return t("plans.aprendiz", { defaultValue: "Aprendiz" });
+      }
     };
 
     const verifySubscription = async () => {
@@ -109,12 +144,16 @@ export default function CheckoutSuccessPage() {
         // Verificar si la suscripción tiene un plan_type
         if (updatedSubscription?.plan_type) {
           console.log("Plan type encontrado:", updatedSubscription.plan_type);
-          setPlanName(getTranslatedPlanName(updatedSubscription.plan_type));
+          const translatedPlanName = getTranslatedPlanName(
+            updatedSubscription.plan_type
+          );
+          setPlanName(translatedPlanName);
           setSubscriptionLoaded(true);
 
           // Registrar evento de éxito
           console.log("\u2705 Suscripción verificada exitosamente", {
             planType: updatedSubscription.plan_type,
+            translatedName: translatedPlanName,
             subscriptionId:
               updatedSubscription.stripe_subscription_id || "pendiente",
             attempts: verificationAttempts + 1,
@@ -126,18 +165,31 @@ export default function CheckoutSuccessPage() {
           }
 
           // Si llevamos varios intentos sin éxito, usamos el fallback
-          if (verificationAttempts >= 8) {
+          if (verificationAttempts >= 5) {
             const selectedPlanType = localStorage.getItem("selectedPlanType");
             if (selectedPlanType) {
               console.log(
                 "Usando plan del localStorage como fallback después de varios intentos:",
                 selectedPlanType
               );
-              setPlanName(getTranslatedPlanName(selectedPlanType));
+              const fallbackPlanName = getTranslatedPlanName(selectedPlanType);
+              setPlanName(fallbackPlanName);
+              console.log("Plan name set from fallback:", fallbackPlanName);
 
               // Si llevamos muchos intentos, marcamos como cargada para no seguir intentando
-              if (verificationAttempts >= 12) {
+              if (verificationAttempts >= 10) {
                 console.log("Demasiados intentos, deteniendo verificación");
+                setSubscriptionLoaded(true);
+              }
+            } else {
+              // Si no hay plan en localStorage, usar el plan por defecto
+              console.log(
+                "No hay plan en localStorage, usando plan por defecto"
+              );
+              const defaultPlanName = getTranslatedPlanName("aprendiz");
+              setPlanName(defaultPlanName);
+
+              if (verificationAttempts >= 10) {
                 setSubscriptionLoaded(true);
               }
             }
@@ -192,7 +244,8 @@ export default function CheckoutSuccessPage() {
           <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">
             {t("subscription.successTitle", {
-              planName: planName,
+              planName:
+                planName || t("plans.aprendiz", { defaultValue: "Aprendiz" }),
             })}
           </h1>
           <p className="text-gray-600 mb-4">

@@ -2,16 +2,22 @@
 
 Este directorio contiene las migraciones de la base de datos para PokéCollector.
 
-## Migración Consolidada
+## Archivos de Migración
 
-El archivo `20240602000001_consolidated_schema_final.sql` contiene una migración consolidada que:
+### Esquema Principal
 
-1. Elimina todos los objetos existentes (tablas, funciones, triggers, etc.)
-2. Crea todas las tablas necesarias con sus relaciones
-3. Define funciones y triggers para la lógica de negocio
-4. Configura Row Level Security (RLS) con políticas de acceso
-5. Establece permisos para los diferentes roles
-6. Habilita realtime para las tablas necesarias
+- `20240602000001_consolidated_schema_final.sql` - Esquema principal de la base de datos con todas las tablas, políticas y funciones básicas
+
+### Funcionalidades de Administración (Consolidado)
+
+- `20250120000010_consolidated_admin_fixes.sql` - Funcionalidad completa del panel de administración incluyendo:
+  - Gestión de roles de administrador y columnas de usuario
+  - Sistema de auditoría con compatibilidad de columnas duales
+  - Seguimiento de estadísticas de usuario con triggers automáticos
+  - Anulaciones de suscripción para control de administrador
+  - Políticas de Row Level Security (no recursivas)
+  - Funciones RPC para operaciones de administrador
+  - Índices de rendimiento e inicialización de datos
 
 ## Importante: No Creación Automática de Colecciones
 

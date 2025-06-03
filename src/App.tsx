@@ -31,6 +31,8 @@ import GoodbyePage from "@/components/pages/GoodbyePage";
 import { ProtectedGoodbyeRoute } from "@/components/auth/ProtectedGoodbyeRoute";
 import { CookieConsentProvider } from "./contexts/CookieConsentContext";
 import CookieBanner from "./components/cookies/CookieBanner";
+import AdminPanel from "@/components/admin/AdminPanel";
+import InitialAdminSetup from "@/components/admin/InitialAdminSetup";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -223,6 +225,22 @@ function AppRoutes() {
               <MainLayout>
                 <SubscriptionManagement />
               </MainLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute>
+              <AdminPanel />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-setup"
+          element={
+            <PrivateRoute>
+              <InitialAdminSetup />
             </PrivateRoute>
           }
         />
