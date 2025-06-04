@@ -4,20 +4,67 @@ Este directorio contiene las migraciones de la base de datos para PokéCollector
 
 ## Archivos de Migración
 
-### Esquema Principal
+### ✅ Migración Consolidada Única
 
-- `20240602000001_consolidated_schema_final.sql` - Esquema principal de la base de datos con todas las tablas, políticas y funciones básicas
+- **`20250120000020_consolidated_complete_schema.sql`** - Esquema completo consolidado que incluye:
+  - **Tablas Principales**: users, collections, collection_cards, wishlist_cards, subscriptions
+  - **Funcionalidades de Administración**: audit_logs, user_statistics, subscription_overrides
+  - **Tablas de Soporte**: webhook_events, subscription_changes
+  - **Funciones Optimizadas**: handle_new_user, delete_user_data, admin functions, statistics functions
+  - **Seguridad Completa**: Políticas RLS no recursivas y eficientes para todas las tablas
+  - **Rendimiento**: Índices estratégicos y triggers automáticos optimizados
+  - **Configuración Completa**: Permisos, realtime, y documentación integrada
 
-### Funcionalidades de Administración (Consolidado)
+### 🗂️ Archivos de Soporte
 
-- `20250120000010_consolidated_admin_fixes.sql` - Funcionalidad completa del panel de administración incluyendo:
-  - Gestión de roles de administrador y columnas de usuario
-  - Sistema de auditoría con compatibilidad de columnas duales
-  - Seguimiento de estadísticas de usuario con triggers automáticos
-  - Anulaciones de suscripción para control de administrador
-  - Políticas de Row Level Security (no recursivas)
-  - Funciones RPC para operaciones de administrador
-  - Índices de rendimiento e inicialización de datos
+- `validate_migrations.sql` - Script de validación para verificar la integridad de la migración
+- `CONSOLIDATION_GUIDE.md` - Guía completa de uso y migración
+- `OPTIMIZATION_REPORT.md` - Reporte detallado de optimizaciones aplicadas
+
+## Características y Optimizaciones
+
+### ✨ Funcionalidades Principales:
+
+1. **Gestión de Usuarios**: Registro automático, perfiles, roles de administrador
+2. **Sistema de Colecciones**: Creación manual de colecciones (no automática)
+3. **Gestión de Cartas**: Colecciones y listas de deseos con metadatos completos
+4. **Suscripciones**: Integración con Stripe y gestión de planes
+5. **Panel de Administración**: Auditoría, estadísticas, y gestión de usuarios
+6. **Seguridad**: RLS completo con políticas optimizadas y no recursivas
+
+### 🚀 Optimizaciones Aplicadas:
+
+- **Rendimiento**: Índices estratégicos para todas las consultas comunes
+- **Seguridad**: Funciones con `SECURITY DEFINER` para operaciones privilegiadas
+- **Mantenibilidad**: Código consolidado sin duplicaciones
+- **Escalabilidad**: Triggers automáticos para estadísticas en tiempo real
+- **Monitoreo**: Sistema de auditoría completo para acciones administrativas
+
+### 📋 Instrucciones de Uso:
+
+1. **Aplicar la Migración**:
+
+   ```bash
+   supabase db reset
+   ```
+
+2. **Validar la Instalación**:
+
+   ```bash
+   psql -f supabase/migrations/validate_migrations.sql
+   ```
+
+3. **Configurar Variables de Entorno**:
+   ```env
+   STRIPE_DEFAULT_PRICE_ID=your_stripe_price_id
+   ```
+
+### 🔧 Mantenimiento:
+
+- Revisar periódicamente los índices de rendimiento
+- Monitorear el crecimiento de la tabla audit_logs
+- Actualizar el price_id de Stripe según sea necesario
+- Ejecutar el script de validación después de cambios importantes
 
 ## Importante: No Creación Automática de Colecciones
 
