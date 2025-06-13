@@ -33,6 +33,7 @@ import { CookieConsentProvider } from "./contexts/CookieConsentContext";
 import CookieBanner from "./components/cookies/CookieBanner";
 import AdminPanel from "@/components/admin/AdminPanel";
 import InitialAdminSetup from "@/components/admin/InitialAdminSetup";
+import ContactPage from "./components/pages/ContactPage";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -252,6 +253,14 @@ function AppRoutes() {
               {/* No usamos MainLayout para evitar que el usuario pueda navegar */}
               <GoodbyePage />
             </ProtectedGoodbyeRoute>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <MainLayout>
+              <ContactPage />
+            </MainLayout>
           }
         />
       </Routes>

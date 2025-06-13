@@ -1525,5 +1525,71 @@
     "overrideCreated": "Anulación creada exitosamente",
     "overrideError": "Error al crear la anulación",
     "fillAllFields": "Por favor completa todos los campos requeridos"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "description": "¿Tienes alguna pregunta o sugerencia? Nos encantaría escucharte.",
+    "pageTitle": "Contacto",
+    "pageDescription": "Estamos aquí para ayudarte. Envíanos un mensaje y te responderemos lo antes posible.",
+    "meta": {
+      "title": "Contacto",
+      "description": "Ponte en contacto con el equipo de PokéCollector. Estamos aquí para ayudarte con cualquier pregunta o sugerencia."
+    },
+    "fields": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "subject": "Asunto",
+      "message": "Mensaje"
+    },
+    "placeholders": {
+      "name": "Tu nombre completo",
+      "email": "tu@email.com",
+      "subject": "¿En qué podemos ayudarte?",
+      "message": "Cuéntanos más detalles sobre tu consulta..."
+    },
+    "send": "Enviar mensaje",
+    "sending": "Enviando...",
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Por favor, introduce un correo electrónico válido",
+      "subjectRequired": "El asunto es obligatorio",
+      "messageRequired": "El mensaje es obligatorio",
+      "recaptchaRequired": "Por favor, completa la verificación reCAPTCHA"
+    },
+    "success": {
+      "title": "¡Mensaje enviado!",
+      "description": "Gracias por contactarnos. Te responderemos en un plazo de 24-48 horas."
+    },
+    "info": {
+      "title": "Información de contacto",
+      "email": {
+        "title": "Correo electrónico",
+        "address": "contact@pokecollector.com"
+      },
+      "response": {
+        "title": "Tiempo de respuesta",
+        "time": "24-48 horas"
+      },
+      "support": {
+        "title": "Soporte técnico",
+        "description": "Ayuda con problemas técnicos y errores"
+      }
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "q1": {
+        "question": "¿Cómo puedo actualizar mi suscripción?",
+        "answer": "Puedes gestionar tu suscripción desde tu perfil de usuario."
+      },
+      "q2": {
+        "question": "¿Puedo exportar mis colecciones?",
+        "answer": "Sí, ofrecemos opciones de exportación en varios formatos."
+      },
+      "q3": {
+        "question": "¿Cómo reporto un error?",
+        "answer": "Usa este formulario describiendo el problema en detalle."
+      }
+    }
   }
 }

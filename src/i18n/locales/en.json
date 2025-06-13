@@ -1528,5 +1528,71 @@
     "overrideCreated": "Override created successfully",
     "overrideError": "Failed to create override",
     "fillAllFields": "Please fill in all required fields"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "Have a question or suggestion? We'd love to hear from you.",
+    "pageTitle": "Contact",
+    "pageDescription": "We're here to help. Send us a message and we'll get back to you as soon as possible.",
+    "meta": {
+      "title": "Contact",
+      "description": "Get in touch with the PokéCollector team. We're here to help with any questions or suggestions."
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message"
+    },
+    "placeholders": {
+      "name": "Your full name",
+      "email": "your@email.com",
+      "subject": "How can we help you?",
+      "message": "Tell us more details about your inquiry..."
+    },
+    "send": "Send message",
+    "sending": "Sending...",
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "subjectRequired": "Subject is required",
+      "messageRequired": "Message is required",
+      "recaptchaRequired": "Please complete the reCAPTCHA verification"
+    },
+    "success": {
+      "title": "Message sent!",
+      "description": "Thank you for contacting us. We'll get back to you within 24-48 hours."
+    },
+    "info": {
+      "title": "Contact information",
+      "email": {
+        "title": "Email",
+        "address": "contact@pokecollector.com"
+      },
+      "response": {
+        "title": "Response time",
+        "time": "24-48 hours"
+      },
+      "support": {
+        "title": "Technical support",
+        "description": "Help with technical issues and bugs"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": {
+        "question": "How can I upgrade my subscription?",
+        "answer": "You can manage your subscription from your user profile."
+      },
+      "q2": {
+        "question": "Can I export my collections?",
+        "answer": "Yes, we offer export options in various formats."
+      },
+      "q3": {
+        "question": "How do I report a bug?",
+        "answer": "Use this form describing the problem in detail."
+      }
+    }
   }
 }
