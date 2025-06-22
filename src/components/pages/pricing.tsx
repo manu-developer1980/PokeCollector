@@ -61,10 +61,6 @@ export default function PricingPage() {
       answer: t("pricing.faq.wishlist.answer"),
     },
     {
-      question: t("pricing.faq.share.question"),
-      answer: t("pricing.faq.share.answer"),
-    },
-    {
       question: t("pricing.faq.database.question"),
       answer: t("pricing.faq.database.answer"),
     },
@@ -119,11 +115,10 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Eliminar el componente CheckoutFlow */}
       {!user && (
         <div className="mt-16 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-8">
-            {t("pricing.faqTitle")}
+            <a href="#faqs">{t("pricing.faqTitle")}</a>
           </h2>
           <Accordion
             type="single"

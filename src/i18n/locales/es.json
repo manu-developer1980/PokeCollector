@@ -615,7 +615,7 @@
       },
       "payment": {
         "question": "¿Qué métodos de pago aceptan?",
-        "answer": "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express) y PayPal. Todos los pagos se procesan de forma segura a través de Stripe."
+        "answer": "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express). Todos los pagos se procesan de forma segura a través de Stripe."
       },
       "cancel": {
         "question": "¿Puedo cancelar mi suscripción en cualquier momento?",
@@ -627,11 +627,7 @@
       },
       "wishlist": {
         "question": "¿Cómo funciona la lista de deseos?",
-        "answer": "La lista de deseos te permite guardar las cartas que te gustaría adquirir en el futuro. Puedes añadir notas, establecer prioridades y recibir notificaciones cuando actualicemos información sobre esas cartas."
-      },
-      "share": {
-        "question": "¿Puedo compartir mi colección con otros usuarios?",
-        "answer": "Sí, puedes compartir tu colección con otros usuarios mediante un enlace público. Tú controlas qué información es visible para otros coleccionistas y puedes desactivar la visibilidad en cualquier momento."
+        "answer": "La lista de deseos te permite guardar las cartas que te gustaría adquirir en el futuro."
       },
       "database": {
         "question": "¿Cómo mantienen actualizada la base de datos de cartas?",

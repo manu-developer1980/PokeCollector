@@ -615,7 +615,7 @@
       },
       "payment": {
         "question": "What payment methods do you accept?",
-        "answer": "We accept all major credit and debit cards (Visa, Mastercard, American Express) and PayPal. All payments are securely processed through Stripe."
+        "answer": "We accept all major credit and debit cards (Visa, Mastercard, American Express). All payments are securely processed through Stripe."
       },
       "cancel": {
         "question": "Can I cancel my subscription at any time?",
@@ -627,11 +627,7 @@
       },
       "wishlist": {
         "question": "How does the wishlist work?",
-        "answer": "The wishlist allows you to save cards you'd like to acquire in the future. You can add notes, set priorities, and receive notifications when we update information about those cards."
-      },
-      "share": {
-        "question": "Can I share my collection with other users?",
-        "answer": "Yes, you can share your collection with other users via a public link. You control what information is visible to other collectors and can disable visibility at any time."
+        "answer": "The wishlist allows you to save cards you'd like to acquire in the future."
       },
       "database": {
         "question": "How do you keep the card database updated?",
