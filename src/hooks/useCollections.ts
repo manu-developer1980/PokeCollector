@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "../supabase/supabase";
-import { useAuth } from "../supabase/auth";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { supabase } from "../../supabase/supabase";
+import { useAuth } from "../../supabase/auth";
 import { cacheService, createCacheKey, debounce } from "../utils/cacheService";
 
 export interface Collection {
@@ -12,7 +12,11 @@ export interface Collection {
   updated_at: string;
 }
 
-export const useCollections = () => {
+export const useCollections = (options?: {
+  limit?: number;
+  fields?: string;
+  enableRealtime?: boolean;
+}) => {
   const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,10 +27,20 @@ export const useCollections = () => {
   
   // ID único para este hook
   const hookId = useRef(`collections-${Math.random().toString(36).substring(2, 9)}`);
+  
+  // Memoize options to prevent unnecessary re-renders
+  const memoizedOptions = useMemo(() => ({
+    limit: options?.limit || 50,
+    fields: options?.fields || "id, name, description, created_at, updated_at, user_id",
+    enableRealtime: options?.enableRealtime ?? true,
+  }), [options?.limit, options?.fields, options?.enableRealtime]);
+  
+  // Memoize user ID to prevent unnecessary re-renders
+  const userId = useMemo(() => user?.id, [user?.id]);
 
-  // Función para obtener las colecciones con caché
+  // Función para obtener las colecciones con caché y optimizaciones
   const fetchCollections = useCallback(async (forceRefresh = false) => {
-    if (!user?.id) {
+    if (!userId) {
       if (isMounted.current) {
         setCollections([]);
         setIsLoading(false);
@@ -34,7 +48,7 @@ export const useCollections = () => {
       return [];
     }
 
-    const cacheKey = createCacheKey("user", user.id, "collections");
+    const cacheKey = createCacheKey("user", userId, "collections", JSON.stringify(memoizedOptions));
     
     // Verificar si hay datos en caché y no es una actualización forzada
     if (!forceRefresh && cacheService.has(cacheKey)) {
@@ -49,14 +63,22 @@ export const useCollections = () => {
     }
 
     try {
-      console.log(`[${hookId.current}] Fetching collections for user: ${user.id}`);
+      console.log(`[${hookId.current}] Fetching collections for user: ${userId}`);
       setIsLoading(true);
       
-      const { data, error } = await supabase
+      // Build optimized query with field selection and limits
+      let query = supabase
         .from("collections")
-        .select("*")
-        .eq("user_id", user.id)
+        .select(memoizedOptions.fields)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false });
+      
+      // Apply limit if specified
+      if (memoizedOptions.limit > 0) {
+        query = query.limit(memoizedOptions.limit);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error(`[${hookId.current}] Error fetching collections:`, error);
@@ -67,16 +89,17 @@ export const useCollections = () => {
         return [];
       }
 
-      // Guardar en caché
-      cacheService.set(cacheKey, data || []);
+      // Guardar en caché con TTL
+      const collectionsData = (data || []) as unknown as Collection[];
+      cacheService.set(cacheKey, collectionsData, 300000); // 5 minutes TTL
       
       if (isMounted.current) {
-        setCollections(data || []);
+        setCollections(collectionsData);
         setIsLoading(false);
         setError(null);
       }
       
-      return data || [];
+      return collectionsData;
     } catch (err) {
       console.error(`[${hookId.current}] Unexpected error fetching collections:`, err);
       if (isMounted.current) {
@@ -85,7 +108,7 @@ export const useCollections = () => {
       }
       return [];
     }
-  }, [user?.id]);
+  }, [userId, memoizedOptions]);
 
   // Versión con debounce para refrescar las colecciones
   const debouncedRefetch = useRef(
@@ -109,10 +132,12 @@ export const useCollections = () => {
     // Cargar las colecciones iniciales
     fetchCollections();
     
-    if (!user?.id) return () => { isMounted.current = false; };
+    if (!userId || !memoizedOptions.enableRealtime) {
+      return () => { isMounted.current = false; };
+    }
     
-    // Configurar suscripción en tiempo real
-    const channelId = `collections-changes-${user.id}-${hookId.current}`;
+    // Configurar suscripción en tiempo real solo si está habilitada
+    const channelId = `collections-changes-${userId}-${hookId.current}`;
     const channel = supabase
       .channel(channelId)
       .on(
@@ -121,7 +146,7 @@ export const useCollections = () => {
           event: "*",
           schema: "public",
           table: "collections",
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
           console.log(`[${hookId.current}] Real-time collections change detected:`, {
@@ -129,9 +154,9 @@ export const useCollections = () => {
             table: payload.table,
           });
           
-          // Invalidar la caché
-          const cacheKey = createCacheKey("user", user.id, "collections");
-          cacheService.invalidate(cacheKey);
+          // Invalidar la caché con el patrón correcto
+          const cachePattern = createCacheKey("user", userId, "collections");
+          cacheService.invalidatePattern(cachePattern);
           
           // Refrescar los datos
           debouncedRefetch();
@@ -147,7 +172,7 @@ export const useCollections = () => {
       isMounted.current = false;
       supabase.removeChannel(channel);
     };
-  }, [user?.id, fetchCollections, debouncedRefetch]);
+  }, [userId, fetchCollections, debouncedRefetch, memoizedOptions.enableRealtime]);
 
   return {
     collections,

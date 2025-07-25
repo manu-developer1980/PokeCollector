@@ -9,6 +9,15 @@ export const supabase = createClient(
       persistSession: true,
       detectSessionInUrl: true,
       storage: localStorage,
+      flowType: 'pkce', // Enhanced security and token refresh optimization
+    },
+    db: {
+      schema: 'public',
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
     },
     global: {
       headers: {

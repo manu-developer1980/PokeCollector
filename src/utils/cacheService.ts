@@ -4,12 +4,23 @@
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
+  accessCount: number;
+  lastAccessed: number;
 }
 
 // Clase para gestionar la caché
 class CacheService {
   private cache: Record<string, CacheEntry<any>> = {};
   private defaultTTL: number = 5 * 60 * 1000; // 5 minutos por defecto
+  private maxCacheSize: number = 1000; // Máximo número de entradas
+  private cleanupInterval: NodeJS.Timeout | null = null;
+
+  constructor() {
+    // Configurar limpieza automática cada 10 minutos
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 10 * 60 * 1000);
+  }
 
   // Obtener datos de la caché
   get<T>(key: string): T | null {
@@ -23,15 +34,51 @@ class CacheService {
       return null;
     }
 
+    // Actualizar estadísticas de acceso
+    entry.accessCount++;
+    entry.lastAccessed = now;
+
     return entry.data;
   }
 
   // Guardar datos en la caché
   set<T>(key: string, data: T, ttl?: number): void {
+    const now = Date.now();
+    
+    // Verificar si necesitamos limpiar espacio
+    if (Object.keys(this.cache).length >= this.maxCacheSize) {
+      this.evictLeastUsed();
+    }
+
     this.cache[key] = {
       data,
-      timestamp: Date.now(),
+      timestamp: now,
+      accessCount: 1,
+      lastAccessed: now,
     };
+  }
+
+  // Guardar múltiples entradas en lote
+  setMultiple<T>(entries: Array<{ key: string; data: T; ttl?: number }>): void {
+    const now = Date.now();
+    
+    // Verificar si necesitamos limpiar espacio
+    const currentSize = Object.keys(this.cache).length;
+    const newEntriesCount = entries.length;
+    
+    if (currentSize + newEntriesCount > this.maxCacheSize) {
+      const entriesToEvict = Math.max(newEntriesCount, Math.floor(this.maxCacheSize * 0.1));
+      this.evictLeastUsed(entriesToEvict);
+    }
+
+    entries.forEach(({ key, data }) => {
+      this.cache[key] = {
+        data,
+        timestamp: now,
+        accessCount: 1,
+        lastAccessed: now,
+      };
+    });
   }
 
   // Verificar si una clave existe y es válida
@@ -47,6 +94,45 @@ class CacheService {
     }
 
     return true;
+  }
+
+  // Eliminar entradas menos utilizadas
+  private evictLeastUsed(count: number = 1): void {
+    const entries = Object.entries(this.cache)
+      .map(([key, entry]) => ({ key, ...entry }))
+      .sort((a, b) => {
+        // Ordenar por frecuencia de acceso y tiempo de último acceso
+        if (a.accessCount !== b.accessCount) {
+          return a.accessCount - b.accessCount;
+        }
+        return a.lastAccessed - b.lastAccessed;
+      });
+
+    // Eliminar las entradas menos utilizadas
+    for (let i = 0; i < Math.min(count, entries.length); i++) {
+      delete this.cache[entries[i].key];
+    }
+  }
+
+  // Limpiar entradas expiradas
+  private cleanup(): void {
+    const now = Date.now();
+    const expiredKeys: string[] = [];
+
+    Object.entries(this.cache).forEach(([key, entry]) => {
+      if (now - entry.timestamp > this.defaultTTL) {
+        expiredKeys.push(key);
+      }
+    });
+
+    expiredKeys.forEach(key => {
+      delete this.cache[key];
+    });
+
+    // Si aún tenemos demasiadas entradas, eliminar las menos utilizadas
+    if (Object.keys(this.cache).length > this.maxCacheSize * 0.9) {
+      this.evictLeastUsed(Math.floor(this.maxCacheSize * 0.1));
+    }
   }
 
   // Invalidar una entrada específica
@@ -80,11 +166,47 @@ class CacheService {
   }
 
   // Obtener estadísticas de la caché
-  getStats(): { size: number; keys: string[] } {
+  getStats(): { 
+    size: number; 
+    keys: string[];
+    maxSize: number;
+    hitRate?: number;
+    memoryUsage: string;
+  } {
+    const entries = Object.values(this.cache);
+    const totalAccesses = entries.reduce((sum, entry) => sum + entry.accessCount, 0);
+    const totalHits = entries.length > 0 ? totalAccesses : 0;
+    
+    // Estimar uso de memoria (aproximado)
+    const memoryUsageBytes = JSON.stringify(this.cache).length * 2; // UTF-16
+    const memoryUsageMB = (memoryUsageBytes / (1024 * 1024)).toFixed(2);
+
     return {
       size: Object.keys(this.cache).length,
       keys: Object.keys(this.cache),
+      maxSize: this.maxCacheSize,
+      hitRate: totalHits > 0 ? (totalHits / (totalHits + entries.length)) * 100 : 0,
+      memoryUsage: `${memoryUsageMB} MB`,
     };
+  }
+
+  // Configurar el tamaño máximo de la caché
+  setMaxSize(size: number): void {
+    this.maxCacheSize = size;
+    
+    // Si el tamaño actual excede el nuevo límite, limpiar
+    if (Object.keys(this.cache).length > size) {
+      this.evictLeastUsed(Object.keys(this.cache).length - size);
+    }
+  }
+
+  // Destruir el servicio de caché
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.clear();
   }
 }
 

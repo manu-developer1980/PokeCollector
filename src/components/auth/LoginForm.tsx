@@ -24,11 +24,10 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { useTranslation } from "react-i18next";
 
-const formSchema = (t: any) =>
-  z.object({
-    email: z.string().email(t("auth.validation.invalidEmail")),
-    password: z.string().min(6, t("auth.validation.passwordLength")),
-  });
+const formSchema = (t: (key: string) => string) => z.object({
+  email: z.string().email(t("auth.validation.invalidEmail")),
+  password: z.string().min(6, t("auth.validation.passwordLength")),
+});
 
 export default function LoginForm() {
   const { t } = useTranslation();
@@ -75,7 +74,7 @@ export default function LoginForm() {
     }
   };
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<ReturnType<typeof formSchema>>) => {
     setIsLoading(true);
     try {
       const result = await signIn(data.email, data.password);
@@ -114,73 +113,67 @@ export default function LoginForm() {
       }
 
       // Éxito en el inicio de sesión
-      if (result.data?.user) {
-        try {
-          // Inicializar usuario
+      if ('data' in result && result.data) {
+        const userData = result.data as { user: { id: string }, session?: { access_token?: string } };
+        if (userData.user) {
           try {
-            const response = await fetch(
-              `${
-                import.meta.env.VITE_SUPABASE_URL
-              }/functions/v1/initialize-user`,
-              {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${result.data.session?.access_token}`,
-                  "Content-Type": "application/json",
-                  apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-                },
-                mode: "cors",
-                credentials: "include",
-                body: JSON.stringify({
-                  user_id: result.data.user.id,
-                }),
+            // Inicializar usuario (opcional - continúa si falla)
+            try {
+              const response = await fetch(
+                `${
+                  import.meta.env.VITE_SUPABASE_URL
+                }/functions/v1/initialize-user`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${userData.session?.access_token || ''}`,
+                    "Content-Type": "application/json",
+                    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+                  },
+                  mode: "cors",
+                  credentials: "include",
+                  body: JSON.stringify({
+                    user_id: userData.user.id,
+                  }),
+                }
+              );
+
+              if (response.ok) {
+                const data = await response.json();
+                console.log("Usuario inicializado correctamente:", data);
+              } else {
+                console.warn("Initialize-user function not available, continuing without it");
               }
-            );
-
-            console.log(
-              "Respuesta de initialize-user:",
-              response.status,
-              response.statusText
-            );
-
-            const data = await response.json();
-            console.log("Datos de initialize-user:", data);
-
-            if (data.error) {
-              console.error(t("auth.errors.initError"), data.error);
-              // Continuamos aunque haya error, ya que el usuario ya está autenticado
-              console.warn("Continuando a pesar del error en initialize-user");
+            } catch (initError) {
+              console.warn("Initialize-user function not available, continuing without it:", initError);
+              // Continuamos sin problemas - la función de inicialización es opcional
             }
-          } catch (initError) {
-            console.error("Error al llamar a initialize-user:", initError);
-            // Continuamos aunque haya error, ya que el usuario ya está autenticado
-            console.warn("Continuando a pesar del error en initialize-user");
+
+            // Verificamos si el usuario necesita onboarding
+            const needsOnboarding = await checkOnboardingStatus(
+              userData.user.id
+            );
+
+            // Si necesita onboarding, guardamos esta información en localStorage
+            // para que se muestre en el dashboard
+            if (needsOnboarding) {
+              localStorage.setItem("needs_onboarding", "true");
+            }
+
+            toast({
+              title: t("auth.success.welcome"),
+              description: t("auth.success.loginSuccess"),
+            });
+
+            navigate(redirectTo || "/dashboard");
+          } catch (error) {
+            console.error(t("auth.errors.initError"), error);
+            toast({
+              title: t("errors.generic"),
+              description: t("auth.errors.accountInitError"),
+              variant: "destructive",
+            });
           }
-
-          // Verificamos si el usuario necesita onboarding
-          const needsOnboarding = await checkOnboardingStatus(
-            result.data.user.id
-          );
-
-          // Si necesita onboarding, guardamos esta información en localStorage
-          // para que se muestre en el dashboard
-          if (needsOnboarding) {
-            localStorage.setItem("needs_onboarding", "true");
-          }
-
-          toast({
-            title: t("auth.success.welcome"),
-            description: t("auth.success.loginSuccess"),
-          });
-
-          navigate(redirectTo || "/dashboard");
-        } catch (error) {
-          console.error(t("auth.errors.initError"), error);
-          toast({
-            title: t("errors.generic"),
-            description: t("auth.errors.accountInitError"),
-            variant: "destructive",
-          });
         }
       }
     } catch (error) {
@@ -292,14 +285,8 @@ export default function LoginForm() {
         isOpen={showConfirmEmail}
         onClose={() => setShowConfirmEmail(false)}
         title={t("auth.confirmEmail.title")}
-        description={
-          <>
-            <p>{t("auth.confirmEmail.description")}</p>
-            <p className="font-semibold mt-2">{emailToConfirm}</p>
-            <p className="mt-2">{t("auth.confirmEmail.checkInbox")}</p>
-          </>
-        }
-        confirmLabel={t("common.understood")}
+        description={`${t("auth.confirmEmail.description")} ${emailToConfirm} ${t("auth.confirmEmail.checkInbox")}`}
+        confirmText={t("common.understood")}
         onConfirm={() => {
           setShowConfirmEmail(false);
           navigate("/confirm-signup", {

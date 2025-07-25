@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -10,36 +10,42 @@ import LoginForm from "./components/auth/LoginForm";
 import SignUpForm from "./components/auth/SignUpForm";
 import ConfirmSignup from "./components/auth/ConfirmSignup";
 import LandingPage from "./components/pages/landing";
-import PricingPage from "./components/pages/pricing";
-import PokemonDashboard from "./components/pages/PokemonDashboard";
-import CheckoutPage from "./components/pages/checkout";
-import CheckoutSuccessPage from "./components/pages/checkout-success";
-import SearchPage from "./components/pages/SearchPage";
-import Rules from "./components/pages/Rules";
-import CookiePolicy from "./components/pages/CookiePolicy";
-import PrivacyPolicy from "./components/pages/PrivacyPolicy";
-import TermsOfService from "./components/pages/TermsOfService";
-import LegalNotice from "./components/pages/LegalNotice";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/auth/AuthCallback";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
-import SubscriptionManagement from "@/components/subscription/SubscriptionManagement";
-import GoodbyePage from "@/components/pages/GoodbyePage";
 import { ProtectedGoodbyeRoute } from "@/components/auth/ProtectedGoodbyeRoute";
 import { CookieConsentProvider } from "./contexts/CookieConsentContext";
 import CookieBanner from "./components/cookies/CookieBanner";
-import AdminPanel from "@/components/admin/AdminPanel";
-import InitialAdminSetup from "@/components/admin/InitialAdminSetup";
+
+// Lazy load heavy components for better performance
+const PricingPage = lazy(() => import("./components/pages/pricing"));
+const PokemonDashboard = lazy(() => import("./components/pages/PokemonDashboard"));
+const CheckoutPage = lazy(() => import("./components/pages/checkout"));
+const CheckoutSuccessPage = lazy(() => import("./components/pages/checkout-success"));
+const SearchPage = lazy(() => import("./components/pages/SearchPage"));
+const Rules = lazy(() => import("./components/pages/Rules"));
+const CookiePolicy = lazy(() => import("./components/pages/CookiePolicy"));
+const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./components/pages/TermsOfService"));
+const LegalNotice = lazy(() => import("./components/pages/LegalNotice"));
+const SubscriptionManagement = lazy(() => import("@/components/subscription/SubscriptionManagement"));
+const GoodbyePage = lazy(() => import("@/components/pages/GoodbyePage"));
+const AdminPanel = lazy(() => import("@/components/admin/AdminPanel"));
+const InitialAdminSetup = lazy(() => import("@/components/admin/InitialAdminSetup"));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -93,7 +99,9 @@ function AppRoutes() {
           path="/pricing"
           element={
             <MainLayout>
-              <PricingPage />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <PricingPage />
+              </Suspense>
             </MainLayout>
           }
         />
@@ -101,7 +109,9 @@ function AppRoutes() {
           path="/search"
           element={
             <MainLayout>
-              <SearchPage />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <SearchPage />
+              </Suspense>
             </MainLayout>
           }
         />
@@ -149,7 +159,9 @@ function AppRoutes() {
           path="/dashboard/*"
           element={
             <PrivateRoute>
-              <PokemonDashboard />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <PokemonDashboard />
+              </Suspense>
             </PrivateRoute>
           }
         />
@@ -166,7 +178,9 @@ function AppRoutes() {
           path="/checkout"
           element={
             <MainLayout>
-              <CheckoutPage />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <CheckoutPage />
+              </Suspense>
             </MainLayout>
           }
         />
@@ -223,7 +237,9 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <MainLayout>
-                <SubscriptionManagement />
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                  <SubscriptionManagement onSectionChange={() => {}} />
+                </Suspense>
               </MainLayout>
             </PrivateRoute>
           }
@@ -232,7 +248,9 @@ function AppRoutes() {
           path="/admin"
           element={
             <PrivateRoute>
-              <AdminPanel />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <AdminPanel />
+              </Suspense>
             </PrivateRoute>
           }
         />

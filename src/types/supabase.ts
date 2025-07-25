@@ -222,7 +222,6 @@ export type Database = {
           polar_event_id: string | null
           type: string
         }
-      }
         Insert: {
           created_at?: string
           data?: Json | null
