@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 export default function PricingPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { subscription, loading } = useSubscription();
+  const { subscription, isLoading: loading } = useSubscription();
 
   // Add this function to handle plan selection
   const handleSelectPlan = (planId: string) => {
@@ -98,7 +98,7 @@ export default function PricingPage() {
         {Object.entries(PLAN_FEATURES).map(([planType, plan]) => (
           <PricingCard
             key={plan.id}
-            plan={plan}
+            plan={planType as SubscriptionPlan}
             isPopular={plan.name === "Entrenador"}
             isCurrentPlan={planType === currentPlanType}
             onSelectPlan={handleSelectPlan} // Add this prop

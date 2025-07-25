@@ -32,11 +32,11 @@ import { useTranslation } from "react-i18next";
 import { normalizeTranslationKey } from "@/lib/utils";
 
 interface CardItemProps {
-  card: CollectionCard;
-  onClick?: (card: CollectionCard) => void;
+  card: PokemonCard;
+  onClick?: (card: PokemonCard) => void;
   onRemove?: (cardId: string) => void;
-  onQuickAdd?: (card: CollectionCard) => void;
-  onAddToWishlist?: (card: CollectionCard) => void;
+  onQuickAdd?: (card: PokemonCard) => void;
+  onAddToWishlist?: (card: PokemonCard) => void;
   actions?: "collection" | "wishlist" | "search";
   showPrice?: boolean;
 }
@@ -179,7 +179,7 @@ const CardItem = ({
                     <Button
                       size="sm"
                       className="bg-red-500 hover:bg-red-600 text-white shadow-lg"
-                      onClick={(e) => handleAction(e, () => onRemove(card))}
+                      onClick={(e) => handleAction(e, () => onRemove(card.id))}
                       title={t("wishlist.removeCard")}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -252,22 +252,20 @@ const CardItem = ({
                   )}
 
                   {/* Badge de Primera Edición */}
-                  {card.is_first_edition && (
+                  {card.isFirstEdition && (
                     <Badge
                       variant="outline"
                       className="bg-purple-50 text-purple-700 text-xs shrink-0"
-                      tooltip={t("card.firstEdition")}
                     >
                       1st
                     </Badge>
                   )}
 
                   {/* Badge de Foil */}
-                  {card.is_foil && (
+                  {card.isFoil && (
                     <Badge
                       variant="outline"
                       className="bg-yellow-50 text-yellow-700 text-xs shrink-0"
-                      tooltip={t("card.foil")}
                     >
                       ✨
                     </Badge>
@@ -290,7 +288,7 @@ const CardItem = ({
                   )}
 
                   {/* Badge de Notas */}
-                  {card.notes && (
+                  {(card as any).notes && (
                     <Badge
                       variant="outline"
                       className="bg-gray-50 text-gray-700 text-xs shrink-0 cursor-pointer hover:bg-gray-100"
@@ -328,7 +326,7 @@ const CardItem = ({
             <DialogDescription>{t("card.personalNotes")}</DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">
-            {card.notes}
+            {(card as any).notes}
           </div>
         </DialogContent>
       </Dialog>

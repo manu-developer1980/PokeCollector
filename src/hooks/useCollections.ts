@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "../../supabase/supabase";
 import { useAuth } from "../../supabase/auth";
 import { cacheService, createCacheKey, debounce } from "../utils/cacheService";
+import { withRetry, SUPABASE_RETRY_OPTIONS } from "../utils/retryUtils";
 
 export interface Collection {
   id: string;
   user_id: string;
   name: string;
   description: string | null;
+  is_default: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -31,7 +33,7 @@ export const useCollections = (options?: {
   // Memoize options to prevent unnecessary re-renders
   const memoizedOptions = useMemo(() => ({
     limit: options?.limit || 50,
-    fields: options?.fields || "id, name, description, created_at, updated_at, user_id",
+    fields: options?.fields || "id, name, description, is_default, created_at, updated_at, user_id",
     enableRealtime: options?.enableRealtime ?? true,
   }), [options?.limit, options?.fields, options?.enableRealtime]);
   
@@ -78,7 +80,16 @@ export const useCollections = (options?: {
         query = query.limit(memoizedOptions.limit);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await withRetry(
+        async () => {
+          const result = await query;
+          if (result.error) {
+            throw result.error;
+          }
+          return result;
+        },
+        SUPABASE_RETRY_OPTIONS
+      );
 
       if (error) {
         console.error(`[${hookId.current}] Error fetching collections:`, error);

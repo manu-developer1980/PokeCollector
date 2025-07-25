@@ -264,7 +264,11 @@ export function PlanChangeDialog({
         }}
         currentPlan={currentPlan}
         targetPlan={targetPlan as SubscriptionPlan}
-        currentStats={stats}
+        currentStats={{
+          totalCards: stats.cardsCount,
+          totalCollections: stats.collectionsCount,
+          totalWishlist: stats.wishlistCount,
+        }}
       />
     </>
   );

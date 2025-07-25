@@ -14,12 +14,27 @@ class CacheService {
   private defaultTTL: number = 5 * 60 * 1000; // 5 minutos por defecto
   private maxCacheSize: number = 1000; // Máximo número de entradas
   private cleanupInterval: NodeJS.Timeout | null = null;
+  private readonly cleanupIntervalTime = 2 * 60 * 1000; // 2 minutos
 
   constructor() {
-    // Configurar limpieza automática cada 10 minutos
+    // Configurar limpieza automática cada 2 minutos
+    this.startCleanupTimer();
+  }
+
+  private startCleanupTimer() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
-    }, 10 * 60 * 1000);
+    }, this.cleanupIntervalTime);
+  }
+
+  private stopCleanupTimer() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
   }
 
   // Obtener datos de la caché
@@ -133,6 +148,10 @@ class CacheService {
     if (Object.keys(this.cache).length > this.maxCacheSize * 0.9) {
       this.evictLeastUsed(Math.floor(this.maxCacheSize * 0.1));
     }
+
+    if (expiredKeys.length > 0) {
+      console.log(`Cache cleanup: removed ${expiredKeys.length} expired entries, cache size: ${Object.keys(this.cache).length}`);
+    }
   }
 
   // Invalidar una entrada específica
@@ -143,11 +162,19 @@ class CacheService {
   // Invalidar todas las entradas que coincidan con un patrón
   invalidatePattern(pattern: string): void {
     const regex = new RegExp(pattern);
+    const keysToDelete: string[] = [];
+    
     Object.keys(this.cache).forEach((key) => {
       if (regex.test(key)) {
-        delete this.cache[key];
+        keysToDelete.push(key);
       }
     });
+    
+    keysToDelete.forEach(key => {
+      delete this.cache[key];
+    });
+    
+    console.log(`Cache invalidated for pattern "${pattern}": ${keysToDelete.length} keys removed`);
   }
 
   // Invalidar todas las entradas relacionadas con un usuario
@@ -202,11 +229,9 @@ class CacheService {
 
   // Destruir el servicio de caché
   destroy(): void {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-      this.cleanupInterval = null;
-    }
+    this.stopCleanupTimer();
     this.clear();
+    console.log('Cache service destroyed');
   }
 }
 

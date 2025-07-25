@@ -35,9 +35,26 @@ const CollectionDetail = ({
 
   const filteredCards = useMemo(() => {
     if (!collection.cards) return [];
-    return collection.cards.filter((card) =>
-      card.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return collection.cards
+      .filter((card) =>
+        card.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((collectionCard) => ({
+        id: collectionCard.card_id,
+        name: collectionCard.name || 'Unknown Card',
+        number: collectionCard.set?.id || '',
+        images: collectionCard.images || { small: '', large: '' },
+        set: {
+          name: collectionCard.set?.name || 'Unknown Set',
+          printedTotal: 0
+        },
+        quantity: collectionCard.quantity,
+        condition: collectionCard.condition,
+        isFirstEdition: collectionCard.is_first_edition,
+        isFoil: collectionCard.is_foil,
+        notes: collectionCard.notes,
+        collection_card_id: collectionCard.id // Store original ID for removal
+      }));
   }, [collection.cards, searchTerm]);
 
   const handleSearchClick = () => {
@@ -136,8 +153,20 @@ const CollectionDetail = ({
       {filteredCards.length > 0 ? (
         <CardGrid
           cards={filteredCards}
-          onCardClick={onCardClick}
-          onRemove={onRemove}
+          onCardClick={(card) => {
+            // Find the original CollectionCard
+            const originalCard = collection.cards?.find(c => c.card_id === card.id);
+            if (originalCard) {
+              onCardClick(originalCard);
+            }
+          }}
+          onRemove={(cardId) => {
+            // Find the collection card ID from the transformed card
+            const transformedCard = filteredCards.find(c => c.id === cardId);
+            if (transformedCard && (transformedCard as any).collection_card_id) {
+              onRemove((transformedCard as any).collection_card_id);
+            }
+          }}
           actions="collection"
           showPrice={false}
         />

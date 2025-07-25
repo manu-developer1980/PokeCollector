@@ -43,7 +43,7 @@ const EditCardModal = ({
   onSave,
 }: EditCardModalProps) => {
   const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState<CardCondition>("Near Mint");
+  const [condition, setCondition] = useState<CardCondition>("nearMint");
   const [isFoil, setIsFoil] = useState(false);
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [notes, setNotes] = useState("");
@@ -52,7 +52,7 @@ const EditCardModal = ({
   useEffect(() => {
     if (card) {
       setQuantity(card.quantity);
-      setCondition((card.condition as CardCondition) || "Near Mint");
+      setCondition((card.condition as CardCondition) || "nearMint");
       setIsFoil(card.is_foil || false);
       setIsFirstEdition(card.is_first_edition || false);
       setNotes(card.notes || "");

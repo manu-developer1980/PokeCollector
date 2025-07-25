@@ -16,9 +16,9 @@ export interface PlanFeature {
   price: number;
   id: string;
   features: string[];
-  maxCards: number;
-  maxCollections: number;
-  maxWishlist: number;
+  maxCards: number | -1;
+  maxCollections: number | -1;
+  maxWishlist: number | -1;
   hasAdvancedSearch?: boolean;
 }
 
@@ -61,9 +61,9 @@ export const usePlanFeatures = () => {
       features: t("plans.featuresList.maestro", {
         returnObjects: true,
       }) as string[],
-      maxCards: 1000,
-      maxCollections: 20,
-      maxWishlist: 200,
+      maxCards: -1,
+      maxCollections: -1,
+      maxWishlist: -1,
       hasAdvancedSearch: true,
     },
   };
@@ -115,9 +115,9 @@ export const PLAN_FEATURES = {
       "Lista de deseos ilimitada",
       "Soporte Prioritario",
     ],
-    maxCards: 1000,
-    maxCollections: 20,
-    maxWishlist: 200,
+    maxCards: -1,
+    maxCollections: -1,
+    maxWishlist: -1,
     hasAdvancedSearch: true,
   },
 } as const;

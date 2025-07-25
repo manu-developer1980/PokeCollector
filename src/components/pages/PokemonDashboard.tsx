@@ -438,7 +438,7 @@ export default function PokemonDashboard() {
             id: subscription.id,
             plan_type: subscription.plan_type,
             status: subscription.status,
-            is_active: subscription.is_active,
+            is_active: subscription.status === 'active',
           },
         });
 
@@ -626,10 +626,7 @@ export default function PokemonDashboard() {
           date_added: new Date().toISOString(),
         });
 
-        toast({
-          title: t("wishlist.cardAdded"),
-          description: t("wishlist.addSuccess"),
-        });
+        // Toast removido - la acción es visible en la UI
 
         // Refrescar la lista de deseos inmediatamente
         await fetchWishlist();
@@ -773,10 +770,7 @@ export default function PokemonDashboard() {
         // Update collections state
         await getCollections();
 
-        toast({
-          title: t("collection.created"),
-          description: t("collection.collectionCreated"),
-        });
+        // Toast removido - la creación de colección por defecto es transparente
       } catch (error) {
         console.error("Error creating default collection:", error);
         toast({
@@ -903,11 +897,7 @@ export default function PokemonDashboard() {
       // Close the dialog
       setIsAddToCollectionOpen(false);
 
-      // Show toast notification
-      toast({
-        title: t("collection.cardAdded"),
-        description: t("collection.cardAddedDescription"),
-      });
+      // Toast de éxito removido - la acción es visible en la UI
 
       // No need to call getCollections() here as it will be triggered by the real-time subscription
 
@@ -928,10 +918,7 @@ export default function PokemonDashboard() {
             return filtered;
           });
 
-          toast({
-            title: t("wishlist.removedFromWishlist"),
-            description: t("wishlist.removedAfterAdding"),
-          });
+          // Toast removido - la acción es visible en la UI
         } catch (error) {
           console.error("Error removing card from wishlist:", error);
         }

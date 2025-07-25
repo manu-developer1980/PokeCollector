@@ -181,7 +181,7 @@ const InitialAdminSetup: React.FC = () => {
 
           <Button
             onClick={grantAdminPrivileges}
-            disabled={loading || isAdmin === true}
+            disabled={loading || isAdmin}
             className="w-full"
           >
             {loading ? "Granting Admin Privileges..." : "Grant Admin Privileges"}

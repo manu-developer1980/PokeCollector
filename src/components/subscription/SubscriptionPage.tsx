@@ -16,7 +16,7 @@ interface SubscriptionPageProps {
 export default function SubscriptionPage({
   onSectionChange,
 }: SubscriptionPageProps) {
-  const { subscription, loading } = useSubscription();
+  const { subscription, isLoading: loading } = useSubscription();
   const { stats, isLoading: statsLoading } = useStats();
   const { t } = useTranslation();
 

@@ -58,6 +58,7 @@ export default function ResetPassword() {
         description: t("auth.validation.passwordRequirements"),
         variant: "destructive",
       });
+      setIsLoading(false);
       return;
     }
 
@@ -132,10 +133,11 @@ export default function ResetPassword() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading && (
-                <LoadingSpinner message={t("auth.processingReset")} />
+              {isLoading ? (
+                <div className="pokeball w-4 h-4 animate-spin" />
+              ) : (
+                t("auth.resetPassword")
               )}
-              {t("auth.resetPassword")}
             </Button>
           </form>
         </CardContent>

@@ -28,7 +28,7 @@ interface SubscriptionManagementProps {
 export default function SubscriptionManagement({
   onSectionChange,
 }: SubscriptionManagementProps) {
-  const { subscription, loading } = useSubscription();
+  const { subscription, isLoading: loading } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);

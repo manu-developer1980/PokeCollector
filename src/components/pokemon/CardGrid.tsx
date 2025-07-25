@@ -8,7 +8,7 @@ interface CardGridProps {
   onAddToCollection?: (card: PokemonCard) => void;
   onAddToWishlist?: (card: PokemonCard) => void;
   onQuickAdd?: (card: PokemonCard) => void;
-  onRemove?: (card: PokemonCard) => void;
+  onRemove?: (cardId: string) => void;
   isLoading?: boolean;
   actions?: "collection" | "wishlist" | "search";
   showPrice?: boolean;
@@ -29,7 +29,7 @@ const CardGrid = ({
     <div className="flex flex-wrap gap-4 justify-start">
       {cards.map((card) => (
         <CardItem
-          key={card.id || `${card.pokemon_card_id}-${card.collection_id}`}
+          key={card.id}
           card={card}
           onClick={onCardClick}
           onQuickAdd={onQuickAdd || onAddToCollection}

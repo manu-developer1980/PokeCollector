@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Collection } from "@/types/collection";
+import { Collection } from "@/types/pokemon";
 import { useTranslation } from "react-i18next";
 
 interface NoDefaultCollectionDialogProps {

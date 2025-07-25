@@ -36,6 +36,7 @@ export default function CheckoutPage() {
         ...plan,
         interval,
         price: interval === "year" ? plan.price * 12 * 0.8 : plan.price,
+        features: [...plan.features], // Convert readonly array to mutable
       };
       setSelectedPlan(planWithInterval);
     } else {
@@ -97,9 +98,10 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-yellow-50 py-20">
       <CheckoutFlow
-        plan={selectedPlan}
-        onCancel={handleCancel}
-        onCheckout={handleCheckout}
+        isOpen={true}
+        onClose={handleCancel}
+        planId={selectedPlan.id}
+        currentSubscription={null}
       />
     </div>
   );

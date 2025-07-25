@@ -173,8 +173,14 @@ export default function Wishlist({ onSectionChange }: WishlistProps) {
         <CardGrid
           cards={wishlistCards}
           onCardClick={handleCardClick}
-          onRemove={handleRemoveFromWishlist}
-          mode="wishlist"
+          onRemove={(cardId) => {
+            // Find the card by ID and pass it to handleRemoveFromWishlist
+            const card = wishlistCards.find(c => c.id === cardId);
+            if (card) {
+              handleRemoveFromWishlist(card);
+            }
+          }}
+          actions="wishlist"
         />
       )}
 

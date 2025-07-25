@@ -9,7 +9,7 @@ import "./i18n";
 // Performance monitoring for production
 if (import.meta.env.PROD) {
   // Dynamic import to avoid including web-vitals in development bundle
-  import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+  import('web-vitals').then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
     // Log Core Web Vitals metrics
     const logMetric = (metric: any) => {
       // In a real app, you'd send this to your analytics service
@@ -24,11 +24,11 @@ if (import.meta.env.PROD) {
       // });
     };
 
-    getCLS(logMetric);
-    getFID(logMetric);
-    getFCP(logMetric);
-    getLCP(logMetric);
-    getTTFB(logMetric);
+    onCLS(logMetric);
+    onINP(logMetric);
+    onFCP(logMetric);
+    onLCP(logMetric);
+    onTTFB(logMetric);
   }).catch(err => {
     console.warn('Failed to load web-vitals:', err);
   });

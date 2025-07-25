@@ -15,16 +15,18 @@ export function useSubscriptionLimits() {
   };
 
   const checkLimit = (
-    feature: keyof typeof PLAN_FEATURES.APRENDIZ,
+    feature: 'maxCards' | 'maxCollections' | 'maxWishlist',
     currentCount: number
   ) => {
     const limits = getCurrentLimits();
-    return currentCount < limits[feature];
+    const limit = limits[feature];
+    if (limit === -1) return true; // Unlimited
+    return currentCount < limit;
   };
 
   const isFeatureAvailable = (feature: string) => {
     const limits = getCurrentLimits();
-    return limits.features.includes(feature);
+    return (limits.features as readonly string[]).includes(feature);
   };
 
   return {
@@ -32,6 +34,6 @@ export function useSubscriptionLimits() {
     isFeatureAvailable,
     currentLimits: getCurrentLimits(),
     planType: subscription?.plan_type || "aprendiz",
-    isActive: subscription?.is_active || false,
+    isActive: subscription?.status === 'active' || false,
   };
 }

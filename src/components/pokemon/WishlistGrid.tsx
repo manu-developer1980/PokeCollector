@@ -74,7 +74,13 @@ const WishlistGrid = ({
             };
             onQuickAdd?.(cardWithWishlistId);
           }}
-          onRemove={onRemove}
+          onRemove={(cardId) => {
+            // Find the card by ID and pass it to onRemove
+            const card = cards.find(c => c.id === cardId);
+            if (card && onRemove) {
+              onRemove(card);
+            }
+          }}
           actions="wishlist"
         />
       </div>

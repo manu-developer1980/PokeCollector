@@ -160,11 +160,6 @@ export default function LoginForm() {
               localStorage.setItem("needs_onboarding", "true");
             }
 
-            toast({
-              title: t("auth.success.welcome"),
-              description: t("auth.success.loginSuccess"),
-            });
-
             navigate(redirectTo || "/dashboard");
           } catch (error) {
             console.error(t("auth.errors.initError"), error);

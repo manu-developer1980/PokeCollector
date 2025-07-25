@@ -2,6 +2,8 @@ import { supabase } from "../../supabase/supabase";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../supabase/auth";
 import { cacheService, createCacheKey, debounce } from "../utils/cacheService";
+import { withRetry, SUPABASE_RETRY_OPTIONS } from "../utils/retryUtils";
+import { useConnectionStatus } from "../components/shared/ConnectionStatus";
 
 export interface UserData {
   id: string;
@@ -18,6 +20,7 @@ export const useUserData = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const connectionStatus = useConnectionStatus();
 
   // Referencia para controlar si el componente está montado
   const isMounted = useRef(true);
@@ -55,12 +58,29 @@ export const useUserData = () => {
       try {
         console.log(`[${hookId.current}] Fetching user data for: ${user.id}`);
         setIsLoading(true);
+        connectionStatus.startConnecting();
 
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+        const { data, error } = await withRetry(
+          async () => {
+            const result = await supabase
+              .from("users")
+              .select("*")
+              .eq("id", user.id)
+              .single();
+            
+            if (result.error) {
+              throw result.error;
+            }
+            return result;
+          },
+          {
+            ...SUPABASE_RETRY_OPTIONS,
+            onRetry: (attempt, error) => {
+              console.log(`🔄 User data retry attempt ${attempt}:`, error);
+              connectionStatus.startRetrying(attempt);
+            }
+          }
+        );
 
         if (error) {
           // Si el error es que no se encontró el usuario, intentamos crearlo
@@ -77,11 +97,21 @@ export const useUserData = () => {
               preferred_lang: user.user_metadata?.preferred_lang || "es",
             };
 
-            const { data: insertData, error: insertError } = await supabase
-              .from("users")
-              .insert([newUser])
-              .select()
-              .single();
+            const { data: insertData, error: insertError } = await withRetry(
+              async () => {
+                const result = await supabase
+                  .from("users")
+                  .insert([newUser])
+                  .select()
+                  .single();
+                
+                if (result.error) {
+                  throw result.error;
+                }
+                return result;
+              },
+              SUPABASE_RETRY_OPTIONS
+            );
 
             if (insertError) {
               console.error(
@@ -89,8 +119,10 @@ export const useUserData = () => {
                 insertError
               );
               if (isMounted.current) {
-                setError(new Error(insertError.message));
+                const errorObj = new Error(insertError.message);
+                setError(errorObj);
                 setIsLoading(false);
+                connectionStatus.setConnectionError(errorObj);
               }
               return null;
             }
@@ -102,6 +134,7 @@ export const useUserData = () => {
               setUserData(insertData);
               setIsLoading(false);
               setError(null);
+              connectionStatus.clearStatus();
             }
 
             return insertData;
@@ -109,8 +142,10 @@ export const useUserData = () => {
 
           console.error(`[${hookId.current}] Error fetching user data:`, error);
           if (isMounted.current) {
-            setError(new Error(error.message));
+            const errorObj = new Error(error.message);
+            setError(errorObj);
             setIsLoading(false);
+            connectionStatus.setConnectionError(errorObj);
           }
           return null;
         }
@@ -122,6 +157,7 @@ export const useUserData = () => {
           setUserData(data);
           setIsLoading(false);
           setError(null);
+          connectionStatus.clearStatus();
         }
 
         return data;
@@ -131,8 +167,10 @@ export const useUserData = () => {
           err
         );
         if (isMounted.current) {
-          setError(err instanceof Error ? err : new Error(String(err)));
+          const errorObj = err instanceof Error ? err : new Error(String(err));
+          setError(errorObj);
           setIsLoading(false);
+          connectionStatus.setConnectionError(errorObj);
         }
         return null;
       }
@@ -157,12 +195,22 @@ export const useUserData = () => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from("users")
-          .update(updates)
-          .eq("id", user.id)
-          .select()
-          .single();
+        const { data, error } = await withRetry(
+          async () => {
+            const result = await supabase
+              .from("users")
+              .update(updates)
+              .eq("id", user.id)
+              .select()
+              .single();
+            
+            if (result.error) {
+              throw result.error;
+            }
+            return result;
+          },
+          SUPABASE_RETRY_OPTIONS
+        );
 
         if (error) {
           console.error(`[${hookId.current}] Error updating user data:`, error);
@@ -261,5 +309,6 @@ export const useUserData = () => {
     updateUserData,
     refetchUserData,
     fetchUserData,
+    connectionStatus,
   };
 };

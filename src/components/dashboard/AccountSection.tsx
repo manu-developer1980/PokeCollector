@@ -81,10 +81,7 @@ export default function AccountSection({
       if (error) throw error;
 
       setIsEditingName(false);
-      toast({
-        title: t("toasts.nameUpdated"),
-        variant: "success",
-      });
+      // Toast removido - el cambio es visible inmediatamente en la UI
     } catch (error: any) {
       console.error("Error updating name:", error);
       toast({
@@ -143,10 +140,6 @@ export default function AccountSection({
       // La sesión se cerrará automáticamente cuando el usuario vuelva a la página principal
     } catch (error: any) {
       console.error("Error detallado:", error);
-      toast({
-        title: t("toasts.accountDeleted"),
-        variant: "success",
-      });
       toast({
         title: t("toasts.error"),
         description: error.message || t("account.errors.deleteFailed"),

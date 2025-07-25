@@ -9,7 +9,7 @@ import { Check, Crown } from "lucide-react";
 import { useAuth } from "../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
-import { PlanFeature } from "@/lib/stripe";
+import { PlanFeature, PLAN_FEATURES } from "@/lib/stripe";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { DowngradeWarningModal } from "@/components/subscription/DowngradeWarningModal";
@@ -37,6 +37,9 @@ export function PricingCard({
   const { toast } = useToast();
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
   const [targetPlan, setTargetPlan] = useState<string | null>(null);
+  
+  // Get the actual plan features
+  const planFeatures = PLAN_FEATURES[plan];
 
   const isPlanDowngrade = (current: string, target: string): boolean => {
     const planHierarchy: Record<string, number> = {
@@ -53,8 +56,8 @@ export function PricingCard({
 
   const handleSelectPlan = async () => {
     if (!user) {
-      sessionStorage.setItem("selectedPlan", plan.id);
-      navigate(`/signup?plan=${plan.name.toLowerCase()}`);
+      sessionStorage.setItem("selectedPlan", planFeatures.id);
+      navigate(`/signup?plan=${plan.toLowerCase()}`);
       return;
     }
 
@@ -73,9 +76,9 @@ export function PricingCard({
       subscription?.plan_type || "APRENDIZ"
     ).toUpperCase();
 
-    if (isPlanDowngrade(currentPlanType, plan.name)) {
+    if (isPlanDowngrade(currentPlanType, plan)) {
       setShowDowngradeWarning(true);
-      setTargetPlan(plan.id);
+      setTargetPlan(plan); // Store the plan type, not the plan ID
       return;
     }
 
@@ -85,11 +88,11 @@ export function PricingCard({
       console.log("Plan seleccionado:", plan);
 
       const requestData = {
-        priceId: plan.id,
+        priceId: planFeatures.id,
         customerEmail: user.email,
         metadata: {
           user_id: user.id,
-          plan_name: plan.name,
+          plan_name: planFeatures.name,
         },
         successUrl: `${window.location.origin}/checkout-success`,
         cancelUrl: `${window.location.origin}/dashboard`,
@@ -147,8 +150,8 @@ export function PricingCard({
   };
 
   // Determinar el nombre y descripción del plan según el idioma
-  const planName = t(`plans.${plan.name.toLowerCase()}`);
-  const planDescription = t(`plans.descriptions.${plan.name.toLowerCase()}`);
+  const planName = t(`plans.${plan.toLowerCase()}`);
+  const planDescription = t(`plans.descriptions.${plan.toLowerCase()}`);
 
   return (
     <>
@@ -175,9 +178,9 @@ export function PricingCard({
           <p className="text-muted-foreground">{planDescription}</p>
           <div className="mt-4">
             <span className="text-4xl font-bold">
-              {plan.price === 0 ? t("pricing.free") : `${plan.price}€`}
+              {planFeatures.price === 0 ? t("pricing.free") : `${planFeatures.price}€`}
             </span>
-            {plan.price > 0 && (
+            {planFeatures.price > 0 && (
               <span className="text-muted-foreground">
                 {t("plans.perMonth")}
               </span>
@@ -187,14 +190,14 @@ export function PricingCard({
 
         <CardContent>
           <ul className="space-y-3">
-            {plan.features.map((feature, index) => (
+            {planFeatures.features.map((feature, index) => (
               <li
                 key={index}
                 className="flex items-center gap-2"
               >
                 <Check className="w-5 h-5 text-primary" />
                 <span>
-                  {t(`plans.featuresList.${plan.name.toLowerCase()}.${index}`, {
+                  {t(`plans.featuresList.${plan.toLowerCase()}.${index}`, {
                     defaultValue: feature,
                   })}
                 </span>
@@ -240,12 +243,17 @@ export function PricingCard({
             try {
               console.log("Processing downgrade to plan:", targetPlan);
 
+              const targetPlanFeatures = PLAN_FEATURES[targetPlan as SubscriptionPlan];
+              if (!targetPlanFeatures) {
+                throw new Error(`Plan features not found for plan: ${targetPlan}`);
+              }
+              
               const requestData = {
-                priceId: targetPlan,
+                priceId: targetPlanFeatures.id,
                 customerEmail: user.email,
                 metadata: {
                   user_id: user.id,
-                  plan_name: plan.name,
+                  plan_name: targetPlanFeatures.name,
                 },
                 successUrl: `${window.location.origin}/checkout-success`,
                 cancelUrl: `${window.location.origin}/dashboard`,
@@ -301,8 +309,8 @@ export function PricingCard({
           (subscription?.plan_type?.toUpperCase() as SubscriptionPlan) ||
           "APRENDIZ"
         }
-        targetPlan={plan.name.toUpperCase() as SubscriptionPlan}
-        currentStats={subscription?.stats}
+        targetPlan={plan}
+        currentStats={undefined}
       />
     </>
   );

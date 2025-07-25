@@ -43,7 +43,7 @@ export default function SearchPage() {
     card: PokemonCard | null;
   }>({ type: "collection", card: null });
 
-  const [sets, setSets] = useState<string[]>([]);
+  const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [rarities, setRarities] = useState<string[]>([]);
 
@@ -57,7 +57,7 @@ export default function SearchPage() {
           getRarities().catch(() => []),
         ]);
 
-        setSets(setsData || []);
+        setSets(setsData?.map((set: any) => ({ id: set.id, name: set.name })) || []);
         setTypes(typesData || []);
         setRarities(raritiesData || []);
       } catch (error) {
@@ -161,10 +161,7 @@ export default function SearchPage() {
         if (insertError) throw insertError;
       }
 
-      toast({
-        title: t("common.success"),
-        description: t("collection.cardAddedToDefault"),
-      });
+      // Toast removido - la acción es visible en la UI
     } catch (error) {
       errorHandler.handleError(error, "handleAddToCollection", toast, t);
     }
@@ -203,10 +200,7 @@ export default function SearchPage() {
 
       if (error) throw error;
 
-      toast({
-        title: t("common.success"),
-        description: t("wishlist.cardAdded"),
-      });
+      // Toast removido - la acción es visible en la UI
     } catch (error) {
       errorHandler.handleError(error, "handleAddToWishlist", toast, t);
     }
@@ -236,7 +230,6 @@ export default function SearchPage() {
             types={types}
             rarities={rarities}
             onSearch={handleSearch}
-            isSearching={isSearching}
             totalCount={totalCount}
             currentPage={currentPage}
             pageSize={pageSize}

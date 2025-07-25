@@ -56,7 +56,7 @@ export default function SignUpForm() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<ReturnType<typeof formSchema>>) => {
     setIsLoading(true);
 
     try {
