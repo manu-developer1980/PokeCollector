@@ -30,13 +30,7 @@ export function SubscriptionLimitModal({
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  // Registro de depuración para ver qué valores se están pasando
-  console.log("SubscriptionLimitModal - Valores:", {
-    currentPlan,
-    limitType,
-    currentLanguage: i18n.language,
-    errorMessage,
-  });
+
 
   const handleUpgrade = () => {
     navigate("/pricing");

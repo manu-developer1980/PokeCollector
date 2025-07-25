@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import LoadingSpinner from "./LoaderSpinner";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -35,13 +36,14 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
+  confirmText,
+  cancelText,
   isLoading = false,
-  loadingMessage = "Procesando...",
+  loadingMessage,
   showCancel = true,
   confirmVariant = "default",
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   const handleConfirm = (e: React.MouseEvent) => {
     e.preventDefault();
     onConfirm();
@@ -60,7 +62,7 @@ export function ConfirmDialog({
         <DialogFooter>
           {isLoading ? (
             <div className="w-full flex justify-center items-center py-2">
-              <LoadingSpinner message={loadingMessage} />
+              <LoadingSpinner message={loadingMessage || t("common.processing")} />
             </div>
           ) : (
             <>
@@ -69,14 +71,14 @@ export function ConfirmDialog({
                   variant="outline"
                   onClick={onClose}
                 >
-                  {cancelText}
+                  {cancelText || t("common.cancel")}
                 </Button>
               )}
               <Button
                 onClick={handleConfirm}
                 variant={confirmVariant}
               >
-                {confirmText}
+                {confirmText || t("common.confirm")}
               </Button>
             </>
           )}

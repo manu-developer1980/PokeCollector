@@ -11,11 +11,8 @@ export default function GoodbyePage() {
 
   // Ya no necesitamos verificar el acceso aquí, lo hace ProtectedGoodbyeRoute
   useEffect(() => {
-    console.log("GoodbyePage: Página de despedida cargada");
-
     // Limpiamos el token cuando el componente se desmonte
     return () => {
-      console.log("GoodbyePage: Limpiando tokens de acceso");
       sessionStorage.removeItem("goodbyeAccessToken");
       localStorage.removeItem("goodbyeAccessGranted");
     };
@@ -52,19 +49,14 @@ export default function GoodbyePage() {
           <Button
             onClick={async () => {
               try {
-                console.log("Botón 'Volver al inicio' clickeado");
-
                 // Limpiar los tokens de acceso
-                console.log("Limpiando tokens de acceso...");
                 sessionStorage.removeItem("goodbyeAccessToken");
                 localStorage.removeItem("goodbyeAccessGranted");
 
                 // Cerrar la sesión antes de navegar a la página principal
-                console.log("Cerrando sesión...");
                 try {
                   // Usar la función signOut del hook useAuth
                   await signOut();
-                  console.log("Sesión cerrada correctamente");
                 } catch (signOutError) {
                   console.error(
                     "Error al intentar cerrar sesión:",
@@ -73,13 +65,11 @@ export default function GoodbyePage() {
                   // No lanzamos el error, simplemente continuamos
                 }
 
-                console.log("Navegando a la página principal...");
                 // Usar window.location.href en lugar de navigate para asegurar que funcione
                 window.location.href = "/";
               } catch (error) {
                 console.error("Error en el botón 'Volver al inicio':", error);
                 // Si hay un error, intentamos navegar de todos modos usando window.location
-                console.log("Intentando navegar con window.location.href...");
                 window.location.href = "/";
               }
             }}
@@ -103,7 +93,6 @@ export default function GoodbyePage() {
                   // Usar la función signOut del hook useAuth
                   signOut()
                     .then(() => {
-                      console.log("Sesión cerrada correctamente");
                       window.location.href = "/";
                     })
                     .catch((error) => {

@@ -13,7 +13,7 @@ if (import.meta.env.PROD) {
     // Log Core Web Vitals metrics
     const logMetric = (metric: any) => {
       // In a real app, you'd send this to your analytics service
-      console.log(`[Performance] ${metric.name}:`, metric.value, metric.rating);
+      // console.log(`[Performance] ${metric.name}:`, metric.value, metric.rating);
       
       // Example: Send to analytics service
       // analytics.track('web-vital', {
@@ -46,7 +46,7 @@ if (import.meta.env.PROD) {
         serverResponse: navigation.responseEnd - navigation.requestStart,
       };
       
-      console.log('[Performance] Page Load Metrics:', metrics);
+      // console.log('[Performance] Page Load Metrics:', metrics);
     }
   });
 }

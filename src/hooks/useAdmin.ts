@@ -70,7 +70,7 @@ export const useAdmin = () => {
       }
 
       try {
-        console.log("🔍 Checking admin status for user:", user.id);
+    
 
         // TEMPORARY: Check if this is the known admin user
         // Replace this with your actual admin user ID
@@ -81,7 +81,7 @@ export const useAdmin = () => {
         const isKnownAdmin = knownAdminEmails.includes(user.email || "");
 
         if (isKnownAdmin) {
-          console.log("✅ Known admin user detected:", user.email);
+    
           setIsAdmin(true);
           setError(null);
           setIsLoading(false);
@@ -94,11 +94,11 @@ export const useAdmin = () => {
         );
 
         if (!rpcError && rpcData !== null) {
-          console.log("✅ Admin status from RPC:", rpcData);
+    
           setIsAdmin(rpcData);
           setError(null);
         } else {
-          console.log("⚠️ RPC failed, trying direct query. Error:", rpcError);
+    
 
           // Fallback to direct query
           const { data, error } = await supabase
@@ -112,7 +112,7 @@ export const useAdmin = () => {
             setError(error);
             setIsAdmin(false);
           } else {
-            console.log("✅ Admin status from direct query:", data?.is_admin);
+    
             setIsAdmin(data?.is_admin || false);
             setError(null);
           }
@@ -141,7 +141,7 @@ export const useAdmin = () => {
         plan_type?: string;
       }
     ) => {
-      console.log("🔍 getUsers called. isAdmin:", isAdmin, "user:", user?.id);
+  
 
       // Let the RPC function handle the admin check instead of checking here
       // This avoids the chicken-and-egg problem with RLS policies

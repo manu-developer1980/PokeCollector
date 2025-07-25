@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -23,6 +24,7 @@ export function DeleteAccountDialog({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -30,7 +32,6 @@ export function DeleteAccountDialog({
     setIsLoading(true);
     try {
       // 1. Primero borrar la cuenta en la base de datos
-      console.log("1. Eliminando cuenta en la base de datos...");
       const response = await fetch("/api/delete-account", {
         method: "POST",
         headers: {
@@ -43,19 +44,15 @@ export function DeleteAccountDialog({
         throw new Error("Error al eliminar la cuenta");
       }
 
-      console.log("2. Cuenta eliminada correctamente, cerrando sesión...");
+
 
       // 2. Cerrar el diálogo antes de hacer signOut
       onOpenChange(false);
 
       // Establecer un token de acceso único para la página de despedida
-      console.log(
-        "3. Estableciendo token de acceso para la página de despedida..."
-      );
       sessionStorage.setItem("goodbyeAccessToken", Date.now().toString());
 
       // Navegar a la página de despedida
-      console.log("4. Navegando a la página de despedida...");
       navigate("/goodbye", { replace: true });
 
       // Nota: No intentamos cerrar sesión aquí porque está causando errores 403
@@ -63,9 +60,10 @@ export function DeleteAccountDialog({
     } catch (error) {
       console.error("Error al eliminar la cuenta:", error);
       toast({
-        title: "Error",
-        description:
-          "No se pudo eliminar la cuenta. Por favor, intenta nuevamente.",
+        title: t("common.error"),
+        description: t("account.deleteAccountError", {
+          defaultValue: "No se pudo eliminar la cuenta. Por favor, intenta nuevamente."
+        }),
         variant: "destructive",
       });
     } finally {
@@ -81,10 +79,13 @@ export function DeleteAccountDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>¿Estás seguro?</DialogTitle>
+          <DialogTitle>{t("account.deleteAccountTitle", {
+            defaultValue: "¿Estás seguro?"
+          })}</DialogTitle>
           <DialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente tu
-            cuenta y todos tus datos.
+            {t("account.deleteAccountDescription", {
+              defaultValue: "Esta acción no se puede deshacer. Se eliminará permanentemente tu cuenta y todos tus datos."
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -93,14 +94,18 @@ export function DeleteAccountDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button
             variant="destructive"
             onClick={handleDeleteAccount}
             disabled={isLoading}
           >
-            {isLoading ? "Eliminando..." : "Eliminar cuenta"}
+            {isLoading ? t("account.deleting", {
+              defaultValue: "Eliminando..."
+            }) : t("account.deleteAccount", {
+              defaultValue: "Eliminar cuenta"
+            })}
           </Button>
         </DialogFooter>
       </DialogContent>

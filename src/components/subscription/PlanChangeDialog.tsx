@@ -46,24 +46,15 @@ export function PlanChangeDialog({
   const { refetchSubscription } = useSubscription();
 
   const handlePlanChange = async (newPlan: SubscriptionPlan) => {
-    console.log("handlePlanChange called with:", { newPlan, currentPlan }); // Nuevo log
-
     // Si el usuario intenta cambiar al mismo plan, no hacemos nada
     if (newPlan === currentPlan) {
-      console.log("Same plan, ignoring"); // Nuevo log
       return;
     }
 
     // Verificar si es un downgrade
     const isDowngrade = isPlanDowngrade(currentPlan, newPlan);
-    console.log("isPlanDowngrade result:", {
-      isDowngrade,
-      currentPlan,
-      newPlan,
-    }); // Nuevo log
 
     if (isDowngrade) {
-      console.log("Showing downgrade warning"); // Nuevo log
       setTargetPlan(newPlan);
       setShowDowngradeWarning(true);
       return;
@@ -105,13 +96,7 @@ export function PlanChangeDialog({
       MAESTRO: 3,
     };
 
-    console.log("isPlanDowngrade checking:", {
-      normalizedCurrent,
-      currentPlanKey,
-      normalizedTarget,
-      currentValue: planHierarchy[currentPlanKey],
-      targetValue: planHierarchy[normalizedTarget],
-    }); // Nuevo log
+
 
     // Si el plan actual es APRENDIZ, nunca será un downgrade
     if (currentPlanKey === "APRENDIZ") return false;

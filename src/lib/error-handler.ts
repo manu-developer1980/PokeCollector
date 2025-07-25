@@ -295,7 +295,7 @@ class ErrorHandlerImpl implements ErrorHandler {
       //   body: JSON.stringify(errorInfo)
       // });
       
-      console.log('Error sería enviado al servicio de monitoreo:', errorInfo);
+      // Error sería enviado al servicio de monitoreo
     } catch (monitoringError) {
       console.error('Falló el envío del error al servicio de monitoreo:', monitoringError);
     }

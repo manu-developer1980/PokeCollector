@@ -21,7 +21,7 @@ export default function PricingPage() {
 
   // Add this function to handle plan selection
   const handleSelectPlan = (planId: string) => {
-    console.log("Selected plan:", planId);
+
     // Add your plan selection logic here
   };
 

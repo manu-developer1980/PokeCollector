@@ -296,7 +296,7 @@ export default function PokemonDashboard() {
         // If subscription is loading, wait for it to complete instead of returning early
         // This prevents showing the "Verifying subscription status..." message
         if (isSubscriptionLoading) {
-          console.log("Subscription is loading, waiting for it to complete...");
+
           // We'll continue with the validation, assuming the subscription will be loaded by the time we need it
         }
 
@@ -316,9 +316,7 @@ export default function PokemonDashboard() {
 
         // If subscription is still loading after our attempt to wait, return early
         if (isSubscriptionLoading || !subscription) {
-          console.log(
-            "Subscription is still loading or not available, cannot validate limits"
-          );
+
           return { valid: true, error: null, limitType: null };
         }
 
@@ -338,7 +336,7 @@ export default function PokemonDashboard() {
         if (resourceType === "collection_cards") {
           // Para collection_cards, necesitamos primero obtener las colecciones del usuario
           // y luego contar las cartas en esas colecciones, considerando la cantidad de cada carta
-          console.log(`Obteniendo colecciones para el usuario ${userId}`);
+
           const { data: userCollections, error: collectionsError } =
             await supabase
               .from("collections")
@@ -353,11 +351,11 @@ export default function PokemonDashboard() {
             throw collectionsError;
           }
 
-          console.log(`Colecciones encontradas:`, userCollections);
+
 
           if (userCollections && userCollections.length > 0) {
             const collectionIds = userCollections.map((c) => c.id);
-            console.log(`IDs de colecciones a consultar:`, collectionIds);
+
 
             // Obtener todas las cartas con sus cantidades
             const { data: cards, error: cardsError } = await supabase
@@ -374,35 +372,22 @@ export default function PokemonDashboard() {
             const totalQuantity =
               cards?.reduce((sum, card) => sum + (card.quantity || 1), 0) || 0;
 
-            console.log(
-              `Resultado del conteo de cartas (considerando cantidad):`,
-              {
-                totalCards: cards?.length || 0,
-                totalQuantity,
-              }
-            );
+
 
             count = totalQuantity;
             error = cardsError;
           } else {
-            console.log(
-              `No se encontraron colecciones para el usuario ${userId}`
-            );
+
           }
         } else {
           // Para wishlist_cards y collections, podemos filtrar directamente por user_id
-          console.log(
-            `Consultando tabla ${tableName} para el usuario ${userId}`
-          );
+
           const { count: itemCount, error: itemError } = await supabase
             .from(tableName)
             .select("*", { count: "exact", head: true })
             .eq("user_id", userId);
 
-          console.log(`Resultado del conteo en ${tableName}:`, {
-            itemCount,
-            itemError,
-          });
+
           count = itemCount || 0;
           error = itemError;
         }
@@ -422,25 +407,7 @@ export default function PokemonDashboard() {
             ? PLAN_FEATURES[planType.toUpperCase()]?.maxWishlist
             : PLAN_FEATURES[planType.toUpperCase()]?.maxCards;
 
-        console.log(`validateResourceLimit - ${resourceType}:`, {
-          currentCount,
-          quantity,
-          planType,
-          planTypeUpperCase: planType.toUpperCase(),
-          maxValue,
-          planFeatures: PLAN_FEATURES[planType.toUpperCase()],
-          allPlanFeatures: PLAN_FEATURES,
-          willExceedLimit: currentCount + quantity > maxValue,
-          calculation: `${currentCount} + ${quantity} ${
-            currentCount + quantity > maxValue ? ">" : "<="
-          } ${maxValue}`,
-          subscription: {
-            id: subscription.id,
-            plan_type: subscription.plan_type,
-            status: subscription.status,
-            is_active: subscription.status === 'active',
-          },
-        });
+
 
         // Verificar directamente si estamos en el límite o lo superamos
 
@@ -453,18 +420,7 @@ export default function PokemonDashboard() {
             ? currentCount >= maxValue
             : currentCount + quantity > maxValue;
 
-        console.log(`validateResourceLimit - Verificación final:`, {
-          resourceType,
-          currentCount,
-          maxValue,
-          willExceedLimit,
-          calculation:
-            resourceType === "collections"
-              ? `${currentCount} >= ${maxValue} = ${currentCount >= maxValue}`
-              : `${currentCount} + ${quantity} > ${maxValue} = ${
-                  currentCount + quantity > maxValue
-                }`,
-        });
+
 
         if (willExceedLimit) {
           // Obtener el nombre del plan traducido
@@ -806,13 +762,13 @@ export default function PokemonDashboard() {
   }) => {
     // If subscription is loading, wait a moment before proceeding
     if (isSubscriptionLoading) {
-      console.log("Subscription is loading, waiting before proceeding...");
+      
       // We'll continue with the operation, assuming the subscription will be loaded by the time we need it
     }
 
     // Only block if we're sure there's no subscription
     if (!isSubscriptionLoading && !subscription) {
-      console.log("No subscription available, cannot proceed");
+      
       return;
     }
 
@@ -960,14 +916,7 @@ export default function PokemonDashboard() {
         PLAN_FEATURES[subscription.plan_type.toUpperCase()]?.maxCollections ||
         0;
 
-      console.log("Verificación de límite de colecciones:", {
-        currentCount,
-        maxCollections,
-        planType: subscription.plan_type,
-        comparacion: `${currentCount} < ${maxCollections} = ${
-          currentCount < maxCollections
-        }`,
-      });
+
 
       // 3. Comparar directamente si el número actual es menor que el límite
       if (currentCount < maxCollections) {

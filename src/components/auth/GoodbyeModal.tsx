@@ -28,15 +28,9 @@ export default function GoodbyeModal({
   // Verificar si debemos mostrar el modal basado en sessionStorage
   useEffect(() => {
     const shouldShowModal = sessionStorage.getItem("showGoodbyeModal");
-    console.log("¿Debemos mostrar el modal de despedida?", shouldShowModal);
-
     if (!shouldShowModal) {
-      console.log(
-        "No se encontró indicador para mostrar el modal, redirigiendo..."
-      );
       navigate("/", { replace: true });
     } else {
-      console.log("Mostrando modal de despedida...");
       // Limpiar el indicador después de mostrar el modal
       sessionStorage.removeItem("showGoodbyeModal");
     }
@@ -44,18 +38,12 @@ export default function GoodbyeModal({
 
   // Configurar temporizador para redirigir después de mostrar el modal
   useEffect(() => {
-    console.log("GoodbyeModal montado, configurando temporizador...");
-
     // Temporizador para redirigir a la página de inicio después de 5 segundos
     const timer = setTimeout(() => {
-      console.log(
-        "Temporizador completado, redirigiendo a la página de inicio..."
-      );
       navigate("/", { replace: true });
     }, 5000);
 
     return () => {
-      console.log("GoodbyeModal desmontado, limpiando temporizador...");
       clearTimeout(timer);
     };
   }, [navigate]);
@@ -63,11 +51,9 @@ export default function GoodbyeModal({
   // Solo registrar si el usuario sigue autenticado, pero no redirigir
   useEffect(() => {
     if (user) {
-      console.log(
-        "Usuario aún autenticado en GoodbyeModal, pero continuando..."
-      );
+      // Usuario aún autenticado en GoodbyeModal, pero continuando...
     } else {
-      console.log("Usuario no autenticado en GoodbyeModal, como se esperaba.");
+      // Usuario no autenticado en GoodbyeModal, como se esperaba.
     }
   }, [user]);
 

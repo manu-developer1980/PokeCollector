@@ -134,7 +134,7 @@ export const usePerformanceConfig = () => {
 
     try {
       await Promise.allSettled(preloadPromises);
-      console.log('Critical resources preloaded');
+      
     } catch (error) {
       console.warn('Some critical resources failed to preload:', error);
     }

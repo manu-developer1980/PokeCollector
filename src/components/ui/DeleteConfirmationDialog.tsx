@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
 interface DeleteConfirmationDialogProps {
   isOpen: boolean;
@@ -21,9 +22,10 @@ export default function DeleteConfirmationDialog({
   isOpen,
   onClose,
   onConfirm,
-  title = "Confirmar eliminación",
-  description = "¿Estás seguro? Esta acción no se puede deshacer.",
+  title,
+  description,
 }: DeleteConfirmationDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog
       open={isOpen}
@@ -31,16 +33,16 @@ export default function DeleteConfirmationDialog({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle>{title || t("common.delete")}</AlertDialogTitle>
+          <AlertDialogDescription>{description || t("common.deleteConfirmationMessage")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700"
           >
-            Eliminar
+            {t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

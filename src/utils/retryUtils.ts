@@ -64,7 +64,7 @@ export async function withRetry<T>(
       // Add some jitter to prevent thundering herd
       const jitteredDelay = delay + Math.random() * 1000;
 
-      console.warn(`Attempt ${attempt} failed, retrying in ${Math.round(jitteredDelay)}ms:`, error);
+
       opts.onRetry(attempt, error);
 
       await sleep(jitteredDelay);
@@ -115,9 +115,7 @@ export const SUPABASE_RETRY_OPTIONS: RetryOptions = {
     
     return false;
   },
-  onRetry: (attempt: number, error: any) => {
-    console.log(`🔄 Supabase retry attempt ${attempt} - Cold start detected`);
-  }
+  onRetry: () => {}
 };
 
 /**
@@ -133,7 +131,5 @@ export const POKEMON_API_RETRY_OPTIONS: RetryOptions = {
     // Retry on rate limits and server errors
     return status === 429 || (status >= 500 && status < 600);
   },
-  onRetry: (attempt: number, error: any) => {
-    console.log(`🔄 Pokemon API retry attempt ${attempt}`);
-  }
+  onRetry: () => {}
 };

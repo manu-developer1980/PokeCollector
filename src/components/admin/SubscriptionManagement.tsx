@@ -173,10 +173,7 @@ const SubscriptionManagement: React.FC = () => {
               overrides,
             };
           } catch (err) {
-            console.error(
-              `Error loading subscription for user ${user.id}:`,
-              err
-            );
+
             return {
               id: user.id,
               email: user.email,
@@ -209,7 +206,7 @@ const SubscriptionManagement: React.FC = () => {
         Math.ceil((result.total || filteredSubscriptions.length) / itemsPerPage)
       );
     } catch (err) {
-      console.error("Error loading subscriptions:", err);
+
       toast({
         title: t("admin.error", { defaultValue: "Error" }),
         description: t("admin.loadSubscriptionsError", {
@@ -289,7 +286,7 @@ const SubscriptionManagement: React.FC = () => {
       setSelectedUser(userData);
       setShowUserDetails(true);
     } catch (err) {
-      console.error("Error searching for user:", err);
+
       toast({
         title: t("admin.error", { defaultValue: "Error" }),
         description:
@@ -339,7 +336,7 @@ const SubscriptionManagement: React.FC = () => {
       // Refresh user data
       handleUserSearch();
     } catch (err) {
-      console.error("Error changing plan:", err);
+
       toast({
         title: t("admin.error", { defaultValue: "Error" }),
         description:
@@ -434,7 +431,7 @@ const SubscriptionManagement: React.FC = () => {
       setShowSyncDialog(false);
 
       // Show sync results
-      console.log("Sync result:", result);
+      
 
       // Refresh user data
       handleUserSearch();

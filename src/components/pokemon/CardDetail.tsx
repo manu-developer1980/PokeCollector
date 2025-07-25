@@ -801,6 +801,9 @@ const CardDetail: React.FC<CardDetailProps> = ({
               <FileText className="h-5 w-5" />
               {t("card.notes")} - {cardDetails.name}
             </DialogTitle>
+            <DialogDescription>
+              {t("card.notesDescription", { defaultValue: "View and manage notes for this card" })}
+            </DialogDescription>
           </DialogHeader>
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">
             {(card as CollectionCard).notes}

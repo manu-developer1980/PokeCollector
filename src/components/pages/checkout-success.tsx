@@ -31,12 +31,10 @@ export default function CheckoutSuccessPage() {
             ? t("plans.maestro", { defaultValue: "Maestro" })
             : t("plans.aprendiz", { defaultValue: "Aprendiz" });
         setPlanName(fallbackName);
-        console.log("Set initial plan name from localStorage:", fallbackName);
       } else {
         // Default fallback
         const defaultName = t("plans.aprendiz", { defaultValue: "Aprendiz" });
         setPlanName(defaultName);
-        console.log("Set initial plan name to default:", defaultName);
       }
     }
   }, [t, planName]);
@@ -112,38 +110,28 @@ export default function CheckoutSuccessPage() {
       try {
         // Aumentamos el número máximo de intentos a 15
         if (verificationAttempts >= 15) {
-          console.log("Límite de intentos alcanzado, marcando como cargada");
           setSubscriptionLoaded(true);
 
           // Obtener el plan seleccionado del localStorage
           const selectedPlanType = localStorage.getItem("selectedPlanType");
           if (selectedPlanType) {
-            console.log(
-              "Usando plan del localStorage como fallback:",
-              selectedPlanType
-            );
+
             setPlanName(getTranslatedPlanName(selectedPlanType));
           }
 
           return;
         }
 
-        console.log(
-          `Intento de verificación #${
-            verificationAttempts + 1
-          } en checkout-success...`
-        );
+
 
         // Incrementar el contador de intentos
         setVerificationAttempts((prev) => prev + 1);
 
         // Intentar obtener la suscripción actualizada
         const updatedSubscription = await refetchSubscription();
-        console.log("Suscripción actualizada:", updatedSubscription);
 
         // Verificar si la suscripción tiene un plan_type
         if (updatedSubscription?.plan_type) {
-          console.log("Plan type encontrado:", updatedSubscription.plan_type);
           const translatedPlanName = getTranslatedPlanName(
             updatedSubscription.plan_type
           );
@@ -151,13 +139,7 @@ export default function CheckoutSuccessPage() {
           setSubscriptionLoaded(true);
 
           // Registrar evento de éxito
-          console.log("\u2705 Suscripción verificada exitosamente", {
-            planType: updatedSubscription.plan_type,
-            translatedName: translatedPlanName,
-            subscriptionId:
-              updatedSubscription.stripe_subscription_id || "pendiente",
-            attempts: verificationAttempts + 1,
-          });
+
         } else {
           // Si no hay plan_type, verificamos si hay un error o si debemos usar el fallback
           if (error) {
@@ -168,24 +150,16 @@ export default function CheckoutSuccessPage() {
           if (verificationAttempts >= 5) {
             const selectedPlanType = localStorage.getItem("selectedPlanType");
             if (selectedPlanType) {
-              console.log(
-                "Usando plan del localStorage como fallback después de varios intentos:",
-                selectedPlanType
-              );
+              
               const fallbackPlanName = getTranslatedPlanName(selectedPlanType);
               setPlanName(fallbackPlanName);
-              console.log("Plan name set from fallback:", fallbackPlanName);
 
               // Si llevamos muchos intentos, marcamos como cargada para no seguir intentando
               if (verificationAttempts >= 10) {
-                console.log("Demasiados intentos, deteniendo verificación");
                 setSubscriptionLoaded(true);
               }
             } else {
               // Si no hay plan en localStorage, usar el plan por defecto
-              console.log(
-                "No hay plan en localStorage, usando plan por defecto"
-              );
               const defaultPlanName = getTranslatedPlanName("aprendiz");
               setPlanName(defaultPlanName);
 
@@ -210,9 +184,6 @@ export default function CheckoutSuccessPage() {
       if (subscriptionLoaded) return;
 
       const delay = getRetryDelay(verificationAttempts);
-      console.log(
-        `Programando próxima verificación en ${delay / 1000} segundos`
-      );
 
       timeoutId = window.setTimeout(() => {
         verifySubscription().then(() => {

@@ -140,7 +140,7 @@ export default function LoginForm() {
 
               if (response.ok) {
                 const data = await response.json();
-                console.log("Usuario inicializado correctamente:", data);
+        
               } else {
                 console.warn("Initialize-user function not available, continuing without it");
               }

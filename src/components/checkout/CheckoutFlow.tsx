@@ -62,7 +62,7 @@ export function CheckoutFlow({
         cancelUrl: `${window.location.origin}/dashboard`,
       };
 
-      console.log("Checkout request data:", requestData);
+
 
       const { data, error } = await supabase.functions.invoke(
         "create-stripe-checkout",

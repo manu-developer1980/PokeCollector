@@ -29,7 +29,8 @@
     "unknownSet": "Unknown Set",
     "cardUnavailable": "Card data unavailable",
     "cardUnavailableExplanation": "This card may be temporarily unavailable or may not exist in our database. You can still add it to your collection or wishlist.",
-    "errorLoadingCard": "Error loading card data"
+    "errorLoadingCard": "Error loading card data",
+    "deleteConfirmationMessage": "Are you sure? This action cannot be undone."
   },
   "cookies": {
     "title": "Cookie Consent",
@@ -580,7 +581,13 @@
       "extendedWishlist": "Extended wishlist",
       "exclusiveFeatures": "Exclusive premium features"
     },
-    "later": "Later"
+    "later": "Later",
+    "verifyingLonger": "Verifying subscription, this may take a few moments...",
+    "verifyingWebhook": "Waiting for payment server confirmation...",
+    "processingDelay": "Processing is taking longer than usual. Please wait a moment...",
+    "connectionIssue": "We are experiencing connection issues. We will keep trying...",
+    "pendingConfirmation": "Payment confirmation pending. The subscription will be activated shortly.",
+    "errorFetching": "There was a problem verifying your subscription. Please refresh the page or contact support if the problem persists."
   },
   "pricing": {
     "price": "Price",

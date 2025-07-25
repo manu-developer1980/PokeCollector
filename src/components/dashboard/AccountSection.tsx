@@ -128,9 +128,7 @@ export default function AccountSection({
       }
 
       // Establecer un token de acceso único para la página de despedida
-      console.log(
-        "Estableciendo token de acceso para la página de despedida..."
-      );
+
       sessionStorage.setItem("goodbyeAccessToken", Date.now().toString());
 
       // Si todo fue exitoso, navegamos a goodbye

@@ -149,9 +149,7 @@ class CacheService {
       this.evictLeastUsed(Math.floor(this.maxCacheSize * 0.1));
     }
 
-    if (expiredKeys.length > 0) {
-      console.log(`Cache cleanup: removed ${expiredKeys.length} expired entries, cache size: ${Object.keys(this.cache).length}`);
-    }
+
   }
 
   // Invalidar una entrada específica
@@ -174,7 +172,7 @@ class CacheService {
       delete this.cache[key];
     });
     
-    console.log(`Cache invalidated for pattern "${pattern}": ${keysToDelete.length} keys removed`);
+
   }
 
   // Invalidar todas las entradas relacionadas con un usuario
@@ -231,7 +229,7 @@ class CacheService {
   destroy(): void {
     this.stopCleanupTimer();
     this.clear();
-    console.log('Cache service destroyed');
+
   }
 }
 

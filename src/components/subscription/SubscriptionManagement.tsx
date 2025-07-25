@@ -41,7 +41,7 @@ export default function SubscriptionManagement({
   const currentPlan = PLAN_FEATURES[currentPlanType];
 
   const handleCancelSubscription = async () => {
-    console.log("Subscription data:", subscription); // Debug log
+  
 
     if (!subscription) {
       toast({

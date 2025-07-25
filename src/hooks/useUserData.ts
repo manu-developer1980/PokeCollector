@@ -4,6 +4,7 @@ import { useAuth } from "../../supabase/auth";
 import { cacheService, createCacheKey, debounce } from "../utils/cacheService";
 import { withRetry, SUPABASE_RETRY_OPTIONS } from "../utils/retryUtils";
 import { useConnectionStatus } from "../components/shared/ConnectionStatus";
+import { websocketManager } from "../utils/websocketManager";
 
 export interface UserData {
   id: string;
@@ -47,7 +48,7 @@ export const useUserData = () => {
       if (!forceRefresh && cacheService.has(cacheKey)) {
         const cachedData = cacheService.get<UserData>(cacheKey);
         if (cachedData && isMounted.current) {
-          console.log(`[${hookId.current}] Using cached user data`);
+  
           setUserData(cachedData);
           setIsLoading(false);
           setError(null);
@@ -56,7 +57,7 @@ export const useUserData = () => {
       }
 
       try {
-        console.log(`[${hookId.current}] Fetching user data for: ${user.id}`);
+
         setIsLoading(true);
         connectionStatus.startConnecting();
 
@@ -76,7 +77,7 @@ export const useUserData = () => {
           {
             ...SUPABASE_RETRY_OPTIONS,
             onRetry: (attempt, error) => {
-              console.log(`🔄 User data retry attempt ${attempt}:`, error);
+
               connectionStatus.startRetrying(attempt);
             }
           }
@@ -85,9 +86,7 @@ export const useUserData = () => {
         if (error) {
           // Si el error es que no se encontró el usuario, intentamos crearlo
           if (error.code === "PGRST116") {
-            console.log(
-              `[${hookId.current}] User not found, creating new user record`
-            );
+
 
             const newUser = {
               id: user.id,
@@ -114,10 +113,7 @@ export const useUserData = () => {
             );
 
             if (insertError) {
-              console.error(
-                `[${hookId.current}] Error creating user:`,
-                insertError
-              );
+
               if (isMounted.current) {
                 const errorObj = new Error(insertError.message);
                 setError(errorObj);
@@ -140,7 +136,7 @@ export const useUserData = () => {
             return insertData;
           }
 
-          console.error(`[${hookId.current}] Error fetching user data:`, error);
+
           if (isMounted.current) {
             const errorObj = new Error(error.message);
             setError(errorObj);
@@ -162,10 +158,7 @@ export const useUserData = () => {
 
         return data;
       } catch (err) {
-        console.error(
-          `[${hookId.current}] Unexpected error fetching user data:`,
-          err
-        );
+
         if (isMounted.current) {
           const errorObj = err instanceof Error ? err : new Error(String(err));
           setError(errorObj);
@@ -213,7 +206,7 @@ export const useUserData = () => {
         );
 
         if (error) {
-          console.error(`[${hookId.current}] Error updating user data:`, error);
+
           return { success: false, error: new Error(error.message) };
         }
 
@@ -228,10 +221,7 @@ export const useUserData = () => {
 
         return { success: true, data };
       } catch (err) {
-        console.error(
-          `[${hookId.current}] Unexpected error updating user data:`,
-          err
-        );
+
         return {
           success: false,
           error: err instanceof Error ? err : new Error(String(err)),
@@ -254,51 +244,45 @@ export const useUserData = () => {
     // Cargar los datos iniciales
     fetchUserData();
 
-    if (!user?.id)
+    if (!user?.id) {
       return () => {
         isMounted.current = false;
       };
+    }
 
-    // Configurar suscripción en tiempo real
+    // Configurar suscripción en tiempo real usando el websocketManager
     const channelId = `user-data-changes-${user.id}-${hookId.current}`;
-    const channel = supabase
-      .channel(channelId)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "users",
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log(
-            `[${hookId.current}] Real-time user data change detected:`,
-            {
-              eventType: payload.eventType,
-              table: payload.table,
-            }
-          );
+    const componentId = hookId.current;
+    
+    const cleanup = websocketManager.createSubscription(
+      channelId,
+      componentId,
+      {
+        table: "users",
+        filter: `id=eq.${user.id}`,
+        event: "*",
+        schema: "public",
+      },
+      (payload) => {
+        // Invalidar la caché
+        const cacheKey = createCacheKey("user", user.id, "data");
+        cacheService.invalidate(cacheKey);
 
-          // Invalidar la caché
-          const cacheKey = createCacheKey("user", user.id, "data");
-          cacheService.invalidate(cacheKey);
-
-          // Refrescar los datos
-          debouncedRefetch();
+        // Refrescar los datos
+        debouncedRefetch();
+      },
+      {
+        delay: 100,
+        onError: (error) => {
+          console.warn('WebSocket connection error in useUserData:', error.message);
         }
-      )
-      .subscribe((status) => {
-        console.log(
-          `[${hookId.current}] Real-time user data status: ${status}`
-        );
-      });
+      }
+    );
 
     // Limpiar al desmontar
     return () => {
-      console.log(`[${hookId.current}] Cleaning up user data hook`);
       isMounted.current = false;
-      supabase.removeChannel(channel);
+      cleanup();
     };
   }, [user?.id, fetchUserData, debouncedRefetch]);
 

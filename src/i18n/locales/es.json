@@ -29,7 +29,8 @@
     "unknownSet": "Set Desconocido",
     "cardUnavailable": "Datos de la carta no disponibles",
     "cardUnavailableExplanation": "Esta carta puede estar temporalmente no disponible o no existir en nuestra base de datos. Aún puedes añadirla a tu colección o lista de deseos.",
-    "errorLoadingCard": "Error al cargar los datos de la carta"
+    "errorLoadingCard": "Error al cargar los datos de la carta",
+    "deleteConfirmationMessage": "¿Estás seguro? Esta acción no se puede deshacer."
   },
   "cookies": {
     "title": "Consentimiento de Cookies",
@@ -582,7 +583,13 @@
       "exclusiveFeatures": "Características premium exclusivas"
     },
     "later": "Más tarde",
-    "viewPlans": "Ver planes"
+    "viewPlans": "Ver planes",
+    "verifyingLonger": "Verificando suscripción, esto puede tardar unos momentos...",
+    "verifyingWebhook": "Esperando confirmación del servidor de pagos...",
+    "processingDelay": "El procesamiento está tardando más de lo habitual. Por favor, espere un momento...",
+    "connectionIssue": "Estamos experimentando problemas de conexión. Seguiremos intentando...",
+    "pendingConfirmation": "Confirmación de pago pendiente. La suscripción se activará en breve.",
+    "errorFetching": "Hubo un problema al verificar su suscripción. Por favor, actualice la página o contacte a soporte si el problema persiste."
   },
   "pricing": {
     "title": "Planes y Precios",

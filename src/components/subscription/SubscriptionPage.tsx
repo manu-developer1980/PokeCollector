@@ -40,9 +40,7 @@ export default function SubscriptionPage({
   ] as SubscriptionPlan;
   const currentPlan = PLAN_FEATURES[currentPlanType];
 
-  console.log("Current plan type:", subscription?.plan_type);
-  console.log("Mapped plan type:", currentPlanType);
-  console.log("Current plan features:", currentPlan);
+
 
   // Calcular porcentajes
   const cardsPercentage = (stats.cardsCount / currentPlan.maxCards) * 100;

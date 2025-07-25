@@ -56,7 +56,7 @@ export const useCollections = (options?: {
     if (!forceRefresh && cacheService.has(cacheKey)) {
       const cachedData = cacheService.get<Collection[]>(cacheKey);
       if (cachedData && isMounted.current) {
-        console.log(`[${hookId.current}] Using cached collections data`);
+
         setCollections(cachedData);
         setIsLoading(false);
         setError(null);
@@ -65,7 +65,7 @@ export const useCollections = (options?: {
     }
 
     try {
-      console.log(`[${hookId.current}] Fetching collections for user: ${userId}`);
+
       setIsLoading(true);
       
       // Build optimized query with field selection and limits
@@ -160,10 +160,7 @@ export const useCollections = (options?: {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log(`[${hookId.current}] Real-time collections change detected:`, {
-            eventType: payload.eventType,
-            table: payload.table,
-          });
+
           
           // Invalidar la caché con el patrón correcto
           const cachePattern = createCacheKey("user", userId, "collections");
@@ -173,13 +170,11 @@ export const useCollections = (options?: {
           debouncedRefetch();
         }
       )
-      .subscribe((status) => {
-        console.log(`[${hookId.current}] Real-time collections status: ${status}`);
-      });
+      .subscribe();
     
     // Limpiar al desmontar
     return () => {
-      console.log(`[${hookId.current}] Cleaning up collections hook`);
+
       isMounted.current = false;
       supabase.removeChannel(channel);
     };

@@ -9,8 +9,7 @@ export function useSubscriptionLimits() {
     const databasePlanType = (subscription?.plan_type ||
       "aprendiz") as DatabasePlanType;
     const planType = toPlanType(databasePlanType);
-    console.log("Database Plan Type:", databasePlanType);
-    console.log("Converted Plan Type:", planType);
+    
     return PLAN_FEATURES[planType];
   };
 

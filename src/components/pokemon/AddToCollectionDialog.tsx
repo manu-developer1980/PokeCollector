@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -130,8 +131,11 @@ const AddToCollectionDialog = ({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("collection.addCard")}</DialogTitle>
-          </DialogHeader>
+          <DialogTitle>{t("collection.addCard")}</DialogTitle>
+          <DialogDescription>
+            {t("collection.addCardDescription", "Selecciona una colección y configura los detalles de la carta")}
+          </DialogDescription>
+        </DialogHeader>
           <div className="py-4 text-center">
             <p className="text-gray-600 mb-4">
               {t("collection.noCollectionsYet")}
@@ -156,6 +160,9 @@ const AddToCollectionDialog = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("collection.addCard")}</DialogTitle>
+          <DialogDescription>
+            {t("collection.addCardDescription", "Selecciona una colección y configura los detalles de la carta")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">

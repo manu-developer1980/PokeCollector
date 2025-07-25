@@ -85,7 +85,7 @@ export function PricingCard({
     // Ir directamente al checkout de Stripe
     try {
       // Añadir logs para depuración
-      console.log("Plan seleccionado:", plan);
+  
 
       const requestData = {
         priceId: planFeatures.id,
@@ -98,7 +98,7 @@ export function PricingCard({
         cancelUrl: `${window.location.origin}/dashboard`,
       };
 
-      console.log("Datos de la solicitud:", requestData);
+
 
       // Verificar si hay un token de autenticación válido
       const { data: sessionData } = await supabase.auth.getSession();
@@ -129,7 +129,7 @@ export function PricingCard({
         throw new Error("No se recibieron datos de la respuesta");
       }
 
-      console.log("Respuesta de Stripe:", data);
+      
 
       if (!data?.url) {
         console.error("URL de checkout no encontrada en la respuesta", data);
@@ -241,7 +241,7 @@ export function PricingCard({
 
             // Then proceed with the checkout process
             try {
-              console.log("Processing downgrade to plan:", targetPlan);
+          
 
               const targetPlanFeatures = PLAN_FEATURES[targetPlan as SubscriptionPlan];
               if (!targetPlanFeatures) {

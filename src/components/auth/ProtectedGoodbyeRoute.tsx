@@ -12,7 +12,7 @@ export function ProtectedGoodbyeRoute({
     const accessToken = sessionStorage.getItem("goodbyeAccessToken");
 
     if (accessToken) {
-      console.log("ProtectedGoodbyeRoute: Acceso autorizado");
+  
       setHasAccess(true);
 
       // Guardamos una copia del token en localStorage para que persista entre renderizados
@@ -24,10 +24,10 @@ export function ProtectedGoodbyeRoute({
       const accessGranted = localStorage.getItem("goodbyeAccessGranted");
 
       if (accessGranted) {
-        console.log("ProtectedGoodbyeRoute: Acceso previamente autorizado");
+  
         setHasAccess(true);
       } else {
-        console.log("ProtectedGoodbyeRoute: Acceso no autorizado");
+    
         setHasAccess(false);
       }
     }

@@ -18,6 +18,10 @@ export const supabase = createClient(
       params: {
         eventsPerSecond: 10,
       },
+      // Configuración mejorada para manejar desconexiones durante navegación
+      heartbeatIntervalMs: 30000,
+      reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 10000),
+      timeout: 10000,
     },
     global: {
       headers: {

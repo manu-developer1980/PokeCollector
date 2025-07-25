@@ -109,7 +109,6 @@ export const useNetworkOptimization = () => {
         try {
           await request();
         } catch (error) {
-          console.warn('Queued request failed:', error);
         } finally {
           activeRequests.current--;
           // Process next request after a small delay
@@ -183,11 +182,10 @@ export const useNetworkOptimization = () => {
 
     // Preload user data and recent collections
     try {
-      console.log('Preloading critical data for improved connection');
+
       // This would trigger the hooks to fetch fresh data
       // The actual implementation would depend on your data fetching strategy
     } catch (error) {
-      console.warn('Failed to preload critical data:', error);
     }
   }, [networkStatus.isOnline, isSlowConnection]);
 
