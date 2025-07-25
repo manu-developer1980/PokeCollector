@@ -32,6 +32,48 @@
     "errorLoadingCard": "Error al cargar los datos de la carta",
     "deleteConfirmationMessage": "¿Estás seguro? Esta acción no se puede deshacer."
   },
+  "contact": {
+    "hero": {
+      "badge": "Ponte en Contacto",
+      "title": "Contáctanos",
+      "subtitle": "¿Tienes una pregunta, sugerencia o necesitas ayuda? Estamos aquí para asistirte en tu viaje de colección de cartas Pokémon."
+    },
+    "info": {
+      "title": "Ponte en Contacto",
+      "description": "Estamos aquí para ayudarte con cualquier pregunta sobre PokéCollector. Ya sea que necesites soporte técnico, tengas comentarios o quieras sugerir nuevas funciones, no dudes en contactarnos.",
+      "email": {
+        "title": "Soporte por Email",
+        "description": "Envíanos un email y te responderemos en menos de 24 horas."
+      },
+      "support": {
+        "title": "Atención al Cliente",
+        "description": "Nuestro equipo de soporte está listo para ayudarte con cualquier problema o pregunta."
+      }
+    },
+    "form": {
+      "title": "Envíanos un Mensaje",
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre completo",
+      "email": "Email",
+      "emailPlaceholder": "tu.email@ejemplo.com",
+      "subject": "Asunto",
+      "subjectPlaceholder": "¿De qué se trata?",
+      "message": "Mensaje",
+      "messagePlaceholder": "Cuéntanos más sobre tu pregunta o comentario...",
+      "send": "Enviar Mensaje",
+      "sending": "Enviando...",
+      "success": "¡Gracias! Tu mensaje ha sido enviado exitosamente. Te responderemos pronto.",
+      "error": "Lo sentimos, hubo un error al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde.",
+      "errors": {
+        "nameRequired": "El nombre es requerido",
+        "emailRequired": "El email es requerido",
+        "emailInvalid": "Por favor, ingresa una dirección de email válida",
+        "subjectRequired": "El asunto es requerido",
+        "messageRequired": "El mensaje es requerido",
+        "messageMinLength": "El mensaje debe tener al menos 10 caracteres"
+      }
+    }
+  },
   "cookies": {
     "title": "Consentimiento de Cookies",
     "description": "Utilizamos cookies para mejorar tu experiencia de navegación, analizar el tráfico del sitio y personalizar el contenido. Al hacer clic en 'Aceptar Todo', consientes el uso de cookies.",

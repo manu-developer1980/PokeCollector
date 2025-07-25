@@ -27,6 +27,7 @@ const CheckoutPage = lazy(() => import("./components/pages/checkout"));
 const CheckoutSuccessPage = lazy(() => import("./components/pages/checkout-success"));
 const SearchPage = lazy(() => import("./components/pages/SearchPage"));
 const Rules = lazy(() => import("./components/pages/Rules"));
+const Contact = lazy(() => import("./components/pages/Contact"));
 const CookiePolicy = lazy(() => import("./components/pages/CookiePolicy"));
 const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/pages/TermsOfService"));
@@ -120,6 +121,16 @@ function AppRoutes() {
           element={
             <MainLayout>
               <Rules />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <MainLayout>
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <Contact />
+              </Suspense>
             </MainLayout>
           }
         />

@@ -119,7 +119,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to="/contact"
                   className="text-gray-600 hover:text-red-600"
                 >
                   {footerTranslations.company.contact}

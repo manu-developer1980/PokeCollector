@@ -32,6 +32,48 @@
     "errorLoadingCard": "Error loading card data",
     "deleteConfirmationMessage": "Are you sure? This action cannot be undone."
   },
+  "contact": {
+    "hero": {
+      "badge": "Get in Touch",
+      "title": "Contact Us",
+      "subtitle": "Have a question, suggestion, or need help? We're here to assist you with your Pokémon card collection journey."
+    },
+    "info": {
+      "title": "Get in Touch",
+      "description": "We're here to help you with any questions about PokéCollector. Whether you need technical support, have feedback, or want to suggest new features, don't hesitate to reach out.",
+      "email": {
+        "title": "Email Support",
+        "description": "Send us an email and we'll get back to you within 24 hours."
+      },
+      "support": {
+        "title": "Customer Support",
+        "description": "Our support team is ready to help you with any issues or questions."
+      }
+    },
+    "form": {
+      "title": "Send us a Message",
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "your.email@example.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "What is this about?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us more about your question or feedback...",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+      "error": "Sorry, there was an error sending your message. Please try again later.",
+      "errors": {
+        "nameRequired": "Name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "subjectRequired": "Subject is required",
+        "messageRequired": "Message is required",
+        "messageMinLength": "Message must be at least 10 characters long"
+      }
+    }
+  },
   "cookies": {
     "title": "Cookie Consent",
     "description": "We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking 'Accept All', you consent to our use of cookies.",
