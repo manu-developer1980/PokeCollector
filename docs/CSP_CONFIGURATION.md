@@ -11,7 +11,7 @@ En producción, las requests al backend estaban siendo bloqueadas con el error `
 Se modificó la directiva `connect-src` en la política CSP para incluir el backend de producción:
 
 ```toml
-Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://kiphglgoanmibjztwhmj.supabase.co https://*.supabase.co wss://kiphglgoanmibjztwhmj.supabase.co wss://*.supabase.co https://pokecollect-backend.onrender.com;"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://kiphglgoanmibjztwhmj.supabase.co https://*.supabase.co wss://kiphglgoanmibjztwhmj.supabase.co wss://*.supabase.co https://pokecollect-backend.onrender.com;"
 ```
 
 ### 2. Explicación de las directivas CSP
@@ -50,7 +50,7 @@ Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'
 1. Identificar la URL que está siendo bloqueada
 2. Añadirla a la directiva apropiada en `netlify.toml`:
    - `connect-src`: Para APIs y WebSockets
-   - `script-src`: Para scripts externos
+   - `script-src`: Para scripts externos (incluye Google Tag Manager)
    - `style-src`: Para hojas de estilo externas
    - `img-src`: Para imágenes externas
 
