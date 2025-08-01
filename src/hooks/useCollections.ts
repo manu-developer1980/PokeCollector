@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "../../supabase/supabase";
 import { useAuth } from "../../supabase/auth";
-import { cacheService, createCacheKey, debounce } from "../utils/cacheService";
-import { withRetry, SUPABASE_RETRY_OPTIONS } from "../utils/retryUtils";
+import { cacheService, createCacheKey, debounce } from "../lib/cacheService";
+import { withRetry, SUPABASE_RETRY_OPTIONS } from "../lib/retryUtils";
 
 export interface Collection {
   id: string;

@@ -1,10 +1,10 @@
 import { supabase } from "../../supabase/supabase";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../supabase/auth";
-import { cacheService, createCacheKey, debounce } from "../utils/cacheService";
-import { withRetry, SUPABASE_RETRY_OPTIONS } from "../utils/retryUtils";
-import { useConnectionStatus } from "../components/shared/ConnectionStatus";
-import { websocketManager } from "../utils/websocketManager";
+import { cacheService, createCacheKey, debounce } from "../lib/cacheService";
+import { withRetry, SUPABASE_RETRY_OPTIONS } from "../lib/retryUtils";
+import { useConnectionStatus } from "../components/common/shared/ConnectionStatus";
+import { websocketManager } from "../lib/websocketManager";
 
 export interface UserData {
   id: string;

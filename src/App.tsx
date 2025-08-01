@@ -6,37 +6,37 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import LoginForm from "./components/auth/LoginForm";
-import SignUpForm from "./components/auth/SignUpForm";
-import ConfirmSignup from "./components/auth/ConfirmSignup";
-import LandingPage from "./components/pages/landing";
+import LoginForm from "./components/features/auth/LoginForm";
+import SignUpForm from "./components/features/auth/SignUpForm";
+import ConfirmSignup from "./components/features/auth/ConfirmSignup";
+import LandingPage from "./pages/landing";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import MainLayout from "./components/layout/MainLayout";
-import AuthCallback from "./components/auth/AuthCallback";
-import ForgotPassword from "./components/auth/ForgotPassword";
-import ResetPassword from "./components/auth/ResetPassword";
-import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
-import { ProtectedGoodbyeRoute } from "@/components/auth/ProtectedGoodbyeRoute";
+import AuthCallback from "./components/features/auth/AuthCallback";
+import ForgotPassword from "./components/features/auth/ForgotPassword";
+import ResetPassword from "./components/features/auth/ResetPassword";
+import ConfirmEmailChange from "@/components/features/auth/ConfirmEmailChange";
+import { ProtectedGoodbyeRoute } from "@/components/features/auth/ProtectedGoodbyeRoute";
 import { CookieConsentProvider } from "./contexts/CookieConsentContext";
-import CookieBanner from "./components/cookies/CookieBanner";
+import CookieBanner from "./components/common/cookies/CookieBanner";
 import { useEffect, useState } from "react";
 
 // Lazy load heavy components for better performance
-const PricingPage = lazy(() => import("./components/pages/pricing"));
-const PokemonDashboard = lazy(() => import("./components/pages/PokemonDashboard"));
-const CheckoutPage = lazy(() => import("./components/pages/checkout"));
-const CheckoutSuccessPage = lazy(() => import("./components/pages/checkout-success"));
-const SearchPage = lazy(() => import("./components/pages/SearchPage"));
-const Rules = lazy(() => import("./components/pages/Rules"));
-const Contact = lazy(() => import("./components/pages/Contact"));
-const CookiePolicy = lazy(() => import("./components/pages/CookiePolicy"));
-const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy"));
-const TermsOfService = lazy(() => import("./components/pages/TermsOfService"));
-const LegalNotice = lazy(() => import("./components/pages/LegalNotice"));
-const SubscriptionManagement = lazy(() => import("@/components/subscription/SubscriptionManagement"));
-const GoodbyePage = lazy(() => import("@/components/pages/GoodbyePage"));
-const AdminPanel = lazy(() => import("@/components/admin/AdminPanel"));
-const InitialAdminSetup = lazy(() => import("@/components/admin/InitialAdminSetup"));
+const PricingPage = lazy(() => import("./pages/pricing"));
+const PokemonDashboard = lazy(() => import("./pages/PokemonDashboard"));
+const CheckoutPage = lazy(() => import("./pages/checkout"));
+const CheckoutSuccessPage = lazy(() => import("./pages/checkout-success"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const Rules = lazy(() => import("./pages/Rules"));
+const Contact = lazy(() => import("./pages/Contact"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const LegalNotice = lazy(() => import("./pages/LegalNotice"));
+const SubscriptionManagement = lazy(() => import("@/components/features/subscription/SubscriptionManagement"));
+const GoodbyePage = lazy(() => import("./pages/GoodbyePage"));
+const AdminPanel = lazy(() => import("@/components/features/admin/AdminPanel"));
+const InitialAdminSetup = lazy(() => import("@/components/features/admin/InitialAdminSetup"));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

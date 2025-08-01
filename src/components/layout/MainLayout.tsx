@@ -1,5 +1,5 @@
 import MainHeader from "./MainHeader";
-import Footer from "../pages/Footer";
+import Footer from "../../pages/Footer";
 
 export default function MainLayout({
   children,

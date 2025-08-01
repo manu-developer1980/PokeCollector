@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "../../supabase/supabase";
 import { useAuth } from "../../supabase/auth";
-import { cacheService, createCacheKey } from "../utils/cacheService";
-import { websocketManager } from "../utils/websocketManager";
+import { cacheService, createCacheKey } from "../lib/cacheService";
+import { websocketManager } from "../lib/websocketManager";
 
 export interface Subscription {
   id: string;

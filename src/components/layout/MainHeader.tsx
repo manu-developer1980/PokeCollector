@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
 import { Search, Database, Heart, LogIn, LogOut, User } from "lucide-react";
-import { MobileMenu } from "@/components/shared/MobileMenu";
-import LanguageSwitcher from "../LanguageSwitcher";
+import { MobileMenu } from "@/components/common/shared/MobileMenu";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
 interface MainHeaderProps {
