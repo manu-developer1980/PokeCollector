@@ -81,13 +81,25 @@ export default function Contact() {
     setSubmitStatus('idle');
 
     try {
-      // Simulate API call - In a real app, you would send this to your backend
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For now, we'll just show a success message
-      setSubmitStatus('success');
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      // Llamada real a la API de contacto
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus('success');
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setSubmitStatus('error');
+      }
     } catch (error) {
+      console.error('Error al enviar mensaje de contacto:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

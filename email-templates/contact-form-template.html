@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Mensaje de Contacto - PokeCollector</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Estilos para clientes de email */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #f9fafb;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px 20px;
+        }
+        
+        .sender-info {
+            background-color: #fef9e7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .sender-info h2 {
+            color: #92400e;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .info-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            min-width: 80px;
+            color: #374151;
+        }
+        
+        .info-value {
+            color: #374151;
+        }
+        
+        .email-link {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        
+        .email-link:hover {
+            text-decoration: underline;
+        }
+        
+        .message-section {
+            background-color: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .message-section h3 {
+            color: #1e40af;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .message-content {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        
+        .tip-box {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .tip-box p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 20px;
+            text-align: center;
+            background-color: #f9fafb;
+        }
+        
+        .footer p {
+            color: #9ca3af;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .sender-info,
+            .message-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📧 Nuevo Mensaje de Contacto</h1>
+            <p>PokeCollector</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Sender Information -->
+            <div class="sender-info">
+                <h2>Información del remitente</h2>
+                <div class="info-card">
+                    <div class="info-row">
+                        <span class="info-label">👤 Nombre:</span>
+                        <span class="info-value">{{SENDER_NAME}}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">
+                            <a href="mailto:{{SENDER_EMAIL}}" class="email-link">{{SENDER_EMAIL}}</a>
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📝 Asunto:</span>
+                        <span class="info-value">{{MESSAGE_SUBJECT}}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message Content -->
+            <div class="message-section">
+                <h3>💬 Mensaje:</h3>
+                <div class="message-content">{{MESSAGE_CONTENT}}</div>
+            </div>
+            
+            <!-- Tip -->
+            <div class="tip-box">
+                <p>
+                    💡 <strong>Tip:</strong> Puedes responder directamente a este email para contactar al remitente.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Este mensaje fue enviado desde el formulario de contacto de PokeCollector</p>
+            <p>© {{CURRENT_YEAR}} PokeCollector. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

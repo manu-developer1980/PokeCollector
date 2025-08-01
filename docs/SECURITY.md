@@ -18,7 +18,6 @@ enable_hibp_check = true
 ```
 
 **Beneficios**:
-
 - Protección proactiva contra ataques de credenciales comprometidas
 - Mejora la seguridad general de las cuentas de usuario
 - Cumplimiento con mejores prácticas de seguridad
@@ -32,7 +31,6 @@ enable_hibp_check = true
 - **Cobertura completa**: RLS habilitado en todas las tablas sensibles
 
 **Tablas protegidas**:
-
 - `users` - Datos de usuario
 - `collections` - Colecciones de cartas
 - `collection_cards` - Cartas en colecciones
@@ -43,7 +41,6 @@ enable_hibp_check = true
 ### 3. Autenticación Robusta
 
 **Características implementadas**:
-
 - ✅ Verificación de email obligatoria
 - ✅ Confirmación doble para cambios de email
 - ✅ Rotación automática de tokens de actualización
