@@ -22,7 +22,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://kiphglgoanmibjztwhmj.supabase.co https://*.supabase.co https://pokecollect-backend.onrender.com;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://kiphglgoanmibjztwhmj.supabase.co https://*.supabase.co wss://kiphglgoanmibjztwhmj.supabase.co wss://*.supabase.co https://pokecollect-backend.onrender.com;"
 
 # Configuración para archivos estáticos
 [[headers]]
