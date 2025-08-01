@@ -82,7 +82,7 @@ export default function Contact() {
 
     try {
       // Llamada real a la API de contacto
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE}/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
