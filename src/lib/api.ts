@@ -44,7 +44,7 @@ const rateLimiter = new RateLimiter();
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 15000, // Increased timeout
+  timeout: 60000, // Increased timeout to 60 seconds for Render cold starts
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -67,10 +67,10 @@ api.interceptors.response.use(undefined, async (err) => {
   config.retryCount += 1;
   
   // Exponential backoff with jitter
-  const baseDelay = config.retryDelay || 1000;
+  const baseDelay = config.retryDelay || 2000; // Increased base delay for slow backend
   const exponentialDelay = baseDelay * Math.pow(2, config.retryCount - 1);
-  const jitter = Math.random() * 1000; // Add randomness to prevent thundering herd
-  const delay = Math.min(exponentialDelay + jitter, 30000); // Cap at 30 seconds
+  const jitter = Math.random() * 2000; // Increased jitter for better distribution
+  const delay = Math.min(exponentialDelay + jitter, 60000); // Cap at 60 seconds for slow backends
   
   await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -93,7 +93,7 @@ api.interceptors.request.use(async (config) => {
 // Default config for requests
 const defaultConfig: any = {
   retry: 3,
-  retryDelay: 1000,
+  retryDelay: 2000, // Increased delay for slow backend responses
 };
 
 // Helper function for request deduplication
