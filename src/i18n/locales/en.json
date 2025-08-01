@@ -850,8 +850,19 @@
       }
     },
     "newPassword": "New Password",
+    "enterNewPassword": "Enter your new password",
+    "confirmNewPassword": "Confirm your new password",
+    "updatePassword": "Update Password",
     "passwordChanged": "Your password has been successfully updated",
     "processingReset": "Sending instructions...",
+    "passwordRequirements": {
+      "minLength": "Minimum 8 characters",
+      "uppercase": "At least one uppercase letter",
+      "lowercase": "At least one lowercase letter",
+      "number": "At least one number",
+      "match": "Passwords match",
+      "noMatch": "Passwords do not match"
+    },
     "errors": {
       "passwordsDoNotMatch": "Passwords do not match",
       "invalidPassword": "Invalid password",

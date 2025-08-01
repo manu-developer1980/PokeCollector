@@ -19,6 +19,8 @@ import ConfirmEmailChange from "@/components/auth/ConfirmEmailChange";
 import { ProtectedGoodbyeRoute } from "@/components/auth/ProtectedGoodbyeRoute";
 import { CookieConsentProvider } from "./contexts/CookieConsentContext";
 import CookieBanner from "./components/cookies/CookieBanner";
+import { getSets, getTypes, getRarities } from "./lib/api";
+import { useEffect, useState } from "react";
 
 // Lazy load heavy components for better performance
 const PricingPage = lazy(() => import("./components/pages/pricing"));
@@ -289,12 +291,110 @@ function AppRoutes() {
 }
 
 export default function App() {
+  console.log('🔍 App component rendering!');
+  console.log('VITE_API_BASE:', import.meta.env.VITE_API_BASE);
+  
+  const [apiStatus, setApiStatus] = useState({
+    sets: '⏳ Cargando...',
+    types: '⏳ Cargando...',
+    rarities: '⏳ Cargando...',
+    errors: [] as string[]
+  });
+
+  useEffect(() => {
+    const testApis = async () => {
+      console.log('🔍 Iniciando pruebas de API desde App...');
+      
+      // Probar getSets
+      try {
+        const sets = await getSets();
+        console.log('✅ getSets exitoso:', sets.length, 'sets');
+        setApiStatus(prev => ({ ...prev, sets: `✅ ${sets.length} sets` }));
+      } catch (error) {
+        console.error('❌ Error en getSets:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setApiStatus(prev => ({ 
+          ...prev, 
+          sets: `❌ Error: ${errorMsg}`,
+          errors: [...prev.errors, `getSets: ${errorMsg}`]
+        }));
+      }
+
+      // Probar getTypes
+      try {
+        const types = await getTypes();
+        console.log('✅ getTypes exitoso:', types.length, 'tipos');
+        setApiStatus(prev => ({ ...prev, types: `✅ ${types.length} tipos` }));
+      } catch (error) {
+        console.error('❌ Error en getTypes:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setApiStatus(prev => ({ 
+          ...prev, 
+          types: `❌ Error: ${errorMsg}`,
+          errors: [...prev.errors, `getTypes: ${errorMsg}`]
+        }));
+      }
+
+      // Probar getRarities
+      try {
+        const rarities = await getRarities();
+        console.log('✅ getRarities exitoso:', rarities.length, 'rarezas');
+        setApiStatus(prev => ({ ...prev, rarities: `✅ ${rarities.length} rarezas` }));
+      } catch (error) {
+        console.error('❌ Error en getRarities:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setApiStatus(prev => ({ 
+          ...prev, 
+          rarities: `❌ Error: ${errorMsg}`,
+          errors: [...prev.errors, `getRarities: ${errorMsg}`]
+        }));
+      }
+    };
+
+    testApis();
+  }, []);
+  
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <BrowserRouter>
         <AuthProvider>
           <CookieConsentProvider>
-            <AppRoutes />
+            {/* Panel de debug inline */}
+            <div style={{ 
+              position: 'fixed', 
+              top: '10px', 
+              right: '10px', 
+              padding: '20px', 
+              backgroundColor: '#2563eb', 
+              color: 'white',
+              border: '3px solid #ffffff',
+              borderRadius: '8px',
+              zIndex: 9999,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              maxWidth: '300px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}>
+              🔍 DEBUG PANEL - PRUEBAS API
+              <br />
+              <small>API Base: {import.meta.env.VITE_API_BASE || 'No configurado'}</small>
+              <hr style={{ margin: '10px 0', border: '1px solid white' }} />
+              <div>Sets: {apiStatus.sets}</div>
+              <div>Types: {apiStatus.types}</div>
+              <div>Rarities: {apiStatus.rarities}</div>
+              {apiStatus.errors.length > 0 && (
+                <>
+                  <hr style={{ margin: '10px 0', border: '1px solid white' }} />
+                  <div style={{ color: '#fecaca' }}>Errores:</div>
+                  {apiStatus.errors.map((error, i) => (
+                    <div key={i} style={{ fontSize: '12px', color: '#fecaca' }}>
+                      {error}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+             <AppRoutes />
             <CookieBanner />
           </CookieConsentProvider>
         </AuthProvider>

@@ -859,8 +859,19 @@
       }
     },
     "newPassword": "Nueva Contraseña",
+    "enterNewPassword": "Ingresa tu nueva contraseña",
+    "confirmNewPassword": "Confirma tu nueva contraseña",
+    "updatePassword": "Actualizar Contraseña",
     "passwordChanged": "Tu contraseña ha sido actualizada correctamente",
     "processingReset": "Enviando instrucciones...",
+    "passwordRequirements": {
+      "minLength": "Mínimo 8 caracteres",
+      "uppercase": "Al menos una mayúscula",
+      "lowercase": "Al menos una minúscula",
+      "number": "Al menos un número",
+      "match": "Las contraseñas coinciden",
+      "noMatch": "Las contraseñas no coinciden"
+    },
     "errors": {
       "passwordsDoNotMatch": "Las contraseñas no coinciden",
       "invalidPassword": "Contraseña inválida",
