@@ -24,6 +24,11 @@ max_frequency = "1m0s"
 otp_length = 6
 otp_expiry = 86400
 
+# Security: Enable password breach protection using HaveIBeenPwned.org
+# This prevents users from using passwords that have been compromised in data breaches
+[auth.password]
+enable_hibp_check = true
+
 [functions]
 [functions.initialize-user]
 verify_jwt = true
