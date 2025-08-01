@@ -120,6 +120,7 @@ export async function getRarities(): Promise<string[]> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
+      // Llamada al backend en lugar de la API externa
       const { data } = await api.get("/pokemon/rarities", defaultConfig);
 
       if (!data || !Array.isArray(data.data)) {
@@ -148,6 +149,7 @@ export async function searchCards(
 
   return deduplicateRequest(cacheKey, async () => {
     try {
+      // Llamada al backend en lugar de la API externa
       const { data } = await api.get("/pokemon/cards", {
         ...defaultConfig,
         params: {
@@ -156,6 +158,7 @@ export async function searchCards(
           pageSize: params.pageSize,
           orderBy: params.orderBy,
           set: params.set !== "all" ? params.set : undefined,
+          rarity: params.rarity !== "all" ? params.rarity : undefined,
         },
       });
 
@@ -183,15 +186,16 @@ export async function searchCards(
 }
 
 export async function getSets(): Promise<PokemonCardSet[]> {
-  const cacheKey = 'sets';
-  const cached = PokemonCache.get<PokemonCardSet[]>(cacheKey);
-  
-  if (cached) {
-    return cached;
+  const cacheKey = "pokemon:sets";
+  const cachedData = PokemonCache.get<PokemonCardSet[]>(cacheKey);
+
+  if (cachedData) {
+    return cachedData;
   }
 
   return deduplicateRequest(cacheKey, async () => {
     try {
+      // Llamada al backend en lugar de la API externa
       const { data } = await api.get("/pokemon/sets", defaultConfig);
       const sets = data.data || [];
       PokemonCache.set(cacheKey, sets);
@@ -204,15 +208,16 @@ export async function getSets(): Promise<PokemonCardSet[]> {
 }
 
 export async function getTypes(): Promise<string[]> {
-  const cacheKey = 'types';
-  const cached = PokemonCache.get<string[]>(cacheKey);
-  
-  if (cached) {
-    return cached;
+  const cacheKey = "pokemon:types";
+  const cachedData = PokemonCache.get<string[]>(cacheKey);
+
+  if (cachedData) {
+    return cachedData;
   }
 
   return deduplicateRequest(cacheKey, async () => {
     try {
+      // Llamada al backend en lugar de la API externa
       const { data } = await api.get("/pokemon/types", defaultConfig);
       const types = data.data || [];
       PokemonCache.set(cacheKey, types);
@@ -326,8 +331,8 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Importante: Usar el ID original para la petición a la API
-      // La API de Pokémon TCG es sensible a mayúsculas/minúsculas
+      // Llamada al backend en lugar de la API externa
+      // El backend maneja la comunicación con la API de Pokémon TCG
       const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
 
       if (!data || !data.data) {
