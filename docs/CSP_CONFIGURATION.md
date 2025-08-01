@@ -31,6 +31,9 @@ Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'
 - `wss://kiphglgoanmibjztwhmj.supabase.co`: Base de datos Supabase para WebSockets
 - `wss://*.supabase.co`: Cualquier subdominio de Supabase (WebSockets)
 - `https://pokecollect-backend.onrender.com`: **Backend de producción** (añadido para resolver el problema)
+- `https://www.google-analytics.com`: Google Analytics para envío de datos
+- `https://*.google-analytics.com`: Subdominios de Google Analytics
+- `https://analytics.google.com`: Servicio principal de Google Analytics
 
 **Nota importante**: Las conexiones WebSocket (wss://) son necesarias para Supabase Realtime, que permite actualizaciones en tiempo real de la base de datos.
 

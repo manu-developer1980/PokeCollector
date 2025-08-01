@@ -46,6 +46,9 @@ connect-src 'self' https://kiphglgoanmibjztwhmj.supabase.co https://*.supabase.c
 **Para connect-src:**
 - `wss://kiphglgoanmibjztwhmj.supabase.co`: URL específica para WebSocket de Supabase
 - `wss://*.supabase.co`: Wildcard para todos los subdominios de Supabase con WebSocket
+- `https://www.google-analytics.com`: Para envío de datos de Analytics
+- `https://*.google-analytics.com`: Para subdominios de Google Analytics
+- `https://analytics.google.com`: Para el servicio principal de Analytics
 
 ### 3. Documentación Actualizada
 
