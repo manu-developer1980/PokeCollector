@@ -59,6 +59,16 @@ api.interceptors.response.use(undefined, async (err) => {
     return Promise.reject(err);
   }
 
+  // No reintentar errores 404 (Not Found) - son errores definitivos
+  if (err.response?.status === 404) {
+    return Promise.reject(err);
+  }
+
+  // No reintentar errores 400-499 (errores del cliente)
+  if (err.response?.status >= 400 && err.response?.status < 500) {
+    return Promise.reject(err);
+  }
+
   config.retryCount = config.retryCount || 0;
 
   if (config.retryCount >= config.retry) {
@@ -67,11 +77,11 @@ api.interceptors.response.use(undefined, async (err) => {
 
   config.retryCount += 1;
   
-  // Exponential backoff with jitter
-  const baseDelay = config.retryDelay || 2000; // Increased base delay for slow backend
+  // Exponential backoff with jitter - reducido para mejor rendimiento
+  const baseDelay = config.retryDelay || 1000; // Reducido de 2000 a 1000
   const exponentialDelay = baseDelay * Math.pow(2, config.retryCount - 1);
-  const jitter = Math.random() * 2000; // Increased jitter for better distribution
-  const delay = Math.min(exponentialDelay + jitter, 60000); // Cap at 60 seconds for slow backends
+  const jitter = Math.random() * 1000; // Reducido de 2000 a 1000
+  const delay = Math.min(exponentialDelay + jitter, 30000); // Reducido de 60000 a 30000
   
   await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -93,8 +103,8 @@ api.interceptors.request.use(async (config) => {
 
 // Default config for requests
 const defaultConfig: any = {
-  retry: 3,
-  retryDelay: 2000, // Increased delay for slow backend responses
+  retry: 2, // Reducido de 3 a 2 para mejor rendimiento
+  retryDelay: 1000, // Reducido de 2000 a 1000 para respuestas más rápidas
 };
 
 // Helper function for request deduplication
@@ -174,7 +184,7 @@ export async function searchCards(
         totalCount: data.totalCount || 0,
       };
 
-      PokemonCache.set(cacheKey, response, 300000); // 5 minutos de stale time
+      PokemonCache.setSearchResult(cacheKey, response); // Usar cache optimizado para búsquedas
       return response;
     } catch (error) {
       console.error("Error searching cards:", error);

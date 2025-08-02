@@ -83,7 +83,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
     // Basic (Apprentice): only name and type
     if (type !== "all") {
-      queryParts.push(`types:"${type}"`);
+      queryParts.push(`types:${type}`);
     }
 
     // Trainer: adds rarity

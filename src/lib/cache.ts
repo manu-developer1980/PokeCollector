@@ -2,6 +2,7 @@ import { PokemonCard, PokemonCardSearchResponse } from "@/types/pokemon";
 
 const CACHE_PREFIX = 'pokemon_cache_';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+const SEARCH_CACHE_DURATION = 30 * 60 * 1000; // 30 minutos para búsquedas (más frecuentes)
 
 interface CacheItem<T> {
   timestamp: number;
@@ -36,6 +37,21 @@ export class PokemonCache {
       timestamp: Date.now(),
       data,
       staleTime: staleTime || CACHE_DURATION * 0.8 // Por defecto, stale time es 80% del TTL
+    };
+    try {
+      localStorage.setItem(key, JSON.stringify(cacheItem));
+    } catch (error) {
+      console.warn('Cache storage failed:', error);
+      this.clearOldItems();
+    }
+  }
+
+  // Método específico para cache de búsquedas con duración optimizada
+  static setSearchResult<T>(key: string, data: T): void {
+    const cacheItem: CacheItem<T> = {
+      timestamp: Date.now(),
+      data,
+      staleTime: SEARCH_CACHE_DURATION * 0.7 // 70% del tiempo de cache para búsquedas
     };
     try {
       localStorage.setItem(key, JSON.stringify(cacheItem));
