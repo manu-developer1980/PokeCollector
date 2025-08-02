@@ -130,8 +130,9 @@ serve(async (req) => {
     console.error("❌ Error en el proceso de inicialización:", error);
 
     // Asegurarnos de que los encabezados CORS estén presentes incluso en caso de error
+    const errorCorsHeaders = getCorsHeaders(req);
     const errorHeaders = {
-      ...corsHeaders,
+      ...errorCorsHeaders,
       "Content-Type": "application/json",
     };
 

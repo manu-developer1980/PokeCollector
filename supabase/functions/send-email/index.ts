@@ -1,14 +1,14 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
+
 // Simplified email function for testing
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      }
+      headers: corsHeaders
     });
   }
 
@@ -41,8 +41,8 @@ Deno.serve(async (req) => {
         {
           status: 200,
           headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            ...corsHeaders,
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -60,8 +60,8 @@ Deno.serve(async (req) => {
       {
         status: 200,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          ...corsHeaders,
+          'Content-Type': 'application/json'
         }
       }
     );
@@ -77,8 +77,8 @@ Deno.serve(async (req) => {
       {
         status: 500,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          ...corsHeaders,
+          'Content-Type': 'application/json'
         }
       }
     );

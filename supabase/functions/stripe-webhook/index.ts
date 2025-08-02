@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@12.0.0";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2023-10-16",
@@ -12,6 +13,12 @@ const supabase = createClient(
 );
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   // Solo registramos información básica en producción
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
@@ -316,12 +323,17 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ received: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (err) {
-    console.error("Error processing webhook:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 400,
-    });
+    console.error("Error processing webhook:", err.message);
+    return new Response(
+      JSON.stringify({ error: `Webhook error: ${err.message}` }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      }
+    );
   }
 });
