@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pokemonApiCircuitBreaker, CircuitState } from '../lib/circuitBreaker';
-import { api } from '../lib/api';
+import axios from 'axios';
 
 export interface ApiHealthStatus {
   isOnline: boolean;
@@ -20,7 +20,8 @@ export interface UseApiHealthReturn {
 }
 
 const HEALTH_CHECK_INTERVAL = 30000; // 30 segundos
-const HEALTH_CHECK_ENDPOINT = '/health';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const HEALTH_CHECK_ENDPOINT = `${API_BASE}/health`;
 
 export function useApiHealth(): UseApiHealthReturn {
   const [status, setStatus] = useState<ApiHealthStatus>({
@@ -51,7 +52,7 @@ export function useApiHealth(): UseApiHealthReturn {
   const checkHealth = useCallback(async () => {
     try {
       // Intentar hacer una petición simple al endpoint de salud
-      await api.get(HEALTH_CHECK_ENDPOINT, {
+      await axios.get(HEALTH_CHECK_ENDPOINT, {
         timeout: 5000 // Timeout corto para health check
       });
       
