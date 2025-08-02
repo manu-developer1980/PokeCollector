@@ -102,6 +102,10 @@ export interface PokemonCardSearchResponse {
   pageSize: number;
   count: number;
   totalCount: number;
+  // Información de estado de la respuesta
+  fromCache?: boolean;
+  isStale?: boolean;
+  timestamp?: number;
 }
 
 export interface CollectionCard {

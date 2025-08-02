@@ -5,6 +5,7 @@ import { Search, Database, Heart, LogIn, LogOut, User } from "lucide-react";
 import { MobileMenu } from "@/components/common/shared/MobileMenu";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { ApiStatusBadge } from "@/components/common/ApiStatusIndicator";
 
 interface MainHeaderProps {
   showNavigation?: boolean;
@@ -107,6 +108,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
           )}
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <ApiStatusBadge className="hidden sm:flex" />
           <LanguageSwitcher />
         </div>
       </div>

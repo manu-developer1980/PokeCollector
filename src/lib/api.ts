@@ -7,6 +7,7 @@ import {
 } from "@/types/pokemon";
 import { PokemonCache } from "./cache";
 import { normalizeCardId } from "./utils";
+import { pokemonApiCircuitBreaker, CircuitState } from "./circuitBreaker";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
@@ -149,17 +150,20 @@ export async function searchCards(
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Llamada al backend en lugar de la API externa
-      const { data } = await api.get("/pokemon/cards", {
-        ...defaultConfig,
-        params: {
-          q: params.q,
-          page: params.page,
-          pageSize: params.pageSize,
-          orderBy: params.orderBy,
-          set: params.set !== "all" ? params.set : undefined,
-          rarity: params.rarity !== "all" ? params.rarity : undefined,
-        },
+      // Intentar con circuit breaker
+      const data = await pokemonApiCircuitBreaker.execute(async () => {
+        const { data } = await api.get("/pokemon/cards", {
+          ...defaultConfig,
+          params: {
+            q: params.q,
+            page: params.page,
+            pageSize: params.pageSize,
+            orderBy: params.orderBy,
+            set: params.set !== "all" ? params.set : undefined,
+            rarity: params.rarity !== "all" ? params.rarity : undefined,
+          },
+        });
+        return data;
       });
 
       const response = {
@@ -170,10 +174,18 @@ export async function searchCards(
         totalCount: data.totalCount || 0,
       };
 
-      PokemonCache.set(cacheKey, response);
+      PokemonCache.set(cacheKey, response, 300000); // 5 minutos de stale time
       return response;
     } catch (error) {
       console.error("Error searching cards:", error);
+      
+      // Intentar obtener datos stale del caché como fallback
+      const staleData = PokemonCache.getStale<PokemonCardSearchResponse>(cacheKey);
+      if (staleData) {
+        console.warn('Using stale data as fallback for search');
+        return staleData.data;
+      }
+      
       return {
         data: [],
         page: 1,
@@ -331,9 +343,11 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Llamada al backend en lugar de la API externa
-      // El backend maneja la comunicación con la API de Pokémon TCG
-      const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+      // Intentar con circuit breaker
+      const data = await pokemonApiCircuitBreaker.execute(async () => {
+        const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+        return data;
+      });
 
       if (!data || !data.data) {
         // Guardar en caché de cartas no encontradas
@@ -341,7 +355,7 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
         // Crear un placeholder para cartas sin datos
         const placeholderCard = createPlaceholderCard(normalizedId);
         // Guardar en caché para evitar futuras peticiones
-        PokemonCache.set(cacheKey, placeholderCard);
+        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutos de stale time
         return placeholderCard;
       }
 
@@ -368,20 +382,29 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
         };
 
         // Guardar en caché
-        PokemonCache.set(cacheKey, placeholderCard);
+        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutos de stale time
         return placeholderCard;
       }
 
-      PokemonCache.set(cacheKey, data.data);
+      PokemonCache.set(cacheKey, data.data, 600000); // 10 minutos de stale time
       return data.data;
     } catch (error: any) {
+      console.error(`Error fetching card ${normalizedId}:`, error);
+      
+      // Intentar obtener datos stale del caché como fallback
+      const staleData = PokemonCache.getStale<PokemonCard>(cacheKey);
+      if (staleData) {
+        console.warn(`Using stale data as fallback for card ${normalizedId}`);
+        return staleData.data;
+      }
+      
       // Si el error es 404, guardar en caché de cartas no encontradas
       if (error.response && error.response.status === 404) {
         notFoundCardsCache.add(normalizedId);
         // Crear un placeholder para cartas no encontradas
         const placeholderCard = createPlaceholderCard(normalizedId);
         // Guardar en caché para evitar futuras peticiones
-        PokemonCache.set(cacheKey, placeholderCard);
+        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutos de stale time
         return placeholderCard;
       }
 
