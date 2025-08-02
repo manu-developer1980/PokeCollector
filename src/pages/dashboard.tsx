@@ -8,7 +8,7 @@ import CollectionDialog from "../components/features/pokemon/CollectionDialog";
 import CardDetail from "../components/features/pokemon/CardDetail";
 import { Collection, CollectionCard } from "@/types/pokemon";
 import { Database, Heart, Search } from "lucide-react";
-import MainHeader from "../layout/MainHeader";
+import MainHeader from "../components/layout/MainHeader";
 // Añadir esta importación
 import { useTranslation } from "react-i18next";
 

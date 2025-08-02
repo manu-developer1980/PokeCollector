@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { useLocalization } from '../../hooks/useLocalization';
-import { cacheService } from '../../utils/cacheService';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Badge } from '../../ui/badge';
+import { Button } from '../../ui/button';
+import { useLocalization } from '../../../hooks/useLocalization';
+import { cacheService } from '../../../lib/cacheService';
 import { Activity, Database, Clock, Zap } from 'lucide-react';
 
 interface PerformanceMetrics {

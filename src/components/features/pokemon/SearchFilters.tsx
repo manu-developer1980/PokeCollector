@@ -127,10 +127,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   };
 
   return (
-    <div className="w-full px-2 sm:px-4">
+    <div className="w-full max-w-6xl mx-auto">
       <div className="flex flex-col gap-4">
         {/* Contenedor principal de los filtros */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
           {/* Campo de búsqueda y tipo (disponible para todos) */}
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <div className="relative">

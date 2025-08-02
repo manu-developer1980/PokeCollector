@@ -213,7 +213,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-red-50">
-      <div className="container pt-24">
+      <div className="container mx-auto max-w-7xl pt-24 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("search.title")}</h1>
           <p className="text-gray-600">

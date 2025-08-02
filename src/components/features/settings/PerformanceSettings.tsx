@@ -1,11 +1,11 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Switch } from '../ui/switch';
-import { Slider } from '../ui/slider';
-import { Badge } from '../ui/badge';
-import { useLocalization } from '../../hooks/useLocalization';
-import { usePerformanceConfig } from '../../hooks/usePerformanceConfig';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Button } from '../../ui/button';
+import { Switch } from '../../ui/switch';
+import { Slider } from '../../ui/slider';
+import { Badge } from '../../ui/badge';
+import { useLocalization } from '../../../hooks/useLocalization';
+import { usePerformanceConfig } from '../../../hooks/usePerformanceConfig';
 import { 
   Settings, 
   Zap, 

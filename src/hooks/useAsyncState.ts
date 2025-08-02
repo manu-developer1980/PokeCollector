@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { withRetry, RetryOptions } from '../utils/retryUtils';
+import { withRetry, RetryOptions } from '../lib/retryUtils';
 
 export interface AsyncState<T> {
   data: T | null;

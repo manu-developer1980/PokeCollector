@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { useLocalization } from '../../hooks/useLocalization';
-import { useStats } from '../../hooks/useStats';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Badge } from '../../ui/badge';
+import { Progress } from '../../ui/progress';
+import { useLocalization } from '../../../hooks/useLocalization';
+import { useStats } from '../../../hooks/useStats';
 import { Database, Heart, TrendingUp, Star } from 'lucide-react';
 import { Collection } from '@/types/pokemon';
 

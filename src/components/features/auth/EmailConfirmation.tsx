@@ -5,15 +5,15 @@ import {
   CardHeader,
   CardContent,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "../../ui/card";
+import { Button } from "../../ui/button";
 import { Mail, ArrowRight, Crown } from "lucide-react";
-import { useAuth } from "../../../../../supabase/auth";
+import { useAuth } from "../../../../supabase/auth";
 import AuthLayout from "./AuthLayout";
-import { cn } from "@/lib/utils";
-import { PlanChangeDialog } from "../../subscription/PlanChangeDialog";
+import { cn } from "../../../lib/utils";
+import { PlanChangeDialog } from "../subscription/PlanChangeDialog";
 import { useState } from "react";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useSubscription } from "../../../hooks/useSubscription";
 import { useTranslation } from "react-i18next";
 
 interface SidebarProps {

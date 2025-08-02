@@ -106,6 +106,7 @@ export interface PokemonCardSearchResponse {
   fromCache?: boolean;
   isStale?: boolean;
   timestamp?: number;
+  circuitBreakerUsed?: boolean;
 }
 
 export interface CollectionCard {

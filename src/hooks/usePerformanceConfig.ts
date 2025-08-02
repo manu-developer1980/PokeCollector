@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { cacheService } from '../utils/cacheService';
+import { cacheService } from '../lib/cacheService';
 
 interface PerformanceConfig {
   enableCache: boolean;

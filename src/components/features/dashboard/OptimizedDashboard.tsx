@@ -1,12 +1,13 @@
-import React, { Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { ConnectionStatus } from '../shared/ConnectionStatus';
-import { useUserData } from '../../hooks/useUserData';
-import { useCollections } from '../../hooks/useCollections';
-import { useLocalization } from '../../hooks/useLocalization';
-import { Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { useAuth } from '../../../../supabase/auth';
+import { useUserData } from '../../../hooks/useUserData';
+import { useCollections } from '../../../hooks/useCollections';
+import { useLocalization } from '../../../hooks/useLocalization';
+import { Loader2, AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { ConnectionStatus } from '../../common/shared/ConnectionStatus';
 
 // Lazy load components for better performance
 const CollectionList = lazy(() => import('../pokemon/CollectionList'));
