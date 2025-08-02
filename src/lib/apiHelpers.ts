@@ -4,16 +4,16 @@
 
 import { pokemonApiCircuitBreaker } from './circuitBreaker';
 import { PokemonCache } from './cache';
-import type { SearchResponse, PokemonCard } from '../types/pokemon';
+import type { PokemonCardSearchResponse, PokemonCard } from '../types/pokemon';
 
 /**
  * Función auxiliar para búsqueda de cartas con fallback completo
  */
 export async function searchCardsWithFallback(
-  operation: () => Promise<SearchResponse>,
+  operation: () => Promise<PokemonCardSearchResponse>,
   cacheKey: string,
-  fallbackData?: Partial<SearchResponse>
-): Promise<SearchResponse> {
+  fallbackData?: Partial<PokemonCardSearchResponse>
+): Promise<PokemonCardSearchResponse> {
   try {
     // Intentar la operación con circuit breaker
     const result = await pokemonApiCircuitBreaker.execute(operation);
@@ -32,7 +32,7 @@ export async function searchCardsWithFallback(
     console.error('Error in searchCardsWithFallback:', error);
     
     // Intentar obtener datos stale del caché
-    const staleData = PokemonCache.getStale<SearchResponse>(cacheKey);
+    const staleData = PokemonCache.getStale<PokemonCardSearchResponse>(cacheKey);
     if (staleData) {
       console.warn('Using stale data as fallback');
       return {
@@ -45,7 +45,7 @@ export async function searchCardsWithFallback(
     }
     
     // Si no hay datos stale, usar fallback por defecto
-    const defaultFallback: SearchResponse = {
+    const defaultFallback: PokemonCardSearchResponse = {
       data: [],
       page: 1,
       pageSize: 20,
