@@ -10,7 +10,7 @@ import LoginForm from "./components/features/auth/LoginForm";
 import SignUpForm from "./components/features/auth/SignUpForm";
 import ConfirmSignup from "./components/features/auth/ConfirmSignup";
 import LandingPage from "./pages/landing";
-import { AuthProvider, useAuth } from "../supabase/auth";
+import { AuthProvider, useAuth } from "../supabase/auth.tsx";
 import MainLayout from "./components/layout/MainLayout";
 import AuthCallback from "./components/features/auth/AuthCallback";
 import ForgotPassword from "./components/features/auth/ForgotPassword";
@@ -37,6 +37,7 @@ const SubscriptionManagement = lazy(() => import("@/components/features/subscrip
 const GoodbyePage = lazy(() => import("./pages/GoodbyePage"));
 const AdminPanel = lazy(() => import("@/components/features/admin/AdminPanel"));
 const InitialAdminSetup = lazy(() => import("@/components/features/admin/InitialAdminSetup"));
+const ManagementZone = lazy(() => import("@/components/features/admin/ManagementZone"));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -271,6 +272,16 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <InitialAdminSetup />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/management-zone"
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+                <ManagementZone />
+              </Suspense>
             </PrivateRoute>
           }
         />

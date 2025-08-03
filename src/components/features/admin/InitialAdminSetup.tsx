@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../../../supabase/auth";
+import { useAuth } from "../../../../supabase/auth.tsx";
 import { supabase } from "../../../../supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +46,7 @@ const InitialAdminSetup: React.FC = () => {
     if (!user) {
       toast({
         title: "Error",
-        description: "No user logged in",
+        description: "No hay usuario autenticado",
         variant: "destructive",
       });
       return;
@@ -67,8 +67,8 @@ const InitialAdminSetup: React.FC = () => {
 
       setIsAdmin(true);
       toast({
-        title: "Success!",
-        description: "Admin privileges granted successfully. You can now access the admin panel.",
+        title: "¡Éxito!",
+        description: "Privilegios de administrador otorgados exitosamente. Ahora puedes acceder al panel de administración.",
       });
 
       // Refresh the page to update admin status
@@ -79,7 +79,7 @@ const InitialAdminSetup: React.FC = () => {
       console.error("Error granting admin privileges:", err);
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to grant admin privileges",
+        description: err instanceof Error ? err.message : "Error al otorgar privilegios de administrador",
         variant: "destructive",
       });
     } finally {
@@ -99,12 +99,12 @@ const InitialAdminSetup: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
-              <span>Authentication Required</span>
+              <span>Autenticación Requerida</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600">
-              Please log in to access the admin setup.
+              Por favor inicia sesión para acceder a la configuración de administrador.
             </p>
           </CardContent>
         </Card>
@@ -119,22 +119,31 @@ const InitialAdminSetup: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              <span>Admin Access Granted</span>
+              <span>Acceso de Administrador Concedido</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Alert>
               <Shield className="h-4 w-4" />
               <AlertDescription>
-                You already have admin privileges. You can access the admin panel.
+                Ya tienes privilegios de administrador. Puedes acceder a las áreas de administración.
               </AlertDescription>
             </Alert>
-            <Button 
-              className="w-full mt-4" 
-              onClick={() => window.location.href = "/admin"}
-            >
-              Go to Admin Panel
-            </Button>
+            <div className="space-y-2 mt-4">
+              <Button 
+                className="w-full" 
+                onClick={() => window.location.href = "/management-zone"}
+              >
+                Ir a Zona de Gestión
+              </Button>
+              <Button 
+                variant="outline"
+                className="w-full" 
+                onClick={() => window.location.href = "/admin"}
+              >
+                Ir al Panel de Admin (Legacy)
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -147,15 +156,15 @@ const InitialAdminSetup: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5 text-blue-500" />
-            <span>Initial Admin Setup</span>
+            <span>Configuración Inicial de Administrador</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              This is a one-time setup to grant admin privileges to your account.
-              This component should be removed after initial setup.
+              Esta es una configuración única para otorgar privilegios de administrador a tu cuenta.
+              Este componente debe ser removido después de la configuración inicial.
             </AlertDescription>
           </Alert>
 
@@ -163,7 +172,7 @@ const InitialAdminSetup: React.FC = () => {
             <div className="flex items-center space-x-3">
               <User className="h-5 w-5 text-gray-400" />
               <div>
-                <p className="font-medium">Current User</p>
+                <p className="font-medium">Usuario Actual</p>
                 <p className="text-sm text-gray-600">{user.email}</p>
               </div>
             </div>
@@ -171,9 +180,9 @@ const InitialAdminSetup: React.FC = () => {
             <div className="flex items-center space-x-3">
               <Shield className="h-5 w-5 text-gray-400" />
               <div>
-                <p className="font-medium">Admin Status</p>
+                <p className="font-medium">Estado de Administrador</p>
                 <p className="text-sm text-gray-600">
-                  {isAdmin === null ? "Checking..." : isAdmin ? "Admin" : "Regular User"}
+                  {isAdmin === null ? "Verificando..." : isAdmin ? "Administrador" : "Usuario Regular"}
                 </p>
               </div>
             </div>
@@ -184,13 +193,13 @@ const InitialAdminSetup: React.FC = () => {
             disabled={loading || isAdmin}
             className="w-full"
           >
-            {loading ? "Granting Admin Privileges..." : "Grant Admin Privileges"}
+            {loading ? "Otorgando Privilegios de Admin..." : "Otorgar Privilegios de Administrador"}
           </Button>
 
           <div className="text-xs text-gray-500 space-y-1">
-            <p><strong>Alternative methods:</strong></p>
-            <p>1. Use Supabase Dashboard → users table → set is_admin = true</p>
-            <p>2. Run SQL: UPDATE users SET is_admin = true WHERE email = '{user.email}'</p>
+            <p><strong>Métodos alternativos:</strong></p>
+            <p>1. Usar Supabase Dashboard → tabla users → establecer is_admin = true</p>
+            <p>2. Ejecutar SQL: UPDATE users SET is_admin = true WHERE email = '{user.email}'</p>
           </div>
         </CardContent>
       </Card>

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useAuth } from "../../supabase/auth";
 import { supabase } from "../../supabase/supabase";
 import { useAdmin } from "./useAdmin";
@@ -22,6 +22,7 @@ export interface SubscriptionDetails {
 export const useAdminSubscription = () => {
   const { user } = useAuth();
   const { isAdmin, logAdminAction } = useAdmin();
+  const [isChangingPlan, setIsChangingPlan] = useState(false);
 
   // Get subscription details for a user
   const getUserSubscription = useCallback(
@@ -50,46 +51,193 @@ export const useAdminSubscription = () => {
     [isAdmin]
   );
 
+  // Helper function to get access token from session
+  const getAccessToken = async (): Promise<string | null> => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+      console.error("Error getting session:", error);
+      return null;
+    }
+    return session.access_token;
+  };
+
   // Manually change user's plan
   const changePlan = useCallback(
-    async (userId: string, newPlanType: string, reason: string) => {
+    async (userIdOrStripeCustomerId: string, newPlanType: string, reason: string) => {
       // Let the database RLS policies handle the admin check
+      setIsChangingPlan(true);
 
       try {
-        // Get current subscription
-        const currentSubscription = await getUserSubscription(userId);
+        // Check if the provided ID is a Stripe customer ID (starts with 'cus_')
+        let actualUserId = userIdOrStripeCustomerId;
+        
+        if (userIdOrStripeCustomerId.startsWith('cus_')) {
+          // This is a Stripe customer ID, we need to find the actual user UUID
+          console.log('Converting Stripe customer ID to user UUID:', userIdOrStripeCustomerId);
+          
+          const { data: subscription, error } = await supabase
+            .from("subscriptions")
+            .select("user_id")
+            .eq("stripe_customer_id", userIdOrStripeCustomerId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
 
-        // Update subscription
-        const { data, error } = await supabase
-          .from("subscriptions")
-          .update({
-            plan_type: newPlanType,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId)
-          .select()
-          .single();
-
-        if (error) {
-          throw error;
+          if (error || !subscription) {
+            throw new Error(`No se encontró usuario para el cliente de Stripe: ${userIdOrStripeCustomerId}`);
+          }
+          
+          actualUserId = subscription.user_id;
+          console.log('Found actual user ID:', actualUserId);
         }
 
-        // Log the action
+        // Get current subscription using the actual user UUID
+        const currentSubscription = await getUserSubscription(actualUserId);
+        console.log('Current subscription data:', {
+          id: currentSubscription?.id,
+          stripe_subscription_id: currentSubscription?.stripe_subscription_id,
+          stripe_customer_id: currentSubscription?.stripe_customer_id,
+          plan_type: currentSubscription?.plan_type
+        });
+
+        if (!currentSubscription?.stripe_subscription_id) {
+          throw new Error("No se encontró suscripción de Stripe");
+        }
+
+        // Get access token
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          throw new Error("No se pudo obtener el token de acceso");
+        }
+
+        // Get the new price ID from Stripe plans
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-admin/plans`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Error al obtener planes de Stripe");
+        }
+
+        const data = await response.json();
+        const stripePlans = data.plans || [];
+        
+        // Debug logging - show full structure
+        console.log('Raw API response:', data);
+        console.log('Available plans count:', stripePlans.length);
+        console.log('Full plans structure:', stripePlans);
+        
+        // Flatten plans if they have a prices array structure
+        const flattenedPlans = [];
+        for (const plan of stripePlans) {
+          if (plan.prices && Array.isArray(plan.prices)) {
+            // Structure: {product, prices: Array}
+            for (const price of plan.prices) {
+              flattenedPlans.push({
+                product: plan.product,
+                price: price
+              });
+            }
+          } else if (plan.price) {
+            // Structure: {product, price}
+            flattenedPlans.push(plan);
+          } else {
+            console.warn('Unknown plan structure:', plan);
+          }
+        }
+        
+        console.log('Flattened plans:', flattenedPlans.map((plan: any) => ({
+          priceId: plan.prices?.[0]?.id,
+          productName: plan.product?.name,
+          planType: plan.product?.metadata?.plan_type,
+          active: plan.prices?.[0]?.active
+        })));
+        console.log('Looking for plan:', newPlanType);
+        
+        // Try to find the plan by price ID first (if newPlanType looks like a price ID)
+        let targetPlan = null;
+        if (newPlanType.startsWith('price_')) {
+          targetPlan = flattenedPlans.find((plan: any) => plan.prices?.[0]?.id === newPlanType);
+          console.log('Search by price ID result:', targetPlan ? 'Found' : 'Not found');
+          if (targetPlan) {
+            console.log('Found plan details:', targetPlan);
+          }
+        }
+        
+        // If not found by price ID, try to find by plan_type metadata
+        if (!targetPlan) {
+          targetPlan = flattenedPlans.find((plan: any) => 
+            plan.product?.metadata?.plan_type?.toLowerCase() === newPlanType.toLowerCase()
+          );
+          console.log('Search by plan_type result:', targetPlan ? 'Found' : 'Not found');
+          if (targetPlan) {
+            console.log('Found plan by metadata:', targetPlan);
+          }
+        }
+
+        if (!targetPlan?.prices?.[0]?.id) {
+          console.error('No plan found. Available price IDs:', flattenedPlans.map(p => p.prices?.[0]?.id));
+          console.error('Target price ID:', newPlanType);
+          console.error('Full flattened plans:', flattenedPlans);
+          throw new Error(`No se encontró precio para el plan: ${newPlanType}`);
+        }
+
+        // Call the change-subscription Edge Function
+        const changeResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/change-subscription`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+               subscriptionId: currentSubscription.stripe_subscription_id,
+               newPriceId: targetPlan.prices[0].id,
+             }),
+          }
+        );
+
+        if (!changeResponse.ok) {
+          const errorData = await changeResponse.json();
+          throw new Error(errorData.error || "Error al cambiar el plan");
+        }
+
+        const result = await changeResponse.json();
+
+        // Get the updated subscription from database to ensure we have the correct UUID
+        const updatedSubscription = await getUserSubscription(actualUserId);
+        console.log('Updated subscription data:', {
+          id: updatedSubscription?.id,
+          stripe_subscription_id: updatedSubscription?.stripe_subscription_id,
+          plan_type: updatedSubscription?.plan_type
+        });
+
+        // Log the action - use the database UUID, not the Stripe data
         await logAdminAction(
           user!.id,
-          userId,
+          actualUserId,
           "admin_plan_change",
           "subscription",
-          data.id,
+          updatedSubscription?.id || currentSubscription.id, // Ensure we use the database UUID
           { plan_type: currentSubscription?.plan_type },
           { plan_type: newPlanType },
           { reason, admin_override: true }
         );
 
-        return data;
+        return result;
       } catch (err) {
         console.error("Error changing plan:", err);
         throw err;
+      } finally {
+        setIsChangingPlan(false);
       }
     },
     [isAdmin, user, getUserSubscription, logAdminAction]
@@ -150,6 +298,12 @@ export const useAdminSubscription = () => {
       // Let the database RLS policies handle the admin check
 
       try {
+        // Get access token
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          throw new Error("No se pudo obtener el token de acceso");
+        }
+
         // Call the sync function
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-subscription`,
@@ -157,7 +311,7 @@ export const useAdminSubscription = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
               user_id: userId,
@@ -207,6 +361,12 @@ export const useAdminSubscription = () => {
           throw new Error("No Stripe subscription found");
         }
 
+        // Get access token
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          throw new Error("No se pudo obtener el token de acceso");
+        }
+
         // Call the cancel function
         const response = await fetch(
           `${
@@ -216,7 +376,7 @@ export const useAdminSubscription = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
               subscriptionId: currentSubscription.stripe_subscription_id,
@@ -385,5 +545,6 @@ export const useAdminSubscription = () => {
     createOverride,
     getUserOverrides,
     deactivateOverride,
+    isChangingPlan,
   };
 };

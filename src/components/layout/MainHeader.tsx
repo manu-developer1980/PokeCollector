@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
-import { Search, Database, Heart, LogIn, LogOut, User } from "lucide-react";
+import { useAdmin } from "@/hooks/useAdmin";
+import { Search, Database, Heart, LogIn, LogOut, User, Settings } from "lucide-react";
 import { MobileMenu } from "@/components/common/shared/MobileMenu";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ interface MainHeaderProps {
 
 export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -92,9 +94,23 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
             </Button>
           )}
 
-          {/* Botón de cerrar sesión - solo icono */}
+          {/* Botones de usuario autenticado */}
           {user && (
-            <div className="sm:flex items-center gap-4">
+            <div className="sm:flex items-center gap-2">
+              {/* Botón de zona de gestión - solo para administradores */}
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/management-zone")}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  size="icon"
+                  aria-label="Zona de Gestión"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {/* Botón de cerrar sesión */}
               <Button
                 variant="outline"
                 onClick={handleSignOut}

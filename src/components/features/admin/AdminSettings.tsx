@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useAdmin } from "@/hooks/useAdmin";
-import { useAuth } from "../../../../supabase/auth";
+import { useAuth } from "../../../../supabase/auth.tsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

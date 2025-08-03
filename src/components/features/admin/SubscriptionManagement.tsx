@@ -52,6 +52,7 @@ import {
   Eye,
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
+import { PlanChangeModal } from "./PlanChangeModal";
 
 interface UserSubscriptionData {
   id: string;
@@ -92,6 +93,7 @@ const SubscriptionManagement: React.FC = () => {
     createOverride,
     getUserOverrides,
     deactivateOverride,
+    isChangingPlan,
   } = useAdminSubscription();
   const { getUsers, getUserById } = useAdmin();
   const { toast } = useToast();
@@ -1797,6 +1799,12 @@ const SubscriptionManagement: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Plan Change Loading Modal */}
+      <PlanChangeModal 
+        isOpen={isChangingPlan} 
+        message="Actualizando plan de suscripción..." 
+      />
     </div>
   );
 };
