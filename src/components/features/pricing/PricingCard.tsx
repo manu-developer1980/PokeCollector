@@ -156,11 +156,11 @@ export function PricingCard({
   return (
     <>
       <Card
-        className={`relative max-w-[330px] ${
+        className={`relative max-w-[330px] bg-white ${
           isPopular ? "border-primary" : ""
         } ${
           user && isCurrentPlan
-            ? "bg-opacity-90"
+            ? "bg-white bg-opacity-100"
             : "hover:scale-105 duration-150 transition-transform cursor-pointer"
         }`}
       >
@@ -209,7 +209,7 @@ export function PricingCard({
         {user && (
           <CardFooter>
             {isCurrentPlan ? (
-              <div className="w-full px-4 py-2 bg-green-100 text-green-800 rounded-md text-center font-medium shadow-sm">
+              <div className="w-full px-4 py-2 bg-white text-green-800 rounded-md text-center font-medium shadow-sm border border-green-200">
                 {t("plans.currentPlan")}
               </div>
             ) : (

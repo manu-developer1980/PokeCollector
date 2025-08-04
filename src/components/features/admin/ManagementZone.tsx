@@ -426,7 +426,7 @@ const ManagementZone: React.FC = () => {
                     {activitiesLoading ? (
                       <div className="space-y-3">
                         {[...Array(4)].map((_, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg animate-pulse">
+                          <div key={i} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 animate-pulse">
                             <div className="flex items-center gap-3">
                               <div className="h-4 w-4 bg-gray-300 rounded"></div>
                               <div className="h-4 w-32 bg-gray-300 rounded"></div>
@@ -443,7 +443,7 @@ const ManagementZone: React.FC = () => {
                                             activity.icon === 'Activity' ? Activity : Activity;
                         
                         return (
-                          <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div key={activity.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
                             <div className="flex items-center gap-3">
                               <IconComponent className={`h-4 w-4 ${activity.color}`} />
                               <span className="text-sm">{activity.description}</span>
