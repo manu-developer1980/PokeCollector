@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useAdminStats } from "@/hooks/useAdminStats";
+import { useRecentActivity, formatRelativeTime } from "@/hooks/useRecentActivity";
 import { useAuth } from "../../../../supabase/auth.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Shield,
   Users,
@@ -25,25 +34,28 @@ import {
   Globe,
   Bot,
   TrendingUp,
+  RefreshCw,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 
 // Import existing components
-import UserManagement from "./UserManagement";
 import SubscriptionManagement from "./SubscriptionManagement";
 import AuditLogs from "./AuditLogs";
 import AdminSettings from "./AdminSettings";
 
 // Import new components
-import AccountDataManagement from "./AccountDataManagement";
+import UnifiedUserManagement from "./UnifiedUserManagement";
 import PricingManagement from "./PricingManagement";
 import ContentManagement from "./ContentManagement";
 import NewsAutomation from "./NewsAutomation";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 
 const ManagementZone: React.FC = () => {
   const { user } = useAuth();
   const { isAdmin, isLoading, error } = useAdmin();
+  const { stats, loading: statsLoading, error: statsError, refetch } = useAdminStats();
+  const { activities, loading: activitiesLoading, error: activitiesError, refetch: refetchActivities } = useRecentActivity();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
@@ -105,27 +117,15 @@ const ManagementZone: React.FC = () => {
     },
     {
       id: "users",
-      title: "Usuarios",
+      title: "Usuarios y Cuentas",
       icon: <Users className="h-4 w-4" />,
-      description: "Gestión de usuarios del sistema",
-    },
-    {
-      id: "account-data",
-      title: "Datos de cuenta",
-      icon: <Mail className="h-4 w-4" />,
-      description: "Email, nombre y datos personales",
+      description: "Gestión unificada de usuarios y datos de cuenta",
     },
     {
       id: "pricing",
       title: "Gestión de suscripción, precios",
       icon: <DollarSign className="h-4 w-4" />,
       description: "CRUD de planes y precios",
-    },
-    {
-      id: "user-crud",
-      title: "CRUD usuarios",
-      icon: <UserCheck className="h-4 w-4" />,
-      description: "Operaciones completas de usuarios",
     },
     {
       id: "content",
@@ -203,10 +203,6 @@ const ManagementZone: React.FC = () => {
                 <Users className="h-4 w-4" />
                 Usuarios
               </TabsTrigger>
-              <TabsTrigger value="account-data" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Cuentas
-              </TabsTrigger>
               <TabsTrigger value="pricing" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Precios
@@ -218,6 +214,10 @@ const ManagementZone: React.FC = () => {
               <TabsTrigger value="news" className="flex items-center gap-2">
                 <Bot className="h-4 w-4" />
                 Noticias
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Auditoría
               </TabsTrigger>
             </TabsList>
           </div>
@@ -256,144 +256,210 @@ const ManagementZone: React.FC = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Usuarios</p>
-                      <p className="text-2xl font-bold">1,234</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Estadísticas en Tiempo Real</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refetch}
+                  disabled={statsLoading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${statsLoading ? 'animate-spin' : ''}`} />
+                  Actualizar
+                </Button>
+              </div>
+              
+              {statsError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Error al cargar estadísticas: {statsError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Usuarios</p>
+                        <p className="text-2xl font-bold">
+                          {statsLoading ? '...' : stats.totalUsers.toLocaleString()}
+                        </p>
+                      </div>
+                      <Users className="h-8 w-8 text-blue-600" />
                     </div>
-                    <Users className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <div className="mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      +23 este mes
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Suscripciones</p>
-                      <p className="text-2xl font-bold">567</p>
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        +{statsLoading ? '...' : stats.newUsersThisMonth} este mes
+                      </Badge>
                     </div>
-                    <CreditCard className="h-8 w-8 text-green-600" />
-                  </div>
-                  <div className="mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      12% crecimiento
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Ingresos</p>
-                      <p className="text-2xl font-bold">$8,450</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Suscripciones</p>
+                        <p className="text-2xl font-bold">
+                          {statsLoading ? '...' : stats.activeSubscriptions.toLocaleString()}
+                        </p>
+                      </div>
+                      <CreditCard className="h-8 w-8 text-green-600" />
                     </div>
-                    <DollarSign className="h-8 w-8 text-yellow-600" />
-                  </div>
-                  <div className="mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      +15% vs mes anterior
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Contenido</p>
-                      <p className="text-2xl font-bold">89</p>
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {statsLoading ? '...' : stats.subscriptionGrowth}% crecimiento
+                      </Badge>
                     </div>
-                    <FileText className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <div className="mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      +5 esta semana
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Noticias Auto</p>
-                      <p className="text-2xl font-bold">45</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Colecciones</p>
+                        <p className="text-2xl font-bold">
+                          {statsLoading ? '...' : stats.totalCollections.toLocaleString()}
+                        </p>
+                      </div>
+                      <Database className="h-8 w-8 text-yellow-600" />
                     </div>
-                    <Bot className="h-8 w-8 text-indigo-600" />
-                  </div>
-                  <div className="mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      3 reglas activas
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Sistema</p>
-                      <p className="text-2xl font-bold">98%</p>
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        +{statsLoading ? '...' : stats.newCollectionsThisWeek} esta semana
+                      </Badge>
                     </div>
-                    <Activity className="h-8 w-8 text-red-600" />
-                  </div>
-                  <div className="mt-2">
-                    <Badge variant="default" className="text-xs">
-                      Excelente
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Cartas</p>
+                        <p className="text-2xl font-bold">
+                          {statsLoading ? '...' : stats.totalCardsInCollections.toLocaleString()}
+                        </p>
+                      </div>
+                      <FileText className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        En colecciones
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Actividad</p>
+                        <p className="text-2xl font-bold">
+                          {statsLoading ? '...' : stats.recentActivity.toLocaleString()}
+                        </p>
+                      </div>
+                      <Bot className="h-8 w-8 text-indigo-600" />
+                    </div>
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        Últimos 7 días
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Sistema</p>
+                        <p className="text-2xl font-bold">
+                          {statsLoading ? '...' : stats.systemHealth}%
+                        </p>
+                      </div>
+                      <Activity className="h-8 w-8 text-red-600" />
+                    </div>
+                    <div className="mt-2">
+                      <Badge variant="default" className="text-xs">
+                        Excelente
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Actividad Reciente
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Actividad Reciente
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={refetchActivities}
+                      disabled={activitiesLoading}
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${activitiesLoading ? 'animate-spin' : ''}`} />
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {activitiesError && (
+                    <Alert variant="destructive" className="mb-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Error al cargar actividad: {activitiesError}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <UserCheck className="h-4 w-4 text-green-600" />
-                        <span className="text-sm">Nuevo usuario registrado</span>
+                    {activitiesLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg animate-pulse">
+                            <div className="flex items-center gap-3">
+                              <div className="h-4 w-4 bg-gray-300 rounded"></div>
+                              <div className="h-4 w-32 bg-gray-300 rounded"></div>
+                            </div>
+                            <div className="h-3 w-16 bg-gray-300 rounded"></div>
+                          </div>
+                        ))}
                       </div>
-                      <span className="text-xs text-gray-500">hace 2 min</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm">Actualización de suscripción</span>
+                    ) : activities.length > 0 ? (
+                      activities.map((activity) => {
+                        const IconComponent = activity.icon === 'UserCheck' ? UserCheck :
+                                            activity.icon === 'CreditCard' ? CreditCard :
+                                            activity.icon === 'Database' ? Database :
+                                            activity.icon === 'Activity' ? Activity : Activity;
+                        
+                        return (
+                          <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <IconComponent className={`h-4 w-4 ${activity.color}`} />
+                              <span className="text-sm">{activity.description}</span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {formatRelativeTime(activity.timestamp)}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No hay actividad reciente</p>
                       </div>
-                      <span className="text-xs text-gray-500">hace 5 min</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm">Contenido publicado</span>
-                      </div>
-                      <span className="text-xs text-gray-500">hace 10 min</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Bot className="h-4 w-4 text-indigo-600" />
-                        <span className="text-sm">Artículo generado automáticamente</span>
-                      </div>
-                      <span className="text-xs text-gray-500">hace 15 min</span>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -435,32 +501,7 @@ const ManagementZone: React.FC = () => {
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <span>Gestión de Usuarios</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <UserManagement />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Account Data Tab */}
-          <TabsContent value="account-data" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Mail className="h-5 w-5" />
-                  <span>Datos de Cuenta (Email, Nombre)</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AccountDataManagement />
-              </CardContent>
-            </Card>
+            <UnifiedUserManagement />
           </TabsContent>
 
           {/* Pricing Tab */}
@@ -478,20 +519,7 @@ const ManagementZone: React.FC = () => {
             </Card>
           </TabsContent>
 
-          {/* User CRUD Tab */}
-          <TabsContent value="user-crud" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <UserCheck className="h-5 w-5" />
-                  <span>CRUD Usuarios</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <UserManagement />
-              </CardContent>
-            </Card>
-          </TabsContent>
+
 
           {/* Content Management Tab */}
           <TabsContent value="content" className="space-y-6">
@@ -503,7 +531,9 @@ const ManagementZone: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ContentManagement />
+                <ErrorBoundary>
+                  <ContentManagement />
+                </ErrorBoundary>
               </CardContent>
             </Card>
           </TabsContent>

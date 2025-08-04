@@ -68,6 +68,7 @@ import {
   Download,
   Globe,
   Languages,
+  Star,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/ui/use-toast";
@@ -135,6 +136,20 @@ const ContentManagement: React.FC = () => {
     tags: [],
     is_featured: false,
   });
+
+  // Error handling wrapper for async operations
+  const safeAsyncOperation = async (operation: () => Promise<void>, errorMessage: string) => {
+    try {
+      await operation();
+    } catch (error) {
+      console.error(errorMessage, error);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
 
   // Mock data - in real implementation, this would come from the API
   useEffect(() => {
@@ -331,6 +346,7 @@ const ContentManagement: React.FC = () => {
   };
 
   const generateSlug = (title: string) => {
+    if (!title || typeof title !== 'string') return '';
     return title
       .toLowerCase()
       .replace(/[áàäâ]/g, 'a')
@@ -346,12 +362,15 @@ const ContentManagement: React.FC = () => {
   };
 
   const addTag = (tags: string[], setTags: (tags: string[]) => void, newTag: string) => {
-    if (newTag && !tags.includes(newTag)) {
-      setTags([...tags, newTag]);
+    if (!newTag || typeof newTag !== 'string' || !Array.isArray(tags)) return;
+    const trimmedTag = newTag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
     }
   };
 
   const removeTag = (tags: string[], setTags: (tags: string[]) => void, tagToRemove: string) => {
+    if (!Array.isArray(tags) || !tagToRemove) return;
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
@@ -387,9 +406,16 @@ const ContentManagement: React.FC = () => {
   };
 
   const filteredContents = contents.filter(content => {
-    const matchesSearch = content.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         content.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         content.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (!content) return false;
+    
+    const safeTitle = content.title || '';
+    const safeContent = content.content || '';
+    const safeTags = Array.isArray(content.tags) ? content.tags : [];
+    const safeSearchTerm = searchTerm || '';
+    
+    const matchesSearch = safeTitle.toLowerCase().includes(safeSearchTerm.toLowerCase()) ||
+                         safeContent.toLowerCase().includes(safeSearchTerm.toLowerCase()) ||
+                         safeTags.some(tag => tag && tag.toLowerCase().includes(safeSearchTerm.toLowerCase()));
     
     const matchesType = filters.type === "all" || content.type === filters.type;
     const matchesStatus = filters.status === "all" || content.status === filters.status;
