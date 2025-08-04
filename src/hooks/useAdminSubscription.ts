@@ -154,17 +154,17 @@ export const useAdminSubscription = () => {
         }
         
         console.log('Flattened plans:', flattenedPlans.map((plan: any) => ({
-          priceId: plan.prices?.[0]?.id,
+          priceId: plan.price?.id,
           productName: plan.product?.name,
           planType: plan.product?.metadata?.plan_type,
-          active: plan.prices?.[0]?.active
+          active: plan.price?.active
         })));
         console.log('Looking for plan:', newPlanType);
         
         // Try to find the plan by price ID first (if newPlanType looks like a price ID)
         let targetPlan = null;
         if (newPlanType.startsWith('price_')) {
-          targetPlan = flattenedPlans.find((plan: any) => plan.prices?.[0]?.id === newPlanType);
+          targetPlan = flattenedPlans.find((plan: any) => plan.price?.id === newPlanType);
           console.log('Search by price ID result:', targetPlan ? 'Found' : 'Not found');
           if (targetPlan) {
             console.log('Found plan details:', targetPlan);
@@ -182,8 +182,8 @@ export const useAdminSubscription = () => {
           }
         }
 
-        if (!targetPlan?.prices?.[0]?.id) {
-          console.error('No plan found. Available price IDs:', flattenedPlans.map(p => p.prices?.[0]?.id));
+        if (!targetPlan?.price?.id) {
+          console.error('No plan found. Available price IDs:', flattenedPlans.map(p => p.price?.id));
           console.error('Target price ID:', newPlanType);
           console.error('Full flattened plans:', flattenedPlans);
           throw new Error(`No se encontró precio para el plan: ${newPlanType}`);
@@ -200,7 +200,7 @@ export const useAdminSubscription = () => {
             },
             body: JSON.stringify({
                subscriptionId: currentSubscription.stripe_subscription_id,
-               newPriceId: targetPlan.prices[0].id,
+               newPriceId: targetPlan.price.id,
              }),
           }
         );

@@ -262,7 +262,10 @@ export const useStripeAdmin = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify(productData),
+          body: JSON.stringify({
+            ...productData,
+            action: "create-product"
+          }),
         });
 
         if (!response.ok) {
@@ -322,7 +325,10 @@ export const useStripeAdmin = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify(priceData),
+          body: JSON.stringify({
+            action: "create-price",
+            ...priceData
+          }),
         });
 
         if (!response.ok) {
@@ -481,11 +487,12 @@ export const useStripeAdmin = () => {
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-admin/prices`, {
-          method: "POST",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
+        body: JSON.stringify({ action: "get-plans" }),
       });
 
       if (!response.ok) {
