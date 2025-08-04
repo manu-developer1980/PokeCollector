@@ -169,10 +169,17 @@ async function handleGetPlans(corsHeaders: Record<string, string>) {
 
     console.log(`Found ${products.data.length} products and ${prices.data.length} prices`);
 
+    // Filter out products created by Stripe CLI
+    const filteredProducts = products.data.filter(product => 
+      !product.name.includes("(created by Stripe CLI)")
+    );
+
+    console.log(`After filtering CLI products: ${filteredProducts.length} products remaining`);
+
     // Combine products with their prices to create plans
     const plans: Array<{product: any, price: any}> = [];
     
-    for (const product of products.data) {
+    for (const product of filteredProducts) {
       const productPrices = prices.data.filter(price => 
         typeof price.product === "object" ? price.product.id === product.id : price.product === product.id
       );
