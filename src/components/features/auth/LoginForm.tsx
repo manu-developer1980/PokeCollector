@@ -119,10 +119,9 @@ export default function LoginForm() {
           try {
             // Inicializar usuario (opcional - continúa si falla)
             try {
+              const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
               const response = await fetch(
-                `${
-                  import.meta.env.VITE_SUPABASE_URL
-                }/functions/v1/initialize-user`,
+                `${functionsUrl}/functions/v1/initialize-user`,
                 {
                   method: "POST",
                   headers: {
@@ -140,12 +139,17 @@ export default function LoginForm() {
 
               if (response.ok) {
                 const data = await response.json();
-        
+                console.log("✅ Usuario inicializado correctamente en login:", data);
               } else {
-                console.warn("Initialize-user function not available, continuing without it");
+                console.warn(`⚠️ Initialize-user function respondió con status ${response.status}, continuando sin inicialización`);
               }
             } catch (initError) {
-              console.warn("Initialize-user function not available, continuing without it:", initError);
+              // Manejo específico de errores de CORS
+              if (initError.message.includes('CORS') || initError.message.includes('fetch')) {
+                console.warn("⚠️ Error de CORS en initialize-user durante login - continuando sin inicialización:", initError.message);
+              } else {
+                console.warn("⚠️ Initialize-user function no disponible, continuando sin inicialización:", initError);
+              }
               // Continuamos sin problemas - la función de inicialización es opcional
             }
 

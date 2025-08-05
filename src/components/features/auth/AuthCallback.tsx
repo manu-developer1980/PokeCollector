@@ -160,8 +160,9 @@ export default function AuthCallback() {
       try {
         setStatus("Inicializando usuario y suscripción...");
 
+        const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/initialize-user`,
+          `${functionsUrl}/functions/v1/initialize-user`,
           {
             method: "POST",
             headers: {
@@ -178,13 +179,22 @@ export default function AuthCallback() {
         );
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Error al inicializar usuario");
+          const errorData = await response.json().catch(() => ({ error: "Error de respuesta" }));
+          throw new Error(errorData.error || `Error HTTP ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log("✅ Usuario inicializado correctamente:", data);
       } catch (error) {
-        console.error("Error en initializeUser:", error);
+        console.error("❌ Error en initializeUser:", error);
+        
+        // Manejo específico de errores de CORS
+        if (error.message.includes('CORS') || error.message.includes('fetch')) {
+          console.warn("⚠️ Error de CORS detectado - continuando sin inicialización");
+          // No lanzar el error para permitir que el login continúe
+          return;
+        }
+        
         throw error;
       }
     };

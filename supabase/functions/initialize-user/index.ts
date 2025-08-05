@@ -6,10 +6,35 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 const APRENDIZ_PRICE_ID = "price_1R4KH1EoOyqILXNqxnOSjJHZ";
 
 serve(async (req) => {
+  // Obtener headers de CORS al inicio
   const corsHeaders = getCorsHeaders(req);
+  
+  console.log("🚀 Initialize-user - Método:", req.method);
+  console.log("🚀 Initialize-user - Origin:", req.headers.get("Origin"));
+  console.log("🚀 Initialize-user - Headers CORS:", corsHeaders);
 
+  // Manejar peticiones preflight OPTIONS
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    console.log("✅ Respondiendo a petición OPTIONS con headers CORS");
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
+  }
+  
+  // Solo permitir método POST para esta función
+  if (req.method !== "POST") {
+    console.log("❌ Método no permitido:", req.method);
+    return new Response(
+      JSON.stringify({ error: "Método no permitido" }),
+      {
+        status: 405,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 
   try {
@@ -129,24 +154,28 @@ serve(async (req) => {
   } catch (error) {
     console.error("❌ Error en el proceso de inicialización:", error);
 
-    // Asegurarnos de que los encabezados CORS estén presentes incluso en caso de error
-    const errorCorsHeaders = getCorsHeaders(req);
+    // Asegurar que los headers de CORS estén presentes en caso de error
     const errorHeaders = {
-      ...errorCorsHeaders,
+      ...corsHeaders,
       "Content-Type": "application/json",
     };
 
-    // Imprimir los encabezados para depuración
-    console.log("Encabezados de respuesta de error:", errorHeaders);
+    console.log("🔧 Headers de respuesta de error:", errorHeaders);
+    console.log("🔧 Detalles del error:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
 
     return new Response(
       JSON.stringify({
         error: error.message || "Error al inicializar usuario",
         details: error.toString(),
+        timestamp: new Date().toISOString(),
       }),
       {
+        status: 500, // Usar código de error apropiado
         headers: errorHeaders,
-        status: 200, // Cambiamos a 200 para evitar problemas con CORS en errores
       }
     );
   }
