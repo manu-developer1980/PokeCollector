@@ -121,7 +121,7 @@ export default function LoginForm() {
             try {
               const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
               const response = await fetch(
-                `${functionsUrl}/functions/v1/initialize-user`,
+                `${functionsUrl}/initialize-user`,
                 {
                   method: "POST",
                   headers: {
