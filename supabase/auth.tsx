@@ -1,30 +1,32 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
+import type { User, Session, AuthError } from "@supabase/supabase-js";
+import type { User as AppUser } from "@/types";
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
+  userData: AppUser | null;
+  session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (
-    email: string,
-    password: string,
-    fullName: string
-  ) => Promise<{ data?: any; error: any | null }>;
-  signOut: () => Promise<void>;
-  refreshSession: () => Promise<{ session: any; error: any }>;
-};
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, language?: string) => Promise<{ error: AuthError | null }>;
+  signOut: () => Promise<{ error: AuthError | null }>;
+  refreshSession: () => Promise<{ error: AuthError | null }>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<AppUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setSession(session);
       setLoading(false);
     });
 
@@ -33,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setSession(session);
       setLoading(false);
     });
 
@@ -54,111 +57,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         options: {
           data: {
             full_name: fullName.trim(),
-            preferred_lang: preferredLang, // Store language preference in user metadata
+            preferred_lang: preferredLang,
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
       if (authError) {
-        console.error("Signup error details:", {
-          message: authError.message,
-          status: authError.status,
-          name: authError.name,
-          fullError: JSON.stringify(authError, null, 2),
-        });
-
-        return {
-          error: {
-            message: authError.message,
-            code: "AUTH_ERROR",
-            originalError: authError,
-          },
-        };
+        console.error("Signup error details:", authError);
+        return { error: authError };
       }
 
       if (!authData?.user) {
         console.error("No user data received from signup");
         return {
-          error: {
-            message: "Error al crear el usuario",
-            code: "NO_USER_DATA",
-          },
+          error: new Error("Error al crear el usuario") as AuthError,
         };
       }
 
-      // Modificamos la consulta a la tabla users
+      // Check if user exists in database
       const { error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authData.user.id)
         .maybeSingle();
 
-      if (userError) {
-        // Si el error es porque el usuario aún no existe en la tabla, lo creamos
-        if (userError.code === "PGRST116") {
-          const { error: insertError } = await supabase.from("users").insert([
-            {
-              id: authData.user.id,
-              email: email.trim().toLowerCase(),
-              full_name: fullName.trim(),
-            },
-          ]);
+      if (userError && userError.code === "PGRST116") {
+        // User doesn't exist, create them
+        const { error: insertError } = await supabase.from("users").insert([
+          {
+            id: authData.user.id,
+            email: email.trim().toLowerCase(),
+            full_name: fullName.trim(),
+            token_identifier: authData.user.id, // Use user ID as token identifier
+          },
+        ]);
 
-          if (insertError) {
-            console.error("Error creating user in database:", insertError);
-            return {
-              error: {
-                message: "Error al crear el perfil de usuario",
-                code: "USER_CREATION_FAILED",
-                originalError: insertError,
-              },
-            };
-          }
-        } else {
-          console.error("Error verifying user creation:", userError);
+        if (insertError) {
+          console.error("Error creating user in database:", insertError);
           return {
-            error: {
-              message: "Error al verificar la creación del usuario",
-              code: "VERIFICATION_ERROR",
-              originalError: userError,
-            },
+            error: new Error("Error al crear el perfil de usuario") as AuthError,
           };
         }
+      } else if (userError) {
+        console.error("Error verifying user creation:", userError);
+        return {
+          error: new Error("Error al verificar la creación del usuario") as AuthError,
+        };
       }
 
       return { data: authData, error: null };
     } catch (error: any) {
-      console.error("Unexpected signup error:", {
-        message: error?.message,
-        status: error?.status,
-        name: error?.name,
-        response: error?.response,
-        stack: error?.stack,
-        fullError: JSON.stringify(error, null, 2),
-      });
-
-      // Check if it's a server error (500)
-      const isServerError =
-        error?.status === 500 ||
-        (error?.message && error.message.includes("500")) ||
-        error?.response?.status === 500;
-
+      console.error("Unexpected signup error:", error);
       return {
-        error: {
-          message: isServerError
-            ? "Error en el servidor durante el registro. Por favor, intenta más tarde."
-            : "Error inesperado durante el registro. Por favor, intenta nuevamente.",
-          code: isServerError ? "SERVER_ERROR" : "UNEXPECTED_ERROR",
-          originalError: error,
-        },
+        error: new Error("Error inesperado durante el registro") as AuthError,
       };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Intentar iniciar sesión directamente
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
@@ -166,92 +124,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Error en signIn:", error);
-
-        // Manejar diferentes tipos de errores
-        if (error.message.includes("Invalid login credentials")) {
-          return {
-            error: {
-              message: "Email o contraseña incorrectos",
-            },
-          };
-        }
-
-        if (error.message.includes("Email not confirmed")) {
-          return {
-            error: {
-              message: "Email not confirmed",
-            },
-          };
-        }
-
         return { error };
       }
 
-      // Verificar si tenemos datos del usuario
       if (!data.user) {
         return {
-          error: {
-            message: "No se pudo obtener la información del usuario",
-          },
+          error: new Error("No se pudo obtener la información del usuario") as AuthError,
         };
       }
 
-      // Si el usuario no ha confirmado su email
       if (!data.user.email_confirmed_at) {
         return {
-          error: {
-            message: "Email not confirmed",
-          },
+          error: new Error("Email not confirmed") as AuthError,
         };
       }
 
       return { data, error: null };
-    } catch (error) {
-      console.error("Error inesperado en signIn:", error);
+    } catch (error: any) {
+      console.error("Unexpected signIn error:", error);
       return {
-        error: {
-          message: "Error inesperado durante el inicio de sesión",
-        },
+        error: new Error("Error inesperado durante el inicio de sesión") as AuthError,
       };
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<{ error: AuthError | null }> => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("Error during sign out:", error);
-        throw error;
+        console.error("Error signing out:", error);
+        return { error };
       }
-      // Limpiar cualquier estado local si es necesario
       setUser(null);
-    } catch (error) {
-      console.error("Error in signOut:", error);
-      throw error;
+      return { error: null };
+    } catch (err) {
+      console.error("Unexpected error during sign out:", err);
+      const error = err instanceof Error ? err as AuthError : new Error("Unexpected error during sign out") as AuthError;
+      return { error };
     }
   };
 
-  const refreshSession = async () => {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-    if (!error && session) {
-      setUser(session.user);
+  const refreshSession = async (): Promise<{ error: AuthError | null }> => {
+    try {
+      const { error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error("Error refreshing session:", error);
+        return { error };
+      }
+      return { error: null };
+    } catch (err) {
+      console.error("Unexpected error during session refresh:", err);
+      const error = err instanceof Error ? err as AuthError : new Error("Unexpected error during session refresh") as AuthError;
+      return { error };
     }
-    return { session, error };
   };
 
-  const value = {
-    user,
-    signUp,
-    signIn,
-    signOut,
-    refreshSession,
-    loading,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        userData,
+        session,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        refreshSession,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

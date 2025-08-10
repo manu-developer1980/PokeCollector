@@ -1,20 +1,69 @@
-import axios from "axios";
-import {
-  PokemonCardSearchParams,
-  PokemonCardSearchResponse,
-  PokemonCard,
-  PokemonCardSet,
-} from "@/types/pokemon";
+import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from "axios";
+import type { 
+  PokemonCard, 
+  PokemonSet, 
+  PokemonType, 
+  PokemonRarity, 
+  ApiResponse,
+  SearchParams,
+  SearchFilters,
+  CacheEntry,
+  ApiConfig,
+  RateLimitConfig
+} from "@/types";
+
+// Pokemon TCG API specific types
+interface PokemonCardSearchParams {
+  q?: string;
+  page?: number;
+  pageSize?: number;
+  orderBy?: string;
+  select?: string;
+}
+
+interface PokemonCardSearchResponse {
+  data: PokemonCard[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
+interface PokemonSetSearchResponse {
+  data: PokemonSet[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
+interface PokemonTypeSearchResponse {
+  data: PokemonType[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
+interface PokemonRaritySearchResponse {
+  data: PokemonRarity[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
 import { PokemonCache } from "./cache";
 import { normalizeCardId } from "./utils";
 import { pokemonApiCircuitBreaker, CircuitState } from "./circuitBreaker";
+import { mockDataService } from "./mockData";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
-// Request deduplication map
+// Request deduplication map with proper typing
 const pendingRequests = new Map<string, Promise<any>>();
 
-// Rate limiting
+// Rate limiting class with TypeScript
 class RateLimiter {
   private requests: number[] = [];
   private readonly maxRequests: number = 100; // Max requests per minute
@@ -42,6 +91,13 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
+// Enhanced axios configuration interface
+interface RetryConfig extends AxiosRequestConfig {
+  retry?: number;
+  retryCount?: number;
+  retryDelay?: number;
+}
+
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE,
@@ -54,17 +110,17 @@ const api = axios.create({
 
 // Enhanced retry interceptor with exponential backoff and jitter
 api.interceptors.response.use(undefined, async (err) => {
-  const { config } = err;
+  const config = err.config as RetryConfig;
   if (!config || !config.retry) {
     return Promise.reject(err);
   }
 
-  // No reintentar errores 404 (Not Found) - son errores definitivos
+  // Don't retry 404 errors (Not Found) - they are definitive errors
   if (err.response?.status === 404) {
     return Promise.reject(err);
   }
 
-  // No reintentar errores 400-499 (errores del cliente)
+  // Don't retry 400-499 errors (client errors)
   if (err.response?.status >= 400 && err.response?.status < 500) {
     return Promise.reject(err);
   }
@@ -77,11 +133,11 @@ api.interceptors.response.use(undefined, async (err) => {
 
   config.retryCount += 1;
   
-  // Exponential backoff with jitter - reducido para mejor rendimiento
-  const baseDelay = config.retryDelay || 1000; // Reducido de 2000 a 1000
+  // Exponential backoff with jitter - reduced for better performance
+  const baseDelay = config.retryDelay || 1000; // Reduced from 2000 to 1000
   const exponentialDelay = baseDelay * Math.pow(2, config.retryCount - 1);
-  const jitter = Math.random() * 1000; // Reducido de 2000 a 1000
-  const delay = Math.min(exponentialDelay + jitter, 30000); // Reducido de 60000 a 30000
+  const jitter = Math.random() * 1000; // Reduced from 2000 to 1000
+  const delay = Math.min(exponentialDelay + jitter, 30000); // Reduced from 60000 to 30000
   
   await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -101,13 +157,13 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Default config for requests
-const defaultConfig: any = {
-  retry: 2, // Reducido de 3 a 2 para mejor rendimiento
-  retryDelay: 1000, // Reducido de 2000 a 1000 para respuestas más rápidas
+// Default config for requests with proper typing
+const defaultConfig: RetryConfig = {
+  retry: 2, // Reduced from 3 to 2 for better performance
+  retryDelay: 1000, // Reduced from 2000 to 1000 for faster responses
 };
 
-// Helper function for request deduplication
+// Helper function for request deduplication with proper typing
 function deduplicateRequest<T>(key: string, requestFn: () => Promise<T>): Promise<T> {
   if (pendingRequests.has(key)) {
     return pendingRequests.get(key)!;
@@ -131,8 +187,8 @@ export async function getRarities(): Promise<string[]> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Llamada al backend en lugar de la API externa
-      const { data } = await api.get("/pokemon/rarities", defaultConfig);
+      // Call backend instead of external API
+      const { data }: AxiosResponse<{ data: string[] }> = await api.get("/pokemon/rarities", defaultConfig);
 
       if (!data || !Array.isArray(data.data)) {
         console.warn("Unexpected rarities data format:", data);
@@ -143,7 +199,9 @@ export async function getRarities(): Promise<string[]> {
       return data.data;
     } catch (error) {
       console.error("Error fetching rarities:", error);
-      return [];
+      // Use mock data as fallback
+      console.warn('🔄 APIs unavailable, using mock data for rarities');
+      return mockDataService.getRarities();
     }
   });
 }
@@ -160,9 +218,15 @@ export async function searchCards(
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Intentar con circuit breaker
+      // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
-        const { data } = await api.get("/pokemon/cards", {
+        const { data }: AxiosResponse<{
+          data: PokemonCard[];
+          page: number;
+          pageSize: number;
+          count: number;
+          totalCount: number;
+        }> = await api.get("/pokemon/cards", {
           ...defaultConfig,
           params: {
             q: params.q,
@@ -176,7 +240,7 @@ export async function searchCards(
         return data;
       });
 
-      const response = {
+      const response: PokemonCardSearchResponse = {
         data: data.data || [],
         page: data.page || 1,
         pageSize: data.pageSize || 20,
@@ -184,25 +248,21 @@ export async function searchCards(
         totalCount: data.totalCount || 0,
       };
 
-      PokemonCache.setSearchResult(cacheKey, response); // Usar cache optimizado para búsquedas
+      PokemonCache.setSearchResult(cacheKey, response); // Use optimized cache for searches
       return response;
     } catch (error) {
       console.error("Error searching cards:", error);
       
-      // Intentar obtener datos stale del caché como fallback
+      // Try to get stale data from cache as fallback
       const staleData = PokemonCache.getStale<PokemonCardSearchResponse>(cacheKey);
       if (staleData) {
         console.warn('Using stale data as fallback for search');
         return staleData.data;
       }
       
-      return {
-        data: [],
-        page: 1,
-        pageSize: 20,
-        count: 0,
-        totalCount: 0,
-      };
+      // If no cache data, use mock data as last resort
+      console.warn('🔄 APIs unavailable, using mock data for search');
+      return mockDataService.searchCards(params);
     }
   });
 }
@@ -217,14 +277,16 @@ export async function getSets(): Promise<PokemonCardSet[]> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Llamada al backend en lugar de la API externa
-      const { data } = await api.get("/pokemon/sets", defaultConfig);
+      // Call backend instead of external API
+      const { data }: AxiosResponse<{ data: PokemonCardSet[] }> = await api.get("/pokemon/sets", defaultConfig);
       const sets = data.data || [];
       PokemonCache.set(cacheKey, sets);
       return sets;
     } catch (error) {
       console.error("Error fetching sets:", error);
-      return [];
+      // Use mock data as fallback
+      console.warn('🔄 APIs unavailable, using mock data for sets');
+      return mockDataService.getSets();
     }
   });
 }
@@ -239,19 +301,21 @@ export async function getTypes(): Promise<string[]> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Llamada al backend en lugar de la API externa
-      const { data } = await api.get("/pokemon/types", defaultConfig);
+      // Call backend instead of external API
+      const { data }: AxiosResponse<{ data: string[] }> = await api.get("/pokemon/types", defaultConfig);
       const types = data.data || [];
       PokemonCache.set(cacheKey, types);
       return types;
     } catch (error) {
       console.error("Error fetching types:", error);
-      return [];
+      // Use mock data as fallback
+      console.warn('🔄 APIs unavailable, using mock data for types');
+      return mockDataService.getTypes();
     }
   });
 }
 
-// Batch API call for filter data
+// Batch API call for filter data with proper typing
 export async function getFilterData(): Promise<{
   sets: PokemonCardSet[];
   types: string[];
@@ -297,22 +361,22 @@ export async function getFilterData(): Promise<{
   });
 }
 
-// Caché para cartas no encontradas para evitar peticiones repetidas
+// Cache for not found cards to avoid repeated requests
 const notFoundCardsCache = new Set<string>();
 
-// Lista de IDs de cartas conocidas como problemáticas que nunca deberían consultarse
-// Nota: Mantener los IDs exactamente como aparecen en la API (sensible a mayúsculas/minúsculas)
+// List of known problematic card IDs that should never be queried
+// Note: Keep IDs exactly as they appear in the API (case-sensitive)
 const knownProblematicCardIds = new Set([
-  // Cartas que causan errores 404 incluso con la normalización correcta
+  // Cards that cause 404 errors even with correct normalization
   "xyp-XY62",
   "xyp-XY63",
   "xyp-XY64",
 ]);
 
-// Función para crear una carta placeholder cuando no se encuentra
+// Function to create a placeholder card when not found
 function createPlaceholderCard(id: string): PokemonCard {
   return {
-    id: id, // Mantener el ID original con mayúsculas/minúsculas
+    id: id, // Keep original ID with case
     name: "Card Unavailable",
     number: "N/A",
     set: {
@@ -335,12 +399,12 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 
   const normalizedId = normalizeCardId(id);
 
-  // Verificar si la carta es conocida como problemática o ya se intentó buscar y no se encontró
+  // Check if card is known as problematic or already attempted and not found
   if (
     knownProblematicCardIds.has(normalizedId) ||
     notFoundCardsCache.has(normalizedId)
   ) {
-    // Crear un placeholder en lugar de devolver null
+    // Create a placeholder instead of returning null
     return createPlaceholderCard(normalizedId);
   }
 
@@ -353,25 +417,25 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
-      // Intentar con circuit breaker
+      // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
-        const { data } = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+        const { data }: AxiosResponse<{ data: PokemonCard }> = await api.get(`/pokemon/cards/${id}`, defaultConfig);
         return data;
       });
 
       if (!data || !data.data) {
-        // Guardar en caché de cartas no encontradas
+        // Save in not found cards cache
         notFoundCardsCache.add(normalizedId);
-        // Crear un placeholder para cartas sin datos
+        // Create a placeholder for cards without data
         const placeholderCard = createPlaceholderCard(normalizedId);
-        // Guardar en caché para evitar futuras peticiones
-        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutos de stale time
+        // Save in cache to avoid future requests
+        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutes stale time
         return placeholderCard;
       }
 
-      // Verificar si es una carta no disponible (placeholder)
+      // Check if it's an unavailable card (placeholder)
       if (data.data.name === "Card Unavailable") {
-        // Crear un objeto de carta más completo para evitar errores en la UI
+        // Create a more complete card object to avoid UI errors
         const placeholderCard: PokemonCard = {
           ...data.data,
           id: normalizedId,
@@ -380,7 +444,7 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
             name: "Unknown Set",
             printedTotal: 0,
           },
-          // Añadir propiedades mínimas necesarias para la UI
+          // Add minimum properties needed for UI
           supertype: "Unknown",
           subtypes: [],
           types: [],
@@ -391,43 +455,51 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
           rarity: "Unknown",
         };
 
-        // Guardar en caché
-        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutos de stale time
+        // Save in cache
+        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutes stale time
         return placeholderCard;
       }
 
-      PokemonCache.set(cacheKey, data.data, 600000); // 10 minutos de stale time
+      PokemonCache.set(cacheKey, data.data, 600000); // 10 minutes stale time
       return data.data;
     } catch (error: any) {
       console.error(`Error fetching card ${normalizedId}:`, error);
       
-      // Intentar obtener datos stale del caché como fallback
+      // Try to get stale data from cache as fallback
       const staleData = PokemonCache.getStale<PokemonCard>(cacheKey);
       if (staleData) {
         console.warn(`Using stale data as fallback for card ${normalizedId}`);
         return staleData.data;
       }
       
-      // Si el error es 404, guardar en caché de cartas no encontradas
+      // If error is 404, save in not found cards cache
       if (error.response && error.response.status === 404) {
         notFoundCardsCache.add(normalizedId);
-        // Crear un placeholder para cartas no encontradas
+        // Create a placeholder for not found cards
         const placeholderCard = createPlaceholderCard(normalizedId);
-        // Guardar en caché para evitar futuras peticiones
-        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutos de stale time
+        // Save in cache to avoid future requests
+        PokemonCache.set(cacheKey, placeholderCard, 600000); // 10 minutes stale time
         return placeholderCard;
       }
 
       if (process.env.NODE_ENV !== "production") {
         console.error(`Failed to fetch card details for ${normalizedId}:`, error);
       }
-      // Para otros errores, devolver un placeholder genérico
+      
+      // Try to get card from mock data
+      const mockCard = mockDataService.getCardById(normalizedId);
+      if (mockCard) {
+        console.warn(`🔄 APIs unavailable, using mock data for card ${normalizedId}`);
+        return mockCard;
+      }
+      
+      // For other errors, return a generic placeholder
       return createPlaceholderCard(normalizedId);
     }
   });
 }
 
-// Función para limpiar la caché periódicamente
+// Function to clean cache periodically
 setInterval(() => {
   PokemonCache.clearOldItems();
-}, 60 * 60 * 1000); // Limpiar cada hora
+}, 60 * 60 * 1000); // Clean every hour

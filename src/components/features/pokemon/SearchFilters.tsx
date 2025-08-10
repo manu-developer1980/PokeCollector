@@ -106,6 +106,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
     if (queryParts.length > 0) {
       params.q = queryParts.join(" ");
     }
+    // Si no hay filtros aplicados, no enviar el parámetro 'q' para obtener todas las cartas
 
     // Handle sorting
     switch (sortBy) {

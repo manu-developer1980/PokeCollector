@@ -83,17 +83,13 @@ export interface PokemonCardSet {
   };
 }
 
+// Pokemon TCG API specific types
 export interface PokemonCardSearchParams {
   q?: string;
   page?: number;
   pageSize?: number;
   orderBy?: string;
-  name?: string;
-  types?: string;
-  subtypes?: string;
-  supertype?: string;
-  set?: string;
-  rarity?: string;
+  select?: string;
 }
 
 export interface PokemonCardSearchResponse {
@@ -102,12 +98,34 @@ export interface PokemonCardSearchResponse {
   pageSize: number;
   count: number;
   totalCount: number;
-  // Información de estado de la respuesta
-  fromCache?: boolean;
-  isStale?: boolean;
-  timestamp?: number;
-  circuitBreakerUsed?: boolean;
 }
+
+export interface PokemonSetSearchResponse {
+  data: PokemonSet[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
+export interface PokemonTypeSearchResponse {
+  data: PokemonType[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
+export interface PokemonRaritySearchResponse {
+  data: PokemonRarity[];
+  page: number;
+  pageSize: number;
+  count: number;
+  totalCount: number;
+}
+
+// Re-export from api types
+export type { PokemonCard, PokemonSet, PokemonType, PokemonRarity } from './api';
 
 export interface CollectionCard {
   id: string;

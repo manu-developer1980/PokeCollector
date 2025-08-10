@@ -1,34 +1,33 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-      storage: localStorage,
-      flowType: 'pkce', // Enhanced security and token refresh optimization
+// Supabase configuration with enhanced TypeScript support
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables");
+}
+
+// Create typed Supabase client
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
     },
-    db: {
-      schema: 'public',
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'pokecollector-web@1.0.0',
     },
-    realtime: {
-      params: {
-        eventsPerSecond: 10,
-      },
-      // Configuración mejorada para manejar desconexiones durante navegación
-      heartbeatIntervalMs: 30000,
-      reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 10000),
-      timeout: 10000,
-    },
-    global: {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Prefer: "return=minimal",
-      },
-    },
-  }
-);
+  },
+});
+
+// Export types for use in components
+export type { Database } from "@/types/supabase";
