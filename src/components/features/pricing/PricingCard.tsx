@@ -73,7 +73,7 @@ export function PricingCard({
 
     // Verificar si es un downgrade
     const currentPlanType = (
-      subscription?.plan_type || "APRENDIZ"
+      subscription?.status || "APRENDIZ"
     ).toUpperCase();
 
     if (isPlanDowngrade(currentPlanType, plan)) {
@@ -306,7 +306,7 @@ export function PricingCard({
           }
         }}
         currentPlan={
-          (subscription?.plan_type?.toUpperCase() as SubscriptionPlan) ||
+          (subscription?.status?.toUpperCase() as SubscriptionPlan) ||
           "APRENDIZ"
         }
         targetPlan={plan}

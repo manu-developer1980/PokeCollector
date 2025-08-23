@@ -52,7 +52,7 @@ export function useStats() {
           cards?.reduce((sum, card) => sum + (card.quantity || 1), 0) || 0;
 
         // Obtener el conteo de wishlist
-        const { count: wishlistCount } = await supabase
+        const { count: wishlistCount } = await (supabase as any)
           .from("wishlist_cards")
           .select("*", { count: "exact", head: true })
           .eq("user_id", user.id);

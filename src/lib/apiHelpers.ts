@@ -23,11 +23,10 @@ export async function searchCardsWithFallback(
     
     return {
       ...result,
-      fromCache: false,
       isStale: false,
       timestamp: Date.now(),
       circuitBreakerUsed: false
-    };
+    } as any;
   } catch (error) {
     console.error('Error in searchCardsWithFallback:', error);
     
@@ -37,11 +36,10 @@ export async function searchCardsWithFallback(
       console.warn('Using stale data as fallback');
       return {
         ...staleData.data,
-        fromCache: true,
         isStale: staleData.isStale,
         timestamp: Date.now(),
         circuitBreakerUsed: true
-      };
+      } as any;
     }
     
     // Si no hay datos stale, usar fallback por defecto
@@ -51,12 +49,11 @@ export async function searchCardsWithFallback(
       pageSize: 20,
       count: 0,
       totalCount: 0,
-      fromCache: false,
       isStale: false,
       timestamp: Date.now(),
       circuitBreakerUsed: true,
       ...fallbackData
-    };
+    } as any;
     
     return defaultFallback;
   }

@@ -179,7 +179,7 @@ export default function SearchPage() {
     try {
       const normalizedCardId = normalizeCardId(card.id);
 
-      const { data: existingCard } = await supabase
+      const { data: existingCard } = await (supabase as any)
         .from("wishlist_cards")
         .select("id")
         .eq("user_id", user.id)

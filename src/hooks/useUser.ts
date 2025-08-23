@@ -45,7 +45,7 @@ export function useUser(): UseUserReturn {
                 full_name: authUser?.user_metadata?.full_name || "Usuario",
                 has_seen_onboarding: false,
                 preferred_lang: authUser?.user_metadata?.preferred_lang || "es",
-              },
+              } as any,
             ])
             .select()
             .single();

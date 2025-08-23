@@ -170,10 +170,7 @@ export const useSubscription = () => {
         }
 
         if (data && data.length > 0) {
-          const subscriptionData = {
-            ...data[0],
-            plan_type: data[0].plan_type || "aprendiz",
-          };
+          const subscriptionData = data[0] as unknown as Subscription;
 
           subscriptionCache[cacheKey] = {
             data: subscriptionData,

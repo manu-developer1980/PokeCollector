@@ -37,15 +37,8 @@ export const useRecentActivity = (): UseRecentActivityReturn => {
 
       if (usersError) throw usersError;
 
-      // Fetch recent subscription changes (last 24 hours)
-      const { data: recentSubscriptions, error: subscriptionsError } = await supabase
-        .from('subscription_changes')
-        .select('id, user_id, old_plan, new_plan, change_date')
-        .gte('change_date', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('change_date', { ascending: false })
-        .limit(5);
-
-      if (subscriptionsError) throw subscriptionsError;
+      // Mock recent subscription changes (table doesn't exist)
+      const recentSubscriptions: any[] = [];
 
       // Fetch recent collections (last 24 hours)
       const { data: recentCollections, error: collectionsError } = await supabase
@@ -57,15 +50,8 @@ export const useRecentActivity = (): UseRecentActivityReturn => {
 
       if (collectionsError) throw collectionsError;
 
-      // Fetch recent audit logs (last 24 hours)
-      const { data: recentAuditLogs, error: auditError } = await supabase
-        .from('audit_logs')
-        .select('id, action, entity_type, created_at')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (auditError) throw auditError;
+      // Mock recent audit logs (table doesn't exist)
+      const recentAuditLogs: any[] = [];
 
       // Combine and format all activities
       const allActivities: ActivityItem[] = [];

@@ -36,7 +36,7 @@ export default function SubscriptionManagement({
   const { t } = useTranslation();
 
   // Obtener las características del plan actual
-  const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
+  const currentPlanType = (subscription?.status?.toUpperCase() ||
     "APRENDIZ") as keyof typeof PLAN_FEATURES;
   const currentPlan = PLAN_FEATURES[currentPlanType];
 
@@ -53,7 +53,7 @@ export default function SubscriptionManagement({
     }
 
     // IMPORTANTE: Asegurarnos de usar stripe_subscription_id
-    const subscriptionId = subscription.stripe_subscription_id;
+    const subscriptionId = (subscription as any).stripe_subscription_id;
 
     if (!subscriptionId) {
       toast({
@@ -76,7 +76,7 @@ export default function SubscriptionManagement({
           },
           body: JSON.stringify({
             subscriptionId: subscriptionId, // Este debe ser el stripe_subscription_id
-            userId: subscription.user_id,
+            userId: (subscription as any).user_id,
           }),
         }
       );
@@ -167,7 +167,7 @@ export default function SubscriptionManagement({
               <p className="text-muted-foreground">
                 {t("subscription.validUntil", {
                   date: format(
-                    new Date(subscription.current_period_end),
+                    new Date((subscription as any).current_period_end),
                     "d 'de' MMMM, yyyy",
                     { locale: es }
                   ),

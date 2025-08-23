@@ -130,10 +130,10 @@ export default function CheckoutSuccessPage() {
         // Intentar obtener la suscripción actualizada
         const updatedSubscription = await refetchSubscription();
 
-        // Verificar si la suscripción tiene un plan_type
-        if (updatedSubscription?.plan_type) {
+        // Verificar si la suscripción tiene un status
+        if (updatedSubscription?.status) {
           const translatedPlanName = getTranslatedPlanName(
-            updatedSubscription.plan_type
+            updatedSubscription.status
           );
           setPlanName(translatedPlanName);
           setSubscriptionLoaded(true);
@@ -141,7 +141,7 @@ export default function CheckoutSuccessPage() {
           // Registrar evento de éxito
 
         } else {
-          // Si no hay plan_type, verificamos si hay un error o si debemos usar el fallback
+          // Si no hay status, verificamos si hay un error o si debemos usar el fallback
           if (error) {
             console.error("Error al obtener la suscripción:", error);
           }
@@ -249,15 +249,15 @@ export default function CheckoutSuccessPage() {
                 {t("subscription.currentPlan")}:{" "}
                 {planName || t("subscription.loading")}
               </p>
-              {subscription?.current_period_end && (
+              {subscription?.ended_at && (
                 <p className="text-sm text-gray-500 mt-2">
-                  {t("subscription.nextBilling")}:{" "}
+                  {t("subscription.nextBilling")}: {" "}
                   {new Date(
-                    subscription.current_period_end
+                    subscription.ended_at
                   ).toLocaleDateString()}
                 </p>
               )}
-              {!subscription?.stripe_subscription_id && planName && (
+              {!subscription?.id && planName && (
                 <p className="text-sm text-amber-500 mt-2">
                   {t("subscription.pendingConfirmation", {
                     defaultValue:

@@ -5,7 +5,7 @@
 import type { PokemonCard, PokemonCardSearchResponse, PokemonCardSet } from '@/types/pokemon';
 
 // Mock Pokemon cards data
-const mockCards: PokemonCard[] = [
+const mockCards: any[] = [
   {
     id: "smp-SM114",
     name: "Charizard",
@@ -87,6 +87,9 @@ const mockCards: PokemonCard[] = [
         avg7: 6.8,
         avg30: 7.2
       }
+    },
+    legalities: {
+      unlimited: "Legal"
     }
   },
   {

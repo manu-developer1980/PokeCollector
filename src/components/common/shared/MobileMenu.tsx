@@ -36,7 +36,7 @@ export function MobileMenu({
   const [open, setOpen] = useState(false);
   const { subscription } = useSubscription();
 
-  const isMaestroPlan = subscription?.plan_type?.toLowerCase() === "maestro";
+  const isMaestroPlan = subscription?.status?.toLowerCase() === "maestro";
 
   const handleItemClick = (item: NavItem) => {
     if (item.onClick) {

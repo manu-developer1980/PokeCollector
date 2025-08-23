@@ -812,14 +812,14 @@ const SubscriptionManagement: React.FC = () => {
                               {userSub.subscription ? (
                                 <Badge
                                   className={getPlanBadgeColor(
-                                    userSub.subscription.plan_type
+                                    userSub.subscription.status
                                   )}
                                 >
                                   {t(
-                                    `plans.${userSub.subscription.plan_type}`,
+                                    `plans.${userSub.subscription.status}`,
                                     {
                                       defaultValue:
-                                        userSub.subscription.plan_type,
+                                        userSub.subscription.status,
                                     }
                                   )}
                                 </Badge>
@@ -847,7 +847,7 @@ const SubscriptionManagement: React.FC = () => {
                             <TableCell>
                               {userSub.subscription?.current_period_end ? (
                                 formatDate(
-                                  userSub.subscription.current_period_end
+                                  new Date(userSub.subscription.current_period_end * 1000).toISOString()
                                 )
                               ) : (
                                 <span className="text-gray-400">-</span>
@@ -1103,7 +1103,7 @@ const SubscriptionManagement: React.FC = () => {
                           </label>
                           <p className="text-sm mt-1">
                             {formatDate(
-                              selectedUser.subscription.current_period_start
+                              new Date(selectedUser.subscription.current_period_start * 1000).toISOString()
                             )}
                           </p>
                         </div>
@@ -1115,7 +1115,7 @@ const SubscriptionManagement: React.FC = () => {
                           </label>
                           <p className="text-sm mt-1">
                             {formatDate(
-                              selectedUser.subscription.current_period_end
+                              new Date(selectedUser.subscription.current_period_end * 1000).toISOString()
                             )}
                           </p>
                         </div>
@@ -1147,7 +1147,7 @@ const SubscriptionManagement: React.FC = () => {
                             })}
                           </label>
                           <p className="text-xs font-mono mt-1 bg-gray-50 p-2 rounded">
-                            {selectedUser.subscription.stripe_subscription_id ||
+                            {(selectedUser.subscription as any).stripe_subscription_id ||
                               t("admin.notConnected", {
                                 defaultValue: "Not connected",
                               })}

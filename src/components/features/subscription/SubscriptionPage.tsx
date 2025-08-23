@@ -36,7 +36,7 @@ export default function SubscriptionPage({
   } as const;
 
   const currentPlanType = planTypeMap[
-    subscription?.plan_type || "aprendiz"
+    subscription?.status || "aprendiz"
   ] as SubscriptionPlan;
   const currentPlan = PLAN_FEATURES[currentPlanType];
 
@@ -74,11 +74,11 @@ export default function SubscriptionPage({
                   ? t("subscription.statusActive")
                   : t("subscription.statusInactive")}
               </p>
-              {subscription?.current_period_end && (
+              {(subscription as any)?.current_period_end && (
                 <p className="text-sm text-muted-foreground">
                   {t("subscription.nextBilling")}:{" "}
                   {new Date(
-                    subscription.current_period_end
+                    (subscription as any).current_period_end
                   ).toLocaleDateString()}
                 </p>
               )}

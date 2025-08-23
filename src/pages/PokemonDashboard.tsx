@@ -159,8 +159,10 @@ export default function PokemonDashboard() {
 
         if (!data || data.length === 0) return [];
 
+        const typedData = data as unknown as CollectionCard[];
+
         const cardsWithDetails = await Promise.all(
-          data.map(async (collectionCard) => {
+          typedData.map(async (collectionCard) => {
             try {
               // Normalizar el ID de la carta antes de buscarla
               const normalizedCardId = normalizeCardId(collectionCard.card_id);
@@ -176,6 +178,7 @@ export default function PokemonDashboard() {
               return {
                 ...cardDetails,
                 id: collectionCard.id,
+                collection_id: collectionId,
                 card_id: normalizedCardId, // Usar el ID normalizado
                 quantity: collectionCard.quantity,
                 condition: collectionCard.condition,
@@ -183,7 +186,7 @@ export default function PokemonDashboard() {
                 is_first_edition: collectionCard.is_first_edition,
                 notes: collectionCard.notes,
                 created_at: collectionCard.created_at,
-              };
+              } as CollectionCard;
             } catch (error) {
               console.error(
                 `Error fetching card details for ${collectionCard.card_id}:`,
@@ -196,8 +199,8 @@ export default function PokemonDashboard() {
 
         // Convertir el tipo de retorno para que coincida con CollectionCard
         return cardsWithDetails.filter(
-          (card): card is any => card !== null
-        ) as CollectionCard[];
+          (card): card is CollectionCard => card !== null
+        );
       } catch (error) {
         console.error("Error in getCollectionCards:", error);
         throw error;
@@ -268,7 +271,7 @@ export default function PokemonDashboard() {
               full_name: user.user_metadata?.full_name || "Usuario",
               has_seen_onboarding: false,
               preferred_lang: user.user_metadata?.preferred_lang || "es",
-            },
+            } as any,
           ]);
 
           if (insertError) {
@@ -322,7 +325,7 @@ export default function PokemonDashboard() {
           return { valid: true, error: null, limitType: null };
         }
 
-        const planType = subscription?.plan_type || "APRENDIZ";
+        const planType = subscription?.status || "APRENDIZ";
         // Seleccionar la tabla correcta según el tipo de recurso
         const tableName =
           resourceType === "wishlist"
@@ -384,7 +387,7 @@ export default function PokemonDashboard() {
         } else {
           // Para wishlist_cards y collections, podemos filtrar directamente por user_id
 
-          const { count: itemCount, error: itemError } = await supabase
+          const { count: itemCount, error: itemError } = await (supabase as any)
             .from(tableName)
             .select("*", { count: "exact", head: true })
             .eq("user_id", userId);
@@ -473,7 +476,7 @@ export default function PokemonDashboard() {
   const fetchWishlist = useCallback(async () => {
     setIsWishlistLoading(true);
     try {
-      const { data: wishlistData, error } = await supabase
+      const { data: wishlistData, error } = await (supabase as any)
         .from("wishlist_cards") // Nombre correcto de la tabla
         .select(
           `
@@ -485,18 +488,20 @@ export default function PokemonDashboard() {
         )
         .eq("user_id", user?.id);
 
+      const typedWishlistData = wishlistData as any[];
+
       if (error) {
         console.error("Error fetching wishlist:", error);
         throw error;
       }
 
-      if (!wishlistData || wishlistData.length === 0) {
+      if (!typedWishlistData || typedWishlistData.length === 0) {
         setWishlistCards([]);
         return;
       }
 
       const cardsWithDetails = await Promise.all(
-        wishlistData.map(async (item) => {
+        typedWishlistData.map(async (item) => {
           try {
             const cardDetails = await getCardById(item.card_id);
             if (!cardDetails) return null;
@@ -563,7 +568,7 @@ export default function PokemonDashboard() {
           return;
         }
 
-        const { data: existingCard } = await supabase
+        const { data: existingCard } = await (supabase as any)
           .from("wishlist_cards")
           .select("*")
           .eq("user_id", user.id)
@@ -915,7 +920,7 @@ export default function PokemonDashboard() {
       // 2. Obtener el límite máximo de colecciones para el plan
       const currentCount = count || 0;
       const maxCollections =
-        PLAN_FEATURES[subscription.plan_type.toUpperCase()]?.maxCollections ||
+        PLAN_FEATURES[subscription.status.toUpperCase()]?.maxCollections ||
         0;
 
 
@@ -927,7 +932,7 @@ export default function PokemonDashboard() {
         setIsCollectionDialogOpen(true);
       } else {
         // Si se ha alcanzado el límite, mostrar error usando traducciones
-        const planName = t(`plans.${subscription.plan_type.toLowerCase()}`);
+        const planName = t(`plans.${subscription.status.toLowerCase()}`);
         const resourceTypeText = t("limits.collections");
 
         const errorMessage = t("subscription.limitReachedMessage", {
@@ -1224,15 +1229,16 @@ export default function PokemonDashboard() {
             ...cardDetails,
             id: updatedCard.id,
             collection_id: updatedCard.collection_id,
+            card_id: updatedCard.card_id,
             quantity: updatedCard.quantity,
             condition: updatedCard.condition,
             is_foil: updatedCard.is_foil,
             is_first_edition: updatedCard.is_first_edition,
             notes: updatedCard.notes,
-            created_at: updatedCard.created_at,
-            updated_at: updatedCard.updated_at,
-          }
-        : { ...updatedCard };
+            created_at: (updatedCard as any).created_at,
+            updated_at: (updatedCard as any).updated_at,
+          } as CollectionCard
+        : { ...updatedCard } as CollectionCard;
 
       // Actualizar el estado local
       setCollections((prevCollections) =>
@@ -1243,7 +1249,7 @@ export default function PokemonDashboard() {
               cards: collection.cards.map((card) =>
                 card.id === cardData.id ? completeUpdatedCard : card
               ),
-            };
+            } as Collection;
           }
           return collection;
         })
@@ -1256,7 +1262,7 @@ export default function PokemonDashboard() {
             ...prev,
             cards: prev.cards.map((card) =>
               card.id === cardData.id ? completeUpdatedCard : card
-            ),
+            ) as CollectionCard[],
           };
         });
       }
@@ -1665,7 +1671,7 @@ export default function PokemonDashboard() {
 
   // Función eliminada: handleUpgradePlan
 
-  const planType = (subscription?.plan_type?.toUpperCase() ||
+  const planType = (subscription?.status?.toUpperCase() ||
     "APRENDIZ") as SubscriptionPlan;
 
   return (
@@ -1757,7 +1763,7 @@ export default function PokemonDashboard() {
         <PlanChangeDialog
           isOpen={isPlanDialogOpen}
           onClose={() => setIsPlanDialogOpen(false)}
-          currentPlan={subscription?.plan_type || "aprendiz"}
+          currentPlan={subscription?.status || "aprendiz"}
         />
       )}
       <SubscriptionLimitModal
@@ -1766,7 +1772,7 @@ export default function PokemonDashboard() {
         limitType={
           limitError.type as "cards" | "collections" | "wishlist" | null
         }
-        currentPlan={subscription?.plan_type || "aprendiz"}
+        currentPlan={subscription?.status || "aprendiz"}
         errorMessage={limitError.message}
         onViewPlans={() => setActiveSection("Pricing")}
       />

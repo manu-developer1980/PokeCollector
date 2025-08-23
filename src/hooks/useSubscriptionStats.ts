@@ -26,7 +26,7 @@ export function useSubscriptionStats() {
         if (collectionsError) throw collectionsError;
 
         // Obtenemos el conteo de la lista de deseos
-        const { count: wishlistCount, error: wishlistError } = await supabase
+        const { count: wishlistCount, error: wishlistError } = await (supabase as any)
           .from("wishlist_cards")
           .select("id", { count: "exact" })
           .eq("user_id", user.id);

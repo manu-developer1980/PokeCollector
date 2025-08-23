@@ -42,7 +42,7 @@ export const useAdminStats = () => {
         activityResult
       ] = await Promise.all([
         // Usuarios totales y nuevos este mes
-        supabase
+        (supabase as any)
           .from('users')
           .select('id, created_at, is_active')
           .eq('is_active', true),
@@ -64,7 +64,7 @@ export const useAdminStats = () => {
           .select('id'),
         
         // Actividad reciente (logs de auditoría)
-        supabase
+        (supabase as any)
           .from('audit_logs')
           .select('id, created_at')
           .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
@@ -77,7 +77,7 @@ export const useAdminStats = () => {
 
       const totalUsers = usersResult.data?.length || 0;
       const newUsersThisMonth = usersResult.data?.filter(user => 
-        new Date(user.created_at) >= oneMonthAgo
+        new Date((user as any).created_at) >= oneMonthAgo
       ).length || 0;
 
       const activeSubscriptions = subscriptionsResult.data?.length || 0;

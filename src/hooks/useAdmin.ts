@@ -124,7 +124,7 @@ export const useAdmin = () => {
       filters?: {
         is_admin?: boolean;
         is_active?: boolean;
-        plan_type?: string;
+        status?: string;
       }
     ) => {
   
@@ -169,7 +169,7 @@ export const useAdmin = () => {
               // Get subscription data
               const { data: subscriptions } = await supabase
                 .from("subscriptions")
-                .select("plan_type, status, stripe_subscription_id")
+                .select("status, stripe_subscription_id")
                 .eq("user_id", user.id)
                 .limit(1);
 
@@ -200,10 +200,10 @@ export const useAdmin = () => {
             (user) => user.is_active === filters.is_active
           );
         }
-        if (filters?.plan_type) {
+        if (filters?.status) {
           filteredUsers = filteredUsers.filter((user) =>
             user.subscriptions.some(
-              (sub: any) => sub.plan_type === filters.plan_type
+              (sub: any) => sub.status === filters.status
             )
           );
         }

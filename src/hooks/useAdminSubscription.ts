@@ -78,13 +78,13 @@ export const useAdminSubscription = () => {
           // This is a Stripe customer ID, we need to find the actual user UUID
           console.log('Converting Stripe customer ID to user UUID:', userIdOrStripeCustomerId);
           
-          const { data: subscription, error } = await supabase
+          const { data: subscription, error } = await (supabase as any)
             .from("subscriptions")
             .select("user_id")
             .eq("stripe_customer_id", userIdOrStripeCustomerId)
             .order("created_at", { ascending: false })
             .limit(1)
-            .single();
+            .single() as any;
 
           if (error || !subscription) {
             throw new Error(`No se encontró usuario para el cliente de Stripe: ${userIdOrStripeCustomerId}`);
@@ -431,20 +431,21 @@ export const useAdminSubscription = () => {
       // Let the database RLS policies handle the admin check
 
       try {
-        const { data, error } = await supabase
-          .from("subscription_overrides")
-          .insert({
-            user_id: userId,
-            admin_user_id: user!.id,
-            override_type: overrideType,
-            original_value: originalValue,
-            override_value: overrideValue,
-            reason,
-            expires_at: expiresAt,
-            is_active: true,
-          })
-          .select()
-          .single();
+        const { data, error } = await (supabase as any)
+        .from("subscription_overrides")
+        .insert({
+          user_id: userId,
+          admin_user_id: user!.id,
+          override_type: overrideType,
+          original_value: originalValue,
+          override_value: overrideValue,
+          reason,
+          expires_at: expiresAt,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
         if (error) {
           throw error;
@@ -477,7 +478,7 @@ export const useAdminSubscription = () => {
       // Let the database RLS policies handle the admin check
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("subscription_overrides")
           .select("*")
           .eq("user_id", userId)
@@ -503,7 +504,7 @@ export const useAdminSubscription = () => {
       // Let the database RLS policies handle the admin check
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("subscription_overrides")
           .update({
             is_active: false,
@@ -520,7 +521,7 @@ export const useAdminSubscription = () => {
         // Log the action
         await logAdminAction(
           user!.id,
-          data.user_id,
+          (data as any).user_id,
           "admin_deactivate_override",
           "subscription_override",
           overrideId,

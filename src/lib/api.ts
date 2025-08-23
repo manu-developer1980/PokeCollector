@@ -11,6 +11,7 @@ import type {
   ApiConfig,
   RateLimitConfig
 } from "@/types";
+import type { PokemonCardSet } from "@/types/pokemon";
 
 // Pokemon TCG API specific types
 interface PokemonCardSearchParams {
@@ -224,14 +225,14 @@ export async function searchCards(
         let queryString = params.q || '';
         
         // Add set filter to query string if specified
-        if (params.set && params.set !== "all") {
-          const setFilter = `set.id:${params.set}`;
+        if ((params as any).set && (params as any).set !== "all") {
+          const setFilter = `set.id:${(params as any).set}`;
           queryString = queryString ? `${queryString} ${setFilter}` : setFilter;
         }
         
         // Add rarity filter to query string if specified
-        if (params.rarity && params.rarity !== "all") {
-          const rarityFilter = `rarity:"${params.rarity}"`;
+        if ((params as any).rarity && (params as any).rarity !== "all") {
+          const rarityFilter = `rarity:"${(params as any).rarity}"`;
           queryString = queryString ? `${queryString} ${rarityFilter}` : rarityFilter;
         }
 
@@ -398,7 +399,7 @@ function createPlaceholderCard(id: string): PokemonCard {
     set: {
       name: "Unknown Set",
       printedTotal: 0,
-    },
+    } as any,
     supertype: "Unknown",
     subtypes: [],
     types: [],
@@ -407,7 +408,7 @@ function createPlaceholderCard(id: string): PokemonCard {
       large: "/images/card-placeholder.svg",
     },
     rarity: "Unknown",
-  };
+      } as any;
 }
 
 export async function getCardById(id: string): Promise<PokemonCard | null> {
@@ -459,7 +460,7 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
           set: {
             name: "Unknown Set",
             printedTotal: 0,
-          },
+          } as any,
           // Add minimum properties needed for UI
           supertype: "Unknown",
           subtypes: [],

@@ -190,7 +190,7 @@ const UserManagement: React.FC = () => {
     try {
       setLoading(true);
       const userDetails = await getUserById(userId);
-      setSelectedUser(userDetails);
+      setSelectedUser(userDetails as unknown as UserData);
       setShowUserDetails(true);
     } catch (err) {
       console.error("Error loading user details:", err);

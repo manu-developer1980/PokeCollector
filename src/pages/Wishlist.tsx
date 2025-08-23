@@ -31,7 +31,7 @@ export default function Wishlist({ onSectionChange }: WishlistProps) {
   const fetchWishlist = async () => {
     setIsLoading(true);
     try {
-      const { data: wishlistData, error } = await supabase
+      const { data: wishlistData, error } = await (supabase as any)
         .from("wishlist_cards")
         .select(
           `

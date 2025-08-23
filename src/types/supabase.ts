@@ -104,6 +104,7 @@ export type Database = {
           polar_price_id: string | null
           started_at: number | null
           status: string | null
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -127,6 +128,7 @@ export type Database = {
           polar_price_id?: string | null
           started_at?: number | null
           status?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -150,6 +152,7 @@ export type Database = {
           polar_price_id?: string | null
           started_at?: number | null
           status?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
         }

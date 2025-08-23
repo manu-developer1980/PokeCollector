@@ -330,7 +330,7 @@ const UnifiedUserManagement: React.FC = () => {
       ...users.map(user => [
         user.email,
         user.full_name || '',
-        (user.subscription?.status === 'admin') ? "Sí" : "No",
+        (user.subscription === 'admin') ? "Sí" : "No",
         user.is_active ? "Activo" : "Inactivo",
         user.level || '',
         user.preferred_lang || '',

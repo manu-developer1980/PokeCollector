@@ -63,7 +63,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const [selectedSet, setSelectedSet] = useState<string>("all");
 
   const { subscription } = useSubscription();
-  const planType = (subscription?.plan_type?.toUpperCase() ||
+  const planType = (subscription?.status?.toUpperCase() ||
     "APRENDIZ") as SubscriptionPlan;
 
   const totalPages = Math.ceil(totalCount / pageSize);

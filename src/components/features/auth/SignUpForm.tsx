@@ -66,7 +66,6 @@ export default function SignUpForm() {
         console.error(t("auth.errors.signupError"), {
           code: result.error.code,
           message: result.error.message,
-          details: result.error.originalError,
         });
 
         switch (result.error.code) {

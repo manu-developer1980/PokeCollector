@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Search, X } from "lucide-react";
-import { Collection, CollectionCard } from "@/types/pokemon";
+import { Collection, CollectionCard, PokemonCard } from "@/types/pokemon";
 import { useState, useMemo } from "react";
 import CardGrid from "./CardGrid";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
@@ -42,19 +42,28 @@ const CollectionDetail = ({
       .map((collectionCard) => ({
         id: collectionCard.card_id,
         name: collectionCard.name || 'Unknown Card',
+        supertype: 'Pokémon',
         number: collectionCard.set?.id || '',
         images: collectionCard.images || { small: '', large: '' },
         set: {
+          id: collectionCard.set?.id || '',
           name: collectionCard.set?.name || 'Unknown Set',
-          printedTotal: 0
+          series: '',
+          printedTotal: 0,
+          total: 0,
+          legalities: {},
+          releaseDate: '',
+          updatedAt: '',
+          images: { symbol: '', logo: '' }
         },
+        legalities: {},
         quantity: collectionCard.quantity,
         condition: collectionCard.condition,
         isFirstEdition: collectionCard.is_first_edition,
         isFoil: collectionCard.is_foil,
         notes: collectionCard.notes,
         collection_card_id: collectionCard.id // Store original ID for removal
-      }));
+      } as PokemonCard));
   }, [collection.cards, searchTerm]);
 
   const handleSearchClick = () => {

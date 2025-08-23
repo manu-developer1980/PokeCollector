@@ -49,7 +49,10 @@ export const useUserData = () => {
         const cachedData = cacheService.get<UserData>(cacheKey);
         if (cachedData && isMounted.current) {
   
-          setUserData(cachedData);
+          setUserData({
+          ...cachedData,
+          preferred_lang: (cachedData as any).preferred_lang || 'en'
+        });
           setIsLoading(false);
           setError(null);
           return cachedData;
@@ -94,6 +97,7 @@ export const useUserData = () => {
               full_name: user.user_metadata?.full_name || "Usuario",
               has_seen_onboarding: false,
               preferred_lang: user.user_metadata?.preferred_lang || "es",
+              token_identifier: user.id,
             };
 
             const { data: insertData, error: insertError } = await withRetry(
@@ -127,7 +131,10 @@ export const useUserData = () => {
             cacheService.set(cacheKey, insertData);
 
             if (isMounted.current) {
-              setUserData(insertData);
+              setUserData({
+                ...insertData,
+                preferred_lang: (insertData as any).preferred_lang || 'en'
+              });
               setIsLoading(false);
               setError(null);
               connectionStatus.clearStatus();
@@ -150,7 +157,10 @@ export const useUserData = () => {
         cacheService.set(cacheKey, data);
 
         if (isMounted.current) {
-          setUserData(data);
+          setUserData({
+            ...data,
+            preferred_lang: (data as any).preferred_lang || 'en'
+          });
           setIsLoading(false);
           setError(null);
           connectionStatus.clearStatus();
@@ -216,7 +226,10 @@ export const useUserData = () => {
 
         // Actualizar el estado
         if (isMounted.current) {
-          setUserData(data);
+          setUserData({
+            ...data,
+            preferred_lang: (data as any).preferred_lang || 'en'
+          });
         }
 
         return { success: true, data };
