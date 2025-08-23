@@ -60,16 +60,26 @@ interface UserSubscriptionData {
   full_name: string | null;
   subscription: {
     id: string;
-    plan_type: string;
-    status: string;
-    stripe_subscription_id: string | null;
-    stripe_customer_id: string | null;
-    current_period_start: string | null;
-    current_period_end: string | null;
-    cancel_at_period_end: boolean;
-    is_active: boolean;
+    amount: number | null;
+    cancel_at_period_end: boolean | null;
+    canceled_at: number | null;
     created_at: string;
+    currency: string | null;
+    current_period_end: number | null;
+    current_period_start: number | null;
+    custom_field_data: any | null;
+    customer_cancellation_comment: string | null;
+    customer_cancellation_reason: string | null;
+    customer_id: string | null;
+    ended_at: number | null;
+    interval: string | null;
+    metadata: any | null;
+    polar_id: string | null;
+    polar_price_id: string | null;
+    started_at: number | null;
+    status: string | null;
     updated_at: string;
+    user_id: string | null;
   } | null;
   overrides: Array<{
     id: string;
@@ -196,11 +206,7 @@ const SubscriptionManagement: React.FC = () => {
         );
       }
 
-      if (planFilter !== "all") {
-        filteredSubscriptions = filteredSubscriptions.filter(
-          (sub) => sub.subscription?.plan_type === planFilter
-        );
-      }
+      // Plan filter removed - plan_type field doesn't exist in database schema
 
       setAllSubscriptions(filteredSubscriptions);
       setTotalSubscriptions(result.total || filteredSubscriptions.length);
@@ -1053,18 +1059,8 @@ const SubscriptionManagement: React.FC = () => {
                             {t("admin.plan", { defaultValue: "Plan" })}
                           </label>
                           <div className="mt-1">
-                            <Badge
-                              className={getPlanBadgeColor(
-                                selectedUser.subscription.plan_type
-                              )}
-                            >
-                              {t(
-                                `plans.${selectedUser.subscription.plan_type}`,
-                                {
-                                  defaultValue:
-                                    selectedUser.subscription.plan_type,
-                                }
-                              )}
+                            <Badge className="bg-blue-100 text-blue-800">
+                              {selectedUser.subscription.status || "Unknown"}
                             </Badge>
                           </div>
                         </div>
@@ -1087,17 +1083,13 @@ const SubscriptionManagement: React.FC = () => {
                             {t("admin.isActive", { defaultValue: "Is Active" })}
                           </label>
                           <div className="mt-1 flex items-center space-x-2">
-                            {selectedUser.subscription.is_active ? (
+                            {selectedUser.subscription.status === "active" ? (
                               <CheckCircle className="h-4 w-4 text-green-600" />
                             ) : (
                               <X className="h-4 w-4 text-red-600" />
                             )}
                             <span className="text-sm">
-                              {selectedUser.subscription.is_active
-                                ? t("admin.active", { defaultValue: "Active" })
-                                : t("admin.inactive", {
-                                    defaultValue: "Inactive",
-                                  })}
+                              {selectedUser.subscription.status || "Unknown"}
                             </span>
                           </div>
                         </div>
@@ -1168,7 +1160,7 @@ const SubscriptionManagement: React.FC = () => {
                             })}
                           </label>
                           <p className="text-xs font-mono mt-1 bg-gray-50 p-2 rounded">
-                            {selectedUser.subscription.stripe_customer_id ||
+                            {selectedUser.subscription.customer_id ||
                               t("admin.notConnected", {
                                 defaultValue: "Not connected",
                               })}

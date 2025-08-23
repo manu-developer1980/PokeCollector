@@ -88,34 +88,20 @@ export const useAdmin = () => {
           return;
         }
 
-        // Try using the RPC function first
-        const { data: rpcData, error: rpcError } = await supabase.rpc(
-          "is_current_user_admin"
-        );
+        // Check admin status using subscription field
+        const { data, error } = await supabase
+          .from("users")
+          .select("subscription")
+          .eq("id", user.id)
+          .single();
 
-        if (!rpcError && rpcData !== null) {
-    
-          setIsAdmin(rpcData);
-          setError(null);
+        if (error) {
+          console.error("❌ Error checking admin status:", error);
+          setError(error);
+          setIsAdmin(false);
         } else {
-    
-
-          // Fallback to direct query
-          const { data, error } = await supabase
-            .from("users")
-            .select("is_admin")
-            .eq("id", user.id)
-            .single();
-
-          if (error) {
-            console.error("❌ Error checking admin status:", error);
-            setError(error);
-            setIsAdmin(false);
-          } else {
-    
-            setIsAdmin(data?.is_admin || false);
-            setError(null);
-          }
+          setIsAdmin(data?.subscription === 'admin');
+          setError(null);
         }
       } catch (err) {
         console.error("❌ Error in checkAdminStatus:", err);
@@ -147,12 +133,17 @@ export const useAdmin = () => {
       // This avoids the chicken-and-egg problem with RLS policies
 
       try {
-        // Use the new RPC function that bypasses RLS issues
-        const { data, error } = await supabase.rpc("admin_get_all_users", {
-          page_num: page,
-          page_size: limit,
-          search_email: search || "",
-        });
+        // Query users directly with pagination and search
+        let query = supabase
+          .from("users")
+          .select("*", { count: "exact" })
+          .range((page - 1) * limit, page * limit - 1);
+
+        if (search) {
+          query = query.ilike("email", `%${search}%`);
+        }
+
+        const { data, error, count } = await query;
 
         if (error) {
           throw error;
@@ -168,10 +159,10 @@ export const useAdmin = () => {
           };
         }
 
-        // Get the total count from the first row
-        const totalCount = data[0]?.total_count || 0;
+        // Get the total count from the query
+        const totalCount = count || 0;
 
-        // For each user, get their subscription and statistics data
+        // For each user, get their subscription data
         const usersWithDetails = await Promise.all(
           data.map(async (user: any) => {
             try {
@@ -182,26 +173,15 @@ export const useAdmin = () => {
                 .eq("user_id", user.id)
                 .limit(1);
 
-              // Get user statistics
-              const { data: userStats } = await supabase
-                .from("user_statistics")
-                .select(
-                  "total_cards, total_collections, total_wishlist_items, last_activity_at"
-                )
-                .eq("user_id", user.id)
-                .limit(1);
-
               return {
                 ...user,
-                subscriptions: subscriptions || [],
-                user_statistics: userStats || [],
+                                          subscriptions: subscriptions || [],
               };
             } catch (err) {
               console.error(`Error loading details for user ${user.id}:`, err);
               return {
                 ...user,
                 subscriptions: [],
-                user_statistics: [],
               };
             }
           })
@@ -393,7 +373,8 @@ export const useAdmin = () => {
       metadata?: any
     ) => {
       try {
-        const { data, error } = await supabase.rpc("log_admin_action", {
+        // Log admin action to console (audit_logs table not available)
+        console.log('Admin Action:', {
           admin_user_id: adminUserId,
           target_user_id: targetUserId,
           action_type: action,
@@ -404,12 +385,7 @@ export const useAdmin = () => {
           metadata: metadata || null,
         });
 
-        if (error) {
-          console.error("Error logging admin action:", error);
-          throw error;
-        }
-
-        return data;
+        return true;
       } catch (err) {
         console.error("Error in logAdminAction:", err);
         throw err;
@@ -435,48 +411,13 @@ export const useAdmin = () => {
       // Let the database RLS policies handle the admin check
 
       try {
-        let query = supabase
-          .from("audit_logs")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        // Apply filters
-        if (filters?.admin_user_id) {
-          query = query.eq("admin_user_id", filters.admin_user_id);
-        }
-        if (filters?.target_user_id) {
-          query = query.eq("target_user_id", filters.target_user_id);
-        }
-        if (filters?.action) {
-          query = query.eq("action", filters.action);
-        }
-        if (filters?.entity_type) {
-          query = query.eq("entity_type", filters.entity_type);
-        }
-        if (filters?.date_from) {
-          query = query.gte("created_at", filters.date_from);
-        }
-        if (filters?.date_to) {
-          query = query.lte("created_at", filters.date_to);
-        }
-
-        // Apply pagination
-        const from = (page - 1) * limit;
-        const to = from + limit - 1;
-        query = query.range(from, to);
-
-        const { data, error, count } = await query;
-
-        if (error) {
-          throw error;
-        }
-
+        // Audit logs table not available, return empty array
         return {
-          logs: data || [],
-          total: count || 0,
+          logs: [],
+          total: 0,
           page,
           limit,
-          totalPages: Math.ceil((count || 0) / limit),
+          totalPages: 0,
         };
       } catch (err) {
         console.error("Error fetching audit logs:", err);

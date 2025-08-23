@@ -63,26 +63,59 @@ interface UserData {
   id: string;
   email: string;
   full_name: string | null;
-  is_admin: boolean;
-  is_active: boolean;
-  last_login_at: string | null;
-  login_count: number;
+  subscription: string | null;
+  is_active?: boolean;
+  last_login_at?: string | null;
+  login_count?: number;
   created_at: string;
-  updated_at: string;
-  has_seen_onboarding: boolean;
-  level: string;
-  preferred_lang: string;
-  notes: string | null;
+  updated_at?: string;
+  has_seen_onboarding?: boolean;
+  level?: string;
+  preferred_lang?: string;
+  notes?: string | null;
+  avatar_url?: string;
+  credits?: string;
+  image?: string;
+  name?: string;
+  token_identifier?: string;
   subscriptions?: Array<{
-    plan_type: string;
-    status: string;
-    stripe_subscription_id: string | null;
+    id: string;
+    amount: number | null;
+    cancel_at_period_end: boolean | null;
+    canceled_at: number | null;
+    created_at: string;
+    currency: string | null;
+    current_period_end: number | null;
+    current_period_start: number | null;
+    custom_field_data: any | null;
+    customer_cancellation_comment: string | null;
+    customer_cancellation_reason: string | null;
+    customer_id: string | null;
+    ended_at: number | null;
+    interval: string | null;
+    metadata: any | null;
+    polar_id: string | null;
+    polar_price_id: string | null;
+    started_at: number | null;
+    status: string | null;
+    updated_at: string;
+    user_id: string | null;
   }>;
   user_statistics?: Array<{
     total_cards: number;
     total_collections: number;
     total_wishlist_items: number;
     last_activity_at: string | null;
+  }>;
+  collections?: Array<{
+    id: string;
+    name: string;
+    created_at: string;
+  }>;
+  wishlist_cards?: Array<{
+    id: string;
+    card_id: string;
+    created_at: string;
   }>;
 }
 
@@ -187,7 +220,7 @@ const UnifiedUserManagement: React.FC = () => {
     try {
       setLoading(true);
       const userDetails = await getUserById(userId);
-      setSelectedUser(userDetails);
+      setSelectedUser(userDetails as unknown as UserData);
       setShowUserDetails(true);
     } catch (err) {
       console.error("Error loading user details:", err);
@@ -208,8 +241,8 @@ const UnifiedUserManagement: React.FC = () => {
     setSelectedUser(user);
     setEditForm({
       full_name: user.full_name || "",
-      is_admin: user.is_admin,
-      is_active: user.is_active,
+      is_admin: user.subscription === 'admin',
+      is_active: user.is_active || false,
       level: user.level || "aprendiz",
       preferred_lang: user.preferred_lang || "es",
       notes: user.notes || "",
@@ -297,7 +330,7 @@ const UnifiedUserManagement: React.FC = () => {
       ...users.map(user => [
         user.email,
         user.full_name || '',
-        user.is_admin ? "Sí" : "No",
+        (user.subscription?.status === 'admin') ? "Sí" : "No",
         user.is_active ? "Activo" : "Inactivo",
         user.level || '',
         user.preferred_lang || '',
@@ -371,7 +404,7 @@ const UnifiedUserManagement: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Administradores</p>
                 <p className="text-2xl font-bold">
-                  {users.filter(u => u.is_admin).length}
+                  {users.filter(u => u.subscription === 'admin').length}
                 </p>
               </div>
               <Shield className="h-8 w-8 text-red-600" />
@@ -552,7 +585,7 @@ const UnifiedUserManagement: React.FC = () => {
                           <Badge variant={user.is_active ? "default" : "secondary"}>
                             {user.is_active ? "Activo" : "Inactivo"}
                           </Badge>
-                          {user.is_admin && (
+                          {user.subscription === 'admin' && (
                             <Badge variant="destructive">
                               <Shield className="h-3 w-3 mr-1" />
                               Admin
@@ -561,7 +594,7 @@ const UnifiedUserManagement: React.FC = () => {
                         </div>
                         {subscription && (
                           <Badge variant="outline">
-                            {subscription.plan_type}
+                            {subscription.status || 'Unknown'}
                           </Badge>
                         )}
                       </div>
@@ -712,8 +745,8 @@ const UnifiedUserManagement: React.FC = () => {
                     <div>
                       <Label>Permisos</Label>
                       <div className="mt-1">
-                        <Badge variant={selectedUser.is_admin ? "destructive" : "outline"}>
-                          {selectedUser.is_admin ? "Administrador" : "Usuario"}
+                        <Badge variant={selectedUser.subscription === 'admin' ? "destructive" : "outline"}>
+                          {selectedUser.subscription === 'admin' ? "Administrador" : "Usuario"}
                         </Badge>
                       </div>
                     </div>
@@ -781,12 +814,12 @@ const UnifiedUserManagement: React.FC = () => {
                     {selectedUser.subscriptions.map((sub, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="font-medium">{sub.plan_type}</p>
+                          <p className="font-medium">{sub.status || 'Unknown'}</p>
                           <p className="text-sm text-gray-500">Estado: {sub.status}</p>
                         </div>
-                        {sub.stripe_subscription_id && (
+                        {sub.customer_id && (
                           <Badge variant="outline">
-                            Stripe: {sub.stripe_subscription_id.slice(-8)}
+                            Customer: {sub.customer_id.slice(-8)}
                           </Badge>
                         )}
                       </div>

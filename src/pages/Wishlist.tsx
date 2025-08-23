@@ -37,7 +37,6 @@ export default function Wishlist({ onSectionChange }: WishlistProps) {
           `
           id,
           card_id,
-          user_id,
           date_added
         `
         )

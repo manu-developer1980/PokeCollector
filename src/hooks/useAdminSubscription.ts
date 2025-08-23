@@ -6,15 +6,18 @@ import { useAdmin } from "./useAdmin";
 export interface SubscriptionDetails {
   id: string;
   user_id: string;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
-  stripe_price_id: string | null;
-  plan_type: string;
+  customer_id: string | null;
+  polar_id: string | null;
+  polar_price_id: string | null;
   status: string;
-  current_period_start: string | null;
-  current_period_end: string | null;
-  cancel_at_period_end: boolean;
-  is_active: boolean;
+  amount: number | null;
+  currency: string | null;
+  interval: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  canceled_at: string | null;
+  metadata: any;
+  custom_field_data: any;
   created_at: string;
   updated_at: string;
 }
@@ -95,13 +98,13 @@ export const useAdminSubscription = () => {
         const currentSubscription = await getUserSubscription(actualUserId);
         console.log('Current subscription data:', {
           id: currentSubscription?.id,
-          stripe_subscription_id: currentSubscription?.stripe_subscription_id,
-          stripe_customer_id: currentSubscription?.stripe_customer_id,
-          plan_type: currentSubscription?.plan_type
+          polar_id: currentSubscription?.polar_id,
+          customer_id: currentSubscription?.customer_id,
+          status: currentSubscription?.status
         });
 
-        if (!currentSubscription?.stripe_subscription_id) {
-          throw new Error("No se encontró suscripción de Stripe");
+        if (!currentSubscription?.polar_id) {
+          throw new Error("No se encontró suscripción activa");
         }
 
         // Get access token
@@ -199,7 +202,7 @@ export const useAdminSubscription = () => {
               Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-               subscriptionId: currentSubscription.stripe_subscription_id,
+               subscriptionId: currentSubscription.polar_id,
                newPriceId: targetPlan.price.id,
              }),
           }
@@ -216,8 +219,8 @@ export const useAdminSubscription = () => {
         const updatedSubscription = await getUserSubscription(actualUserId);
         console.log('Updated subscription data:', {
           id: updatedSubscription?.id,
-          stripe_subscription_id: updatedSubscription?.stripe_subscription_id,
-          plan_type: updatedSubscription?.plan_type
+          polar_id: updatedSubscription?.polar_id,
+          status: updatedSubscription?.status
         });
 
         // Log the action - use the database UUID, not the Stripe data
@@ -227,8 +230,8 @@ export const useAdminSubscription = () => {
           "admin_plan_change",
           "subscription",
           updatedSubscription?.id || currentSubscription.id, // Ensure we use the database UUID
-          { plan_type: currentSubscription?.plan_type },
-          { plan_type: newPlanType },
+          { status: currentSubscription?.status },
+          { status: newPlanType },
           { reason, admin_override: true }
         );
 
@@ -277,9 +280,8 @@ export const useAdminSubscription = () => {
           data.id,
           {
             status: currentSubscription?.status,
-            is_active: currentSubscription?.is_active,
           },
-          { status, is_active: status === "active" },
+          { status },
           { reason, admin_override: true }
         );
 
@@ -357,8 +359,8 @@ export const useAdminSubscription = () => {
         // Get current subscription
         const currentSubscription = await getUserSubscription(userId);
 
-        if (!currentSubscription?.stripe_subscription_id) {
-          throw new Error("No Stripe subscription found");
+        if (!currentSubscription?.polar_id) {
+          throw new Error("No active subscription found");
         }
 
         // Get access token

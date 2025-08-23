@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useAdmin } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +45,7 @@ import {
   ChevronRight as ChevronRightIcon,
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
-import type { AuditLog } from "@/hooks/useAdmin";
+import { useAdmin, type AuditLog } from "@/hooks/useAdmin";
 
 interface AuditLogFilters {
   admin_user_id?: string;
@@ -60,6 +59,18 @@ interface AuditLogFilters {
 interface AuditLogData extends AuditLog {
   admin_email?: string;
   target_email?: string;
+  id: string;
+  admin_user_id: string | null;
+  target_user_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  old_values: any;
+  new_values: any;
+  metadata: any;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
 }
 
 const AuditLogs: React.FC = () => {
@@ -128,14 +139,15 @@ const AuditLogs: React.FC = () => {
         // Enrich logs with user emails
         const enrichedLogs = await Promise.all(
           result.logs.map(async (log) => {
-            const enrichedLog: AuditLogData = { ...log };
+            const auditLog = log as AuditLog;
+            const enrichedLog: AuditLogData = { ...auditLog };
 
             // Get admin email if admin_user_id exists
-            if (log.admin_user_id) {
+            if (auditLog.admin_user_id) {
               try {
-                const adminUser = await getUserById(log.admin_user_id);
-                if (adminUser) {
-                  enrichedLog.admin_email = adminUser.email;
+                const adminUser = await getUserById(auditLog.admin_user_id);
+                if (adminUser && 'email' in adminUser) {
+                  enrichedLog.admin_email = adminUser.email as string;
                 }
               } catch (err) {
                 console.warn("Could not fetch admin user email:", err);
@@ -143,11 +155,11 @@ const AuditLogs: React.FC = () => {
             }
 
             // Get target email if target_user_id exists
-            if (log.target_user_id) {
+            if (auditLog.target_user_id) {
               try {
-                const targetUser = await getUserById(log.target_user_id);
-                if (targetUser) {
-                  enrichedLog.target_email = targetUser.email;
+                const targetUser = await getUserById(auditLog.target_user_id);
+                if (targetUser && 'email' in targetUser) {
+                  enrichedLog.target_email = targetUser.email as string;
                 }
               } catch (err) {
                 console.warn("Could not fetch target user email:", err);

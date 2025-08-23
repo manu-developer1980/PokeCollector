@@ -61,9 +61,27 @@ interface UserData {
   created_at: string;
   updated_at: string;
   subscriptions: Array<{
-    plan_type: string;
-    status: string;
-    stripe_subscription_id: string | null;
+    id: string;
+    amount: number | null;
+    cancel_at_period_end: boolean | null;
+    canceled_at: number | null;
+    created_at: string;
+    currency: string | null;
+    current_period_end: number | null;
+    current_period_start: number | null;
+    custom_field_data: any | null;
+    customer_cancellation_comment: string | null;
+    customer_cancellation_reason: string | null;
+    customer_id: string | null;
+    ended_at: number | null;
+    interval: string | null;
+    metadata: any | null;
+    polar_id: string | null;
+    polar_price_id: string | null;
+    started_at: number | null;
+    status: string | null;
+    updated_at: string;
+    user_id: string | null;
   }>;
   user_statistics: Array<{
     total_cards: number;
@@ -531,11 +549,9 @@ const UserManagement: React.FC = () => {
                     <TableCell>
                       {subscription && (
                         <Badge
-                          className={getPlanBadgeColor(subscription.plan_type)}
-                        >
-                          {t(`plans.${subscription.plan_type}`, {
-                            defaultValue: subscription.plan_type,
-                          })}
+                          className="bg-blue-100 text-blue-800"
+                          >
+                            {subscription.status || "Unknown"}
                         </Badge>
                       )}
                     </TableCell>
@@ -778,11 +794,9 @@ const UserManagement: React.FC = () => {
                             </label>
                             <p className="text-sm">
                               <Badge
-                                className={getPlanBadgeColor(sub.plan_type)}
-                              >
-                                {t(`plans.${sub.plan_type}`, {
-                                  defaultValue: sub.plan_type,
-                                })}
+                                className="bg-blue-100 text-blue-800"
+                        >
+                          {sub.status || "Unknown"}
                               </Badge>
                             </p>
                           </div>
@@ -805,7 +819,7 @@ const UserManagement: React.FC = () => {
                               })}
                             </label>
                             <p className="text-xs font-mono">
-                              {sub.stripe_subscription_id ||
+                              {sub.customer_id ||
                                 t("admin.notConnected", {
                                   defaultValue: "Not connected",
                                 })}

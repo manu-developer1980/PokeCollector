@@ -1,59 +1,8 @@
-export interface PokemonCard {
-  id: string;
-  name: string;
-  number: string;
-  rarity?: string;
-  images: {
-    small: string;
-    large: string;
-  };
-  set: {
-    name: string;
-    printedTotal: number;
-  };
-  cardmarket?: {
-    prices?: {
-      averageSellPrice?: number;
-    };
-  };
-  // Propiedades de precios
-  tcgplayer?: {
-    prices: {
-      [key: string]: {
-        market: number;
-        low?: number;
-        mid?: number;
-        high?: number;
-      };
-    };
-  };
-  // Propiedades de detalles de carta
-  types?: string[];
-  hp?: string;
-  supertype?: string;
-  subtypes?: string[];
-  attacks?: Array<{
-    name: string;
-    text?: string;
-    damage?: string;
-    convertedEnergyCost?: number;
-    cost?: string[];
-  }>;
-  weaknesses?: Array<{
-    type: string;
-    value: string;
-  }>;
-  resistances?: Array<{
-    type: string;
-    value: string;
-  }>;
-  retreatCost?: string[];
-  abilities?: Array<{
-    name: string;
-    text: string;
-    type?: string;
-  }>;
-  rules?: string[];
+// Import types from api
+import type { PokemonCard as BasePokemonCard, PokemonSet, PokemonType, PokemonRarity, PriceData } from './api';
+
+// Extended PokemonCard with collection-specific properties
+export interface PokemonCard extends BasePokemonCard {
   // Propiedades específicas de la colección
   quantity?: number;
   isFirstEdition?: boolean;
@@ -124,8 +73,8 @@ export interface PokemonRaritySearchResponse {
   totalCount: number;
 }
 
-// Re-export from api types
-export type { PokemonCard, PokemonSet, PokemonType, PokemonRarity } from './api';
+// Re-export for convenience
+export type { PokemonSet, PokemonType, PokemonRarity } from './api';
 
 export interface CollectionCard {
   id: string;
