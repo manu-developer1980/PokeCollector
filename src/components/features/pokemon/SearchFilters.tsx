@@ -197,7 +197,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                     key={set.id}
                     value={set.id}
                   >
-                    {set.name}
+                    {t(`pokemonSets.${set.id}`, set.name)}
                   </SelectItem>
                 ))}
               </SelectContent>
