@@ -12,12 +12,14 @@ import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { supabase } from "../../supabase/supabase";
 import { normalizeCardId } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { useLocalization } from "@/hooks/useLocalization";
 import { errorHandler } from "@/lib/error-handler";
 
 export default function SearchPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentLanguage } = useLocalization();
 
   useEffect(() => {
     if (user) {
@@ -52,7 +54,7 @@ export default function SearchPage() {
     const loadFilterData = async () => {
       try {
         const [setsData, typesData, raritiesData] = await Promise.all([
-          getSets().catch(() => []),
+          getSets(currentLanguage).catch(() => []),
           getTypes().catch(() => []),
           getRarities().catch(() => []),
         ]);
@@ -66,7 +68,7 @@ export default function SearchPage() {
     };
 
     loadFilterData();
-  }, []);
+  }, [currentLanguage]);
 
   const handleSearch = async (params: PokemonCardSearchParams) => {
     setIsSearching(true);

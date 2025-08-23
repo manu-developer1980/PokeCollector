@@ -60,6 +60,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   const [subtype, setSubtype] = useState<CardSubtype | "all">("all");
   const [sortBy, setSortBy] = useState("name_asc");
   const [selectedRarity, setSelectedRarity] = useState<string>("all");
+  const [selectedSet, setSelectedSet] = useState<string>("all");
 
   const { subscription } = useSubscription();
   const planType = (subscription?.plan_type?.toUpperCase() ||
@@ -83,7 +84,12 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
 
     // Basic (Apprentice): only name and type
     if (type !== "all") {
-      queryParts.push(`types:${type}`);
+      queryParts.push(`type:${type}`);
+    }
+
+    // Set filter (available for all users)
+    if (selectedSet && selectedSet !== "all") {
+      queryParts.push(`set.id:${selectedSet}`);
     }
 
     // Trainer: adds rarity
@@ -167,6 +173,31 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                     value={value}
                   >
                     {t(`pokemonTypes.${value}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtro de Sets (disponible para todos) */}
+          <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
+            <Select
+              value={selectedSet}
+              onValueChange={setSelectedSet}
+            >
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder={t("filters.set")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {t("filters.allSets")}
+                </SelectItem>
+                {sets.map((set) => (
+                  <SelectItem
+                    key={set.id}
+                    value={set.id}
+                  >
+                    {set.name}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -42,6 +42,7 @@ import { NoActiveSubscriptionModal } from "@/components/features/subscription/No
 import PricingPage from "./pricing";
 import { normalizeCardId } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { useLocalization } from "@/hooks/useLocalization";
 
 // Eliminar esta línea que está causando el error
 // const { t } = useTranslation();
@@ -51,6 +52,7 @@ import { useTranslation } from "react-i18next";
 export default function PokemonDashboard() {
   // Mover la llamada a useTranslation dentro del componente
   const { t } = useTranslation();
+  const { currentLanguage } = useLocalization();
   // 1. Context Hooks
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -96,10 +98,10 @@ export default function PokemonDashboard() {
     collectionId: "",
     collectionName: "",
   });
-  const [searchParams, setSearchParams] = useState<PokemonCardSearchParams>({
+  const [searchParams, setSearchParams] = useState({
     name: "",
     set: "",
-    types: "", // Cambiado de type a types para que coincida con PokemonCardSearchParams
+    types: "",
     rarity: "",
     page: 1,
     pageSize: 20,
@@ -634,7 +636,7 @@ export default function PokemonDashboard() {
     const loadFilterData = async () => {
       try {
         const [setsData, typesData, raritiesData] = await Promise.all([
-          getSets().catch((error) => {
+          getSets(currentLanguage).catch((error) => {
             console.error(
               t("search.errors.setsFailed", "Error loading sets:"),
               error
@@ -682,7 +684,7 @@ export default function PokemonDashboard() {
     };
 
     loadFilterData();
-  }, [toast]);
+  }, [toast, currentLanguage]);
 
   const handleCardClick = (card: PokemonCard) => {
     setSelectedCard(card);

@@ -482,6 +482,8 @@
   "filters": {
     "pokemonType": "Tipo de Pokémon",
     "allTypes": "Todos los tipos",
+    "set": "Set",
+    "allSets": "Todos los sets",
     "rarity": "Rareza",
     "allRarities": "Todas las rarezas",
     "supertype": "Supertipo",
@@ -489,7 +491,6 @@
     "subtype": "Subtipo",
     "allSubtypes": "Todos los subtipos",
     "name": "Nombre",
-    "set": "Set",
     "type": "Tipo"
   },
   "card": {
@@ -543,7 +544,6 @@
   },
   "subscription": {
     "limitReachedMessage": "Has alcanzado el límite de {{limit}} {{type}} en tu plan {{plan}}",
-    "loading": "Cargando...",
     "upgradePlan": "Mejorar Plan",
     "statusActive": "Activo",
     "statusInactive": "Inactivo",
@@ -597,7 +597,6 @@
       "confirm": "Confirmar cambio"
     },
     "requiredTitle": "Suscripción Requerida",
-    "requiredDescription": "Necesitas una suscripción activa para {{action}}.",
     "welcomeMessage": "¡Bienvenido a PokéCollector!",
     "changePlan": "Cambiar Plan de Suscripción",
     "month": "mes",
@@ -625,7 +624,6 @@
       "exclusiveFeatures": "Características premium exclusivas"
     },
     "later": "Más tarde",
-    "viewPlans": "Ver planes",
     "verifyingLonger": "Verificando suscripción, esto puede tardar unos momentos...",
     "verifyingWebhook": "Esperando confirmación del servidor de pagos...",
     "processingDelay": "El procesamiento está tardando más de lo habitual. Por favor, espere un momento...",
@@ -801,10 +799,7 @@
     "goodbye": "¡Hasta pronto!",
     "accountDeletedMessage": "Tu cuenta ha sido eliminada correctamente. Esperamos volver a verte pronto en PokéCollector.",
     "welcomeBackMessage": "Recuerda que siempre serás bienvenido/a de nuevo en nuestra comunidad de coleccionistas.",
-    "backToHome": "Volver al inicio",
-    "checkEmail": "Revisa tu email",
-    "passwordEmailSent": "Hemos enviado un email a {{email}} con instrucciones para cambiar tu contraseña",
-    "checkInboxPassword": "Revisa tu bandeja de entrada y sigue las instrucciones para establecer una nueva contraseña"
+    "backToHome": "Volver al inicio"
   },
   "auth": {
     "login": "Iniciar sesión",

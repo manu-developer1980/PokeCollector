@@ -220,6 +220,21 @@ export async function searchCards(
     try {
       // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
+        // Construct the 'q' parameter with all filters
+        let queryString = params.q || '';
+        
+        // Add set filter to query string if specified
+        if (params.set && params.set !== "all") {
+          const setFilter = `set.id:${params.set}`;
+          queryString = queryString ? `${queryString} ${setFilter}` : setFilter;
+        }
+        
+        // Add rarity filter to query string if specified
+        if (params.rarity && params.rarity !== "all") {
+          const rarityFilter = `rarity:"${params.rarity}"`;
+          queryString = queryString ? `${queryString} ${rarityFilter}` : rarityFilter;
+        }
+
         const { data }: AxiosResponse<{
           data: PokemonCard[];
           page: number;
@@ -229,12 +244,10 @@ export async function searchCards(
         }> = await api.get("/pokemon/cards", {
           ...defaultConfig,
           params: {
-            q: params.q,
+            q: queryString || undefined,
             page: params.page,
             pageSize: params.pageSize,
             orderBy: params.orderBy,
-            set: params.set !== "all" ? params.set : undefined,
-            rarity: params.rarity !== "all" ? params.rarity : undefined,
           },
         });
         return data;
@@ -267,8 +280,8 @@ export async function searchCards(
   });
 }
 
-export async function getSets(): Promise<PokemonCardSet[]> {
-  const cacheKey = "pokemon:sets";
+export async function getSets(language: string = 'en'): Promise<PokemonCardSet[]> {
+  const cacheKey = `pokemon:sets:${language}`;
   const cachedData = PokemonCache.get<PokemonCardSet[]>(cacheKey);
 
   if (cachedData) {
@@ -278,7 +291,10 @@ export async function getSets(): Promise<PokemonCardSet[]> {
   return deduplicateRequest(cacheKey, async () => {
     try {
       // Call backend instead of external API
-      const { data }: AxiosResponse<{ data: PokemonCardSet[] }> = await api.get("/pokemon/sets", defaultConfig);
+      const { data }: AxiosResponse<{ data: PokemonCardSet[] }> = await api.get("/pokemon/sets", {
+        ...defaultConfig,
+        params: { lang: language }
+      });
       const sets = data.data || [];
       PokemonCache.set(cacheKey, sets);
       return sets;
