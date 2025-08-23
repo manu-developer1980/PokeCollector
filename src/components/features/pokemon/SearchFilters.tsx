@@ -192,14 +192,20 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <SelectItem value="all">
                   {t("filters.allSets")}
                 </SelectItem>
-                {sets.map((set) => (
-                  <SelectItem
-                    key={set.id}
-                    value={set.id}
-                  >
-                    {t(`pokemonSets.${set.id}`, set.name)}
-                  </SelectItem>
-                ))}
+                {sets
+                  .sort((a, b) => {
+                    const nameA = t(`pokemonSets.${a.id}`, a.name);
+                    const nameB = t(`pokemonSets.${b.id}`, b.name);
+                    return nameA.localeCompare(nameB);
+                  })
+                  .map((set) => (
+                    <SelectItem
+                      key={set.id}
+                      value={set.id}
+                    >
+                      {t(`pokemonSets.${set.id}`, set.name)}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
