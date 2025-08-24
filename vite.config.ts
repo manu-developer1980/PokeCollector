@@ -98,6 +98,23 @@ export default defineConfig(({ mode }) => {
     assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif'],
     server: {
       proxy: {
+        "/api": {
+          target: "http://localhost:3000",
+          changeOrigin: true,
+          secure: false,
+          configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.error("Backend proxy error:", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              if (mode === 'development') {
+                console.log(
+                  `Proxying backend request to: ${req.method} ${proxyReq.path}`
+                );
+              }
+            });
+          },
+        },
         "/api/pokemon": {
           target: "https://api.pokemontcg.io/v2",
           changeOrigin: true,

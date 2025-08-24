@@ -520,6 +520,15 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 export async function getUserPlan(userId: string): Promise<{ planType: string; planFeatures: any } | null> {
   try {
     const response = await api.get(`/stripe/user/${userId}/plan`);
+    console.log('🔧 Respuesta completa de getUserPlan:', response.data);
+    
+    // La API devuelve {success: true, data: {planType: 'maestro', planFeatures: {...}}}
+    if (response.data?.success && response.data?.data) {
+      console.log('✅ Extrayendo datos del plan:', response.data.data);
+      return response.data.data;
+    }
+    
+    console.log('❌ Estructura de respuesta inesperada:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching user plan:', error);
