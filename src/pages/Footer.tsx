@@ -34,49 +34,9 @@ export default function Footer() {
 
           <div>
             <h3 className="font-medium text-lg mb-4 text-gray-900">
-              {footerTranslations.features.title}
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="#"
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  {footerTranslations.features.cardSearch}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  {footerTranslations.features.collectionManagement}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  {footerTranslations.features.wishlist}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-medium text-lg mb-4 text-gray-900">
               {footerTranslations.resources.title}
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link
-                  to="#"
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  {footerTranslations.resources.guides}
-                </Link>
-              </li>
               <li>
                 <Link
                   to="/rules"
@@ -93,14 +53,6 @@ export default function Footer() {
                   {footerTranslations.resources.blog}
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  {footerTranslations.resources.tutorials}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -111,20 +63,21 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  to="#"
-                  className="text-gray-600 hover:text-red-600"
-                >
-                  {footerTranslations.company.about}
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/contact"
                   className="text-gray-600 hover:text-red-600"
                 >
                   {footerTranslations.company.contact}
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="#"
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  {footerTranslations.company.about}
+                </Link>
+              </li>
+
               <li>
                 <Link
                   to="/privacy-policy"
