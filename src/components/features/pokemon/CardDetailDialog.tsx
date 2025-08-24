@@ -147,7 +147,7 @@ const CardDetailDialog = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex gap-6 wrap flex-wrap">
+          <div className="flex gap-6 wrap flex-wrap justify-center">
             <div className="flex flex-col gap-4">
               <img
                 src={cardDetails.images?.large || cardDetails.images?.small}
