@@ -184,7 +184,7 @@ export default function AuthCallback() {
         }
 
         const data = await response.json();
-        console.log("✅ Usuario inicializado correctamente:", data);
+        // Usuario inicializado correctamente
       } catch (error) {
         console.error("❌ Error en initializeUser:", error);
         

@@ -47,7 +47,7 @@ export const useAdminSubscription = () => {
 
         return data;
       } catch (err) {
-        console.error("Error fetching user subscription:", err);
+        // Error fetching user subscription
         throw err;
       }
     },
@@ -58,7 +58,7 @@ export const useAdminSubscription = () => {
   const getAccessToken = async (): Promise<string | null> => {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session) {
-      console.error("Error getting session:", error);
+      // Error getting session
       return null;
     }
     return session.access_token;
@@ -76,7 +76,7 @@ export const useAdminSubscription = () => {
         
         if (userIdOrStripeCustomerId.startsWith('cus_')) {
           // This is a Stripe customer ID, we need to find the actual user UUID
-          console.log('Converting Stripe customer ID to user UUID:', userIdOrStripeCustomerId);
+          // Converting Stripe customer ID to user UUID
           
           const { data: subscription, error } = await (supabase as any)
             .from("subscriptions")
@@ -91,17 +91,12 @@ export const useAdminSubscription = () => {
           }
           
           actualUserId = subscription.user_id;
-          console.log('Found actual user ID:', actualUserId);
+          // Found actual user ID
         }
 
         // Get current subscription using the actual user UUID
         const currentSubscription = await getUserSubscription(actualUserId);
-        console.log('Current subscription data:', {
-          id: currentSubscription?.id,
-          polar_id: currentSubscription?.polar_id,
-          customer_id: currentSubscription?.customer_id,
-          status: currentSubscription?.status
-        });
+        // Current subscription data retrieved
 
         if (!currentSubscription?.polar_id) {
           throw new Error("No se encontró suscripción activa");
@@ -133,9 +128,7 @@ export const useAdminSubscription = () => {
         const stripePlans = data.plans || [];
         
         // Debug logging - show full structure
-        console.log('Raw API response:', data);
-        console.log('Available plans count:', stripePlans.length);
-        console.log('Full plans structure:', stripePlans);
+        // Raw API response processed
         
         // Flatten plans if they have a prices array structure
         const flattenedPlans = [];
@@ -156,22 +149,13 @@ export const useAdminSubscription = () => {
           }
         }
         
-        console.log('Flattened plans:', flattenedPlans.map((plan: any) => ({
-          priceId: plan.price?.id,
-          productName: plan.product?.name,
-          planType: plan.product?.metadata?.plan_type,
-          active: plan.price?.active
-        })));
-        console.log('Looking for plan:', newPlanType);
+        // Flattened plans processed
         
         // Try to find the plan by price ID first (if newPlanType looks like a price ID)
         let targetPlan = null;
         if (newPlanType.startsWith('price_')) {
           targetPlan = flattenedPlans.find((plan: any) => plan.price?.id === newPlanType);
-          console.log('Search by price ID result:', targetPlan ? 'Found' : 'Not found');
-          if (targetPlan) {
-            console.log('Found plan details:', targetPlan);
-          }
+          // Search by price ID completed
         }
         
         // If not found by price ID, try to find by plan_type metadata
@@ -179,16 +163,11 @@ export const useAdminSubscription = () => {
           targetPlan = flattenedPlans.find((plan: any) => 
             plan.product?.metadata?.plan_type?.toLowerCase() === newPlanType.toLowerCase()
           );
-          console.log('Search by plan_type result:', targetPlan ? 'Found' : 'Not found');
-          if (targetPlan) {
-            console.log('Found plan by metadata:', targetPlan);
-          }
+          // Search by plan_type completed
         }
 
         if (!targetPlan?.price?.id) {
-          console.error('No plan found. Available price IDs:', flattenedPlans.map(p => p.price?.id));
-          console.error('Target price ID:', newPlanType);
-          console.error('Full flattened plans:', flattenedPlans);
+          // No plan found for the specified type
           throw new Error(`No se encontró precio para el plan: ${newPlanType}`);
         }
 
@@ -217,11 +196,7 @@ export const useAdminSubscription = () => {
 
         // Get the updated subscription from database to ensure we have the correct UUID
         const updatedSubscription = await getUserSubscription(actualUserId);
-        console.log('Updated subscription data:', {
-          id: updatedSubscription?.id,
-          polar_id: updatedSubscription?.polar_id,
-          status: updatedSubscription?.status
-        });
+        // Updated subscription data retrieved
 
         // Log the action - use the database UUID, not the Stripe data
         await logAdminAction(
@@ -237,7 +212,7 @@ export const useAdminSubscription = () => {
 
         return result;
       } catch (err) {
-        console.error("Error changing plan:", err);
+        // Error changing plan
         throw err;
       } finally {
         setIsChangingPlan(false);
@@ -287,7 +262,7 @@ export const useAdminSubscription = () => {
 
         return data;
       } catch (err) {
-        console.error("Error updating subscription status:", err);
+        // Error updating subscription status
         throw err;
       }
     },
@@ -343,7 +318,7 @@ export const useAdminSubscription = () => {
 
         return result;
       } catch (err) {
-        console.error("Error syncing with Stripe:", err);
+        // Error syncing with Stripe
         throw err;
       }
     },
@@ -411,7 +386,7 @@ export const useAdminSubscription = () => {
 
         return result;
       } catch (err) {
-        console.error("Error canceling subscription:", err);
+        // Error canceling subscription
         throw err;
       }
     },
@@ -465,7 +440,7 @@ export const useAdminSubscription = () => {
 
         return data;
       } catch (err) {
-        console.error("Error creating override:", err);
+        // Error creating override
         throw err;
       }
     },
@@ -491,7 +466,7 @@ export const useAdminSubscription = () => {
 
         return data || [];
       } catch (err) {
-        console.error("Error fetching user overrides:", err);
+        // Error fetching user overrides
         throw err;
       }
     },
@@ -532,7 +507,7 @@ export const useAdminSubscription = () => {
 
         return data;
       } catch (err) {
-        console.error("Error deactivating override:", err);
+        // Error deactivating override
         throw err;
       }
     },

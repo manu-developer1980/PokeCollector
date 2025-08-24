@@ -139,16 +139,16 @@ export default function LoginForm() {
 
               if (response.ok) {
                 const data = await response.json();
-                console.log("✅ Usuario inicializado correctamente en login:", data);
+                // Usuario inicializado correctamente en login
               } else {
-                console.warn(`⚠️ Initialize-user function respondió con status ${response.status}, continuando sin inicialización`);
+                // Initialize-user function respondió con status no exitoso, continuando sin inicialización
               }
             } catch (initError) {
               // Manejo específico de errores de CORS
               if (initError.message.includes('CORS') || initError.message.includes('fetch')) {
-                console.warn("⚠️ Error de CORS en initialize-user durante login - continuando sin inicialización:", initError.message);
+                // Error de CORS en initialize-user durante login - continuando sin inicialización
               } else {
-                console.warn("⚠️ Initialize-user function no disponible, continuando sin inicialización:", initError);
+                // Initialize-user function no disponible, continuando sin inicialización
               }
               // Continuamos sin problemas - la función de inicialización es opcional
             }
@@ -166,7 +166,7 @@ export default function LoginForm() {
 
             navigate(redirectTo || "/dashboard");
           } catch (error) {
-            console.error(t("auth.errors.initError"), error);
+            // Error de inicialización
             toast({
               title: t("errors.generic"),
               description: t("auth.errors.accountInitError"),
@@ -176,7 +176,7 @@ export default function LoginForm() {
         }
       }
     } catch (error) {
-      console.error(t("auth.errors.loginProcessError"), error);
+      // Error en el proceso de login
       toast({
         title: t("auth.errors.loginError"),
         description: t("errors.generic"),

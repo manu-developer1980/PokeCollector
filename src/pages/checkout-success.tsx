@@ -16,7 +16,7 @@ export default function CheckoutSuccessPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   
-  console.log('🚀 CheckoutSuccessPage cargado, usuario:', user?.id || 'No autenticado');
+
 
   // Estado para controlar si ya se ha cargado la suscripción
   const [subscriptionLoaded, setSubscriptionLoaded] = useState(false);
@@ -25,7 +25,7 @@ export default function CheckoutSuccessPage() {
   useEffect(() => {
     // Solo inicializar si planName está vacío y no se ha cargado la suscripción
     if (!planName && !subscriptionLoaded) {
-      console.log('🔧 Inicializando planName con fallback');
+
       // Try to get plan from localStorage first
       const selectedPlanType = localStorage.getItem("selectedPlanType");
       if (selectedPlanType) {
@@ -37,12 +37,12 @@ export default function CheckoutSuccessPage() {
             : selectedPlanType.toLowerCase() === "maestro"
             ? t("plans.maestro", { defaultValue: "Maestro" })
             : t("plans.aprendiz", { defaultValue: "Aprendiz" });
-        console.log('🔧 Usando plan del localStorage:', fallbackName);
+
         setPlanName(fallbackName);
       } else {
         // Default fallback
         const defaultName = t("plans.aprendiz", { defaultValue: "Aprendiz" });
-        console.log('🔧 Usando plan por defecto:', defaultName);
+
         setPlanName(defaultName);
       }
     }
@@ -92,7 +92,7 @@ export default function CheckoutSuccessPage() {
     // Función para obtener el nombre traducido del plan
     const getTranslatedPlanName = (planType: string) => {
       if (!planType) {
-        console.warn("Plan type is empty or undefined, using fallback");
+
         return t("plans.aprendiz", { defaultValue: "Aprendiz" });
       }
 
@@ -135,7 +135,7 @@ export default function CheckoutSuccessPage() {
           }
           return t("plans.aprendiz", { defaultValue: "Aprendiz" });
         default:
-          console.warn(`Unknown plan type: ${planType}, using fallback`);
+
           return t("plans.aprendiz", { defaultValue: "Aprendiz" });
       }
     };
@@ -160,23 +160,14 @@ export default function CheckoutSuccessPage() {
 
         // Intentar obtener el plan real desde la base de datos
         if (user?.id) {
-          console.log('🔍 Obteniendo plan para usuario:', user.id);
           const userPlanData = await getUserPlan(user.id);
-          console.log('📊 Datos del plan obtenidos:', userPlanData);
           
           if (userPlanData?.planType) {
-            console.log('✅ Plan type encontrado:', userPlanData.planType);
             const translatedPlanName = getTranslatedPlanName(userPlanData.planType);
-            console.log('🌐 Nombre traducido del plan:', translatedPlanName);
-            console.log('🔄 Actualizando planName de:', planName, 'a:', translatedPlanName);
             setPlanName(translatedPlanName);
             setSubscriptionLoaded(true);
             return;
-          } else {
-            console.log('❌ No se encontró planType en los datos');
           }
-        } else {
-          console.log('❌ No hay usuario ID disponible');
         }
 
         // Si no se pudo obtener el plan desde la base de datos, intentar con la suscripción
@@ -190,9 +181,7 @@ export default function CheckoutSuccessPage() {
           setSubscriptionLoaded(true);
         } else {
           // Si no hay status, verificamos si hay un error o si debemos usar el fallback
-          if (error) {
-            console.error("Error al obtener la suscripción:", error);
-          }
+
 
           // Si llevamos varios intentos sin éxito, usamos el fallback
           if (verificationAttempts >= 5) {
@@ -217,7 +206,7 @@ export default function CheckoutSuccessPage() {
           }
         }
       } catch (err) {
-        console.error("Error verificando suscripción:", err);
+        // Error verificando suscripción
       }
     };
 
@@ -265,7 +254,7 @@ export default function CheckoutSuccessPage() {
               planName:
                 planName || t("plans.aprendiz", { defaultValue: "Aprendiz" }),
             })}
-            {/* DEBUG: planName actual = {planName} */}
+
           </h1>
           <p className="text-gray-600 mb-4">
             {t("subscription.successDescription")}

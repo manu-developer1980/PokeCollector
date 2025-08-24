@@ -122,7 +122,7 @@ export default function PokemonDashboard() {
   // FIX: Use plan_type instead of status - cast to access plan_type
   // Default to "aprendiz" (database format) when no subscription exists
   const planType = (subscription as any)?.plan_type ? toPlanType((subscription as any).plan_type) : toPlanType("aprendiz");
-  console.log('🔍 DEBUG - Final planType used:', planType);
+  // DEBUG - Final planType used
   const [rarities, setRarities] = useState<string[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -332,9 +332,7 @@ export default function PokemonDashboard() {
         }
 
         // DEBUG: Agregar logs para investigar el problema del plan
-  console.log('🔍 DEBUG - Subscription object:', subscription);
-  console.log('🔍 DEBUG - Subscription status:', subscription?.status);
-  console.log('🔍 DEBUG - Subscription plan_type:', (subscription as any)?.plan_type);
+  // DEBUG - Subscription object, status y plan_type
         // Seleccionar la tabla correcta según el tipo de recurso
         const tableName =
           resourceType === "wishlist"
@@ -421,15 +419,7 @@ export default function PokemonDashboard() {
             ? PLAN_FEATURES[planType.toUpperCase()]?.maxWishlist
             : PLAN_FEATURES[planType.toUpperCase()]?.maxCards;
 
-        console.log('🔍 VALIDATION DEBUG:', {
-          resourceType,
-          planType,
-          planTypeUpper: planType.toUpperCase(),
-          maxValue,
-          currentCount,
-          quantity,
-          planFeatures: PLAN_FEATURES[planType.toUpperCase()]
-        });
+        // VALIDATION DEBUG - resourceType, planType, maxValue, currentCount, quantity
 
 
 
@@ -945,13 +935,7 @@ export default function PokemonDashboard() {
         PLAN_FEATURES[planType.toUpperCase()]?.maxCollections ||
         0;
 
-      console.log('🔍 CREATE COLLECTION DEBUG:', {
-        planType,
-        planTypeUpper: planType.toUpperCase(),
-        maxCollections,
-        currentCount,
-        planFeatures: PLAN_FEATURES[planType.toUpperCase()]
-      });
+      // CREATE COLLECTION DEBUG - planType, maxCollections, currentCount
 
       // 3. Comparar directamente si el número actual es menor que el límite
       // IMPORTANTE: Si maxCollections es -1, significa ilimitado

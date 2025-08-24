@@ -96,7 +96,7 @@ export const useAdmin = () => {
           .single();
 
         if (error) {
-          console.error("❌ Error checking admin status:", error);
+          // Error checking admin status
           setError(error);
           setIsAdmin(false);
         } else {
@@ -104,7 +104,7 @@ export const useAdmin = () => {
           setError(null);
         }
       } catch (err) {
-        console.error("❌ Error in checkAdminStatus:", err);
+        // Error in checkAdminStatus
         setError(err instanceof Error ? err : new Error(String(err)));
         setIsAdmin(false);
       } finally {
@@ -178,7 +178,7 @@ export const useAdmin = () => {
                                           subscriptions: subscriptions || [],
               };
             } catch (err) {
-              console.error(`Error loading details for user ${user.id}:`, err);
+              // Error loading details for user
               return {
                 ...user,
                 subscriptions: [],
@@ -216,7 +216,7 @@ export const useAdmin = () => {
           totalPages: Math.ceil(totalCount / limit),
         };
       } catch (err) {
-        console.error("Error fetching users:", err);
+        // Error fetching users
         throw err;
       }
     },
@@ -249,7 +249,7 @@ export const useAdmin = () => {
 
         return data;
       } catch (err) {
-        console.error("Error fetching user details:", err);
+        // Error fetching user details
         throw err;
       }
     },
@@ -297,7 +297,7 @@ export const useAdmin = () => {
 
         return data;
       } catch (err) {
-        console.error("Error updating user:", err);
+        // Error updating user
         throw err;
       }
     },
@@ -353,7 +353,7 @@ export const useAdmin = () => {
 
         return true;
       } catch (err) {
-        console.error("Error deleting user:", err);
+        // Error deleting user
         throw err;
       }
     },
@@ -374,20 +374,11 @@ export const useAdmin = () => {
     ) => {
       try {
         // Log admin action to console (audit_logs table not available)
-        console.log('Admin Action:', {
-          admin_user_id: adminUserId,
-          target_user_id: targetUserId,
-          action_type: action,
-          resource_type: entityType,
-          resource_id: entityId || "",
-          old_values: oldValues || null,
-          new_values: newValues || null,
-          metadata: metadata || null,
-        });
+        // Admin Action logged
 
         return true;
       } catch (err) {
-        console.error("Error in logAdminAction:", err);
+        // Error in logAdminAction
         throw err;
       }
     },
@@ -420,7 +411,7 @@ export const useAdmin = () => {
           totalPages: 0,
         };
       } catch (err) {
-        console.error("Error fetching audit logs:", err);
+        // Error fetching audit logs
         throw err;
       }
     },

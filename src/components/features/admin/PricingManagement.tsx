@@ -172,8 +172,7 @@ const PricingManagement: React.FC = () => {
     const loadData = async () => {
       try {
         const fetchedPlans = await fetchStripePlans();
-        console.log('Fetched plans from Stripe:', fetchedPlans);
-        console.log('Plans count:', fetchedPlans?.length || 0);
+        // Planes obtenidos desde Stripe
         
         // Fetch real subscriptions from Stripe
         const stripeSubscriptions = await fetchStripeSubscriptions();
@@ -603,11 +602,11 @@ const PricingManagement: React.FC = () => {
         }
       }
 
-      console.log('Changing plan:', {
-        userId: selectedSubscription.user_id,
-        planType,
-        selectedPlan: selectedPlan.product?.name
-      });
+      // console.log('Changing plan:', {
+      //   userId: selectedSubscription.user_id,
+      //   planType,
+      //   selectedPlan: selectedPlan.product?.name
+      // });
 
       await changePlan(selectedSubscription.user_id, planType, "Cambio manual desde administración");
       

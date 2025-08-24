@@ -77,32 +77,27 @@ const ResetPassword: React.FC = () => {
   // Verificar sesión al cargar el componente
   useEffect(() => {
     const checkSession = async () => {
-      console.log('🔍 Verificando sesión para reset de contraseña...');
+      // Verificando sesión para reset de contraseña
       
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        console.log('📋 Estado de la sesión:', {
-          hasSession: !!session,
-          sessionError: error?.message,
-          userId: session?.user?.id,
-          accessToken: session?.access_token ? 'Presente' : 'Ausente'
-        });
+        // Estado de la sesión verificado
         
         if (error) {
-          console.error('❌ Error al obtener sesión:', error);
+          // Error al obtener sesión
           setError(`Error de sesión: ${error.message}`);
           setHasValidSession(false);
         } else if (!session) {
-          console.warn('⚠️ No hay sesión activa para reset de contraseña');
+          // No hay sesión activa para reset de contraseña
           setError('No hay una sesión válida. Por favor, solicita un nuevo enlace de restablecimiento.');
           setHasValidSession(false);
         } else {
-          console.log('✅ Sesión válida encontrada');
+          // Sesión válida encontrada
           setHasValidSession(true);
         }
       } catch (err) {
-        console.error('💥 Error inesperado al verificar sesión:', err);
+        // Error inesperado al verificar sesión
         setError('Error inesperado al verificar la sesión');
         setHasValidSession(false);
       } finally {
@@ -118,22 +113,22 @@ const ResetPassword: React.FC = () => {
     setError(null);
 
     try {
-      console.log('🔄 Intentando actualizar contraseña...');
+      // Intentando actualizar contraseña
       
       const { error } = await supabase.auth.updateUser({
         password: data.password
       });
 
       if (error) {
-        console.error('❌ Error al actualizar contraseña:', error);
+        // Error al actualizar contraseña
         setError(error.message);
         return;
       }
 
-      console.log('✅ Contraseña actualizada exitosamente');
+      // Contraseña actualizada exitosamente
       setShowSuccessModal(true);
     } catch (error) {
-      console.error('❌ Error inesperado:', error);
+      // Error inesperado
       setError(t('auth.errors.unexpectedError'));
     } finally {
       setLoading(false);
