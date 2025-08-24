@@ -75,7 +75,7 @@ const OnboardingModal = ({ isOpen, onClose }: OnboardingModalProps) => {
       open={shouldShowModal}
       onOpenChange={() => handleClose()}
     >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader className="sr-only">
           <DialogTitle>{t("onboarding.title")}</DialogTitle>
           <DialogDescription>{t("onboarding.description")}</DialogDescription>

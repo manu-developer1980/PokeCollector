@@ -297,7 +297,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
         open={isOpen}
         onOpenChange={(open) => !open && onClose()}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-3xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {isLoading ? t("common.loading") : t("common.error")}
@@ -321,7 +321,7 @@ const CardDetail: React.FC<CardDetailProps> = ({
           if (!open) onClose();
         }}
       >
-        <DialogContent className="max-w-3xl h-auto max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-3xl h-auto max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               <span className="flex items-center gap-2">

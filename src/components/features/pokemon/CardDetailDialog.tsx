@@ -88,7 +88,7 @@ const CardDetailDialog = ({
           if (!open) onClose();
         }}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               <span className="flex items-center gap-2">
