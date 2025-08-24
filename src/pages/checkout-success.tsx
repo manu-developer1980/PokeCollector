@@ -5,6 +5,8 @@ import { CheckCircle2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../../supabase/auth";
+import { getUserPlan } from "@/lib/api";
 
 export default function CheckoutSuccessPage() {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function CheckoutSuccessPage() {
     useSubscription();
   const [planName, setPlanName] = useState("");
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   // Estado para controlar si ya se ha cargado la suscripción
   const [subscriptionLoaded, setSubscriptionLoaded] = useState(false);
@@ -100,6 +103,31 @@ export default function CheckoutSuccessPage() {
         case "maestro":
         case "master":
           return t("plans.maestro", { defaultValue: "Maestro" });
+        case "active":
+        case "trialing":
+        case "past_due":
+        case "canceled":
+        case "unpaid":
+          // These are Stripe subscription statuses, not plan types
+          // Use fallback plan from localStorage or default to aprendiz
+          const selectedPlanType = localStorage.getItem("selectedPlanType");
+          if (selectedPlanType && selectedPlanType !== planType) {
+            const normalizedSelected = selectedPlanType.toLowerCase().trim();
+            switch (normalizedSelected) {
+              case "aprendiz":
+              case "apprentice":
+                return t("plans.aprendiz", { defaultValue: "Aprendiz" });
+              case "entrenador":
+              case "trainer":
+                return t("plans.entrenador", { defaultValue: "Entrenador" });
+              case "maestro":
+              case "master":
+                return t("plans.maestro", { defaultValue: "Maestro" });
+              default:
+                return t("plans.aprendiz", { defaultValue: "Aprendiz" });
+            }
+          }
+          return t("plans.aprendiz", { defaultValue: "Aprendiz" });
         default:
           console.warn(`Unknown plan type: ${planType}, using fallback`);
           return t("plans.aprendiz", { defaultValue: "Aprendiz" });
@@ -112,34 +140,39 @@ export default function CheckoutSuccessPage() {
         if (verificationAttempts >= 15) {
           setSubscriptionLoaded(true);
 
-          // Obtener el plan seleccionado del localStorage
+          // Obtener el plan seleccionado del localStorage como fallback
           const selectedPlanType = localStorage.getItem("selectedPlanType");
           if (selectedPlanType) {
-
             setPlanName(getTranslatedPlanName(selectedPlanType));
           }
 
           return;
         }
 
-
-
         // Incrementar el contador de intentos
         setVerificationAttempts((prev) => prev + 1);
 
-        // Intentar obtener la suscripción actualizada
+        // Intentar obtener el plan real desde la base de datos
+        if (user?.id) {
+          const userPlanData = await getUserPlan(user.id);
+          
+          if (userPlanData?.planType) {
+            const translatedPlanName = getTranslatedPlanName(userPlanData.planType);
+            setPlanName(translatedPlanName);
+            setSubscriptionLoaded(true);
+            return;
+          }
+        }
+
+        // Si no se pudo obtener el plan desde la base de datos, intentar con la suscripción
         const updatedSubscription = await refetchSubscription();
 
-        // Verificar si la suscripción tiene un status
         if (updatedSubscription?.status) {
           const translatedPlanName = getTranslatedPlanName(
             updatedSubscription.status
           );
           setPlanName(translatedPlanName);
           setSubscriptionLoaded(true);
-
-          // Registrar evento de éxito
-
         } else {
           // Si no hay status, verificamos si hay un error o si debemos usar el fallback
           if (error) {
@@ -150,7 +183,6 @@ export default function CheckoutSuccessPage() {
           if (verificationAttempts >= 5) {
             const selectedPlanType = localStorage.getItem("selectedPlanType");
             if (selectedPlanType) {
-              
               const fallbackPlanName = getTranslatedPlanName(selectedPlanType);
               setPlanName(fallbackPlanName);
 
