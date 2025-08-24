@@ -1,12 +1,18 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../../supabase/auth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { Search, Database, Heart, LogIn, LogOut, User, Settings } from "lucide-react";
-import { MobileMenu } from "@/components/common/shared/MobileMenu";
+import {
+  Search,
+  Database,
+  Heart,
+  LogIn,
+  LogOut,
+  User,
+  Settings,
+} from "lucide-react";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
-
 
 interface MainHeaderProps {
   showNavigation?: boolean;
@@ -16,7 +22,11 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+
+  // Detectar si estamos en homepage o usuario no autenticado
+  const isHomepageOrLoggedOut = location.pathname === "/" || !user;
 
   const handleSignOut = async () => {
     try {
@@ -62,10 +72,13 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
   const handleNavigation = (section: string) => {
     navigate("/dashboard", { state: { activeSection: section } });
   };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="w-full max-w-screen-xl mx-auto  pl-16 px-0 md:px-6 lg:px-8 flex h-14 items-center">
+      <div
+        className={`w-full max-w-screen-xl mx-auto px-0 md:px-6 lg:px-8 flex h-14 items-center ${
+          isHomepageOrLoggedOut ? "pl-4" : "pl-16"
+        }`}
+      >
         <div className="flex items-center justify-between w-full gap-4">
           <div className="flex items-center gap-2 md:gap-4">
             {/* Logo */}
@@ -109,7 +122,7 @@ export default function MainHeader({ showNavigation = true }: MainHeaderProps) {
                   <Settings className="h-4 w-4" />
                 </Button>
               )}
-              
+
               {/* Botón de cerrar sesión */}
               <Button
                 variant="outline"
