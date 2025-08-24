@@ -52,7 +52,7 @@ const Sidebar = ({ items, activeItem, onItemClick }: SidebarProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const isMaestroPlan = subscription?.status?.toLowerCase() === "maestro";
+  const isMaestroPlan = (subscription as any)?.plan_type?.toLowerCase() === "maestro";
 
   const handleItemClick = (item: NavItem) => {
     // Cerrar el drawer en móvil después de hacer clic

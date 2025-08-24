@@ -29,7 +29,7 @@ export default function PricingPage() {
     return <LoadingSpinner />;
   }
 
-  const currentPlanType = subscription?.status?.toUpperCase() || "APRENDIZ";
+  const currentPlanType = (subscription as any)?.plan_type?.toUpperCase() || "APRENDIZ";
 
   const faqs = [
     {

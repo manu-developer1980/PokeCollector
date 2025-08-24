@@ -6,7 +6,7 @@ export function useSubscriptionLimits() {
   const { subscription } = useSubscription();
 
   const getCurrentLimits = () => {
-    const databasePlanType = (subscription?.status ||
+    const databasePlanType = ((subscription as any)?.plan_type ||
       "aprendiz") as DatabasePlanType;
     const planType = toPlanType(databasePlanType);
     
@@ -32,7 +32,7 @@ export function useSubscriptionLimits() {
     checkLimit,
     isFeatureAvailable,
     currentLimits: getCurrentLimits(),
-    planType: subscription?.status || "aprendiz",
+    planType: (subscription as any)?.plan_type || "aprendiz",
     isActive: subscription?.status === 'active' || false,
   };
 }

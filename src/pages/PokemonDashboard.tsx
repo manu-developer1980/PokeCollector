@@ -36,6 +36,7 @@ import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialog";
 import { NoDefaultCollectionDialog } from "../components/features/pokemon/NoDefaultCollectionDialog";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
+import { toPlanType } from "@/types/subscription";
 import { PlanChangeDialog } from "@/components/features/subscription/PlanChangeDialog";
 import { SubscriptionLimitModal } from "@/components/features/subscription/SubscriptionLimitModal";
 import { NoActiveSubscriptionModal } from "@/components/features/subscription/NoActiveSubscriptionModal";
@@ -117,6 +118,11 @@ export default function PokemonDashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sets, setSets] = useState<{ id: string; name: string }[]>([]);
   const [types, setTypes] = useState<string[]>([]);
+
+  // FIX: Use plan_type instead of status - cast to access plan_type
+  // Default to "aprendiz" (database format) when no subscription exists
+  const planType = (subscription as any)?.plan_type ? toPlanType((subscription as any).plan_type) : toPlanType("aprendiz");
+  console.log('🔍 DEBUG - Final planType used:', planType);
   const [rarities, setRarities] = useState<string[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -325,7 +331,10 @@ export default function PokemonDashboard() {
           return { valid: true, error: null, limitType: null };
         }
 
-        const planType = subscription?.status || "APRENDIZ";
+        // DEBUG: Agregar logs para investigar el problema del plan
+  console.log('🔍 DEBUG - Subscription object:', subscription);
+  console.log('🔍 DEBUG - Subscription status:', subscription?.status);
+  console.log('🔍 DEBUG - Subscription plan_type:', (subscription as any)?.plan_type);
         // Seleccionar la tabla correcta según el tipo de recurso
         const tableName =
           resourceType === "wishlist"
@@ -412,6 +421,16 @@ export default function PokemonDashboard() {
             ? PLAN_FEATURES[planType.toUpperCase()]?.maxWishlist
             : PLAN_FEATURES[planType.toUpperCase()]?.maxCards;
 
+        console.log('🔍 VALIDATION DEBUG:', {
+          resourceType,
+          planType,
+          planTypeUpper: planType.toUpperCase(),
+          maxValue,
+          currentCount,
+          quantity,
+          planFeatures: PLAN_FEATURES[planType.toUpperCase()]
+        });
+
 
 
         // Verificar directamente si estamos en el límite o lo superamos
@@ -420,7 +439,8 @@ export default function PokemonDashboard() {
         // Si currentCount + quantity es mayor que maxValue, no es válido
         // Para colecciones, verificamos si currentCount >= maxValue (sin sumar quantity)
         // porque estamos verificando antes de crear una nueva colección
-        const willExceedLimit =
+        // IMPORTANTE: Si maxValue es -1, significa ilimitado, por lo que nunca se excede el límite
+        const willExceedLimit = maxValue === -1 ? false :
           resourceType === "collections"
             ? currentCount >= maxValue
             : currentCount + quantity > maxValue;
@@ -440,8 +460,10 @@ export default function PokemonDashboard() {
               : t("limits.cards");
 
           // Crear el mensaje de error usando traducciones
+          // Para planes ilimitados (maxValue === -1), mostrar "unlimited" en lugar de -1
+          const limitText = maxValue === -1 ? t("common.unlimited", "unlimited") : maxValue;
           const errorMessage = t("subscription.limitReachedMessage", {
-            limit: maxValue,
+            limit: limitText,
             type: resourceTypeText,
             plan: planName,
           });
@@ -920,23 +942,31 @@ export default function PokemonDashboard() {
       // 2. Obtener el límite máximo de colecciones para el plan
       const currentCount = count || 0;
       const maxCollections =
-        PLAN_FEATURES[subscription.status.toUpperCase()]?.maxCollections ||
+        PLAN_FEATURES[planType.toUpperCase()]?.maxCollections ||
         0;
 
-
+      console.log('🔍 CREATE COLLECTION DEBUG:', {
+        planType,
+        planTypeUpper: planType.toUpperCase(),
+        maxCollections,
+        currentCount,
+        planFeatures: PLAN_FEATURES[planType.toUpperCase()]
+      });
 
       // 3. Comparar directamente si el número actual es menor que el límite
-      if (currentCount < maxCollections) {
-        // Si no se ha alcanzado el límite, permitir crear la colección
+      // IMPORTANTE: Si maxCollections es -1, significa ilimitado
+      if (maxCollections === -1 || currentCount < maxCollections) {
+        // Si no se ha alcanzado el límite o es ilimitado, permitir crear la colección
         setEditingCollection(null);
         setIsCollectionDialogOpen(true);
       } else {
         // Si se ha alcanzado el límite, mostrar error usando traducciones
-        const planName = t(`plans.${subscription.status.toLowerCase()}`);
+        const planName = t(`plans.${planType.toLowerCase()}`);
         const resourceTypeText = t("limits.collections");
+        const limitText = maxCollections === -1 ? t("common.unlimited", "unlimited") : maxCollections;
 
         const errorMessage = t("subscription.limitReachedMessage", {
-          limit: maxCollections,
+          limit: limitText,
           type: resourceTypeText,
           plan: planName,
         });
@@ -1671,8 +1701,7 @@ export default function PokemonDashboard() {
 
   // Función eliminada: handleUpgradePlan
 
-  const planType = (subscription?.status?.toUpperCase() ||
-    "APRENDIZ") as SubscriptionPlan;
+  // planType is already defined above - removed duplicate definition
 
   return (
     <>
@@ -1763,7 +1792,7 @@ export default function PokemonDashboard() {
         <PlanChangeDialog
           isOpen={isPlanDialogOpen}
           onClose={() => setIsPlanDialogOpen(false)}
-          currentPlan={subscription?.status || "aprendiz"}
+          currentPlan={planType}
         />
       )}
       <SubscriptionLimitModal
@@ -1772,7 +1801,7 @@ export default function PokemonDashboard() {
         limitType={
           limitError.type as "cards" | "collections" | "wishlist" | null
         }
-        currentPlan={subscription?.status || "aprendiz"}
+        currentPlan={planType}
         errorMessage={limitError.message}
         onViewPlans={() => setActiveSection("Pricing")}
       />

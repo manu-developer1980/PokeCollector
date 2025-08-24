@@ -36,7 +36,7 @@ export default function SubscriptionPage({
   } as const;
 
   const currentPlanType = planTypeMap[
-    subscription?.status || "aprendiz"
+    (subscription as any)?.plan_type || "aprendiz"
   ] as SubscriptionPlan;
   const currentPlan = PLAN_FEATURES[currentPlanType];
 

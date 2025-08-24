@@ -158,7 +158,7 @@ export default function AccountSection({
   };
 
   // Asegurarnos de que planType sea una clave válida para PLAN_FEATURES
-  const rawPlanType = subscription?.status || "APRENDIZ";
+  const rawPlanType = (subscription as any)?.plan_type || "aprendiz";
   const planType = rawPlanType.toUpperCase() as keyof typeof PLAN_FEATURES;
   // Proporcionar un valor por defecto si no existe
   const planFeatures = PLAN_FEATURES[planType] || PLAN_FEATURES.APRENDIZ;
