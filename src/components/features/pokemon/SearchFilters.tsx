@@ -44,6 +44,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   sets = [],
   types = [],
   rarities = [],
+  searchParams,
+  onSearchParamsChange,
   onSearch,
   isLoading = false,
   totalCount = 0,
@@ -54,13 +56,24 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   onAddToWishlist,
 }) => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [type, setType] = useState<PokemonType>("all");
-  const [supertype, setSupertype] = useState<CardSupertype | "all">("all");
-  const [subtype, setSubtype] = useState<CardSubtype | "all">("all");
-  const [sortBy, setSortBy] = useState("name_asc");
-  const [selectedRarity, setSelectedRarity] = useState<string>("all");
-  const [selectedSet, setSelectedSet] = useState<string>("all");
+  
+  // Use searchParams if available, otherwise use local state
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const [localType, setLocalType] = useState<PokemonType>("all");
+  const [localSupertype, setLocalSupertype] = useState<CardSupertype | "all">("all");
+  const [localSubtype, setLocalSubtype] = useState<CardSubtype | "all">("all");
+  const [localSortBy, setLocalSortBy] = useState("name_asc");
+  const [localSelectedRarity, setLocalSelectedRarity] = useState<string>("all");
+  const [localSelectedSet, setLocalSelectedSet] = useState<string>("all");
+
+  // Extract values from searchParams if available
+  const searchTerm = searchParams?.searchTerm || localSearchTerm;
+  const type = (searchParams?.type as PokemonType) || localType;
+  const supertype = (searchParams?.supertype as CardSupertype) || localSupertype;
+  const subtype = (searchParams?.subtype as CardSubtype) || localSubtype;
+  const sortBy = searchParams?.sortBy || localSortBy;
+  const selectedRarity = searchParams?.rarity || localSelectedRarity;
+  const selectedSet = searchParams?.set || localSelectedSet;
 
   const { subscription } = useSubscription();
   const planType = (subscription?.status?.toUpperCase() ||
@@ -73,6 +86,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
     const params: PokemonCardSearchParams = {
       pageSize,
       page,
+      searchTerm,
+      type,
+      supertype,
+      subtype,
+      sortBy,
+      rarity: selectedRarity,
+      set: selectedSet,
     };
 
     // Build the query string based on subscription level
@@ -130,7 +150,12 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         break;
     }
 
-    onSearch(params);
+    // Use onSearchParamsChange if available, otherwise use onSearch
+    if (onSearchParamsChange) {
+      onSearchParamsChange(params);
+    } else if (onSearch) {
+      onSearch(params);
+    }
   };
 
   return (
@@ -146,7 +171,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 placeholder={t("search.nameSearchPlaceholder")}
                 className="pl-9 w-full bg-white"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (onSearchParamsChange) {
+                    onSearchParamsChange({ searchTerm: value });
+                  } else {
+                    setLocalSearchTerm(value);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSearch(1);
@@ -160,7 +192,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Select
               value={type}
-              onValueChange={(value: PokemonType) => setType(value)}
+              onValueChange={(value: PokemonType) => {
+                if (onSearchParamsChange) {
+                  onSearchParamsChange({ type: value });
+                } else {
+                  setLocalType(value);
+                }
+              }}
             >
               <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder={t("filters.pokemonType")} />
@@ -183,7 +221,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Select
               value={selectedSet}
-              onValueChange={setSelectedSet}
+              onValueChange={(value) => {
+                if (onSearchParamsChange) {
+                  onSearchParamsChange({ set: value });
+                } else {
+                  setLocalSelectedSet(value);
+                }
+              }}
             >
               <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder={t("filters.set")} />
@@ -215,7 +259,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
             <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
               <Select
                 value={selectedRarity}
-                onValueChange={setSelectedRarity}
+                onValueChange={(value) => {
+                  if (onSearchParamsChange) {
+                    onSearchParamsChange({ rarity: value });
+                  } else {
+                    setLocalSelectedRarity(value);
+                  }
+                }}
               >
                 <SelectTrigger className="w-full bg-white">
                   <SelectValue placeholder={t("filters.rarity")} />
@@ -248,9 +298,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
                 <Select
                   value={supertype}
-                  onValueChange={(value: CardSupertype | "all") =>
-                    setSupertype(value)
-                  }
+                  onValueChange={(value: CardSupertype | "all") => {
+                    if (onSearchParamsChange) {
+                      onSearchParamsChange({ supertype: value });
+                    } else {
+                      setLocalSupertype(value);
+                    }
+                  }}
                 >
                   <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder={t("filters.supertype")} />
@@ -274,9 +328,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
                 <Select
                   value={subtype}
-                  onValueChange={(value: CardSubtype | "all") =>
-                    setSubtype(value)
-                  }
+                  onValueChange={(value: CardSubtype | "all") => {
+                    if (onSearchParamsChange) {
+                      onSearchParamsChange({ subtype: value });
+                    } else {
+                      setLocalSubtype(value);
+                    }
+                  }}
                 >
                   <SelectTrigger className="w-full bg-white">
                     <SelectValue placeholder={t("filters.subtype")} />
@@ -308,7 +366,13 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
           <div className="flex-1 basis-full xs:basis-[calc(50%-8px)] lg:basis-[calc(25%-12px)] min-w-[200px]">
             <Select
               value={sortBy}
-              onValueChange={setSortBy}
+              onValueChange={(value) => {
+                if (onSearchParamsChange) {
+                  onSearchParamsChange({ sortBy: value });
+                } else {
+                  setLocalSortBy(value);
+                }
+              }}
             >
               <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder={t("search.sortBy")} />

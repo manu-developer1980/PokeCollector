@@ -562,3 +562,85 @@ export async function getUserPlan(
 setInterval(() => {
   PokemonCache.clearOldItems();
 }, 60 * 60 * 1000); // Clean every hour
+
+// Función para limpiar todo el cache (útil para debugging)
+export function clearAllCache(): void {
+  console.log('🧹 Clearing all cache');
+  PokemonCache.clearOldItems();
+  // También limpiar localStorage completamente para datos de Pokemon
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('pokemon_cache_')) {
+      localStorage.removeItem(key);
+    }
+  });
+}
+
+// Función para resetear el circuit breaker (útil para debugging)
+export function resetCircuitBreaker(): void {
+  console.log('🔄 Resetting circuit breaker manually');
+  pokemonApiCircuitBreaker.reset();
+}
+
+// Función para obtener el estado del circuit breaker
+export function getCircuitBreakerStats() {
+  return pokemonApiCircuitBreaker.getStats();
+}
+
+// Función para forzar una nueva búsqueda sin cache
+export async function forceSearchCards(params: PokemonCardSearchParams): Promise<PokemonCardSearchResponse> {
+  console.log('🔄 Forcing new search without cache');
+  
+  // Limpiar cache específico de esta búsqueda
+  const cacheKey = PokemonCache.getSearchKey(params);
+  localStorage.removeItem(cacheKey);
+  
+  // Hacer la petición directamente sin usar cache
+  try {
+    const data = await pokemonApiCircuitBreaker.execute(async () => {
+      let queryString = params.q || "";
+
+      if ((params as any).set && (params as any).set !== "all") {
+        const setFilter = `set.id:${(params as any).set}`;
+        queryString = queryString ? `${queryString} ${setFilter}` : setFilter;
+      }
+
+      if ((params as any).rarity && (params as any).rarity !== "all") {
+        const rarityFilter = `rarity:"${(params as any).rarity}"`;
+        queryString = queryString ? `${queryString} ${rarityFilter}` : rarityFilter;
+      }
+
+      const { data } = await api.get("/pokemon/cards", {
+        ...defaultConfig,
+        params: {
+          q: queryString || undefined,
+          page: params.page,
+          pageSize: params.pageSize,
+          orderBy: params.orderBy,
+        },
+      });
+      return data;
+    });
+
+    const response: PokemonCardSearchResponse = {
+      data: data.data || [],
+      page: data.page || 1,
+      pageSize: data.pageSize || 20,
+      count: data.count || 0,
+      totalCount: data.totalCount || 0,
+    };
+
+    console.log('✅ Forced search successful, got real data:', response);
+    return response;
+  } catch (error) {
+    console.error('❌ Forced search failed:', error);
+    throw error;
+  }
+}
+
+// Exponer funciones globalmente para debugging en desarrollo
+if (import.meta.env.DEV) {
+  (window as any).resetCircuitBreaker = resetCircuitBreaker;
+  (window as any).getCircuitBreakerStats = getCircuitBreakerStats;
+  (window as any).clearAllCache = clearAllCache;
+  (window as any).forceSearchCards = forceSearchCards;
+}

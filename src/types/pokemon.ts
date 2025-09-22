@@ -39,6 +39,14 @@ export interface PokemonCardSearchParams {
   pageSize?: number;
   orderBy?: string;
   select?: string;
+  // Extended properties for UI state
+  searchTerm?: string;
+  type?: string;
+  supertype?: string;
+  subtype?: string;
+  sortBy?: string;
+  rarity?: string;
+  set?: string;
 }
 
 export interface PokemonCardSearchResponse {

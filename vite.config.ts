@@ -98,50 +98,27 @@ export default defineConfig(({ mode }) => {
     assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif'],
     server: {
       proxy: {
-        "/api/pokemon": {
-          target: "https://api.pokemontcg.io/v2",
-          changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/api\/pokemon/, ""),
-          agent: new https.Agent({ rejectUnauthorized: false }),
-          configure: (proxy, _options) => {
-            proxy.on("error", (err, _req, _res) => {
-              console.error("Proxy error:", err);
-            });
-            proxy.on("proxyReq", (proxyReq, req, _res) => {
-              if (mode === 'development') {
-                console.log(
-                  `Proxying request to: ${req.method} ${proxyReq.path}`
-                );
-              }
-
-              if (
-                !proxyReq.getHeader("X-Api-Key") &&
-                env.VITE_POKEMON_TCG_API_KEY
-              ) {
-                proxyReq.setHeader("X-Api-Key", env.VITE_POKEMON_TCG_API_KEY);
-              }
-            });
-          },
-        },
         "/api": {
           target: "https://pokecollect-backend.onrender.com",
           changeOrigin: true,
           secure: true,
           configure: (proxy, _options) => {
             proxy.on("error", (err, _req, _res) => {
-              console.error("Backend proxy error:", err);
+              console.log("proxy error", err);
             });
             proxy.on("proxyReq", (proxyReq, req, _res) => {
-              if (mode === 'development') {
-                console.log(
-                  `Proxying backend request to: ${req.method} ${proxyReq.path}`
-                );
-              }
+              console.log("Sending Request to the Target:", req.method, req.url);
+            });
+            proxy.on("proxyRes", (proxyRes, req, _res) => {
+              console.log(
+                "Received Response from the Target:",
+                proxyRes.statusCode,
+                req.url
+              );
             });
           },
         },
       },
     },
-  };
+  }
 });

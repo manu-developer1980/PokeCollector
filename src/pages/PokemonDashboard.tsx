@@ -1512,38 +1512,9 @@ export default function PokemonDashboard() {
     }
   };
 
-  const handleSearchParamsChange = useCallback(
-    (newParams: Partial<PokemonCardSearchParams>) => {
-      setSearchParams((prevParams) => ({
-        ...prevParams,
-        ...newParams,
-      }));
-
-      // Si se cambia la página, realizar la búsqueda inmediatamente
-      if ("page" in newParams) {
-        handleSearch({
-          ...searchParams,
-          ...newParams,
-        });
-      } else {
-        // Para otros cambios, usar un debounce
-        if (searchTimeoutRef.current) {
-          clearTimeout(searchTimeoutRef.current);
-        }
-
-        searchTimeoutRef.current = setTimeout(() => {
-          handleSearch({
-            ...searchParams,
-            ...newParams,
-          });
-        }, 500);
-      }
-    },
-    [searchParams]
-  );
-
   const handleSearch = useCallback(
     async (params: PokemonCardSearchParams) => {
+      console.log("🔍 Iniciando búsqueda con parámetros:", params);
       setIsSearching(true);
       try {
         const response = await searchCards({
@@ -1551,11 +1522,22 @@ export default function PokemonDashboard() {
           page: params.page || 1,
           pageSize: params.pageSize || 20,
         });
+        console.log("✅ Respuesta de búsqueda recibida:", response);
+        console.log("📊 Datos de cartas:", response.data);
+        console.log("📈 Total count:", response.totalCount);
+        
         setSearchResults(response.data);
         setTotalCount(response.totalCount);
         setCurrentPage(params.page || 1);
+        
+        // Exponer estado para debugging
+        (window as any).searchResults = response.data;
+        (window as any).totalCount = response.totalCount;
+        (window as any).isSearching = false;
+        
       } catch (error) {
-        console.error("Error searching cards:", error);
+        console.error("❌ Error searching cards:", error);
+        (window as any).searchError = error;
         toast({
           title: t("common.error"),
           description: t("search.errors.loadFailed"),
@@ -1563,9 +1545,43 @@ export default function PokemonDashboard() {
         });
       } finally {
         setIsSearching(false);
+        (window as any).isSearching = false;
       }
     },
-    [toast]
+    [toast, t]
+  );
+
+  const handleSearchParamsChange = useCallback(
+    (newParams: Partial<PokemonCardSearchParams>) => {
+      setSearchParams((prevParams) => {
+        const updatedParams = {
+          ...prevParams,
+          ...newParams,
+        };
+
+        // Si se cambia la página, realizar la búsqueda inmediatamente
+        if ("page" in newParams) {
+          handleSearch(updatedParams);
+        } else {
+          // Para otros cambios, resetear la página a 1 y usar un debounce
+          const paramsWithResetPage = {
+            ...updatedParams,
+            page: 1,
+          };
+          
+          if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+          }
+
+          searchTimeoutRef.current = setTimeout(() => {
+            handleSearch(paramsWithResetPage);
+          }, 500);
+        }
+
+        return updatedParams;
+      });
+    },
+    [handleSearch]
   );
 
   const renderSearchContent = () => (

@@ -34,19 +34,34 @@ export class CircuitBreaker {
   constructor(private config: CircuitBreakerConfig) {}
 
   async execute<T>(operation: () => Promise<T>): Promise<T> {
+    const now = Date.now();
+    
+    console.log('🔧 Circuit Breaker State:', {
+      state: this.state,
+      failureCount: this.failureCount,
+      successCount: this.successCount,
+      nextAttempt: this.nextAttempt,
+      now: now
+    });
+    
     if (this.state === CircuitState.OPEN) {
-      if (Date.now() < this.nextAttempt) {
-        throw new Error('Circuit breaker is OPEN - operation not allowed');
+      if (now < this.nextAttempt) {
+        console.log('❌ Circuit breaker is OPEN - rejecting request');
+        throw new Error('Circuit breaker is OPEN');
+      } else {
+        console.log('🔄 Circuit breaker moving to HALF_OPEN');
+        this.state = CircuitState.HALF_OPEN;
       }
-      // Transición a HALF_OPEN para probar
-      this.state = CircuitState.HALF_OPEN;
     }
 
     try {
+      console.log('🚀 Executing operation through circuit breaker');
       const result = await operation();
+      console.log('✅ Operation succeeded through circuit breaker');
       this.onSuccess();
       return result;
     } catch (error) {
+      console.log('❌ Operation failed through circuit breaker:', error);
       this.onFailure();
       throw error;
     }
@@ -103,7 +118,10 @@ export class CircuitBreaker {
 
 // Instancia global del circuit breaker para la API de Pokémon
 export const pokemonApiCircuitBreaker = new CircuitBreaker({
-  failureThreshold: 5,        // 5 fallos consecutivos
-  recoveryTimeout: 30000,     // 30 segundos antes de reintentar
+  failureThreshold: 10,       // Aumentado de 5 a 10 fallos consecutivos
+  recoveryTimeout: 10000,     // Reducido de 30 a 10 segundos
   monitoringPeriod: 60000     // 1 minuto de período de monitoreo
 });
+
+// Reset del circuit breaker al inicializar
+pokemonApiCircuitBreaker.reset();
