@@ -100,8 +100,6 @@ export type Database = {
           id: string
           interval: string | null
           metadata: Json | null
-          polar_id: string | null
-          polar_price_id: string | null
           started_at: number | null
           status: string | null
           stripe_subscription_id: string | null
@@ -124,8 +122,6 @@ export type Database = {
           id?: string
           interval?: string | null
           metadata?: Json | null
-          polar_id?: string | null
-          polar_price_id?: string | null
           started_at?: number | null
           status?: string | null
           stripe_subscription_id?: string | null
@@ -148,8 +144,6 @@ export type Database = {
           id?: string
           interval?: string | null
           metadata?: Json | null
-          polar_id?: string | null
-          polar_price_id?: string | null
           started_at?: number | null
           status?: string | null
           stripe_subscription_id?: string | null
@@ -222,7 +216,6 @@ export type Database = {
           event_type: string
           id: string
           modified_at: string
-          polar_event_id: string | null
           type: string
         }
         Insert: {
@@ -232,7 +225,6 @@ export type Database = {
           event_type: string
           id?: string
           modified_at?: string
-          polar_event_id?: string | null
           type: string
         }
         Update: {
@@ -242,7 +234,6 @@ export type Database = {
           event_type?: string
           id?: string
           modified_at?: string
-          polar_event_id?: string | null
           type?: string
         }
         Relationships: []

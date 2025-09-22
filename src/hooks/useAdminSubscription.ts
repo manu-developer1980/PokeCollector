@@ -6,18 +6,14 @@ import { useAdmin } from "./useAdmin";
 export interface SubscriptionDetails {
   id: string;
   user_id: string;
-  customer_id: string | null;
-  polar_id: string | null;
-  polar_price_id: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string;
   status: string;
-  amount: number | null;
-  currency: string | null;
-  interval: string | null;
-  started_at: string | null;
-  ended_at: string | null;
-  canceled_at: string | null;
-  metadata: any;
-  custom_field_data: any;
+  plan_type: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -98,8 +94,8 @@ export const useAdminSubscription = () => {
         const currentSubscription = await getUserSubscription(actualUserId);
         // Current subscription data retrieved
 
-        if (!currentSubscription?.polar_id) {
-          throw new Error("No se encontró suscripción activa");
+        if (!currentSubscription?.stripe_subscription_id) {
+          throw new Error("No se encontró suscripción activa con ID de Stripe");
         }
 
         // Get access token
@@ -181,7 +177,7 @@ export const useAdminSubscription = () => {
               Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-               subscriptionId: currentSubscription.polar_id,
+               subscriptionId: currentSubscription.stripe_subscription_id,
                newPriceId: targetPlan.price.id,
              }),
           }
@@ -334,8 +330,8 @@ export const useAdminSubscription = () => {
         // Get current subscription
         const currentSubscription = await getUserSubscription(userId);
 
-        if (!currentSubscription?.polar_id) {
-          throw new Error("No active subscription found");
+        if (!currentSubscription?.stripe_subscription_id) {
+          throw new Error("No se encontró suscripción activa con ID de Stripe");
         }
 
         // Get access token

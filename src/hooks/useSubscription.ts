@@ -7,18 +7,14 @@ import { websocketManager } from "../lib/websocketManager";
 export interface Subscription {
   id: string;
   user_id: string;
-  customer_id: string | null;
-  polar_id: string | null;
-  polar_price_id: string | null;
+  plan_type: string;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
+  stripe_price_id: string;
   status: string;
-  amount: number | null;
-  currency: string | null;
-  interval: string | null;
-  started_at: string | null;
-  ended_at: string | null;
-  canceled_at: string | null;
-  metadata: any;
-  custom_field_data: any;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

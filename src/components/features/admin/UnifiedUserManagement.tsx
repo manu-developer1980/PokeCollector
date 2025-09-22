@@ -94,8 +94,6 @@ interface UserData {
     ended_at: number | null;
     interval: string | null;
     metadata: any | null;
-    polar_id: string | null;
-    polar_price_id: string | null;
     started_at: number | null;
     status: string | null;
     updated_at: string;

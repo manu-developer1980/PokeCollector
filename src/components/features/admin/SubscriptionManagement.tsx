@@ -60,26 +60,17 @@ interface UserSubscriptionData {
   full_name: string | null;
   subscription: {
     id: string;
-    amount: number | null;
-    cancel_at_period_end: boolean | null;
-    canceled_at: number | null;
+    user_id: string;
+    plan_type: string;
+    stripe_subscription_id: string | null;
+    stripe_customer_id: string | null;
+    stripe_price_id: string;
+    status: string;
+    current_period_end: string;
+    cancel_at_period_end: boolean;
+    is_active: boolean;
     created_at: string;
-    currency: string | null;
-    current_period_end: number | null;
-    current_period_start: number | null;
-    custom_field_data: any | null;
-    customer_cancellation_comment: string | null;
-    customer_cancellation_reason: string | null;
-    customer_id: string | null;
-    ended_at: number | null;
-    interval: string | null;
-    metadata: any | null;
-    polar_id: string | null;
-    polar_price_id: string | null;
-    started_at: number | null;
-    status: string | null;
     updated_at: string;
-    user_id: string | null;
   } | null;
   overrides: Array<{
     id: string;
@@ -846,9 +837,7 @@ const SubscriptionManagement: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               {userSub.subscription?.current_period_end ? (
-                                formatDate(
-                                  new Date(userSub.subscription.current_period_end * 1000).toISOString()
-                                )
+                                formatDate(userSub.subscription.current_period_end)
                               ) : (
                                 <span className="text-gray-400">-</span>
                               )}
@@ -1097,25 +1086,13 @@ const SubscriptionManagement: React.FC = () => {
                       <div className="space-y-4">
                         <div>
                           <label className="text-sm font-medium text-gray-500">
-                            {t("admin.currentPeriodStart", {
-                              defaultValue: "Current Period Start",
-                            })}
-                          </label>
-                          <p className="text-sm mt-1">
-                            {formatDate(
-                              new Date(selectedUser.subscription.current_period_start * 1000).toISOString()
-                            )}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-500">
                             {t("admin.currentPeriodEnd", {
                               defaultValue: "Current Period End",
                             })}
                           </label>
                           <p className="text-sm mt-1">
                             {formatDate(
-                              new Date(selectedUser.subscription.current_period_end * 1000).toISOString()
+                              selectedUser.subscription.current_period_end
                             )}
                           </p>
                         </div>
@@ -1160,7 +1137,7 @@ const SubscriptionManagement: React.FC = () => {
                             })}
                           </label>
                           <p className="text-xs font-mono mt-1 bg-gray-50 p-2 rounded">
-                            {selectedUser.subscription.customer_id ||
+                            {selectedUser.subscription.stripe_customer_id ||
                               t("admin.notConnected", {
                                 defaultValue: "Not connected",
                               })}

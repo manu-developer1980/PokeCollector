@@ -48,8 +48,6 @@ import { useLocalization } from "@/hooks/useLocalization";
 // Eliminar esta línea que está causando el error
 // const { t } = useTranslation();
 
-// Interfaz eliminada: PolarSubscription
-
 export default function PokemonDashboard() {
   // Mover la llamada a useTranslation dentro del componente
   const { t } = useTranslation();

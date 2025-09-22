@@ -86,31 +86,76 @@ serve(async (req) => {
       if (existingSubscription?.stripe_customer_id) {
         console.log("Usuario ya tiene suscripción en Stripe");
         return new Response(
-          JSON.stringify({ message: "User already initialized" }),
-          { status: 200 }
+            JSON.stringify({ message: "User already initialized" }),
+          { 
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+            },
+          }
         );
       }
 
-      // 2. Crear cliente en Stripe
-      console.log("🔄 Creando cliente en Stripe...");
-      const customer = await stripe.customers.create({
+      // 2. Verificar si ya existe un cliente en Stripe con este email
+      console.log("🔍 Verificando clientes existentes en Stripe para:", authUser.user.email);
+      const existingCustomers = await stripe.customers.list({
         email: authUser.user.email,
-        metadata: {
-          user_id: user_id,
-        },
+        limit: 1,
       });
-      console.log("✅ Cliente Stripe creado:", customer.id);
 
-      // 3. Crear suscripción en Stripe
-      console.log("🔄 Creando suscripción en Stripe...");
-      const subscription = await stripe.subscriptions.create({
+      let customer;
+      if (existingCustomers.data.length > 0) {
+        // Cliente ya existe en Stripe, usar el existente
+        customer = existingCustomers.data[0];
+        console.log("✅ Cliente existente encontrado en Stripe:", customer.id);
+        
+        // Actualizar metadata si es necesario
+        if (!customer.metadata?.user_id || customer.metadata.user_id !== user_id) {
+          customer = await stripe.customers.update(customer.id, {
+            metadata: {
+              ...customer.metadata,
+              user_id: user_id,
+            },
+          });
+          console.log("✅ Metadata del cliente actualizada");
+        }
+      } else {
+        // 3. Crear nuevo cliente en Stripe solo si no existe
+        console.log("🔄 Creando nuevo cliente en Stripe...");
+        customer = await stripe.customers.create({
+          email: authUser.user.email,
+          metadata: {
+            user_id: user_id,
+          },
+        });
+        console.log("✅ Nuevo cliente Stripe creado:", customer.id);
+      }
+
+      // 4. Verificar si el cliente ya tiene suscripciones activas
+      const customerSubscriptions = await stripe.subscriptions.list({
         customer: customer.id,
-        items: [{ price: APRENDIZ_PRICE_ID }],
-        metadata: {
-          user_id: user_id,
-        },
+        status: 'active',
+        limit: 1,
       });
-      console.log("✅ Suscripción Stripe creada:", subscription.id);
+
+      let subscription;
+      if (customerSubscriptions.data.length > 0) {
+        // Cliente ya tiene una suscripción activa, usar la existente
+        subscription = customerSubscriptions.data[0];
+        console.log("✅ Suscripción activa existente encontrada:", subscription.id);
+      } else {
+        // 5. Crear nueva suscripción solo si no existe una activa
+        console.log("🔄 Creando nueva suscripción en Stripe...");
+        subscription = await stripe.subscriptions.create({
+          customer: customer.id,
+          items: [{ price: APRENDIZ_PRICE_ID }],
+          metadata: {
+            user_id: user_id,
+          },
+        });
+        console.log("✅ Nueva suscripción Stripe creada:", subscription.id);
+      }
 
       // 4. Actualizar en Supabase
       const { error: updateError } = await supabase

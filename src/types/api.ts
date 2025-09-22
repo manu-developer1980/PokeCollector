@@ -186,8 +186,6 @@ export interface User {
 export interface Subscription {
   id: string;
   user_id?: string;
-  polar_id?: string;
-  polar_price_id?: string;
   customer_id?: string;
   status?: string;
   amount?: number;
