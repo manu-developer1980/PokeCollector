@@ -118,8 +118,8 @@ export class CircuitBreaker {
 
 // Instancia global del circuit breaker para la API de Pokémon
 export const pokemonApiCircuitBreaker = new CircuitBreaker({
-  failureThreshold: 10,       // Aumentado de 5 a 10 fallos consecutivos
-  recoveryTimeout: 10000,     // Reducido de 30 a 10 segundos
+  failureThreshold: 20,       // Aumentado a 20 fallos consecutivos para ser menos restrictivo
+  recoveryTimeout: 5000,      // Reducido a 5 segundos para recuperación más rápida
   monitoringPeriod: 60000     // 1 minuto de período de monitoreo
 });
 

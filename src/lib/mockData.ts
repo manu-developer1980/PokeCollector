@@ -310,29 +310,47 @@ const mockTypes = [
 export const mockDataService = {
   searchCards: (params: any): PokemonCardSearchResponse => {
     console.warn('🔄 Using mock data - APIs are currently unavailable');
+    console.log('🎭 Mock searchCards called with params:', params);
     
     let filteredCards = [...mockCards];
+    console.log('🎭 Starting with', filteredCards.length, 'mock cards');
     
     // Simple filtering based on query
     if (params.q) {
       const query = params.q.toLowerCase();
+      console.log('🔍 Applying search query:', query);
       filteredCards = filteredCards.filter(card => 
         card.name.toLowerCase().includes(query) ||
+        card.set.name.toLowerCase().includes(query) ||
         card.types?.some(type => type.toLowerCase().includes(query)) ||
         card.rarity?.toLowerCase().includes(query)
       );
+      console.log('🔍 After search filter:', filteredCards.length, 'cards');
     }
     
     // Set filtering
     if (params.set && params.set !== 'all') {
+      console.log('🎯 Applying set filter:', params.set);
       filteredCards = filteredCards.filter(card => card.set.id === params.set);
+      console.log('🎯 After set filter:', filteredCards.length, 'cards');
     }
     
     // Rarity filtering
     if (params.rarity && params.rarity !== 'all') {
+      console.log('💎 Applying rarity filter:', params.rarity);
       filteredCards = filteredCards.filter(card => card.rarity === params.rarity);
+      console.log('💎 After rarity filter:', filteredCards.length, 'cards');
     }
     
+    // Type filtering
+    if (params.type && params.type !== 'all') {
+      console.log('🏷️ Applying type filter:', params.type);
+      filteredCards = filteredCards.filter(card => 
+        card.types?.includes(params.type)
+      );
+      console.log('🏷️ After type filter:', filteredCards.length, 'cards');
+    }
+
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;
     const startIndex = (page - 1) * pageSize;
@@ -340,13 +358,23 @@ export const mockDataService = {
     
     const paginatedCards = filteredCards.slice(startIndex, endIndex);
     
-    return {
+    const result = {
       data: paginatedCards,
       page,
       pageSize,
       count: paginatedCards.length,
       totalCount: filteredCards.length
     };
+    
+    console.log('🎭 Mock search result:', {
+      totalFiltered: filteredCards.length,
+      returnedCards: paginatedCards.length,
+      page,
+      pageSize,
+      cardNames: paginatedCards.map(c => c.name)
+    });
+    
+    return result;
   },
   
   getCardById: (id: string): PokemonCard | null => {

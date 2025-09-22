@@ -212,15 +212,20 @@ export async function getRarities(): Promise<string[]> {
 export async function searchCards(
   params: PokemonCardSearchParams
 ): Promise<PokemonCardSearchResponse> {
+  console.log('🔍 searchCards called with params:', params);
+  console.log('🔧 Circuit breaker stats:', pokemonApiCircuitBreaker.getStats());
+  
   const cacheKey = PokemonCache.getSearchKey(params);
   const cachedData = PokemonCache.get<PokemonCardSearchResponse>(cacheKey);
 
   if (cachedData) {
+    console.log('📦 Using cached data for search');
     return cachedData;
   }
 
   return deduplicateRequest(cacheKey, async () => {
     try {
+      console.log('🚀 Attempting API call through circuit breaker');
       // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
         // Construct the 'q' parameter with all filters
@@ -240,6 +245,7 @@ export async function searchCards(
             : rarityFilter;
         }
 
+        console.log('📡 Making API request to /pokemon/cards with query:', queryString);
         const {
           data,
         }: AxiosResponse<{
@@ -257,6 +263,7 @@ export async function searchCards(
             orderBy: params.orderBy,
           },
         });
+        console.log('✅ API request successful, received data:', data);
         return data;
       });
 
@@ -271,18 +278,26 @@ export async function searchCards(
       PokemonCache.setSearchResult(cacheKey, response); // Use optimized cache for searches
       return response;
     } catch (error) {
-      console.error("Error searching cards:", error);
+      console.error("❌ Error searching cards:", error);
+      console.error("❌ Error details:", {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        status: (error as any)?.response?.status,
+        statusText: (error as any)?.response?.statusText,
+        url: (error as any)?.config?.url,
+        baseURL: (error as any)?.config?.baseURL
+      });
 
       // Try to get stale data from cache as fallback
       const staleData =
         PokemonCache.getStale<PokemonCardSearchResponse>(cacheKey);
       if (staleData) {
-        console.warn("Using stale data as fallback for search");
+        console.warn("⚠️ Using stale data as fallback for search");
         return staleData.data;
       }
 
       // If no cache data, use mock data as last resort
-      console.warn("🔄 APIs unavailable, using mock data for search");
+      console.warn("🔄 APIs unavailable, using mock data for search. Params:", params);
+      console.warn("🔄 Mock data will return:", mockDataService.searchCards(params));
       return mockDataService.searchCards(params);
     }
   });
@@ -447,12 +462,15 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 
   return deduplicateRequest(cacheKey, async () => {
     try {
+      console.log(`🔍 Attempting to fetch card with ID: ${normalizedId}`);
       // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
+        console.log(`📡 Making API request to: /pokemon/cards/${normalizedId}`);
         const { data }: AxiosResponse<{ data: PokemonCard }> = await api.get(
-          `/pokemon/cards/${id}`,
+          `/pokemon/cards/${normalizedId}`,
           defaultConfig
         );
+        console.log(`✅ API request successful for card: ${normalizedId}`);
         return data;
       });
 
@@ -497,6 +515,12 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
       return data.data;
     } catch (error: any) {
       console.error(`Error fetching card ${normalizedId}:`, error);
+      console.error(`❌ Error details:`, {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        status: (error as any)?.response?.status,
+        statusText: (error as any)?.response?.statusText,
+        url: (error as any)?.config?.url
+      });
 
       // Try to get stale data from cache as fallback
       const staleData = PokemonCache.getStale<PokemonCard>(cacheKey);
@@ -505,8 +529,23 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
         return staleData.data;
       }
 
-      // If error is 404, save in not found cards cache
+      // If it's a 404, the backend doesn't have individual card endpoints
+      // Try to get the card from search results as fallback
       if (error.response && error.response.status === 404) {
+        console.log(`🔄 Backend doesn't support individual card endpoint, trying search fallback for: ${normalizedId}`);
+        try {
+          const searchResult = await searchCards({ q: `id:${normalizedId}`, pageSize: 1 });
+          if (searchResult.data && searchResult.data.length > 0) {
+            const foundCard = searchResult.data[0];
+            console.log(`✅ Found card via search fallback: ${foundCard.name}`);
+            // Cache the found card
+            PokemonCache.set(cacheKey, foundCard, 3600000); // 1 hour cache
+            return foundCard;
+          }
+        } catch (searchError) {
+          console.error(`❌ Search fallback also failed:`, searchError);
+        }
+        
         notFoundCardsCache.add(normalizedId);
         // Create a placeholder for not found cards
         const placeholderCard = createPlaceholderCard(normalizedId);
@@ -637,10 +676,21 @@ export async function forceSearchCards(params: PokemonCardSearchParams): Promise
   }
 }
 
+// Función para debugging - forzar reset completo
+export function forceResetApiState(): void {
+  console.log('🔄 Forcing complete API state reset');
+  clearAllCache();
+  resetCircuitBreaker();
+  console.log('✅ API state reset complete');
+}
+
 // Exponer funciones globalmente para debugging en desarrollo
 if (import.meta.env.DEV) {
-  (window as any).resetCircuitBreaker = resetCircuitBreaker;
-  (window as any).getCircuitBreakerStats = getCircuitBreakerStats;
-  (window as any).clearAllCache = clearAllCache;
-  (window as any).forceSearchCards = forceSearchCards;
+  (window as any).pokemonApi = {
+    clearCache: clearAllCache,
+    resetCircuitBreaker,
+    getCircuitBreakerStats,
+    forceReset: forceResetApiState,
+    searchCards: forceSearchCards
+  };
 }
