@@ -14,6 +14,119 @@ export default function AuthCallback() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    // Variable para prevenir múltiples llamadas simultáneas
+    let isInitializing = false;
+
+    const initializeUser = async (session: any) => {
+      // Prevenir múltiples llamadas simultáneas
+      if (isInitializing) {
+        console.log("🔄 Inicialización ya en progreso, omitiendo llamada duplicada");
+        return;
+      }
+
+      // Verificar si ya existe en localStorage (cache local)
+      const cacheKey = `user_initialized_${session.user.id}`;
+      const cachedInitialization = localStorage.getItem(cacheKey);
+      if (cachedInitialization) {
+        const cacheData = JSON.parse(cachedInitialization);
+        const cacheAge = Date.now() - cacheData.timestamp;
+        // Cache válido por 5 minutos
+        if (cacheAge < 5 * 60 * 1000) {
+          console.log("✅ Usuario ya inicializado (cache local)");
+          return;
+        }
+      }
+
+      try {
+        isInitializing = true;
+        setStatus("Inicializando usuario y suscripción...");
+
+        const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+        const response = await fetch(
+          `${functionsUrl}/initialize-user`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            credentials: "include",
+            mode: "cors",
+            body: JSON.stringify({
+              user_id: session.user.id,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Error de respuesta" }));
+          throw new Error(errorData.error || `Error HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        // Guardar en cache local para prevenir llamadas futuras
+        localStorage.setItem(cacheKey, JSON.stringify({
+          timestamp: Date.now(),
+          initialized: true
+        }));
+        
+        console.log("✅ Usuario inicializado correctamente");
+      } catch (error: any) {
+        console.error("❌ Error en initializeUser:", error);
+        
+        // Manejo específico de errores de CORS
+        if (error.message && (error.message.includes('CORS') || error.message.includes('fetch'))) {
+          console.warn("⚠️ Error de CORS detectado - continuando sin inicialización");
+          // No lanzar el error para permitir que el login continúe
+          return;
+        }
+        
+        throw error;
+      } finally {
+        isInitializing = false;
+      }
+    };
+
+    const handleExistingSession = async (session: any) => {
+      try {
+        setStatus("Verificando email...");
+
+        if (!session.user.email_confirmed_at) {
+          navigate("/login?message=please-verify-email", { replace: true });
+          return;
+        }
+
+        setStatus("Verificando usuario...");
+        const { error: userError } = await supabase
+          .from("users")
+          .select("id")
+          .eq("id", session.user.id)
+          .single();
+
+        if (userError && userError.code !== "PGRST116") {
+          throw new Error("Error al verificar usuario");
+        }
+
+        setStatus("Inicializando usuario...");
+        await initializeUser(session);
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const redirectTo = queryParams.get("redirect_to") || "/dashboard";
+
+        toast({
+          title: "¡Bienvenido!",
+          description: "Tu cuenta ha sido verificada correctamente.",
+        });
+
+        navigate(redirectTo, { replace: true });
+      } catch (error: any) {
+        console.error("Error en handleExistingSession:", error);
+        throw error;
+      }
+    };
+
     const handleCallback = async () => {
       try {
         setStatus("Procesando enlace de autenticación...");
@@ -118,88 +231,11 @@ export default function AuthCallback() {
       }
     };
 
-    const handleExistingSession = async (session: any) => {
-      try {
-        setStatus("Verificando email...");
-
-        if (!session.user.email_confirmed_at) {
-          navigate("/login?message=please-verify-email", { replace: true });
-          return;
-        }
-
-        setStatus("Verificando usuario...");
-        const { error: userError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("id", session.user.id)
-          .single();
-
-        if (userError && userError.code !== "PGRST116") {
-          throw new Error("Error al verificar usuario");
-        }
-
-        setStatus("Inicializando usuario...");
-        await initializeUser(session);
-
-        const queryParams = new URLSearchParams(window.location.search);
-        const redirectTo = queryParams.get("redirect_to") || "/dashboard";
-
-        toast({
-          title: "¡Bienvenido!",
-          description: "Tu cuenta ha sido verificada correctamente.",
-        });
-
-        navigate(redirectTo, { replace: true });
-      } catch (error: any) {
-        console.error("Error en handleExistingSession:", error);
-        throw error;
-      }
-    };
-
-    const initializeUser = async (session: any) => {
-      try {
-        setStatus("Inicializando usuario y suscripción...");
-
-        const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-        const response = await fetch(
-          `${functionsUrl}/initialize-user`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-            },
-            credentials: "include",
-            mode: "cors",
-            body: JSON.stringify({
-              user_id: session.user.id,
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: "Error de respuesta" }));
-          throw new Error(errorData.error || `Error HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        // Usuario inicializado correctamente
-      } catch (error) {
-        console.error("❌ Error en initializeUser:", error);
-        
-        // Manejo específico de errores de CORS
-        if (error.message.includes('CORS') || error.message.includes('fetch')) {
-          console.warn("⚠️ Error de CORS detectado - continuando sin inicialización");
-          // No lanzar el error para permitir que el login continúe
-          return;
-        }
-        
-        throw error;
-      }
-    };
-
-    handleCallback();
+    handleCallback().catch((error) => {
+      console.error("Error en handleCallback:", error);
+      setError("Error de verificación. Redirigiendo...");
+      setTimeout(() => navigate("/login"), 3000);
+    });
   }, [navigate, location, toast]);
 
   return (

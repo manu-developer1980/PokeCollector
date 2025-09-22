@@ -35,7 +35,7 @@ El backend ya tenía la configuración correcta en `/src/index.ts`:
 const allowedOrigins = [
   "http://localhost:5173", // Desarrollo
   "http://localhost:5174", // Desarrollo alternativo
-  "http://localhost:3000", // Desarrollo alternativo
+  "http://localhost:5174", // Desarrollo alternativo
   "https://poke-collector.netlify.app", // Producción
   "https://pokecollector.netlify.app", // Producción alternativo
 ];

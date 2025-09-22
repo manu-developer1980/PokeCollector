@@ -1,15 +1,9 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from "axios";
-import type { 
-  PokemonCard, 
-  PokemonSet, 
-  PokemonType, 
-  PokemonRarity, 
-  ApiResponse,
-  SearchParams,
-  SearchFilters,
-  CacheEntry,
-  ApiConfig,
-  RateLimitConfig
+import type {
+  PokemonCard,
+  PokemonSet,
+  PokemonType,
+  PokemonRarity,
 } from "@/types";
 import type { PokemonCardSet } from "@/types/pokemon";
 
@@ -73,12 +67,14 @@ class RateLimiter {
   canMakeRequest(): boolean {
     const now = Date.now();
     // Remove old requests outside the time window
-    this.requests = this.requests.filter(time => now - time < this.timeWindow);
-    
+    this.requests = this.requests.filter(
+      (time) => now - time < this.timeWindow
+    );
+
     if (this.requests.length >= this.maxRequests) {
       return false;
     }
-    
+
     this.requests.push(now);
     return true;
   }
@@ -133,13 +129,13 @@ api.interceptors.response.use(undefined, async (err) => {
   }
 
   config.retryCount += 1;
-  
+
   // Exponential backoff with jitter - reduced for better performance
   const baseDelay = config.retryDelay || 1000; // Reduced from 2000 to 1000
   const exponentialDelay = baseDelay * Math.pow(2, config.retryCount - 1);
   const jitter = Math.random() * 1000; // Reduced from 2000 to 1000
   const delay = Math.min(exponentialDelay + jitter, 30000); // Reduced from 60000 to 30000
-  
+
   await new Promise((resolve) => setTimeout(resolve, delay));
 
   return api(config);
@@ -151,10 +147,10 @@ api.interceptors.request.use(async (config) => {
   if (!rateLimiter.canMakeRequest()) {
     const waitTime = rateLimiter.getWaitTime();
     if (waitTime > 0) {
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
-  
+
   return config;
 });
 
@@ -165,7 +161,10 @@ const defaultConfig: RetryConfig = {
 };
 
 // Helper function for request deduplication with proper typing
-function deduplicateRequest<T>(key: string, requestFn: () => Promise<T>): Promise<T> {
+function deduplicateRequest<T>(
+  key: string,
+  requestFn: () => Promise<T>
+): Promise<T> {
   if (pendingRequests.has(key)) {
     return pendingRequests.get(key)!;
   }
@@ -179,9 +178,9 @@ function deduplicateRequest<T>(key: string, requestFn: () => Promise<T>): Promis
 }
 
 export async function getRarities(): Promise<string[]> {
-  const cacheKey = 'rarities';
+  const cacheKey = "rarities";
   const cached = PokemonCache.get<string[]>(cacheKey);
-  
+
   if (cached) {
     return cached;
   }
@@ -189,7 +188,10 @@ export async function getRarities(): Promise<string[]> {
   return deduplicateRequest(cacheKey, async () => {
     try {
       // Call backend instead of external API
-      const { data }: AxiosResponse<{ data: string[] }> = await api.get("/pokemon/rarities", defaultConfig);
+      const { data }: AxiosResponse<{ data: string[] }> = await api.get(
+        "/pokemon/rarities",
+        defaultConfig
+      );
 
       if (!data || !Array.isArray(data.data)) {
         console.warn("Unexpected rarities data format:", data);
@@ -201,7 +203,7 @@ export async function getRarities(): Promise<string[]> {
     } catch (error) {
       console.error("Error fetching rarities:", error);
       // Use mock data as fallback
-      console.warn('🔄 APIs unavailable, using mock data for rarities');
+      console.warn("🔄 APIs unavailable, using mock data for rarities");
       return mockDataService.getRarities();
     }
   });
@@ -222,21 +224,25 @@ export async function searchCards(
       // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
         // Construct the 'q' parameter with all filters
-        let queryString = params.q || '';
-        
+        let queryString = params.q || "";
+
         // Add set filter to query string if specified
         if ((params as any).set && (params as any).set !== "all") {
           const setFilter = `set.id:${(params as any).set}`;
           queryString = queryString ? `${queryString} ${setFilter}` : setFilter;
         }
-        
+
         // Add rarity filter to query string if specified
         if ((params as any).rarity && (params as any).rarity !== "all") {
           const rarityFilter = `rarity:"${(params as any).rarity}"`;
-          queryString = queryString ? `${queryString} ${rarityFilter}` : rarityFilter;
+          queryString = queryString
+            ? `${queryString} ${rarityFilter}`
+            : rarityFilter;
         }
 
-        const { data }: AxiosResponse<{
+        const {
+          data,
+        }: AxiosResponse<{
           data: PokemonCard[];
           page: number;
           pageSize: number;
@@ -266,22 +272,25 @@ export async function searchCards(
       return response;
     } catch (error) {
       console.error("Error searching cards:", error);
-      
+
       // Try to get stale data from cache as fallback
-      const staleData = PokemonCache.getStale<PokemonCardSearchResponse>(cacheKey);
+      const staleData =
+        PokemonCache.getStale<PokemonCardSearchResponse>(cacheKey);
       if (staleData) {
-        console.warn('Using stale data as fallback for search');
+        console.warn("Using stale data as fallback for search");
         return staleData.data;
       }
-      
+
       // If no cache data, use mock data as last resort
-      console.warn('🔄 APIs unavailable, using mock data for search');
+      console.warn("🔄 APIs unavailable, using mock data for search");
       return mockDataService.searchCards(params);
     }
   });
 }
 
-export async function getSets(language: string = 'en'): Promise<PokemonCardSet[]> {
+export async function getSets(
+  language: string = "en"
+): Promise<PokemonCardSet[]> {
   const cacheKey = `pokemon:sets:${language}`;
   const cachedData = PokemonCache.get<PokemonCardSet[]>(cacheKey);
 
@@ -292,17 +301,20 @@ export async function getSets(language: string = 'en'): Promise<PokemonCardSet[]
   return deduplicateRequest(cacheKey, async () => {
     try {
       // Call backend instead of external API
-      const { data }: AxiosResponse<{ data: PokemonCardSet[] }> = await api.get("/pokemon/sets", {
-        ...defaultConfig,
-        params: { lang: language }
-      });
+      const { data }: AxiosResponse<{ data: PokemonCardSet[] }> = await api.get(
+        "/pokemon/sets",
+        {
+          ...defaultConfig,
+          params: { lang: language },
+        }
+      );
       const sets = data.data || [];
       PokemonCache.set(cacheKey, sets);
       return sets;
     } catch (error) {
       console.error("Error fetching sets:", error);
       // Use mock data as fallback
-      console.warn('🔄 APIs unavailable, using mock data for sets');
+      console.warn("🔄 APIs unavailable, using mock data for sets");
       return mockDataService.getSets();
     }
   });
@@ -319,14 +331,17 @@ export async function getTypes(): Promise<string[]> {
   return deduplicateRequest(cacheKey, async () => {
     try {
       // Call backend instead of external API
-      const { data }: AxiosResponse<{ data: string[] }> = await api.get("/pokemon/types", defaultConfig);
+      const { data }: AxiosResponse<{ data: string[] }> = await api.get(
+        "/pokemon/types",
+        defaultConfig
+      );
       const types = data.data || [];
       PokemonCache.set(cacheKey, types);
       return types;
     } catch (error) {
       console.error("Error fetching types:", error);
       // Use mock data as fallback
-      console.warn('🔄 APIs unavailable, using mock data for types');
+      console.warn("🔄 APIs unavailable, using mock data for types");
       return mockDataService.getTypes();
     }
   });
@@ -338,13 +353,13 @@ export async function getFilterData(): Promise<{
   types: string[];
   rarities: string[];
 }> {
-  const cacheKey = 'filter-data';
+  const cacheKey = "filter-data";
   const cached = PokemonCache.get<{
     sets: PokemonCardSet[];
     types: string[];
     rarities: string[];
   }>(cacheKey);
-  
+
   if (cached) {
     return cached;
   }
@@ -352,16 +367,14 @@ export async function getFilterData(): Promise<{
   return deduplicateRequest(cacheKey, async () => {
     try {
       // Use Promise.allSettled to handle partial failures gracefully
-      const [setsResult, typesResult, raritiesResult] = await Promise.allSettled([
-        getSets(),
-        getTypes(),
-        getRarities()
-      ]);
+      const [setsResult, typesResult, raritiesResult] =
+        await Promise.allSettled([getSets(), getTypes(), getRarities()]);
 
       const result = {
-        sets: setsResult.status === 'fulfilled' ? setsResult.value : [],
-        types: typesResult.status === 'fulfilled' ? typesResult.value : [],
-        rarities: raritiesResult.status === 'fulfilled' ? raritiesResult.value : [],
+        sets: setsResult.status === "fulfilled" ? setsResult.value : [],
+        types: typesResult.status === "fulfilled" ? typesResult.value : [],
+        rarities:
+          raritiesResult.status === "fulfilled" ? raritiesResult.value : [],
       };
 
       // Cache the combined result
@@ -408,7 +421,7 @@ function createPlaceholderCard(id: string): PokemonCard {
       large: "/images/card-placeholder.svg",
     },
     rarity: "Unknown",
-      } as any;
+  } as any;
 }
 
 export async function getCardById(id: string): Promise<PokemonCard | null> {
@@ -436,7 +449,10 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
     try {
       // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
-        const { data }: AxiosResponse<{ data: PokemonCard }> = await api.get(`/pokemon/cards/${id}`, defaultConfig);
+        const { data }: AxiosResponse<{ data: PokemonCard }> = await api.get(
+          `/pokemon/cards/${id}`,
+          defaultConfig
+        );
         return data;
       });
 
@@ -481,14 +497,14 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
       return data.data;
     } catch (error: any) {
       console.error(`Error fetching card ${normalizedId}:`, error);
-      
+
       // Try to get stale data from cache as fallback
       const staleData = PokemonCache.getStale<PokemonCard>(cacheKey);
       if (staleData) {
         console.warn(`Using stale data as fallback for card ${normalizedId}`);
         return staleData.data;
       }
-      
+
       // If error is 404, save in not found cards cache
       if (error.response && error.response.status === 404) {
         notFoundCardsCache.add(normalizedId);
@@ -500,16 +516,21 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
       }
 
       if (process.env.NODE_ENV !== "production") {
-        console.error(`Failed to fetch card details for ${normalizedId}:`, error);
+        console.error(
+          `Failed to fetch card details for ${normalizedId}:`,
+          error
+        );
       }
-      
+
       // Try to get card from mock data
       const mockCard = mockDataService.getCardById(normalizedId);
       if (mockCard) {
-        console.warn(`🔄 APIs unavailable, using mock data for card ${normalizedId}`);
+        console.warn(
+          `🔄 APIs unavailable, using mock data for card ${normalizedId}`
+        );
         return mockCard;
       }
-      
+
       // For other errors, return a generic placeholder
       return createPlaceholderCard(normalizedId);
     }
@@ -517,21 +538,22 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 }
 
 // Function to get user plan from backend
-export async function getUserPlan(userId: string): Promise<{ planType: string; planFeatures: any } | null> {
+export async function getUserPlan(
+  userId: string
+): Promise<{ planType: string; planFeatures: any } | null> {
   try {
-    const response = await api.get(`/stripe/user/${userId}/plan`);
-    // User plan response received
-    
-    // La API devuelve {success: true, data: {planType: 'maestro', planFeatures: {...}}}
+    const response = await api.post("/stripe-subscriptions", {
+      action: "get_user_plan",
+      user_id: userId,
+    });
+
     if (response.data?.success && response.data?.data) {
-      // Extracting plan data
       return response.data.data;
     }
-    
-    // Unexpected response structure
+
     return response.data;
   } catch (error) {
-    console.error('Error fetching user plan:', error);
+    console.error("Error fetching user plan from backend:", error);
     return null;
   }
 }

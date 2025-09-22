@@ -117,40 +117,69 @@ export default function LoginForm() {
         const userData = result.data as { user: { id: string }, session?: { access_token?: string } };
         if (userData.user) {
           try {
-            // Inicializar usuario (opcional - continúa si falla)
-            try {
-              const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-              const response = await fetch(
-                `${functionsUrl}/initialize-user`,
-                {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${userData.session?.access_token || ''}`,
-                    "Content-Type": "application/json",
-                    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-                  },
-                  mode: "cors",
-                  credentials: "include",
-                  body: JSON.stringify({
-                    user_id: userData.user.id,
-                  }),
-                }
-              );
+            // Variable para prevenir múltiples llamadas simultáneas
+            const initializationKey = `initializing_${userData.user.id}`;
+            
+            // Verificar si ya se está inicializando
+            if (sessionStorage.getItem(initializationKey)) {
+              console.log("🔄 Inicialización ya en progreso para este usuario");
+            } else {
+              // Marcar como en proceso
+              sessionStorage.setItem(initializationKey, 'true');
+              
+              // Verificar cache local
+              const cacheKey = `user_initialized_${userData.user.id}`;
+              const cachedInitialization = localStorage.getItem(cacheKey);
+              
+              if (!cachedInitialization) {
+                // Inicializar usuario (opcional - continúa si falla)
+                try {
+                  const functionsUrl = import.meta.env.VITE_FUNCTIONS_URL || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+                  const response = await fetch(
+                    `${functionsUrl}/initialize-user`,
+                    {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${userData.session?.access_token || ''}`,
+                        "Content-Type": "application/json",
+                        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+                      },
+                      mode: "cors",
+                      credentials: "include",
+                      body: JSON.stringify({
+                        user_id: userData.user.id,
+                      }),
+                    }
+                  );
 
-              if (response.ok) {
-                const data = await response.json();
-                // Usuario inicializado correctamente en login
+                  if (response.ok) {
+                    const data = await response.json();
+                    // Guardar en cache local
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                      timestamp: Date.now(),
+                      initialized: true
+                    }));
+                    console.log("✅ Usuario inicializado correctamente en login");
+                  } else {
+                    console.log("⚠️ Initialize-user function respondió con status no exitoso, continuando sin inicialización");
+                  }
+                } catch (initError: any) {
+                  // Manejo específico de errores de CORS
+                  if (initError.message && (initError.message.includes('CORS') || initError.message.includes('fetch'))) {
+                    console.log("⚠️ Error de CORS en initialize-user durante login - continuando sin inicialización");
+                  } else {
+                    console.log("⚠️ Initialize-user function no disponible, continuando sin inicialización");
+                  }
+                  // Continuamos sin problemas - la función de inicialización es opcional
+                } finally {
+                  // Limpiar el flag de inicialización
+                  sessionStorage.removeItem(initializationKey);
+                }
               } else {
-                // Initialize-user function respondió con status no exitoso, continuando sin inicialización
+                console.log("✅ Usuario ya inicializado (cache local)");
+                // Limpiar el flag de inicialización
+                sessionStorage.removeItem(initializationKey);
               }
-            } catch (initError) {
-              // Manejo específico de errores de CORS
-              if (initError.message.includes('CORS') || initError.message.includes('fetch')) {
-                // Error de CORS en initialize-user durante login - continuando sin inicialización
-              } else {
-                // Initialize-user function no disponible, continuando sin inicialización
-              }
-              // Continuamos sin problemas - la función de inicialización es opcional
             }
 
             // Verificamos si el usuario necesita onboarding

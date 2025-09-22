@@ -98,23 +98,6 @@ export default defineConfig(({ mode }) => {
     assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif'],
     server: {
       proxy: {
-        "/api": {
-          target: "http://localhost:3000",
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy, _options) => {
-            proxy.on("error", (err, _req, _res) => {
-              console.error("Backend proxy error:", err);
-            });
-            proxy.on("proxyReq", (proxyReq, req, _res) => {
-              if (mode === 'development') {
-                console.log(
-                  `Proxying backend request to: ${req.method} ${proxyReq.path}`
-                );
-              }
-            });
-          },
-        },
         "/api/pokemon": {
           target: "https://api.pokemontcg.io/v2",
           changeOrigin: true,
@@ -139,9 +122,21 @@ export default defineConfig(({ mode }) => {
                 proxyReq.setHeader("X-Api-Key", env.VITE_POKEMON_TCG_API_KEY);
               }
             });
-            proxy.on("proxyRes", (_proxyRes, req, _res) => {
+          },
+        },
+        "/api": {
+          target: "https://pokecollect-backend.onrender.com",
+          changeOrigin: true,
+          secure: true,
+          configure: (proxy, _options) => {
+            proxy.on("error", (err, _req, _res) => {
+              console.error("Backend proxy error:", err);
+            });
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
               if (mode === 'development') {
-                console.log(`Received response for: ${req.method} ${req.url}`);
+                console.log(
+                  `Proxying backend request to: ${req.method} ${proxyReq.path}`
+                );
               }
             });
           },

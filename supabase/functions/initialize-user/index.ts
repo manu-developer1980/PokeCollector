@@ -132,21 +132,47 @@ serve(async (req) => {
         console.log("✅ Nuevo cliente Stripe creado:", customer.id);
       }
 
-      // 4. Verificar si el cliente ya tiene suscripciones activas
+      // 4. Verificar y cancelar suscripciones existentes
       const customerSubscriptions = await stripe.subscriptions.list({
         customer: customer.id,
-        status: 'active',
-        limit: 1,
+        limit: 10, // Obtener todas las suscripciones posibles
       });
 
-      let subscription;
+      // Cancelar todas las suscripciones existentes (activas, incompletas, etc.)
       if (customerSubscriptions.data.length > 0) {
-        // Cliente ya tiene una suscripción activa, usar la existente
-        subscription = customerSubscriptions.data[0];
-        console.log("✅ Suscripción activa existente encontrada:", subscription.id);
-      } else {
-        // 5. Crear nueva suscripción solo si no existe una activa
-        console.log("🔄 Creando nueva suscripción en Stripe...");
+        console.log(`🗑️ Encontradas ${customerSubscriptions.data.length} suscripciones existentes. Cancelando...`);
+        
+        const cancelationResults: Array<{id: string, status: string, error?: string}> = [];
+        for (const existingSub of customerSubscriptions.data) {
+          if (existingSub.status !== 'canceled') {
+            try {
+              await stripe.subscriptions.cancel(existingSub.id);
+              console.log(`✅ Suscripción ${existingSub.id} cancelada exitosamente`);
+              cancelationResults.push({ id: existingSub.id, status: 'canceled' });
+            } catch (cancelError: any) {
+              console.error(`❌ Error al cancelar suscripción ${existingSub.id}:`, cancelError);
+              cancelationResults.push({ id: existingSub.id, status: 'error', error: cancelError.message });
+              
+              // Si es un error crítico, lanzar excepción
+              if (cancelError.code === 'resource_missing') {
+                console.warn(`⚠️ Suscripción ${existingSub.id} ya no existe en Stripe, continuando...`);
+              } else {
+                throw new Error(`Error crítico al cancelar suscripción ${existingSub.id}: ${cancelError.message}`);
+              }
+            }
+          } else {
+            console.log(`ℹ️ Suscripción ${existingSub.id} ya estaba cancelada`);
+            cancelationResults.push({ id: existingSub.id, status: 'already_canceled' });
+          }
+        }
+        
+        console.log("📊 Resumen de cancelaciones:", cancelationResults);
+      }
+
+      // 5. Crear nueva suscripción (siempre crear una nueva después de limpiar)
+      console.log("🔄 Creando nueva suscripción en Stripe...");
+      let subscription;
+      try {
         subscription = await stripe.subscriptions.create({
           customer: customer.id,
           items: [{ price: APRENDIZ_PRICE_ID }],
@@ -155,7 +181,10 @@ serve(async (req) => {
           },
         });
         console.log("✅ Nueva suscripción Stripe creada:", subscription.id);
-      }
+      } catch (subscriptionError: any) {
+         console.error("❌ Error al crear nueva suscripción:", subscriptionError);
+         throw new Error(`Error al crear suscripción: ${subscriptionError.message}`);
+       }
 
       // 4. Actualizar en Supabase
       const { error: updateError } = await supabase

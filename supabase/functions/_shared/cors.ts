@@ -1,7 +1,6 @@
 export const ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "http://localhost:3000",
   "https://poke-collector.netlify.app",
 ];
 
@@ -50,10 +49,12 @@ export const getCorsHeaders = (request: Request) => {
 
 // Export a simple CORS headers object for functions that don't need dynamic origin handling
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://poke-collector.netlify.app",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, prefer, Authorization",
-  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-  "Access-Control-Allow-Credentials": "true",
-  "Access-Control-Max-Age": "86400",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+export const allowedOrigins = [
+  "https://poke-collector.netlify.app",
+  "http://localhost:5173", // Vite dev server
+  "http://localhost:5174", // Vite dev server alternativo
+];
