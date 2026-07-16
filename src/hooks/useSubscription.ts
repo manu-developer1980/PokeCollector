@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../../supabase/supabase";
 import { useAuth } from "../../supabase/auth";
-import { cacheService, createCacheKey } from "../lib/cacheService";
 import { websocketManager } from "../lib/websocketManager";
 
 export interface Subscription {
@@ -17,191 +16,90 @@ export interface Subscription {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // No existe como columna en la tabla actual; algunos componentes lo
+  // consultan de forma defensiva, por eso es opcional.
+  ended_at?: string | null;
 }
 
-// Función de utilidad para esperar un tiempo determinado
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// Caché por usuario compartida entre todas las instancias del hook, para que
+// varios componentes no disparen la misma consulta a la vez.
+const cache = new Map<string, { data: Subscription | null; timestamp: number }>();
+const CACHE_TTL = 60 * 1000; // 1 minuto: el realtime invalida antes si hay cambios
+const inFlight = new Map<string, Promise<Subscription | null>>();
 
-// Función para calcular el tiempo de espera con retroceso exponencial
-const getBackoffTime = (
-  attempt: number,
-  baseDelay = 1000,
-  maxDelay = 10000
-) => {
-  const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
-  // Añadir un poco de aleatoriedad para evitar que todas las solicitudes se realicen al mismo tiempo
-  return delay + Math.random() * 1000;
-};
+async function fetchSubscriptionForUser(
+  userId: string
+): Promise<Subscription | null> {
+  const { data, error } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1);
 
-// Caché global para almacenar las suscripciones por usuario
-const subscriptionCache: Record<
-  string,
-  { data: Subscription | null; timestamp: number }
-> = {};
+  if (error) throw new Error(error.message);
 
-// Tiempo de validez de la caché en milisegundos (5 minutos)
-const CACHE_TTL = 5 * 60 * 1000;
+  const subscription = (data?.[0] as unknown as Subscription) ?? null;
+  cache.set(userId, { data: subscription, timestamp: Date.now() });
+  return subscription;
+}
 
-// Función para implementar debounce
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
+/** Deduplica peticiones concurrentes del mismo usuario. */
+function fetchDeduped(userId: string): Promise<Subscription | null> {
+  const existing = inFlight.get(userId);
+  if (existing) return existing;
 
-  return function (...args: Parameters<T>) {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
+  const promise = fetchSubscriptionForUser(userId).finally(() =>
+    inFlight.delete(userId)
+  );
+  inFlight.set(userId, promise);
+  return promise;
 }
 
 export const useSubscription = () => {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const userId = user?.id ?? null;
+
+  const [subscription, setSubscription] = useState<Subscription | null>(
+    () => (userId && cache.get(userId)?.data) || null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<Error | null>(null);
-
-  // Referencia para controlar si el componente está montado
   const isMounted = useRef(true);
 
-  // Referencia para controlar si ya se ha realizado una petición inicial
-  const initialFetchDone = useRef(false);
-
-  // Referencia para almacenar la última petición realizada
-  const lastFetchTime = useRef(0);
-
-  // ID único para este hook (para evitar colisiones en componentes múltiples)
-  const hookId = useRef(
-    `subscription-${Math.random().toString(36).substring(2, 9)}`
-  );
-
-  // Memorizar el ID de usuario para evitar re-renderizaciones innecesarias
-  const userId = useMemo(() => user?.id || null, [user?.id]);
-
-  const fetchSubscription = useCallback(
-    async (retryAttempt = 0, maxRetries = 5, forceRefresh = false) => {
+  const load = useCallback(
+    async (forceRefresh = false) => {
       if (!userId) {
-        if (isMounted.current) {
-          setIsLoading(false);
-          setFetchError(null);
-        }
+        setSubscription(null);
+        setIsLoading(false);
+        setFetchError(null);
         return null;
       }
 
-      // Verificar si hay datos en caché y si son válidos
-      const now = Date.now();
-      const cacheKey = userId;
-      const cachedData = subscriptionCache[cacheKey];
-
-      // Si tenemos datos en caché, no es una actualización forzada y los datos son recientes, usamos la caché
-      if (
-        !forceRefresh &&
-        cachedData &&
-        now - cachedData.timestamp < CACHE_TTL &&
-        retryAttempt === 0
-      ) {
+      const cached = cache.get(userId);
+      if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_TTL) {
         if (isMounted.current) {
+          setSubscription(cached.data);
           setIsLoading(false);
           setFetchError(null);
-          if (cachedData.data) {
-            setSubscription(cachedData.data);
-          }
         }
-
-        return cachedData.data;
+        return cached.data;
       }
-
-      // Evitar peticiones demasiado frecuentes (mínimo 2 segundos entre peticiones)
-      const timeSinceLastFetch = now - lastFetchTime.current;
-      if (timeSinceLastFetch < 2000 && retryAttempt === 0 && !forceRefresh) {
-        // Si hay datos en caché, los usamos aunque sean antiguos
-        if (cachedData) {
-          if (isMounted.current) {
-            setIsLoading(false);
-          }
-          return cachedData.data;
-        }
-
-        // Si no hay datos en caché, esperamos un poco y reintentamos
-        await sleep(2000 - timeSinceLastFetch);
-      }
-
-      // Actualizar el tiempo de la última petición
-      lastFetchTime.current = now;
-
-
 
       try {
-        // Primero obtenemos todas las suscripciones del usuario
-        const { data, error } = await supabase
-          .from("subscriptions")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("⚠️ Error fetching subscription:", error);
-
-          if (isMounted.current) {
-            setFetchError(
-              new Error(error.message || "Error fetching subscription")
-            );
-          }
-
-          if (retryAttempt < maxRetries) {
-            const backoffTime = getBackoffTime(retryAttempt);
-            await sleep(backoffTime);
-            return fetchSubscription(
-              retryAttempt + 1,
-              maxRetries,
-              forceRefresh
-            );
-          }
-
-          return null;
-        }
-
+        const data = await fetchDeduped(userId);
         if (isMounted.current) {
+          setSubscription(data);
           setFetchError(null);
         }
-
-        if (data && data.length > 0) {
-          const subscriptionData = data[0] as unknown as Subscription;
-
-          subscriptionCache[cacheKey] = {
-            data: subscriptionData,
-            timestamp: Date.now(),
-          };
-
-          if (isMounted.current) {
-            setSubscription(subscriptionData);
-          }
-
-          return subscriptionData;
-        }
-
-        subscriptionCache[cacheKey] = {
-          data: null,
-          timestamp: Date.now(),
-        };
-
-        return null;
+        return data;
       } catch (err) {
-        console.error("❌ Unexpected error fetching subscription:", err);
-
         if (isMounted.current) {
           setFetchError(err instanceof Error ? err : new Error(String(err)));
         }
-
-        if (retryAttempt < maxRetries) {
-          const backoffTime = getBackoffTime(retryAttempt);
-          await sleep(backoffTime);
-          return fetchSubscription(retryAttempt + 1, maxRetries, forceRefresh);
-        }
-
         return null;
       } finally {
-        if (retryAttempt >= maxRetries && isMounted.current) {
+        if (isMounted.current) {
           setIsLoading(false);
         }
       }
@@ -209,69 +107,11 @@ export const useSubscription = () => {
     [userId]
   );
 
-  // Crear una versión con debounce de refetchSubscription
-  const debouncedRefetch = useRef(
-    debounce(async () => {
-      if (!isMounted.current) return null;
-
-      setIsLoading(true);
-      setFetchError(null);
-
-      try {
-        const data = await fetchSubscription(0, 5, true);
-
-        if (data && isMounted.current) {
-          setSubscription(data);
-        }
-
-        return data;
-      } catch (err) {
-        console.error("❌ Error in debounced refetchSubscription:", err);
-        if (isMounted.current) {
-          setFetchError(err instanceof Error ? err : new Error(String(err)));
-        }
-        return null;
-      } finally {
-        if (isMounted.current) {
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 500);
-        }
-      }
-    }, 500)
-  ).current;
-
-  // Función pública para refrescar la suscripción
-  const refetchSubscription = useCallback(async () => {
-    const freshData = await fetchSubscription(0, 5, true);
-    debouncedRefetch();
-    return freshData;
-  }, [fetchSubscription, debouncedRefetch]);
+  const refetchSubscription = useCallback(() => load(true), [load]);
 
   useEffect(() => {
-    // Marcar el componente como montado
     isMounted.current = true;
-
-    // Obtener la suscripción inicial solo si no se ha hecho antes
-    if (!initialFetchDone.current && userId) {
-      const initialFetchTimeout = setTimeout(() => {
-        const cachedData = subscriptionCache[userId];
-        if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
-          if (isMounted.current) {
-            setSubscription(cachedData.data);
-            setIsLoading(false);
-          }
-        } else {
-          fetchSubscription();
-        }
-        initialFetchDone.current = true;
-      }, 100);
-
-      return () => {
-        clearTimeout(initialFetchTimeout);
-        isMounted.current = false;
-      };
-    }
+    load();
 
     if (!userId) {
       return () => {
@@ -279,12 +119,10 @@ export const useSubscription = () => {
       };
     }
 
-    // Configurar suscripción en tiempo real usando el websocketManager
-    const channelId = `subscription-changes-${userId}-${hookId.current}`;
-    const componentId = hookId.current;
-    
+    // Realtime: cualquier cambio en la fila del usuario refresca la caché.
+    const componentId = `subscription-${Math.random().toString(36).slice(2, 9)}`;
     const cleanup = websocketManager.createSubscription(
-      channelId,
+      `subscription-changes-${userId}-${componentId}`,
       componentId,
       {
         table: "subscriptions",
@@ -292,27 +130,18 @@ export const useSubscription = () => {
         event: "*",
         schema: "public",
       },
-      (payload) => {
-        // Solo procesar si el componente sigue montado
-        if (!isMounted.current) return;
-        
-        // Invalidar la caché
-        const cacheKey = createCacheKey("subscription", userId);
-        cacheService.invalidate(cacheKey);
-        
-        if (payload.old && payload.new) {
-          if (subscriptionCache[userId]) {
-            delete subscriptionCache[userId];
-          }
-        }
-
-        debouncedRefetch();
+      () => {
+        cache.delete(userId);
+        load(true);
       },
       {
         delay: 300,
         onError: (error) => {
-          console.warn('WebSocket connection error in useSubscription:', error.message);
-        }
+          console.warn(
+            "WebSocket connection error in useSubscription:",
+            error.message
+          );
+        },
       }
     );
 
@@ -320,7 +149,7 @@ export const useSubscription = () => {
       isMounted.current = false;
       cleanup();
     };
-  }, [userId, fetchSubscription, debouncedRefetch]);
+  }, [userId, load]);
 
   return {
     subscription,

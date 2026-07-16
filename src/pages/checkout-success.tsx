@@ -6,7 +6,6 @@ import { useSubscription } from "@/hooks/useSubscription";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../supabase/auth";
-import { getUserPlan } from "@/lib/api";
 
 export default function CheckoutSuccessPage() {
   const navigate = useNavigate();
@@ -158,24 +157,13 @@ export default function CheckoutSuccessPage() {
         // Incrementar el contador de intentos
         setVerificationAttempts((prev) => prev + 1);
 
-        // Intentar obtener el plan real desde la base de datos
-        if (user?.id) {
-          const userPlanData = await getUserPlan(user.id);
-          
-          if (userPlanData?.planType) {
-            const translatedPlanName = getTranslatedPlanName(userPlanData.planType);
-            setPlanName(translatedPlanName);
-            setSubscriptionLoaded(true);
-            return;
-          }
-        }
-
-        // Si no se pudo obtener el plan desde la base de datos, intentar con la suscripción
+        // El webhook de Stripe actualiza la tabla `subscriptions`; aquí solo
+        // esperamos a que aparezca el plan real.
         const updatedSubscription = await refetchSubscription();
 
-        if (updatedSubscription?.status) {
+        if (updatedSubscription?.plan_type) {
           const translatedPlanName = getTranslatedPlanName(
-            updatedSubscription.status
+            updatedSubscription.plan_type
           );
           setPlanName(translatedPlanName);
           setSubscriptionLoaded(true);

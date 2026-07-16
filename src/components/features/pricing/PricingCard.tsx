@@ -9,13 +9,13 @@ import { Check, Crown } from "lucide-react";
 import { useAuth } from "../../../../supabase/auth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
-import { PlanFeature, PLAN_FEATURES } from "@/lib/stripe";
+import { PLAN_FEATURES } from "@/lib/stripe";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { DowngradeWarningModal } from "@/components/features/subscription/DowngradeWarningModal";
 import type { SubscriptionPlan } from "@/lib/stripe";
 import { useTranslation } from "react-i18next";
-import { supabase } from "../../../../supabase/supabase";
+import { selectPlan } from "@/lib/subscriptionActions";
 
 interface PricingCardProps {
   plan: SubscriptionPlan;
@@ -32,14 +32,18 @@ export function PricingCard({
 }: PricingCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { subscription } = useSubscription();
+  const { subscription, refetchSubscription } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
-  const [targetPlan, setTargetPlan] = useState<string | null>(null);
-  
+  const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
+
   // Get the actual plan features
   const planFeatures = PLAN_FEATURES[plan];
+
+  const currentPlanKey = (
+    subscription?.plan_type?.toUpperCase() ?? "APRENDIZ"
+  ) as SubscriptionPlan;
 
   const isPlanDowngrade = (current: string, target: string): boolean => {
     const planHierarchy: Record<string, number> = {
@@ -52,6 +56,48 @@ export function PricingCard({
     const normalizedTarget = target.toUpperCase();
 
     return planHierarchy[normalizedTarget] < planHierarchy[normalizedCurrent];
+  };
+
+  // Ejecuta el cambio: checkout si no hay suscripción activa,
+  // cambio de plan in situ si la hay (ver src/lib/subscriptionActions.ts).
+  const executePlanSelection = async (target: SubscriptionPlan) => {
+    try {
+      const result = await selectPlan(
+        PLAN_FEATURES[target].id,
+        subscription
+      );
+
+      if (result.kind === "redirect") return; // el navegador ya va a Stripe
+
+      if (result.kind === "changed") {
+        await refetchSubscription();
+        toast({
+          title: t("subscription.planUpdated"),
+          description: t("subscription.planUpdatedSuccess"),
+        });
+        navigate("/checkout-success");
+      } else if (result.kind === "scheduled-cancel") {
+        await refetchSubscription();
+        toast({
+          title: t("subscription.canceled"),
+          description: t("subscription.canceledDescription"),
+        });
+      } else {
+        toast({
+          title: t("pricing.currentPlan"),
+          description: t("pricing.alreadyActive"),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating plan:", error);
+      toast({
+        title: t("common.error"),
+        description:
+          error instanceof Error ? error.message : t("pricing.updateError"),
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
   };
 
   const handleSelectPlan = async () => {
@@ -71,82 +117,13 @@ export function PricingCard({
       return;
     }
 
-    // Verificar si es un downgrade
-    const currentPlanType = (
-      (subscription as any)?.plan_type?.toUpperCase() || "APRENDIZ"
-    ).toUpperCase();
-
-    if (isPlanDowngrade(currentPlanType, plan)) {
+    if (isPlanDowngrade(currentPlanKey, plan)) {
       setShowDowngradeWarning(true);
-      setTargetPlan(plan); // Store the plan type, not the plan ID
+      setTargetPlan(plan);
       return;
     }
 
-    // Ir directamente al checkout de Stripe
-    try {
-      // Añadir logs para depuración
-  
-
-      const requestData = {
-        priceId: planFeatures.id,
-        customerEmail: user.email,
-        metadata: {
-          user_id: user.id,
-          plan_name: planFeatures.name,
-        },
-        successUrl: `${window.location.origin}/checkout-success`,
-        cancelUrl: `${window.location.origin}/dashboard`,
-      };
-
-
-
-      // Verificar si hay un token de autenticación válido
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        console.error("No hay sesión de autenticación activa");
-        throw new Error("No hay sesión de autenticación");
-      }
-
-      // Llamar a la función Edge con manejo de errores mejorado
-      const { data, error } = await supabase.functions.invoke(
-        "create-stripe-checkout",
-        {
-          body: requestData,
-        }
-      );
-
-      if (error) {
-        console.error("Checkout error:", error);
-        // Mostrar más detalles del error
-        console.error("Error completo:", JSON.stringify(error, null, 2));
-        throw new Error(
-          `Error en checkout: ${error.message || "Error desconocido"}`
-        );
-      }
-
-      if (!data) {
-        console.error("No se recibieron datos de la respuesta");
-        throw new Error("No se recibieron datos de la respuesta");
-      }
-
-      
-
-      if (!data?.url) {
-        console.error("URL de checkout no encontrada en la respuesta", data);
-        throw new Error(t("checkout.noCheckoutUrl"));
-      }
-
-      // Redirigir directamente a la URL de Stripe
-      window.location.href = data.url;
-    } catch (error) {
-      console.error("Error updating plan:", error);
-      toast({
-        title: t("common.error"),
-        description: error.message || t("pricing.updateError"),
-        variant: "destructive",
-        duration: 5000,
-      });
-    }
+    await executePlanSelection(plan);
   };
 
   // Determinar el nombre y descripción del plan según el idioma
@@ -231,84 +208,14 @@ export function PricingCard({
           setShowDowngradeWarning(false);
           setTargetPlan(null);
         }}
-        onConfirm={() => {
+        onConfirm={async () => {
+          setShowDowngradeWarning(false);
           if (targetPlan) {
-            // Instead of just calling onSelectPlan, we should directly handle the checkout
-            // for downgrades here, regardless of whether onSelectPlan is provided
-
-            // Close the modal first
-            setShowDowngradeWarning(false);
-
-            // Then proceed with the checkout process
-            try {
-          
-
-              const targetPlanFeatures = PLAN_FEATURES[targetPlan as SubscriptionPlan];
-              if (!targetPlanFeatures) {
-                throw new Error(`Plan features not found for plan: ${targetPlan}`);
-              }
-              
-              const requestData = {
-                priceId: targetPlanFeatures.id,
-                customerEmail: user.email,
-                metadata: {
-                  user_id: user.id,
-                  plan_name: targetPlanFeatures.name,
-                },
-                successUrl: `${window.location.origin}/checkout-success`,
-                cancelUrl: `${window.location.origin}/dashboard`,
-              };
-
-              // Call the Stripe checkout function
-              supabase.functions
-                .invoke("create-stripe-checkout", {
-                  body: requestData,
-                })
-                .then(({ data, error }) => {
-                  if (error) {
-                    console.error("Checkout error:", error);
-                    throw new Error(
-                      `Error en checkout: ${
-                        error.message || "Error desconocido"
-                      }`
-                    );
-                  }
-
-                  if (!data?.url) {
-                    console.error(
-                      "URL de checkout no encontrada en la respuesta",
-                      data
-                    );
-                    throw new Error(t("checkout.noCheckoutUrl"));
-                  }
-
-                  // Redirect to Stripe checkout
-                  window.location.href = data.url;
-                })
-                .catch((error) => {
-                  console.error("Error processing downgrade:", error);
-                  toast({
-                    title: t("common.error"),
-                    description: error.message || t("pricing.updateError"),
-                    variant: "destructive",
-                    duration: 5000,
-                  });
-                });
-            } catch (error) {
-              console.error("Error initiating downgrade:", error);
-              toast({
-                title: t("common.error"),
-                description: error.message || t("pricing.updateError"),
-                variant: "destructive",
-                duration: 5000,
-              });
-            }
+            await executePlanSelection(targetPlan);
+            setTargetPlan(null);
           }
         }}
-        currentPlan={
-          (subscription?.status?.toUpperCase() as SubscriptionPlan) ||
-          "APRENDIZ"
-        }
+        currentPlan={currentPlanKey}
         targetPlan={plan}
         currentStats={undefined}
       />

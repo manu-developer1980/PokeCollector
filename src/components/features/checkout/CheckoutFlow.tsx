@@ -9,9 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "../../../../supabase/auth";
-import { supabase } from "../../../../supabase/supabase";
 import { PLAN_FEATURES } from "@/lib/stripe";
+import { selectPlan } from "@/lib/subscriptionActions";
 import type { Subscription } from "@/hooks/useSubscription";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { useTranslation } from "react-i18next";
@@ -29,7 +28,6 @@ export function CheckoutFlow({
   planId,
   currentSubscription,
 }: CheckoutFlowProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -51,41 +49,22 @@ export function CheckoutFlow({
   const handleCheckout = async () => {
     setIsLoading(true);
     try {
-      const requestData = {
-        priceId: planId,
-        customerEmail: user.email,
-        metadata: {
-          user_id: user.id,
-          plan_name: selectedPlan.name,
-        },
-        successUrl: `${window.location.origin}/checkout-success`,
-        cancelUrl: `${window.location.origin}/dashboard`,
-      };
+      // Sin suscripción activa redirige a Stripe Checkout; con ella cambia
+      // el plan in situ (ver src/lib/subscriptionActions.ts).
+      const result = await selectPlan(planId, currentSubscription);
 
+      if (result.kind === "redirect") return; // el navegador ya va a Stripe
 
-
-      const { data, error } = await supabase.functions.invoke(
-        "create-stripe-checkout",
-        {
-          body: requestData,
-        }
-      );
-
-      if (error) {
-        console.error("Checkout error:", error);
-        throw error;
-      }
-
-      if (!data?.url) {
-        throw new Error(t("checkout.noCheckoutUrl"));
-      }
-
-      window.location.href = data.url;
+      navigate("/checkout-success");
+      onClose();
     } catch (error) {
       console.error("Error completo:", error);
       toast({
         title: t("checkout.error"),
-        description: t("checkout.errorDescription"),
+        description:
+          error instanceof Error
+            ? error.message
+            : t("checkout.errorDescription"),
         variant: "destructive",
         duration: 5000,
       });

@@ -576,27 +576,6 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
   });
 }
 
-// Function to get user plan from backend
-export async function getUserPlan(
-  userId: string
-): Promise<{ planType: string; planFeatures: any } | null> {
-  try {
-    const response = await api.post("/stripe-subscriptions", {
-      action: "get_user_plan",
-      user_id: userId,
-    });
-
-    if (response.data?.success && response.data?.data) {
-      return response.data.data;
-    }
-
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching user plan from backend:", error);
-    return null;
-  }
-}
-
 // Function to clean cache periodically
 setInterval(() => {
   PokemonCache.clearOldItems();

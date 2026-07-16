@@ -5,7 +5,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { PLAN_FEATURES } from "@/lib/stripe";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { AlertCircle, Check, Crown } from "lucide-react";
+import { AlertCircle, Check, Crown, Receipt } from "lucide-react";
+import {
+  cancelSubscription,
+  openBillingPortal,
+} from "@/lib/subscriptionActions";
 import {
   Card,
   CardContent,
@@ -28,32 +32,22 @@ interface SubscriptionManagementProps {
 export default function SubscriptionManagement({
   onSectionChange,
 }: SubscriptionManagementProps) {
-  const { subscription, isLoading: loading } = useSubscription();
+  const { subscription, isLoading: loading, refetchSubscription } =
+    useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const { t } = useTranslation();
 
   // Obtener las características del plan actual
-  const currentPlanType = (subscription?.status?.toUpperCase() ||
+  const currentPlanType = (subscription?.plan_type?.toUpperCase() ||
     "APRENDIZ") as keyof typeof PLAN_FEATURES;
-  const currentPlan = PLAN_FEATURES[currentPlanType];
+  const currentPlan = PLAN_FEATURES[currentPlanType] ?? PLAN_FEATURES.APRENDIZ;
 
   const handleCancelSubscription = async () => {
-  
-
-    if (!subscription) {
-      toast({
-        title: t("common.error"),
-        description: t("subscription.errors.noSubscriptionInfo"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // IMPORTANTE: Asegurarnos de usar stripe_subscription_id
-    const subscriptionId = (subscription as any).stripe_subscription_id;
+    const subscriptionId = subscription?.stripe_subscription_id;
 
     if (!subscriptionId) {
       toast({
@@ -66,33 +60,14 @@ export default function SubscriptionManagement({
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cancel-subscription`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            subscriptionId: subscriptionId, // Este debe ser el stripe_subscription_id
-            userId: (subscription as any).user_id,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Error al cancelar la suscripción");
-      }
+      await cancelSubscription(subscriptionId);
 
       toast({
         title: t("subscription.canceled"),
         description: t("subscription.canceledDescription"),
       });
 
-      // Refrescar los datos de la suscripción
-      window.location.reload();
+      await refetchSubscription();
       setShowCancelDialog(false);
     } catch (error) {
       console.error("Error completo:", error);
@@ -106,6 +81,23 @@ export default function SubscriptionManagement({
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Portal de facturación de Stripe: facturas, método de pago, etc.
+  const handleOpenPortal = async () => {
+    setIsOpeningPortal(true);
+    try {
+      await openBillingPortal();
+    } catch (error) {
+      console.error("Error abriendo el portal:", error);
+      toast({
+        title: t("common.error"),
+        description:
+          error instanceof Error ? error.message : t("common.error"),
+        variant: "destructive",
+      });
+      setIsOpeningPortal(false);
     }
   };
 
@@ -216,6 +208,21 @@ export default function SubscriptionManagement({
                   ? t("subscription.changePlan")
                   : t("subscription.viewPlans")}
               </Button>
+
+              {subscription?.stripe_customer_id && (
+                <Button
+                  variant="outline"
+                  onClick={handleOpenPortal}
+                  disabled={isOpeningPortal}
+                >
+                  <Receipt className="h-4 w-4" />
+                  {isOpeningPortal
+                    ? t("subscription.processing")
+                    : t("subscription.manageBilling", {
+                        defaultValue: "Gestionar facturación",
+                      })}
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>

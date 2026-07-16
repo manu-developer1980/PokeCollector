@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -14,13 +14,7 @@ import { DowngradeWarningModal } from "./DowngradeWarningModal";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "@/hooks/useSubscription";
-
-interface PricingCardProps {
-  plan: SubscriptionPlan;
-  isCurrentPlan?: boolean;
-  onSelectPlan?: (plan: SubscriptionPlan) => void;
-  // other props...
-}
+import { selectPlan } from "@/lib/subscriptionActions";
 
 interface PlanChangeDialogProps {
   isOpen: boolean;
@@ -39,11 +33,10 @@ export function PlanChangeDialog({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [prorationAmount, setProrationAmount] = useState<number | null>(null);
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
   const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
   const { stats } = useSubscriptionStats();
-  const { refetchSubscription } = useSubscription();
+  const { subscription, refetchSubscription } = useSubscription();
 
   const handlePlanChange = async (newPlan: SubscriptionPlan) => {
     // Si el usuario intenta cambiar al mismo plan, no hacemos nada
@@ -104,45 +97,33 @@ export function PlanChangeDialog({
     return planHierarchy[normalizedTarget] < planHierarchy[currentPlanKey];
   };
 
+  // Sin suscripción activa (p. ej. usuario recién registrado) redirige a
+  // Stripe Checkout; con suscripción activa cambia el plan in situ.
   const processPlanChange = async (newPlan: SubscriptionPlan) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/change-subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newPlan }),
+      const result = await selectPlan(
+        PLAN_FEATURES[newPlan].id,
+        subscription
+      );
+
+      if (result.kind === "redirect") return; // el navegador ya va a Stripe
+
+      await refetchSubscription();
+      toast({
+        title: t("subscription.planUpdated"),
+        description: t("subscription.planUpdatedSuccess"),
       });
-
-      if (!response.ok) {
-        throw new Error(t("subscription.errors.changePlan"));
-      }
-
-      const data = await response.json();
-
-      if (data.prorationAmount > 0) {
-        setProrationAmount(data.prorationAmount / 100);
-        if (data.subscription.latest_invoice?.payment_intent) {
-          window.location.href =
-            data.subscription.latest_invoice.payment_intent.client_secret;
-        }
-      } else {
-        // Actualizar la suscripción en la UI
-        await refetchSubscription();
-
-        toast({
-          title: t("subscription.planUpdated"),
-          description: t("subscription.planUpdatedSuccess"),
-        });
-
-        // Redirigir a la página de éxito para mostrar el nuevo plan
-        navigate("/checkout-success");
-        onClose();
-      }
+      navigate("/checkout-success");
+      onClose();
     } catch (error) {
       console.error(t("subscription.errors.changePlanLog"), error);
       toast({
         title: t("subscription.errors.changePlan"),
-        description: t("subscription.errors.tryAgain"),
+        description:
+          error instanceof Error
+            ? error.message
+            : t("subscription.errors.tryAgain"),
         variant: "destructive",
       });
     } finally {
@@ -223,15 +204,6 @@ export function PlanChangeDialog({
               </Button>
             </div>
           </div>
-          {prorationAmount !== null && (
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <p>
-                {t("subscription.prorationAmount", {
-                  amount: prorationAmount.toFixed(2),
-                })}
-              </p>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 

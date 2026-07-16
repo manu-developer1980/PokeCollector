@@ -29,14 +29,42 @@ otp_expiry = 86400
 # Note: This feature must be enabled manually in the Supabase dashboard
 # under Authentication > Settings > Password Protection
 
+# Configuración de las edge functions. Este es el ÚNICO config que lee el
+# CLI de Supabase; no crear otros config.toml dentro de functions/.
 [functions]
+
 [functions.initialize-user]
 verify_jwt = true
 
 [functions.create-stripe-checkout]
 verify_jwt = true
 
+[functions.create-portal-session]
+verify_jwt = true
+
+[functions.change-subscription]
+verify_jwt = true
+
+[functions.cancel-subscription]
+verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.send-email]
+verify_jwt = false
+
+# El webhook lo llama Stripe directamente: sin JWT; la seguridad es la firma
+# (STRIPE_WEBHOOK_SECRET).
 [functions.stripe-webhook]
 verify_jwt = false
 
+[functions.stripe-admin]
+verify_jwt = true
+
+[functions.stripe-subscriptions]
+verify_jwt = true
+
+[functions.sync-subscription]
+verify_jwt = true
 

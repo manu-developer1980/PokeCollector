@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../supabase/auth";
 import { CheckoutFlow } from "../components/features/checkout/CheckoutFlow";
+import { useSubscription } from "@/hooks/useSubscription";
 import { PLAN_FEATURES, type PlanFeature } from "@/lib/stripe";
 import LoadingSpinner from "@/components/ui/LoaderSpinner";
 import { toast } from "@/components/ui/use-toast";
@@ -11,6 +12,7 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<PlanFeature | null>(null);
   const { user, loading } = useAuth();
+  const { subscription } = useSubscription();
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -50,39 +52,6 @@ export default function CheckoutPage() {
     navigate("/pricing");
   };
 
-  const handleCheckout = async (priceId: string, planType: string) => {
-    try {
-      // Guardar el plan seleccionado en localStorage (más persistente que sessionStorage)
-      // Asegurarnos de que está en minúsculas para coincidir con el ENUM de la base de datos
-      localStorage.setItem("selectedPlanType", planType.toLowerCase());
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            priceId,
-            userId: user?.id,
-            returnUrl: `${window.location.origin}/checkout-success`,
-          }),
-        }
-      );
-
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      toast({
-        title: "Error",
-        description: "Hubo un problema al procesar el checkout",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -101,7 +70,7 @@ export default function CheckoutPage() {
         isOpen={true}
         onClose={handleCancel}
         planId={selectedPlan.id}
-        currentSubscription={null}
+        currentSubscription={subscription}
       />
     </div>
   );

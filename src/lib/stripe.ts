@@ -48,7 +48,7 @@ export const usePlanFeatures = () => {
       features: t("plans.featuresList.entrenador", {
         returnObjects: true,
       }) as string[],
-      maxCards: 200,
+      maxCards: 500,
       maxCollections: 5,
       maxWishlist: 50,
       hasAdvancedSearch: true,
@@ -78,7 +78,7 @@ export const PLAN_FEATURES = {
     id: SUBSCRIPTION_PLANS.APRENDIZ,
     features: [
       "Hasta 50 cartas",
-      "1 colección",
+      "Hasta 2 colecciones",
       "10 cartas en lista de deseos",
       "Búsqueda de cartas por nombre y tipo",
     ],
@@ -98,7 +98,7 @@ export const PLAN_FEATURES = {
       "50 cartas en lista de deseos",
       "Búsqueda avanzada de cartas por nombre, tipo, subtipo, rareza y más",
     ],
-    maxCards: 200,
+    maxCards: 500,
     maxCollections: 5,
     maxWishlist: 50,
     hasAdvancedSearch: true,
