@@ -386,7 +386,7 @@
     "addToDefault": "Añadir a colección por defecto",
     "collectionDetails": "Detalles en tu colección",
     "defaultName": "Mi Colección",
-    "defaultDescription": "Mi colección de cartas Pokémon",
+    "defaultDescription": "Mi colección predeterminada de cartas Pokémon",
     "updated": "Colección actualizada",
     "created": "Colección creada",
     "deleted": "Colección eliminada",
@@ -422,9 +422,7 @@
     "defaultCollectionNeeded": "Para usar la función de añadir rápido, necesitas tener una colección predeterminada.",
     "setExistingAsDefault": "Puedes establecer una de tus colecciones existentes como predeterminada:",
     "noCollectionsYet": "No tienes ninguna colección. Crea una nueva para empezar.",
-    "createNew": "Crear Nueva Colección",
-    "defaultName": "Mi Colección",
-    "defaultDescription": "Mi colección predeterminada de cartas Pokémon"
+    "createNew": "Crear Nueva Colección"
   },
   "wishlist": {
     "title": "Lista de Deseos",
@@ -630,7 +628,14 @@
     "processingDelay": "El procesamiento está tardando más de lo habitual. Por favor, espere un momento...",
     "connectionIssue": "Estamos experimentando problemas de conexión. Seguiremos intentando...",
     "pendingConfirmation": "Confirmación de pago pendiente. La suscripción se activará en breve.",
-    "errorFetching": "Hubo un problema al verificar su suscripción. Por favor, actualice la página o contacte a soporte si el problema persiste."
+    "errorFetching": "Hubo un problema al verificar su suscripción. Por favor, actualice la página o contacte a soporte si el problema persiste.",
+    "manageBilling": "Gestionar facturación",
+    "upgradeConfirmTitle": "Confirmar mejora de plan",
+    "upgradeConfirmDesc": "El cambio al plan {{plan}} se aplica inmediatamente. Ahora pagarás aproximadamente {{amount}}€, la parte proporcional por lo que queda del período actual (hasta el {{date}}). A partir de la renovación, {{price}}€/mes.",
+    "upgradeAppliedDesc": "Ya disfrutas del plan {{plan}}. Solo se ha cobrado la parte proporcional de lo que queda del período actual.",
+    "paidDowngradeAppliedDesc": "Cambio aplicado inmediatamente. No se cobrará nada más hasta la renovación del {{date}} ({{price}}€/mes).",
+    "downgradeScheduledTitle": "Cambio programado",
+    "downgradeScheduledDesc": "Mantendrás tu plan actual hasta el {{date}}. Después pasarás automáticamente al plan gratuito Aprendiz."
   },
   "pricing": {
     "title": "Planes y Precios",
@@ -1315,13 +1320,6 @@
     "loggedInAs": "Conectado como",
     "users": "Usuarios",
     "subscriptions": "Suscripciones",
-    "auditLogs": "Registros de Auditoría",
-    "settings": "Configuración",
-    "userManagement": "Gestión de Usuarios",
-    "subscriptionManagement": "Gestión de Suscripciones",
-    "userManagementPlaceholder": "El componente de Gestión de Usuarios se implementará aquí",
-    "subscriptionManagementPlaceholder": "El componente de Gestión de Suscripciones se implementará aquí",
-    "auditLogsDescription": "Rastrea y monitorea todas las acciones administrativas para cumplimiento y seguridad",
     "auditLogs": {
       "title": "Registros de Auditoría",
       "description": "Historial completo de acciones administrativas",
@@ -1404,7 +1402,6 @@
         "filterError": "Error al aplicar filtros"
       }
     },
-    "settingsDescription": "Configura ajustes del sistema y gestiona funciones administrativas",
     "settings": {
       "title": "Configuración de Administración",
       "description": "Configuración del sistema y herramientas administrativas",
@@ -1534,6 +1531,12 @@
         "securitySavedDesc": "La configuración de seguridad ha sido actualizada"
       }
     },
+    "userManagement": "Gestión de Usuarios",
+    "subscriptionManagement": "Gestión de Suscripciones",
+    "userManagementPlaceholder": "El componente de Gestión de Usuarios se implementará aquí",
+    "subscriptionManagementPlaceholder": "El componente de Gestión de Suscripciones se implementará aquí",
+    "auditLogsDescription": "Rastrea y monitorea todas las acciones administrativas para cumplimiento y seguridad",
+    "settingsDescription": "Configura ajustes del sistema y gestiona funciones administrativas",
     "loadingUsers": "Cargando usuarios...",
     "totalUsers": "Total de usuarios",
     "filtersAndSearch": "Filtros y Búsqueda",

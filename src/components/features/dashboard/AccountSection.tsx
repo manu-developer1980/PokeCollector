@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
 import { PLAN_FEATURES } from "@/lib/stripe";
-import { Crown } from "lucide-react";
+import { openBillingPortal } from "@/lib/subscriptionActions";
+import { Crown, CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Progress } from "@/components/ui/progress";
 import { PasswordResetConfirmationModal } from "@/components/features/auth/PasswordResetConfirmationModal";
@@ -43,6 +44,25 @@ export default function AccountSection({
   const [isEditingName, setIsEditingName] = useState(false);
   const { subscription } = useSubscription();
   const { stats } = useSubscriptionStats();
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+
+  const handleOpenBillingPortal = async () => {
+    setIsOpeningPortal(true);
+    try {
+      await openBillingPortal();
+    } catch (error) {
+      console.error("Error abriendo el portal de facturación:", error);
+      toast({
+        title: t("common.error"),
+        description:
+          error instanceof Error
+            ? error.message
+            : t("subscription.errors.tryAgain"),
+        variant: "destructive",
+      });
+      setIsOpeningPortal(false);
+    }
+  };
 
   const handlePasswordReset = async () => {
     if (!user?.email) return;
@@ -270,6 +290,19 @@ export default function AccountSection({
                 ? t("subscription.changePlan")
                 : t("subscription.viewPlans")}
             </Button>
+            {subscription?.stripe_subscription_id && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleOpenBillingPortal}
+                disabled={isOpeningPortal}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                {isOpeningPortal
+                  ? t("subscription.processing")
+                  : t("subscription.manageBilling")}
+              </Button>
+            )}
           </CardContent>
         </Card>
 

@@ -390,7 +390,7 @@
     "addToDefault": "Add to default collection",
     "collectionDetails": "Collection Details",
     "defaultName": "My Collection",
-    "defaultDescription": "My Pokémon card collection",
+    "defaultDescription": "My default Pokémon card collection",
     "updated": "Collection updated",
     "created": "Collection created",
     "deleted": "Collection deleted",
@@ -423,9 +423,7 @@
     "defaultCollectionNeeded": "To use the quick add feature, you need to have a default collection.",
     "setExistingAsDefault": "You can set one of your existing collections as default:",
     "noCollectionsYet": "You don't have any collections. Create a new one to get started.",
-    "createNew": "Create New Collection",
-    "defaultName": "My Collection",
-    "defaultDescription": "My default Pokémon card collection"
+    "createNew": "Create New Collection"
   },
   "wishlist": {
     "maxItems": "Maximum wishlist items",
@@ -493,7 +491,6 @@
     "subtype": "Subtype",
     "allSubtypes": "All subtypes",
     "name": "Name",
-    "set": "Set",
     "type": "Type"
   },
   "card": {
@@ -536,7 +533,6 @@
       "updateFailed": "Could not update card. Please try again."
     }
   },
-
   "limits": {
     "cards": "card(s) in your collection",
     "collections": "Collections",
@@ -547,7 +543,7 @@
     "upgradePlan": "Upgrade Plan"
   },
   "subscription": {
-    "loading": "Loading...",
+    "loading": "Loading subscription...",
     "planUsage": "Current Plan Usage",
     "upgradePlan": "Upgrade Plan",
     "statusActive": "Active",
@@ -575,7 +571,6 @@
     "verifyingStatus": "Verifying subscription status...",
     "nextBilling": "Next billing",
     "goToDashboard": "Go to Dashboard",
-    "loading": "Loading subscription...",
     "yourSubscription": "Your Subscription",
     "currentPlanDetails": "Details of your current subscription plan",
     "currentPeriod": "Current Period",
@@ -632,7 +627,14 @@
     "processingDelay": "Processing is taking longer than usual. Please wait a moment...",
     "connectionIssue": "We are experiencing connection issues. We will keep trying...",
     "pendingConfirmation": "Payment confirmation pending. The subscription will be activated shortly.",
-    "errorFetching": "There was a problem verifying your subscription. Please refresh the page or contact support if the problem persists."
+    "errorFetching": "There was a problem verifying your subscription. Please refresh the page or contact support if the problem persists.",
+    "manageBilling": "Manage billing",
+    "upgradeConfirmTitle": "Confirm plan upgrade",
+    "upgradeConfirmDesc": "The change to the {{plan}} plan takes effect immediately. You will now pay approximately €{{amount}}, prorated for the remainder of the current period (until {{date}}). From the next renewal, €{{price}}/month.",
+    "upgradeAppliedDesc": "You now have the {{plan}} plan. Only the prorated share for the remainder of the current period was charged.",
+    "paidDowngradeAppliedDesc": "Change applied immediately. Nothing more will be charged until the renewal on {{date}} (€{{price}}/month).",
+    "downgradeScheduledTitle": "Change scheduled",
+    "downgradeScheduledDesc": "You will keep your current plan until {{date}}. After that you will automatically move to the free Aprendiz plan."
   },
   "pricing": {
     "price": "Price",
@@ -785,7 +787,7 @@
     "name": "Name",
     "notSet": "Not set",
     "emailSent": "Email sent",
-    "checkInboxPassword": "Check your inbox to change your password",
+    "checkInboxPassword": "Check your inbox and follow the instructions to set a new password",
     "changePasswordDescription": "We'll send you an email with a link to change your password",
     "sendResetEmail": "Send reset email",
     "checkEmail": "Check your email",
@@ -802,10 +804,7 @@
     "goodbye": "Goodbye!",
     "accountDeletedMessage": "Your account has been successfully deleted. We hope to see you again soon at PokéCollector.",
     "welcomeBackMessage": "Remember that you will always be welcome back in our collector community.",
-    "backToHome": "Back to home",
-    "checkEmail": "Check your email",
-    "passwordEmailSent": "We've sent an email to {{email}} with instructions to change your password",
-    "checkInboxPassword": "Check your inbox and follow the instructions to set a new password"
+    "backToHome": "Back to home"
   },
   "auth": {
     "login": "Log in",
@@ -903,8 +902,6 @@
       "backToLogin": "Back to login"
     },
     "recoverPassword": "Recover Password",
-    "email": "Email",
-    "emailPlaceholder": "your@email.com",
     "sendInstructions": "Send Instructions",
     "sendingInstructions": "Sending instructions...",
     "backToLogin": "Back to login",
@@ -1325,13 +1322,6 @@
     "loggedInAs": "Logged in as",
     "users": "Users",
     "subscriptions": "Subscriptions",
-    "auditLogs": "Audit Logs",
-    "settings": "Settings",
-    "userManagement": "User Management",
-    "subscriptionManagement": "Subscription Management",
-    "userManagementPlaceholder": "User Management component will be implemented here",
-    "subscriptionManagementPlaceholder": "Subscription Management component will be implemented here",
-    "auditLogsDescription": "Track and monitor all administrative actions for compliance and security",
     "auditLogs": {
       "title": "Audit Logs",
       "description": "Complete history of administrative actions",
@@ -1414,7 +1404,6 @@
         "filterError": "Error applying filters"
       }
     },
-    "settingsDescription": "Configure system settings and manage administrative functions",
     "settings": {
       "title": "Admin Settings",
       "description": "System configuration and administrative tools",
@@ -1544,6 +1533,12 @@
         "securitySavedDesc": "Security configuration has been updated"
       }
     },
+    "userManagement": "User Management",
+    "subscriptionManagement": "Subscription Management",
+    "userManagementPlaceholder": "User Management component will be implemented here",
+    "subscriptionManagementPlaceholder": "Subscription Management component will be implemented here",
+    "auditLogsDescription": "Track and monitor all administrative actions for compliance and security",
+    "settingsDescription": "Configure system settings and manage administrative functions",
     "loadingUsers": "Loading users...",
     "totalUsers": "Total users",
     "filtersAndSearch": "Filters & Search",

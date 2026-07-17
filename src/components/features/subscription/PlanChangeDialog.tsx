@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PLAN_FEATURES, SubscriptionPlan } from "@/lib/stripe";
 import { DowngradeWarningModal } from "./DowngradeWarningModal";
 import { useSubscriptionStats } from "@/hooks/useSubscriptionStats";
@@ -34,9 +35,33 @@ export function PlanChangeDialog({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
+  const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
   const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
   const { stats } = useSubscriptionStats();
   const { subscription, refetchSubscription } = useSubscription();
+
+  const hasActiveSubscription = Boolean(
+    subscription?.is_active && subscription?.stripe_subscription_id
+  );
+
+  const periodEndDate = subscription?.current_period_end
+    ? new Date(subscription.current_period_end).toLocaleDateString()
+    : "";
+
+  // Estimación del cobro prorrateado de un upgrade: la diferencia de precio
+  // por la fracción del período que queda (Stripe calcula el importe exacto).
+  const prorationEstimate = (target: SubscriptionPlan): string => {
+    const currentPrice = PLAN_FEATURES[normalizePlanKey(currentPlan)].price;
+    const targetPrice = PLAN_FEATURES[target].price;
+    const periodEnd = subscription?.current_period_end
+      ? new Date(subscription.current_period_end).getTime()
+      : Date.now();
+    const fraction = Math.min(
+      Math.max((periodEnd - Date.now()) / (30 * 24 * 60 * 60 * 1000), 0),
+      1
+    );
+    return ((targetPrice - currentPrice) * fraction).toFixed(2);
+  };
 
   const handlePlanChange = async (newPlan: SubscriptionPlan) => {
     // Si el usuario intenta cambiar al mismo plan, no hacemos nada
@@ -53,43 +78,37 @@ export function PlanChangeDialog({
       return;
     }
 
+    // Upgrade sobre una suscripción activa: se cobra prorrateado al momento,
+    // así que pedimos confirmación mostrando la estimación del cargo.
+    if (hasActiveSubscription) {
+      setTargetPlan(newPlan);
+      setShowUpgradeConfirm(true);
+      return;
+    }
+
     await processPlanChange(newPlan);
   };
 
-  const isPlanDowngrade = (current: string, target: SubscriptionPlan) => {
-    // Convertir los planes a mayúsculas para asegurar la comparación correcta
-    const normalizedCurrent = current.toUpperCase();
-    const normalizedTarget = target.toUpperCase() as SubscriptionPlan;
-
-    // Mapear los nombres de planes normalizados a las claves de SubscriptionPlan
-    let currentPlanKey: SubscriptionPlan;
-    if (
-      normalizedCurrent.includes("APRENDIZ") ||
-      normalizedCurrent.includes("APPRENTICE")
-    ) {
-      currentPlanKey = "APRENDIZ";
-    } else if (
-      normalizedCurrent.includes("ENTRENADOR") ||
-      normalizedCurrent.includes("TRAINER")
-    ) {
-      currentPlanKey = "ENTRENADOR";
-    } else if (
-      normalizedCurrent.includes("MAESTRO") ||
-      normalizedCurrent.includes("MASTER")
-    ) {
-      currentPlanKey = "MAESTRO";
-    } else {
-      // Si no podemos determinar el plan, asumimos APRENDIZ
-      currentPlanKey = "APRENDIZ";
+  const normalizePlanKey = (plan: string): SubscriptionPlan => {
+    const normalized = plan.toUpperCase();
+    if (normalized.includes("ENTRENADOR") || normalized.includes("TRAINER")) {
+      return "ENTRENADOR";
     }
+    if (normalized.includes("MAESTRO") || normalized.includes("MASTER")) {
+      return "MAESTRO";
+    }
+    return "APRENDIZ";
+  };
+
+  const isPlanDowngrade = (current: string, target: SubscriptionPlan) => {
+    const currentPlanKey = normalizePlanKey(current);
+    const normalizedTarget = target.toUpperCase() as SubscriptionPlan;
 
     const planHierarchy: Record<SubscriptionPlan, number> = {
       APRENDIZ: 1,
       ENTRENADOR: 2,
       MAESTRO: 3,
     };
-
-
 
     // Si el plan actual es APRENDIZ, nunca será un downgrade
     if (currentPlanKey === "APRENDIZ") return false;
@@ -110,9 +129,30 @@ export function PlanChangeDialog({
       if (result.kind === "redirect") return; // el navegador ya va a Stripe
 
       await refetchSubscription();
+
+      if (result.kind === "scheduled-cancel") {
+        // Downgrade a gratis: el plan actual sigue vigente hasta fin de período.
+        toast({
+          title: t("subscription.downgradeScheduledTitle"),
+          description: t("subscription.downgradeScheduledDesc", {
+            date: periodEndDate,
+          }),
+        });
+        onClose();
+        return;
+      }
+
+      const wasUpgrade = !isPlanDowngrade(currentPlan, newPlan);
       toast({
         title: t("subscription.planUpdated"),
-        description: t("subscription.planUpdatedSuccess"),
+        description: wasUpgrade
+          ? t("subscription.upgradeAppliedDesc", {
+              plan: PLAN_FEATURES[newPlan].name,
+            })
+          : t("subscription.paidDowngradeAppliedDesc", {
+              date: periodEndDate,
+              price: PLAN_FEATURES[newPlan].price,
+            }),
       });
       navigate("/checkout-success");
       onClose();
@@ -206,6 +246,32 @@ export function PlanChangeDialog({
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        isOpen={showUpgradeConfirm}
+        onClose={() => {
+          setShowUpgradeConfirm(false);
+          setTargetPlan(null);
+        }}
+        onConfirm={() => {
+          setShowUpgradeConfirm(false);
+          if (targetPlan) {
+            processPlanChange(targetPlan);
+          }
+        }}
+        title={t("subscription.upgradeConfirmTitle")}
+        description={
+          targetPlan
+            ? t("subscription.upgradeConfirmDesc", {
+                plan: PLAN_FEATURES[targetPlan].name,
+                amount: prorationEstimate(targetPlan),
+                date: periodEndDate,
+                price: PLAN_FEATURES[targetPlan].price,
+              })
+            : ""
+        }
+        isLoading={isLoading}
+      />
 
       <DowngradeWarningModal
         isOpen={showDowngradeWarning}
