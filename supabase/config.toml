@@ -24,6 +24,32 @@ max_frequency = "1m0s"
 otp_length = 6
 otp_expiry = 86400
 
+# SMTP de Brevo para los emails de auth (registro, recuperación, magic link).
+# La clave SMTP (xsmtpsib-..., distinta de la API key xkeysib-) se pasa como
+# BREVO_SMTP_KEY al hacer `supabase config push`.
+[auth.email.smtp]
+enabled = true
+host = "smtp-relay.brevo.com"
+port = 587
+user = "8a53db001@smtp-brevo.com"
+pass = "env(BREVO_SMTP_KEY)"
+admin_email = "8a53db001@smtp-brevo.com"
+sender_name = "PokéCollector"
+
+# Plantillas en español (las nativas de Supabase son mono-idioma; las
+# versiones en/es originales siguen en src/emails/ por si se vuelve al hook).
+[auth.email.template.confirmation]
+subject = "Confirma tu email - PokéCollector"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Restablece tu contraseña - PokéCollector"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Tu enlace mágico - PokéCollector"
+content_path = "./supabase/templates/magic_link.html"
+
 # Security: Enable password breach protection using HaveIBeenPwned.org
 # This prevents users from using passwords that have been compromised in data breaches
 # Note: This feature must be enabled manually in the Supabase dashboard

@@ -53,6 +53,15 @@ memoria persistente para no perder el hilo entre sesiones.
   vez de `customer_id`) — sin migración. `NODE_VERSION` de Netlify subido a
   22 (Vite 7 exige >=20). Deploy verde verificado: el bundle servido solo
   referencia el proyecto nuevo y el backend responde 200.
+- **Emails de auth restaurados (2026-07-17)**: SMTP de Brevo configurado
+  directamente en Auth vía `supabase config push` (`[auth.email.smtp]` y
+  plantillas es en `supabase/templates/` — confirmación, recovery y magic
+  link). Sin edge function ni Auth Hook: el `send-email` del repo es un stub
+  histórico y el sistema hook+Resend original se abandonó. La clave SMTP
+  (`xsmtpsib-...`, distinta de la API key) se pasa como `BREVO_SMTP_KEY` al
+  hacer el push; Manuel la tiene en el dashboard de Brevo. Tradeoff aceptado:
+  emails solo en español (las plantillas nativas son mono-idioma; las
+  versiones en/es siguen en `src/emails/`).
 - **Pendiente**: smoke test del billing end-to-end (registro, checkout,
   upgrade in situ, webhook escribiendo en `subscriptions`) y comprobar el
   Billing Portal de Stripe (paso 6 de RESTORE.md). Stripe está en modo test
