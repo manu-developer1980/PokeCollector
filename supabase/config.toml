@@ -15,6 +15,10 @@ verify_enabled = true
 enroll_enabled = false
 verify_enabled = false
 
+# Con SMTP propio se puede subir el límite de envío (el default es 2/hora)
+[auth.rate_limit]
+email_sent = 30
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
@@ -33,7 +37,7 @@ host = "smtp-relay.brevo.com"
 port = 587
 user = "8a53db001@smtp-brevo.com"
 pass = "env(BREVO_SMTP_KEY)"
-admin_email = "8a53db001@smtp-brevo.com"
+admin_email = "manu.developer1980@gmail.com" # remitente validado en Brevo
 sender_name = "PokéCollector"
 
 # Plantillas en español (las nativas de Supabase son mono-idioma; las
