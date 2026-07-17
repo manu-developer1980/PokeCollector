@@ -591,7 +591,7 @@
     "loginRequiredForCollection": "Debes iniciar sesión para añadir cartas a tu colección.",
     "downgrade": {
       "confirmTitle": "Confirmar cambio de plan",
-      "description": "Estás a punto de cambiar de {currentPlan} a {targetPlan}. Este cambio reducirá los límites de tu cuenta.",
+      "description": "Estás a punto de cambiar de {{currentPlan}} a {{targetPlan}}. Este cambio reducirá los límites de tu cuenta.",
       "warning": "Importante: Si excedes los límites del nuevo plan, no podrás añadir más items hasta que liberes espacio.",
       "confirm": "Confirmar cambio"
     },

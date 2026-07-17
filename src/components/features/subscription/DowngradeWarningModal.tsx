@@ -47,8 +47,8 @@ export function DowngradeWarningModal({
           </DialogTitle>
           <DialogDescription>
             {t("subscription.downgrade.description", {
-              currentPlan: currentPlan,
-              targetPlan: targetPlan,
+              currentPlan: t(`plans.${currentPlan.toLowerCase()}`),
+              targetPlan: t(`plans.${targetPlan.toLowerCase()}`),
             })}
           </DialogDescription>
         </DialogHeader>
