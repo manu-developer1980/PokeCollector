@@ -14,6 +14,9 @@ interface PokemonCardSearchParams {
   pageSize?: number;
   orderBy?: string;
   select?: string;
+  // Término crudo de la caja de búsqueda (ver types/pokemon.ts, que es el
+  // tipo que usan los componentes; este duplicado local debe ir alineado).
+  searchTerm?: string;
 }
 
 interface PokemonCardSearchResponse {
