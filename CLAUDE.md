@@ -43,12 +43,20 @@ memoria persistente para no perder el hilo entre sesiones.
   actualizado en el `.env` del frontend. Endpoint viejo
   (`kiphglgoanmibjztwhmj`) borrado — el de MedTracker en la misma cuenta de
   Stripe NO se toca. Bloque Stripe muerto eliminado del `.env` del backend.
-- **Pendiente**: actualizar variables en los dashboards de Netlify (frontend:
-  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`; borrar
-  `VITE_SUPABASE_SERVICE_KEY` si existe) y Render (backend: `SUPABASE_URL`,
-  `SUPABASE_SERVICE_KEY`; quitar variables de Stripe) con los valores de los
-  `.env`. Después: smoke test de la app desplegada y configurar el Billing
-  Portal de Stripe si no lo está (paso 6 de RESTORE.md).
+- **Hecho 2026-07-17 (tarde, 3) — RESTAURACIÓN COMPLETA**: variables de
+  Netlify actualizadas por API; el servicio de Render no existía y se recreó
+  por API como `srv-d9d1m7r7uimc73fbro9g` con URL nueva
+  `https://pokecollect-backend-t5ia.onrender.com` (el nombre pelado ya no
+  estaba libre — Netlify y CSP actualizados en consecuencia). Los 8 errores
+  de TS de admin arreglados adaptando el código al esquema real
+  (`users.is_admin` en vez de `users.subscription`; `stripe_customer_id` en
+  vez de `customer_id`) — sin migración. `NODE_VERSION` de Netlify subido a
+  22 (Vite 7 exige >=20). Deploy verde verificado: el bundle servido solo
+  referencia el proyecto nuevo y el backend responde 200.
+- **Pendiente**: smoke test del billing end-to-end (registro, checkout,
+  upgrade in situ, webhook escribiendo en `subscriptions`) y comprobar el
+  Billing Portal de Stripe (paso 6 de RESTORE.md). Stripe está en modo test
+  clásico (no Sandbox nuevo): los 3 precios activos verificados por API.
 - **Deuda conocida**: 8 errores de TS en 3 ficheros de admin
   (PricingManagement, InitialAdminSetup, useAdmin) — el código usa embeds
   `users→subscriptions` que requieren FKs hacia `public.users`, pero las
