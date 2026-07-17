@@ -88,10 +88,10 @@ export const useAdmin = () => {
           return;
         }
 
-        // Check admin status using subscription field
+        // Check admin status using is_admin flag
         const { data, error } = await supabase
           .from("users")
-          .select("subscription")
+          .select("is_admin")
           .eq("id", user.id)
           .single();
 
@@ -100,7 +100,7 @@ export const useAdmin = () => {
           setError(error);
           setIsAdmin(false);
         } else {
-          setIsAdmin(data?.subscription === 'admin');
+          setIsAdmin(data?.is_admin === true);
           setError(null);
         }
       } catch (err) {

@@ -5,8 +5,8 @@
   publish = "dist"
 
 [build.environment]
-  # Versión de Node.js
-  NODE_VERSION = "18"
+  # Versión de Node.js (Vite 7 y React Router 7 requieren >=20)
+  NODE_VERSION = "22"
 
 # Configuración de redirects para SPA
 [[redirects]]
@@ -22,7 +22,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://kiphglgoanmibjztwhmj.supabase.co https://*.supabase.co wss://kiphglgoanmibjztwhmj.supabase.co wss://*.supabase.co https://pokecollect-backend.onrender.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://pokecollect-backend-t5ia.onrender.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com;"
 
 # Configuración para archivos estáticos
 [[headers]]

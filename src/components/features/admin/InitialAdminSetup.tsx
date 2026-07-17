@@ -26,7 +26,7 @@ const InitialAdminSetup: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("subscription")
+        .select("is_admin")
         .eq("id", user.id)
         .single();
 
@@ -35,7 +35,7 @@ const InitialAdminSetup: React.FC = () => {
         return;
       }
 
-      setIsAdmin(data?.subscription === 'admin');
+      setIsAdmin(data?.is_admin === true);
     } catch (err) {
       console.error("Error in checkAdminStatus:", err);
     }
@@ -58,7 +58,7 @@ const InitialAdminSetup: React.FC = () => {
       // Update user to admin
       const { error } = await supabase
         .from("users")
-        .update({ subscription: 'admin' })
+        .update({ is_admin: true })
         .eq("id", user.id);
 
       if (error) {

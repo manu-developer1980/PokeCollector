@@ -189,13 +189,13 @@ const PricingManagement: React.FC = () => {
         if (stripeCustomerIds.length > 0) {
           const { data: subscriptionData, error } = await supabase
             .from('subscriptions')
-            .select('user_id, customer_id')
-            .in('customer_id', stripeCustomerIds);
+            .select('user_id, stripe_customer_id')
+            .in('stripe_customer_id', stripeCustomerIds);
 
           if (!error && subscriptionData) {
             subscriptionData.forEach(sub => {
-              if (sub.customer_id && sub.user_id) {
-                customerToUserMap.set(sub.customer_id, sub.user_id);
+              if (sub.stripe_customer_id && sub.user_id) {
+                customerToUserMap.set(sub.stripe_customer_id, sub.user_id);
               }
             });
           }
