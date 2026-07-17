@@ -36,6 +36,7 @@ export function PlanChangeDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
+  const [showScheduledInfo, setShowScheduledInfo] = useState(false);
   const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
   const { stats } = useSubscriptionStats();
   const { subscription, refetchSubscription } = useSubscription();
@@ -131,14 +132,9 @@ export function PlanChangeDialog({
       await refetchSubscription();
 
       if (result.kind === "scheduled-cancel") {
-        // Downgrade a gratis: el plan actual sigue vigente hasta fin de período.
-        toast({
-          title: t("subscription.downgradeScheduledTitle"),
-          description: t("subscription.downgradeScheduledDesc", {
-            date: periodEndDate,
-          }),
-        });
-        onClose();
+        // Downgrade a gratis: diálogo centrado (no toast) con la fecha en la
+        // que el plan actual deja de estar vigente.
+        setShowScheduledInfo(true);
         return;
       }
 
@@ -246,6 +242,24 @@ export function PlanChangeDialog({
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        isOpen={showScheduledInfo}
+        onClose={() => {
+          setShowScheduledInfo(false);
+          onClose();
+        }}
+        onConfirm={() => {
+          setShowScheduledInfo(false);
+          onClose();
+        }}
+        title={t("subscription.downgradeScheduledTitle")}
+        description={t("subscription.downgradeScheduledDesc", {
+          date: periodEndDate,
+        })}
+        confirmText={t("common.understood")}
+        showCancel={false}
+      />
 
       <ConfirmDialog
         isOpen={showUpgradeConfirm}

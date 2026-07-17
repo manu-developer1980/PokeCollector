@@ -38,6 +38,7 @@ export function PricingCard({
   const { toast } = useToast();
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
+  const [showScheduledInfo, setShowScheduledInfo] = useState(false);
   const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
 
   // Get the actual plan features
@@ -111,12 +112,9 @@ export function PricingCard({
         navigate("/checkout-success");
       } else if (result.kind === "scheduled-cancel") {
         await refetchSubscription();
-        toast({
-          title: t("subscription.downgradeScheduledTitle"),
-          description: t("subscription.downgradeScheduledDesc", {
-            date: periodEndDate,
-          }),
-        });
+        // Diálogo centrado en vez de toast: es un cambio importante y el
+        // usuario debe enterarse de cuándo se hace efectivo.
+        setShowScheduledInfo(true);
       } else {
         toast({
           title: t("pricing.currentPlan"),
@@ -244,6 +242,18 @@ export function PricingCard({
           </CardFooter>
         )}
       </Card>
+
+      <ConfirmDialog
+        isOpen={showScheduledInfo}
+        onClose={() => setShowScheduledInfo(false)}
+        onConfirm={() => setShowScheduledInfo(false)}
+        title={t("subscription.downgradeScheduledTitle")}
+        description={t("subscription.downgradeScheduledDesc", {
+          date: periodEndDate,
+        })}
+        confirmText={t("common.understood")}
+        showCancel={false}
+      />
 
       <ConfirmDialog
         isOpen={showUpgradeConfirm}
