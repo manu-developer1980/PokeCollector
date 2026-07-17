@@ -68,3 +68,10 @@ verify_jwt = true
 [functions.sync-subscription]
 verify_jwt = true
 
+
+# Puertos locales para el CLI (54320 cae en un rango excluido por Hyper-V en
+# esta maquina; ver netsh interface ipv4 show excludedportrange)
+[db]
+port = 55432
+shadow_port = 55433
+major_version = 17

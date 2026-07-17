@@ -12,18 +12,40 @@ está el estado del proyecto, decisiones tomadas y preferencias del usuario.
 Si trabajas en una máquina nueva, copia esos archivos al directorio de
 memoria persistente para no perder el hilo entre sesiones.
 
-## Estado actual (2026-07-16)
+## Estado actual (2026-07-17)
 
 - Capa de pagos de Stripe **reconstruida** (ver `RESTORE.md` para la
   arquitectura y el porqué). Regla de oro: los cambios de plan se hacen IN
   SITU con `change-subscription`; `create-stripe-checkout` solo sirve para la
   primera suscripción; `stripe-webhook` es la única fuente de verdad de la
   tabla `subscriptions`.
-- El proyecto de Supabase (`kiphglgoanmibjztwhmj`) está **pausado**. Los pasos
-  de restauración y redespliegue están en `RESTORE.md`.
-- Pendiente tras restaurar: `supabase db push`, deploy de las funciones,
-  secrets, y `supabase gen types typescript --linked > src/types/supabase.ts`
-  (elimina los 2 errores de TS en admin/SubscriptionManagement.tsx).
+- **Migrado a un proyecto nuevo de Supabase**: `jocdulzmpkayrnddapco`
+  ("PokeCollector-v2", eu-central-1, Postgres 17). El antiguo
+  `kiphglgoanmibjztwhmj` es irrecuperable. Datos restaurados desde el volcado
+  `db_cluster-09-09-2025@03-15-11.backup.gz` (en la carpeta padre del
+  workspace): 4 usuarios auth con identidades y contraseñas, colecciones,
+  cartas, wishlist, 2 suscripciones (una `entrenador` con sub real de Stripe)
+  y logs. Las 5 migraciones del repo están aplicadas (`db push` hecho,
+  historial limpio) y los datos re-insertados adaptados al esquema nuevo.
+  `.env` de ambos repos actualizados con URL/keys nuevas; tipos regenerados.
+  La contraseña de la BD la guarda Manuel (no está en el repo). Acceso a BD
+  solo por el session pooler `aws-0-eu-central-1.pooler.supabase.com:5432`,
+  usuario `postgres.jocdulzmpkayrnddapco` (el host directo es solo IPv6).
+- **Pendiente** (pasos 4-7 de `RESTORE.md`, adaptados al ref nuevo):
+  1. `supabase secrets set` — valores de Stripe/Brevo en los `.env`;
+     `RECAPTCHA_SECRET_KEY`, `RESEND_API_KEY` y `SEND_EMAIL_HOOK_SECRET` son
+     irrecuperables: sacarlos de sus dashboards o regenerarlos.
+  2. Deploy de las 11 edge functions (`supabase functions deploy ...`).
+  3. Recrear el webhook de Stripe apuntando a
+     `https://jocdulzmpkayrnddapco.supabase.co/functions/v1/stripe-webhook`
+     y actualizar `STRIPE_WEBHOOK_SECRET` (el committeado está obsoleto).
+  4. Actualizar variables en Netlify (frontend) y Render (backend).
+- **Deuda conocida**: 8 errores de TS en 3 ficheros de admin
+  (PricingManagement, InitialAdminSetup, useAdmin) — el código usa embeds
+  `users→subscriptions` que requieren FKs hacia `public.users`, pero las
+  migraciones las apuntan a `auth.users`; además consulta una columna
+  `customer_id` inexistente. Decidir entre migración nueva de FKs o adaptar
+  el código.
 
 ## Comandos
 

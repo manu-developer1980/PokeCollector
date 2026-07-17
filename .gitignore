@@ -32,3 +32,6 @@ backend/
 .github/
 
 *.exe
+
+# Cache de diffs del CLI de Supabase
+supabase/.temp/pgdelta/

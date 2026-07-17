@@ -1,5 +1,12 @@
 # Guía de restauración — PokeCollector
 
+> **Estado 2026-07-17**: el proyecto antiguo (`kiphglgoanmibjztwhmj`) resultó
+> irrecuperable; se migró al proyecto nuevo **`jocdulzmpkayrnddapco`**
+> ("PokeCollector-v2", eu-central-1, PG 17). Los pasos 1-3 están HECHOS
+> (datos restaurados desde el volcado + `db push` + tipos regenerados +
+> `.env` actualizados). Quedan los pasos 4-7 con el ref nuevo. Ver "Estado
+> actual" en CLAUDE.md.
+
 El proyecto de Supabase (`kiphglgoanmibjztwhmj`) está **pausado**. Esta guía
 cubre la restauración completa y el redespliegue de la capa de pagos
 reconstruida (julio 2026).
@@ -91,7 +98,7 @@ En Stripe Dashboard → Developers → Webhooks:
 1. Elimina los endpoints antiguos (especialmente cualquiera apuntando al
    backend de Render `/api/stripe/webhook`, que nunca funcionó).
 2. Crea UN único endpoint:
-   - URL: `https://kiphglgoanmibjztwhmj.supabase.co/functions/v1/stripe-webhook`
+   - URL: `https://jocdulzmpkayrnddapco.supabase.co/functions/v1/stripe-webhook`
    - Eventos: `checkout.session.completed`, `customer.subscription.created`,
      `customer.subscription.updated`, `customer.subscription.deleted`,
      `invoice.payment_failed`
