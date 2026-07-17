@@ -228,8 +228,14 @@ export async function searchCards(
       console.log('🚀 Attempting API call through circuit breaker');
       // Try with circuit breaker
       const data = await pokemonApiCircuitBreaker.execute(async () => {
-        // Construct the 'q' parameter with all filters
-        let queryString = params.q || "";
+        // Construct the 'q' parameter with all filters. El texto puede llegar
+        // como query Lucene ya construida (q, al aplicar filtros) o como
+        // término crudo (searchTerm, al teclear en la caja de búsqueda).
+        let queryString =
+          params.q ||
+          (params.searchTerm?.trim()
+            ? `name:"${params.searchTerm.trim()}*"`
+            : "");
 
         // Add set filter to query string if specified
         if ((params as any).set && (params as any).set !== "all") {
