@@ -13,6 +13,7 @@ import { PLAN_FEATURES } from "@/lib/stripe";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { DowngradeWarningModal } from "@/components/features/subscription/DowngradeWarningModal";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { SubscriptionPlan } from "@/lib/stripe";
 import { useTranslation } from "react-i18next";
 import { selectPlan } from "@/lib/subscriptionActions";
@@ -36,6 +37,7 @@ export function PricingCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
+  const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
   const [targetPlan, setTargetPlan] = useState<SubscriptionPlan | null>(null);
 
   // Get the actual plan features
@@ -44,6 +46,29 @@ export function PricingCard({
   const currentPlanKey = (
     subscription?.plan_type?.toUpperCase() ?? "APRENDIZ"
   ) as SubscriptionPlan;
+
+  const hasActiveSubscription = Boolean(
+    subscription?.is_active && subscription?.stripe_subscription_id
+  );
+
+  const periodEndDate = subscription?.current_period_end
+    ? new Date(subscription.current_period_end).toLocaleDateString()
+    : "";
+
+  // Estimación del cobro prorrateado de un upgrade: la diferencia de precio
+  // por la fracción del período que queda (Stripe calcula el importe exacto).
+  const prorationEstimate = (target: SubscriptionPlan): string => {
+    const currentPrice = PLAN_FEATURES[currentPlanKey]?.price ?? 0;
+    const targetPrice = PLAN_FEATURES[target].price;
+    const periodEnd = subscription?.current_period_end
+      ? new Date(subscription.current_period_end).getTime()
+      : Date.now();
+    const fraction = Math.min(
+      Math.max((periodEnd - Date.now()) / (30 * 24 * 60 * 60 * 1000), 0),
+      1
+    );
+    return ((targetPrice - currentPrice) * fraction).toFixed(2);
+  };
 
   const isPlanDowngrade = (current: string, target: string): boolean => {
     const planHierarchy: Record<string, number> = {
@@ -71,16 +96,26 @@ export function PricingCard({
 
       if (result.kind === "changed") {
         await refetchSubscription();
+        const wasUpgrade = !isPlanDowngrade(currentPlanKey, target);
         toast({
           title: t("subscription.planUpdated"),
-          description: t("subscription.planUpdatedSuccess"),
+          description: wasUpgrade
+            ? t("subscription.upgradeAppliedDesc", {
+                plan: PLAN_FEATURES[target].name,
+              })
+            : t("subscription.paidDowngradeAppliedDesc", {
+                date: periodEndDate,
+                price: PLAN_FEATURES[target].price,
+              }),
         });
         navigate("/checkout-success");
       } else if (result.kind === "scheduled-cancel") {
         await refetchSubscription();
         toast({
-          title: t("subscription.canceled"),
-          description: t("subscription.canceledDescription"),
+          title: t("subscription.downgradeScheduledTitle"),
+          description: t("subscription.downgradeScheduledDesc", {
+            date: periodEndDate,
+          }),
         });
       } else {
         toast({
@@ -120,6 +155,14 @@ export function PricingCard({
     if (isPlanDowngrade(currentPlanKey, plan)) {
       setShowDowngradeWarning(true);
       setTargetPlan(plan);
+      return;
+    }
+
+    // Upgrade sobre una suscripción activa: se cobra prorrateado al momento
+    // en la tarjeta guardada, así que pedimos confirmación con la estimación.
+    if (hasActiveSubscription) {
+      setTargetPlan(plan);
+      setShowUpgradeConfirm(true);
       return;
     }
 
@@ -201,6 +244,32 @@ export function PricingCard({
           </CardFooter>
         )}
       </Card>
+
+      <ConfirmDialog
+        isOpen={showUpgradeConfirm}
+        onClose={() => {
+          setShowUpgradeConfirm(false);
+          setTargetPlan(null);
+        }}
+        onConfirm={async () => {
+          setShowUpgradeConfirm(false);
+          if (targetPlan) {
+            await executePlanSelection(targetPlan);
+            setTargetPlan(null);
+          }
+        }}
+        title={t("subscription.upgradeConfirmTitle")}
+        description={
+          targetPlan
+            ? t("subscription.upgradeConfirmDesc", {
+                plan: PLAN_FEATURES[targetPlan].name,
+                amount: prorationEstimate(targetPlan),
+                date: periodEndDate,
+                price: PLAN_FEATURES[targetPlan].price,
+              })
+            : ""
+        }
+      />
 
       <DowngradeWarningModal
         isOpen={showDowngradeWarning}

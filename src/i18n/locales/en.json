@@ -630,7 +630,7 @@
     "errorFetching": "There was a problem verifying your subscription. Please refresh the page or contact support if the problem persists.",
     "manageBilling": "Manage billing",
     "upgradeConfirmTitle": "Confirm plan upgrade",
-    "upgradeConfirmDesc": "The change to the {{plan}} plan takes effect immediately. You will now pay approximately €{{amount}}, prorated for the remainder of the current period (until {{date}}). From the next renewal, €{{price}}/month.",
+    "upgradeConfirmDesc": "The change to the {{plan}} plan takes effect immediately, with no extra payment screen: approximately €{{amount}} will be charged to your saved card, prorated for the remainder of the current period (until {{date}}). From the next renewal, €{{price}}/month.",
     "upgradeAppliedDesc": "You now have the {{plan}} plan. Only the prorated share for the remainder of the current period was charged.",
     "paidDowngradeAppliedDesc": "Change applied immediately. Nothing more will be charged until the renewal on {{date}} (€{{price}}/month).",
     "downgradeScheduledTitle": "Change scheduled",

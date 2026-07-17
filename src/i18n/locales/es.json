@@ -631,7 +631,7 @@
     "errorFetching": "Hubo un problema al verificar su suscripción. Por favor, actualice la página o contacte a soporte si el problema persiste.",
     "manageBilling": "Gestionar facturación",
     "upgradeConfirmTitle": "Confirmar mejora de plan",
-    "upgradeConfirmDesc": "El cambio al plan {{plan}} se aplica inmediatamente. Ahora pagarás aproximadamente {{amount}}€, la parte proporcional por lo que queda del período actual (hasta el {{date}}). A partir de la renovación, {{price}}€/mes.",
+    "upgradeConfirmDesc": "El cambio al plan {{plan}} se aplica inmediatamente, sin pasar por otra pantalla de pago: se cobrarán aproximadamente {{amount}}€ en tu tarjeta guardada, la parte proporcional por lo que queda del período actual (hasta el {{date}}). A partir de la renovación, {{price}}€/mes.",
     "upgradeAppliedDesc": "Ya disfrutas del plan {{plan}}. Solo se ha cobrado la parte proporcional de lo que queda del período actual.",
     "paidDowngradeAppliedDesc": "Cambio aplicado inmediatamente. No se cobrará nada más hasta la renovación del {{date}} ({{price}}€/mes).",
     "downgradeScheduledTitle": "Cambio programado",
