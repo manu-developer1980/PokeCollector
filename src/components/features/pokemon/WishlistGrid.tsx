@@ -13,6 +13,7 @@ interface WishlistGridProps {
   onRemove?: (card: PokemonCard) => void;
   isLoading?: boolean;
   onSectionChange: (section: string) => void;
+  hasPriceAlerts?: boolean;
 }
 
 const WishlistGrid = ({
@@ -22,6 +23,7 @@ const WishlistGrid = ({
   onRemove,
   isLoading,
   onSectionChange,
+  hasPriceAlerts = false,
 }: WishlistGridProps) => {
   const { t } = useTranslation();
 
@@ -82,6 +84,7 @@ const WishlistGrid = ({
             }
           }}
           actions="wishlist"
+          hasPriceAlerts={hasPriceAlerts}
         />
       </div>
     </div>

@@ -445,6 +445,48 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          id: string
+          user_id: string
+          card_id: string
+          card_name: string
+          card_image_url: string | null
+          target_price: number
+          is_active: boolean
+          last_checked_at: string | null
+          last_notified_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          card_id: string
+          card_name: string
+          card_image_url?: string | null
+          target_price: number
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_notified_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          card_id?: string
+          card_name?: string
+          card_image_url?: string | null
+          target_price?: number
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_notified_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

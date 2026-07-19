@@ -68,6 +68,18 @@ export const canUseAdvancedSearch = (planType: SubscriptionPlan): boolean => {
   return PLAN_FEATURES[planType].hasAdvancedSearch;
 };
 
+export const canUseSetCompletion = (planType: SubscriptionPlan): boolean => {
+  return PLAN_FEATURES[planType].hasSetCompletion;
+};
+
+export const canUsePortfolioValue = (planType: SubscriptionPlan): boolean => {
+  return PLAN_FEATURES[planType].hasPortfolioValue;
+};
+
+export const canUsePriceAlerts = (planType: SubscriptionPlan): boolean => {
+  return PLAN_FEATURES[planType].hasPriceAlerts;
+};
+
 export const getPlanLimits = (planType: SubscriptionPlan) => {
   const features = PLAN_FEATURES[planType];
   return {
@@ -75,5 +87,8 @@ export const getPlanLimits = (planType: SubscriptionPlan) => {
     maxCollections: features.maxCollections,
     maxWishlist: features.maxWishlist,
     hasAdvancedSearch: features.hasAdvancedSearch,
+    hasSetCompletion: features.hasSetCompletion,
+    hasPortfolioValue: features.hasPortfolioValue,
+    hasPriceAlerts: features.hasPriceAlerts,
   };
 };

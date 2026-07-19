@@ -344,7 +344,10 @@
     "account": "Account",
     "pricing": "Pricing",
     "rules": "Rules",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "setCompletion": "Set progress",
+    "portfolioValue": "Collection value",
+    "priceAlerts": "Price alerts"
   },
   "app": {
     "title": "PokéCollector",
@@ -449,6 +452,45 @@
     },
     "alreadyInWishlist": "Already in Wishlist",
     "cardAlreadyExists": "This card is already in your wishlist."
+  },
+  "setCompletion": {
+    "title": "Set progress",
+    "empty": "Add cards to your collections to see your progress per set",
+    "upsellTitle": "Exclusive feature for Trainer and Master",
+    "upsellDescription": "Upgrade your plan to see how far you are from completing each set in your collection.",
+    "upsellCta": "View plans"
+  },
+  "portfolioValue": {
+    "title": "Collection value",
+    "empty": "There are no cards with market pricing in your collections yet",
+    "totalLabel": "Estimated total value",
+    "pricedCount_one": "{{count}} card with price",
+    "pricedCount_other": "{{count}} cards with price",
+    "unpricedCount_one": "{{count}} without price data",
+    "unpricedCount_other": "{{count}} without price data",
+    "topCardsTitle": "Most valuable cards",
+    "upsellTitle": "Exclusive feature for Trainer and Master",
+    "upsellDescription": "Upgrade your plan to see the estimated market value of your whole collection.",
+    "upsellCta": "View plans"
+  },
+  "priceAlerts": {
+    "title": "Price alerts",
+    "empty": "You have no active price alerts. Create one from any priced card.",
+    "notifyButton": "Notify me",
+    "dialogTitle": "Notify me on price drop",
+    "dialogDescription": "We'll email you when this card's market price drops below this value.",
+    "targetPriceLabel": "Target price (€)",
+    "createButton": "Create alert",
+    "createSuccess": "Alert created. We'll notify you by email.",
+    "createError": "Could not create the alert",
+    "deleteButton": "Delete",
+    "deleteSuccess": "Alert deleted",
+    "deleteError": "Could not delete the alert",
+    "currentPriceLabel": "Current price",
+    "targetLabel": "Target",
+    "upsellTitle": "Exclusive feature for Master",
+    "upsellDescription": "Upgrade your plan so we can email you when a card drops in price.",
+    "upsellCta": "View plans"
   },
   "search": {
     "cards": "Search Cards",

@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Heart, FileText } from "lucide-react";
+import { Plus, Trash2, Heart, FileText, Bell } from "lucide-react";
 import { PokemonCard } from "@/types/pokemon";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "../../../../supabase/auth";
+import { createPriceAlert } from "@/lib/priceAlerts";
 import {
   POKEMON_TYPES_MAP,
   RARITY_MAP,
@@ -29,7 +34,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
-import { normalizeTranslationKey } from "@/lib/utils";
+import { normalizeTranslationKey, getConditionAdjustedPrice } from "@/lib/utils";
 
 interface CardItemProps {
   card: PokemonCard;
@@ -39,6 +44,7 @@ interface CardItemProps {
   onAddToWishlist?: (card: PokemonCard) => void;
   actions?: "collection" | "wishlist" | "search";
   showPrice?: boolean;
+  hasPriceAlerts?: boolean;
 }
 
 const CardItem = ({
@@ -49,11 +55,45 @@ const CardItem = ({
   onRemove,
   actions,
   showPrice = false,
+  hasPriceAlerts = false,
 }: CardItemProps) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   const [imageError, setImageError] = useState(false);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isPriceAlertOpen, setIsPriceAlertOpen] = useState(false);
+  const [targetPrice, setTargetPrice] = useState("");
+  const [isSubmittingAlert, setIsSubmittingAlert] = useState(false);
+
+  const currentPrice = card.cardmarket?.prices?.averageSellPrice;
+
+  const handleOpenPriceAlert = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentPrice) {
+      setTargetPrice((currentPrice * 0.9).toFixed(2));
+    }
+    setIsPriceAlertOpen(true);
+  };
+
+  const handleCreatePriceAlert = async () => {
+    const parsedPrice = parseFloat(targetPrice);
+    if (!user || !parsedPrice || parsedPrice <= 0) return;
+
+    setIsSubmittingAlert(true);
+    try {
+      await createPriceAlert(card, parsedPrice, user.id);
+      toast({ description: t("priceAlerts.createSuccess") });
+      setIsPriceAlertOpen(false);
+    } catch (error) {
+      toast({
+        description: t("priceAlerts.createError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingAlert(false);
+    }
+  };
 
   const handleImageError = () => setImageError(true);
 
@@ -198,6 +238,25 @@ const CardItem = ({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
+
+              {currentPrice != null && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg"
+                        onClick={handleOpenPriceAlert}
+                      >
+                        <Bell className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("priceAlerts.notifyButton")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
 
@@ -302,10 +361,14 @@ const CardItem = ({
               )}
             </div>
 
-            {/* Precio si está habilitado */}
+            {/* Precio si está habilitado (Cardmarket, en euros, ajustado a la condición) */}
             {showPrice && card.cardmarket?.prices?.averageSellPrice && (
               <div className="text-sm font-bold text-emerald-600 mt-2">
-                ${card.cardmarket.prices.averageSellPrice.toFixed(2)}
+                {getConditionAdjustedPrice(
+                  card.cardmarket.prices.averageSellPrice,
+                  card.condition
+                ).toFixed(2)}
+                €
               </div>
             )}
           </div>
@@ -328,6 +391,64 @@ const CardItem = ({
           <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap">
             {(card as any).notes}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Alerta de Precio */}
+      <Dialog open={isPriceAlertOpen} onOpenChange={setIsPriceAlertOpen}>
+        <DialogContent
+          className="mr-8 w-[280px] sm:w-[420px] rounded-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {hasPriceAlerts ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  {t("priceAlerts.dialogTitle")}
+                </DialogTitle>
+                <DialogDescription>
+                  {t("priceAlerts.dialogDescription")}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 mt-2">
+                {currentPrice != null && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("priceAlerts.currentPriceLabel")}: {currentPrice.toFixed(2)} €
+                  </p>
+                )}
+                <div className="space-y-1">
+                  <Label htmlFor="target-price">
+                    {t("priceAlerts.targetPriceLabel")}
+                  </Label>
+                  <Input
+                    id="target-price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={targetPrice}
+                    onChange={(e) => setTargetPrice(e.target.value)}
+                  />
+                </div>
+                <Button
+                  className="w-full"
+                  disabled={isSubmittingAlert || !targetPrice}
+                  onClick={handleCreatePriceAlert}
+                >
+                  {t("priceAlerts.createButton")}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>{t("priceAlerts.upsellTitle")}</DialogTitle>
+                <DialogDescription>
+                  {t("priceAlerts.upsellDescription")}
+                </DialogDescription>
+              </DialogHeader>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </>

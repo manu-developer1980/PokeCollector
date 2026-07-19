@@ -1,0 +1,15 @@
+name: Check price alerts
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger check-price-alerts
+        run: |
+          curl -sf -X POST "${{ secrets.SUPABASE_FUNCTION_URL }}/check-price-alerts" \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}"

@@ -147,6 +147,19 @@ export const CONDITION_MAP = {
 
 export type CardCondition = keyof typeof CONDITION_MAP;
 
+// Multiplicador aplicado al precio de mercado (Cardmarket, sin gradar) según
+// la condición física declarada por el usuario. Aproximación orientativa,
+// no una tasación: Mint/Near Mint se toman como el precio de mercado base.
+export const CONDITION_PRICE_MULTIPLIER: Record<string, number> = {
+  mint: 1,
+  nearmint: 1,
+  excellent: 0.85,
+  good: 0.7,
+  lightplayed: 0.55,
+  played: 0.4,
+  poor: 0.25,
+};
+
 // Acabados de las cartas
 export const FINISH_MAP = {
   regular: "Regular",

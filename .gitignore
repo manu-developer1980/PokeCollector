@@ -29,7 +29,6 @@ dist-ssr
 
 core
 backend/
-.github/
 
 *.exe
 

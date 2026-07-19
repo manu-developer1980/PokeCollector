@@ -21,6 +21,9 @@ import CollectionDetail from "../components/features/pokemon/CollectionDetail";
 import CollectionDialog from "../components/features/pokemon/CollectionDialog";
 import OnboardingModal from "../components/features/onboarding/OnboardingModal";
 import WishlistGrid from "../components/features/pokemon/WishlistGrid";
+import SetCompletionPanel from "../components/features/pokemon/SetCompletionPanel";
+import PortfolioValuePanel from "../components/features/pokemon/PortfolioValuePanel";
+import PriceAlertsPanel from "../components/features/pokemon/PriceAlertsPanel";
 import Footer from "./Footer";
 import {
   Collection,
@@ -28,7 +31,7 @@ import {
   PokemonCard,
   PokemonCardSearchParams,
 } from "@/types/pokemon";
-import { Database, Heart, Search, User } from "lucide-react";
+import { Database, Heart, Search, User, Layers, Coins, Bell } from "lucide-react";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import MainHeader from "../components/layout/MainHeader";
 import AccountSection from "../components/features/dashboard/AccountSection";
@@ -42,6 +45,7 @@ import { SubscriptionLimitModal } from "@/components/features/subscription/Subsc
 import { NoActiveSubscriptionModal } from "@/components/features/subscription/NoActiveSubscriptionModal";
 import PricingPage from "./pricing";
 import { normalizeCardId } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useLocalization } from "@/hooks/useLocalization";
 
@@ -75,6 +79,21 @@ export default function PokemonDashboard() {
       icon: <Search size={18} />,
       label: t("navigation.search"),
       id: "Search Cards",
+    },
+    {
+      icon: <Layers size={18} />,
+      label: t("navigation.setCompletion"),
+      id: "Set Completion",
+    },
+    {
+      icon: <Coins size={18} />,
+      label: t("navigation.portfolioValue"),
+      id: "Portfolio Value",
+    },
+    {
+      icon: <Bell size={18} />,
+      label: t("navigation.priceAlerts"),
+      id: "Price Alerts",
     },
     { icon: <User size={18} />, label: t("navigation.account"), id: "Account" },
   ];
@@ -1613,6 +1632,7 @@ export default function PokemonDashboard() {
           onCardClick={handleCardClick}
           onQuickAdd={handleQuickAddToCollection}
           onAddToWishlist={handleAddToWishlist}
+          hasPriceAlerts={PLAN_FEATURES[planType].hasPriceAlerts}
         />
       </SearchFilters>
     </>
@@ -1635,12 +1655,88 @@ export default function PokemonDashboard() {
         onSectionChange={(section: string) => {
           setActiveSection(section);
         }}
+        hasPriceAlerts={PLAN_FEATURES[planType].hasPriceAlerts}
       />
     </div>
   );
 
   const renderAccountContent = () => {
     return <AccountSection onSectionChange={setActiveSection} />;
+  };
+
+  const renderSetCompletionContent = () => {
+    if (!PLAN_FEATURES[planType].hasSetCompletion) {
+      return (
+        <div className="text-center py-16 space-y-4">
+          <h2 className="text-2xl font-bold">
+            {t("setCompletion.upsellTitle")}
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {t("setCompletion.upsellDescription")}
+          </p>
+          <Button onClick={() => setActiveSection("Pricing")}>
+            {t("setCompletion.upsellCta")}
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold">{t("setCompletion.title")}</h2>
+        <SetCompletionPanel collections={collections} />
+      </div>
+    );
+  };
+
+  const renderPortfolioValueContent = () => {
+    if (!PLAN_FEATURES[planType].hasPortfolioValue) {
+      return (
+        <div className="text-center py-16 space-y-4">
+          <h2 className="text-2xl font-bold">
+            {t("portfolioValue.upsellTitle")}
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {t("portfolioValue.upsellDescription")}
+          </p>
+          <Button onClick={() => setActiveSection("Pricing")}>
+            {t("portfolioValue.upsellCta")}
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold">{t("portfolioValue.title")}</h2>
+        <PortfolioValuePanel collections={collections} />
+      </div>
+    );
+  };
+
+  const renderPriceAlertsContent = () => {
+    if (!PLAN_FEATURES[planType].hasPriceAlerts) {
+      return (
+        <div className="text-center py-16 space-y-4">
+          <h2 className="text-2xl font-bold">
+            {t("priceAlerts.upsellTitle")}
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {t("priceAlerts.upsellDescription")}
+          </p>
+          <Button onClick={() => setActiveSection("Pricing")}>
+            {t("priceAlerts.upsellCta")}
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold">{t("priceAlerts.title")}</h2>
+        <PriceAlertsPanel />
+      </div>
+    );
   };
 
   const renderCollectionContent = () => {
@@ -1699,6 +1795,12 @@ export default function PokemonDashboard() {
         return renderWishlistContent();
       case "Account":
         return renderAccountContent();
+      case "Set Completion":
+        return renderSetCompletionContent();
+      case "Portfolio Value":
+        return renderPortfolioValueContent();
+      case "Price Alerts":
+        return renderPriceAlertsContent();
 
       case "Pricing":
         return <PricingPage />;

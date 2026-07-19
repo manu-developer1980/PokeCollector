@@ -13,6 +13,7 @@ interface CardGridProps {
   isLoading?: boolean;
   actions?: "collection" | "wishlist" | "search";
   showPrice?: boolean;
+  hasPriceAlerts?: boolean;
 }
 
 const CardGrid = ({
@@ -25,6 +26,7 @@ const CardGrid = ({
   isLoading,
   actions = "search",
   showPrice = false,
+  hasPriceAlerts = false,
 }: CardGridProps) => {
   const { t } = useTranslation();
 
@@ -57,6 +59,7 @@ const CardGrid = ({
           onRemove={onRemove}
           actions={actions}
           showPrice={showPrice}
+          hasPriceAlerts={hasPriceAlerts}
         />
       ))}
     </div>

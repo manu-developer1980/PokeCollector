@@ -344,7 +344,10 @@
     "account": "Cuenta",
     "pricing": "Precios",
     "rules": "Reglas",
-    "subscription": "Suscripción"
+    "subscription": "Suscripción",
+    "setCompletion": "Progreso de sets",
+    "portfolioValue": "Valor de la colección",
+    "priceAlerts": "Alertas de precio"
   },
   "app": {
     "title": "PokéCollector",
@@ -448,6 +451,45 @@
       "idNotFound": "ID de lista de deseos no encontrado"
     },
     "maxItems": "Máximo en lista de deseos"
+  },
+  "setCompletion": {
+    "title": "Progreso de sets",
+    "empty": "Añade cartas a tus colecciones para ver tu progreso por set",
+    "upsellTitle": "Función exclusiva de Entrenador y Maestro",
+    "upsellDescription": "Mejora tu plan para ver cuánto te falta para completar cada set de tu colección.",
+    "upsellCta": "Ver planes"
+  },
+  "portfolioValue": {
+    "title": "Valor de la colección",
+    "empty": "Todavía no hay cartas con precio de mercado en tus colecciones",
+    "totalLabel": "Valor total estimado",
+    "pricedCount_one": "{{count}} carta con precio",
+    "pricedCount_other": "{{count}} cartas con precio",
+    "unpricedCount_one": "{{count}} sin precio disponible",
+    "unpricedCount_other": "{{count}} sin precio disponible",
+    "topCardsTitle": "Cartas más valiosas",
+    "upsellTitle": "Función exclusiva de Entrenador y Maestro",
+    "upsellDescription": "Mejora tu plan para ver el valor de mercado estimado de toda tu colección.",
+    "upsellCta": "Ver planes"
+  },
+  "priceAlerts": {
+    "title": "Alertas de precio",
+    "empty": "No tienes alertas de precio activas. Crea una desde cualquier carta con precio.",
+    "notifyButton": "Avisarme",
+    "dialogTitle": "Avisarme si baja de precio",
+    "dialogDescription": "Te mandaremos un email cuando el precio de mercado de esta carta baje de este valor.",
+    "targetPriceLabel": "Precio objetivo (€)",
+    "createButton": "Crear alerta",
+    "createSuccess": "Alerta creada. Te avisaremos por email.",
+    "createError": "No se pudo crear la alerta",
+    "deleteButton": "Eliminar",
+    "deleteSuccess": "Alerta eliminada",
+    "deleteError": "No se pudo eliminar la alerta",
+    "currentPriceLabel": "Precio actual",
+    "targetLabel": "Objetivo",
+    "upsellTitle": "Función exclusiva de Maestro",
+    "upsellDescription": "Mejora tu plan para que te avisemos por email cuando una carta baje de precio.",
+    "upsellCta": "Ver planes"
   },
   "search": {
     "cards": "Buscar Cartas",

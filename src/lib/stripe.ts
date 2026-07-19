@@ -20,6 +20,9 @@ export interface PlanFeature {
   maxCollections: number | -1;
   maxWishlist: number | -1;
   hasAdvancedSearch?: boolean;
+  hasSetCompletion?: boolean;
+  hasPortfolioValue?: boolean;
+  hasPriceAlerts?: boolean;
 }
 
 // Hook para obtener las características del plan con traducciones
@@ -39,6 +42,9 @@ export const usePlanFeatures = () => {
       maxCollections: 2,
       maxWishlist: 10,
       hasAdvancedSearch: false,
+      hasSetCompletion: false,
+      hasPortfolioValue: false,
+      hasPriceAlerts: false,
     },
     ENTRENADOR: {
       name: t("plans.entrenador"),
@@ -52,6 +58,9 @@ export const usePlanFeatures = () => {
       maxCollections: 5,
       maxWishlist: 50,
       hasAdvancedSearch: true,
+      hasSetCompletion: true,
+      hasPortfolioValue: true,
+      hasPriceAlerts: false,
     },
     MAESTRO: {
       name: t("plans.maestro"),
@@ -65,6 +74,9 @@ export const usePlanFeatures = () => {
       maxCollections: -1,
       maxWishlist: -1,
       hasAdvancedSearch: true,
+      hasSetCompletion: true,
+      hasPortfolioValue: true,
+      hasPriceAlerts: true,
     },
   };
 };
@@ -86,6 +98,9 @@ export const PLAN_FEATURES = {
     maxCollections: 2,
     maxWishlist: 10,
     hasAdvancedSearch: false,
+    hasSetCompletion: false,
+    hasPortfolioValue: false,
+    hasPriceAlerts: false,
   },
   ENTRENADOR: {
     name: "Entrenador",
@@ -102,6 +117,9 @@ export const PLAN_FEATURES = {
     maxCollections: 5,
     maxWishlist: 50,
     hasAdvancedSearch: true,
+    hasSetCompletion: true,
+    hasPortfolioValue: true,
+    hasPriceAlerts: false,
   },
   MAESTRO: {
     name: "Maestro",
@@ -119,5 +137,8 @@ export const PLAN_FEATURES = {
     maxCollections: -1,
     maxWishlist: -1,
     hasAdvancedSearch: true,
+    hasSetCompletion: true,
+    hasPortfolioValue: true,
+    hasPriceAlerts: true,
   },
 } as const;

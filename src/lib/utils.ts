@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { CONDITION_PRICE_MULTIPLIER } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -43,4 +44,18 @@ export function normalizeTranslationKey(key: string): string {
     .replace(/-/g, "")
     .replace(/\./g, "")
     .toLowerCase();
+}
+
+/**
+ * Ajusta un precio de mercado según la condición física de la carta.
+ * Sin condición informada o condición desconocida, devuelve el precio base.
+ */
+export function getConditionAdjustedPrice(
+  basePrice: number,
+  condition?: string
+): number {
+  const multiplier = condition
+    ? CONDITION_PRICE_MULTIPLIER[normalizeTranslationKey(condition)] ?? 1
+    : 1;
+  return basePrice * multiplier;
 }
