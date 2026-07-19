@@ -872,7 +872,17 @@ export default function PokemonDashboard() {
 
       // Toast de éxito removido - la acción es visible en la UI
 
-      // No need to call getCollections() here as it will be triggered by the real-time subscription
+      // Refrescar el estado en el acto: la suscripción realtime puede no
+      // entregar el evento y la UI no debe depender de ella para verse al día.
+      await getCollections();
+      if (selectedCollection) {
+        const updatedCollection = await getCollectionWithCards(
+          selectedCollection.id
+        );
+        if (updatedCollection) {
+          setSelectedCollection(updatedCollection);
+        }
+      }
 
       if (cardData.card.wishlist_id) {
         try {
