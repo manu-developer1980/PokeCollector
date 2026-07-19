@@ -62,16 +62,23 @@ memoria persistente para no perder el hilo entre sesiones.
   hacer el push; Manuel la tiene en el dashboard de Brevo. Tradeoff aceptado:
   emails solo en español (las plantillas nativas son mono-idioma; las
   versiones en/es siguen en `src/emails/`).
-- **Pendiente**: smoke test del billing end-to-end (registro, checkout,
-  upgrade in situ, webhook escribiendo en `subscriptions`) y comprobar el
-  Billing Portal de Stripe (paso 6 de RESTORE.md). Stripe está en modo test
-  clásico (no Sandbox nuevo): los 3 precios activos verificados por API.
-- **Deuda conocida**: 8 errores de TS en 3 ficheros de admin
-  (PricingManagement, InitialAdminSetup, useAdmin) — el código usa embeds
-  `users→subscriptions` que requieren FKs hacia `public.users`, pero las
-  migraciones las apuntan a `auth.users`; además consulta una columna
-  `customer_id` inexistente. Decidir entre migración nueva de FKs o adaptar
-  el código.
+- **Smoke test de billing por API hecho (2026-07-18)**: webhook→BD verificado
+  en vivo (update en Stripe reflejado en `subscriptions` en 2 s; BD y Stripe
+  coinciden campo a campo en la sub `entrenador`); Billing Portal con config
+  activa por defecto (paso 6 de RESTORE.md ✓); los 3 precios activos; las 5
+  edge functions de pagos responden; el trigger de signup crea `public.users`
+  + sub gratis (con cascade al borrar); `create-stripe-checkout` devuelve URL
+  de Checkout válida con un JWT real. Stripe en modo test clásico (no Sandbox).
+- **Pendiente (requiere navegador)**: click-through final — pagar un checkout
+  con tarjeta de test (4242…), upgrade/downgrade in situ desde la UI y abrir
+  el Billing Portal desde "Mi Cuenta".
+- **Ojo Render**: el servicio recreado (`pokecollect-backend-t5ia`) NO
+  auto-despliega al pushear a main — el deploy de `985a39b` (2026-07-18) hubo
+  que lanzarlo a mano desde el dashboard. Revisar Settings → Build & Deploy →
+  Auto-Deploy si se quiere recuperar. Tampoco hay API key de Render en local.
+- La antigua "deuda conocida" de 8 errores de TS en admin ya no existe: se
+  arregló el 2026-07-17 adaptando el código al esquema real (`tsc --noEmit`
+  limpio verificado el 2026-07-18).
 
 ## Comandos
 
